@@ -85,7 +85,6 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        storageState: "tests/e2e/.auth/user.json",
       },
       dependencies: ["setup"],
     },
@@ -94,7 +93,6 @@ export default defineConfig({
       name: "firefox",
       use: {
         ...devices["Desktop Firefox"],
-        storageState: "tests/e2e/.auth/user.json",
       },
       dependencies: ["setup"],
     },
@@ -103,7 +101,6 @@ export default defineConfig({
       name: "webkit",
       use: {
         ...devices["Desktop Safari"],
-        storageState: "tests/e2e/.auth/user.json",
       },
       dependencies: ["setup"],
     },
@@ -113,7 +110,6 @@ export default defineConfig({
       name: "mobile-chrome",
       use: {
         ...devices["Pixel 5"],
-        storageState: "tests/e2e/.auth/user.json",
       },
       dependencies: ["setup"],
     },
@@ -122,7 +118,6 @@ export default defineConfig({
       name: "mobile-safari",
       use: {
         ...devices["iPhone 12"],
-        storageState: "tests/e2e/.auth/user.json",
       },
       dependencies: ["setup"],
     },
@@ -132,7 +127,6 @@ export default defineConfig({
       name: "tauri-webview",
       use: {
         ...devices["Desktop Chrome"],
-        storageState: "tests/e2e/.auth/user.json",
         // Simulate Tauri environment
         contextOptions: {
           permissions: ["clipboard-read", "clipboard-write"],

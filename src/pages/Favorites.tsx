@@ -23,27 +23,27 @@ export const Favorites: React.FC = () => {
 
   const { removeFavorite: removeFromLocalStore } = useFavoritesStore();
 
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const [favoritesData, listsData] = await Promise.all([
-        getFavorites(selectedListId || undefined),
-        getFavoriteLists(),
-      ]);
-      
-      setFavorites(favoritesData);
-      setLists(listsData);
-    } catch (err) {
-      console.error("Error fetching favorites:", err);
-      setError("Erro ao carregar favoritos");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const [favoritesData, listsData] = await Promise.all([
+          getFavorites(selectedListId || undefined),
+          getFavoriteLists(),
+        ]);
+        
+        setFavorites(favoritesData);
+        setLists(listsData);
+      } catch (err) {
+        console.error("Error fetching favorites:", err);
+        setError("Erro ao carregar favoritos");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchData();
   }, [selectedListId]);
 

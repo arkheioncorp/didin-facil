@@ -7,7 +7,7 @@ import { test, expect } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
 
 test.describe('Accessibility Tests', () => {
-  test.use({ storageState: '.auth/user.json' });
+  test.use({ storageState: 'tests/e2e/.auth/user.json' });
 
   // ============================================
   // WCAG COMPLIANCE
@@ -212,7 +212,7 @@ test.describe('Accessibility Tests', () => {
 });
 
 test.describe('Performance Tests', () => {
-  test.use({ storageState: '.auth/user.json' });
+  test.use({ storageState: 'tests/e2e/.auth/user.json' });
 
   // ============================================
   // PAGE LOAD PERFORMANCE

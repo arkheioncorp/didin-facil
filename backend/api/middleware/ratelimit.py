@@ -4,7 +4,7 @@ Request rate limiting per user/IP
 """
 
 import time
-from typing import Dict, Tuple
+from typing import Dict
 from collections import defaultdict
 
 from fastapi import Request, HTTPException, status

@@ -7,6 +7,7 @@ interface UserState {
   user: User | null;
   license: License | null;
   isAuthenticated: boolean;
+  hasHydrated: boolean;
   
   // Theme
   theme: "light" | "dark" | "system";
@@ -18,6 +19,7 @@ interface UserState {
   login: (user: User, license: License) => void;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useUserStore = create<UserState>()(
@@ -26,6 +28,7 @@ export const useUserStore = create<UserState>()(
       user: null,
       license: null,
       isAuthenticated: false,
+      hasHydrated: false,
       theme: "system",
       
       setUser: (user: User | null) =>
@@ -47,6 +50,9 @@ export const useUserStore = create<UserState>()(
         set((state: UserState) => ({
           user: state.user ? { ...state.user, ...updates } : null,
         })),
+        
+      setHasHydrated: (state: boolean) =>
+        set({ hasHydrated: state }),
     }),
     {
       name: "tiktrend-user",
@@ -57,6 +63,9 @@ export const useUserStore = create<UserState>()(
         isAuthenticated: state.isAuthenticated,
         theme: state.theme,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

@@ -7,42 +7,42 @@ import { test, expect } from './fixtures';
 import { ProductsPage } from './pages/ProductsPage';
 
 test.describe('Products Flow', () => {
-  test.use({ storageState: '.auth/user.json' });
+  test.use({ storageState: 'tests/e2e/.auth/user.json' });
 
   // ============================================
   // PRODUCTS PAGE LOADING
   // ============================================
 
   test.describe('Products Page Loading', () => {
-    test('should display products page correctly', async ({ page }) => {
+    test('should display products page correctly', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
       await expect(page.locator('h1')).toContainText(/produtos|products/i);
     });
 
-    test('should display product grid', async ({ page }) => {
+    test('should display product grid', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
       await expect(products.productCards.first()).toBeVisible();
     });
 
-    test('should display filter sidebar', async ({ page }) => {
+    test('should display filter sidebar', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
       await expect(page.locator('[data-testid="filter-sidebar"]')).toBeVisible();
     });
 
-    test('should display sort options', async ({ page }) => {
+    test('should display sort options', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
       await expect(page.locator('[data-testid="sort-select"]')).toBeVisible();
     });
 
-    test('should display pagination', async ({ page }) => {
+    test('should display pagination', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -55,7 +55,7 @@ test.describe('Products Flow', () => {
   // ============================================
 
   test.describe('Product Cards', () => {
-    test('should display product image', async ({ page }) => {
+    test('should display product image', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -63,7 +63,7 @@ test.describe('Products Flow', () => {
       await expect(card.locator('img')).toBeVisible();
     });
 
-    test('should display product title', async ({ page }) => {
+    test('should display product title', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -71,7 +71,7 @@ test.describe('Products Flow', () => {
       await expect(card.locator('[data-testid="product-title"]')).toBeVisible();
     });
 
-    test('should display product price', async ({ page }) => {
+    test('should display product price', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -79,7 +79,7 @@ test.describe('Products Flow', () => {
       await expect(card.locator('[data-testid="product-price"]')).toBeVisible();
     });
 
-    test('should display sales count', async ({ page }) => {
+    test('should display sales count', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -87,7 +87,7 @@ test.describe('Products Flow', () => {
       await expect(card.locator('[data-testid="product-sales"]')).toBeVisible();
     });
 
-    test('should display favorite button', async ({ page }) => {
+    test('should display favorite button', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -101,7 +101,7 @@ test.describe('Products Flow', () => {
   // ============================================
 
   test.describe('Filtering', () => {
-    test('should filter by category', async ({ page }) => {
+    test('should filter by category', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -111,7 +111,7 @@ test.describe('Products Flow', () => {
       await expect(page).toHaveURL(/category=electronics/);
     });
 
-    test('should filter by price range', async ({ page }) => {
+    test('should filter by price range', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -122,7 +122,7 @@ test.describe('Products Flow', () => {
       await expect(page).toHaveURL(/min_price=10/);
     });
 
-    test('should filter by sales count', async ({ page }) => {
+    test('should filter by sales count', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -132,7 +132,7 @@ test.describe('Products Flow', () => {
       await expect(page).toHaveURL(/min_sales=1000/);
     });
 
-    test('should clear all filters', async ({ page }) => {
+    test('should clear all filters', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -146,7 +146,7 @@ test.describe('Products Flow', () => {
       await expect(page).not.toHaveURL(/min_price/);
     });
 
-    test('should show filtered results count', async ({ page }) => {
+    test('should show filtered results count', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -159,7 +159,7 @@ test.describe('Products Flow', () => {
   // ============================================
 
   test.describe('Sorting', () => {
-    test('should sort by price low to high', async ({ page }) => {
+    test('should sort by price low to high', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -169,7 +169,7 @@ test.describe('Products Flow', () => {
       await expect(page).toHaveURL(/sort=price_asc/);
     });
 
-    test('should sort by price high to low', async ({ page }) => {
+    test('should sort by price high to low', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -179,7 +179,7 @@ test.describe('Products Flow', () => {
       await expect(page).toHaveURL(/sort=price_desc/);
     });
 
-    test('should sort by sales', async ({ page }) => {
+    test('should sort by sales', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -189,7 +189,7 @@ test.describe('Products Flow', () => {
       await expect(page).toHaveURL(/sort=sales/);
     });
 
-    test('should sort by newest', async ({ page }) => {
+    test('should sort by newest', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -205,7 +205,7 @@ test.describe('Products Flow', () => {
   // ============================================
 
   test.describe('Product Detail', () => {
-    test('should open product detail modal', async ({ page }) => {
+    test('should open product detail modal', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -214,7 +214,7 @@ test.describe('Products Flow', () => {
       await expect(products.productDetailModal).toBeVisible();
     });
 
-    test('should display product images gallery', async ({ page }) => {
+    test('should display product images gallery', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -223,7 +223,7 @@ test.describe('Products Flow', () => {
       await expect(page.locator('[data-testid="product-gallery"]')).toBeVisible();
     });
 
-    test('should display product description', async ({ page }) => {
+    test('should display product description', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -232,7 +232,7 @@ test.describe('Products Flow', () => {
       await expect(page.locator('[data-testid="product-description"]')).toBeVisible();
     });
 
-    test('should display supplier info', async ({ page }) => {
+    test('should display supplier info', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -241,7 +241,7 @@ test.describe('Products Flow', () => {
       await expect(page.locator('[data-testid="supplier-info"]')).toBeVisible();
     });
 
-    test('should copy product info button', async ({ page }) => {
+    test('should copy product info button', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -251,7 +251,7 @@ test.describe('Products Flow', () => {
       await expect(page.locator('[data-testid="toast"]')).toContainText(/copiado|copied/i);
     });
 
-    test('should generate copy button', async ({ page }) => {
+    test('should generate copy button', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -261,7 +261,7 @@ test.describe('Products Flow', () => {
       await expect(page).toHaveURL(/copy/);
     });
 
-    test('should close modal on escape', async ({ page }) => {
+    test('should close modal on escape', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -272,7 +272,7 @@ test.describe('Products Flow', () => {
       await expect(products.productDetailModal).not.toBeVisible();
     });
 
-    test('should close modal on backdrop click', async ({ page }) => {
+    test('should close modal on backdrop click', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -289,7 +289,7 @@ test.describe('Products Flow', () => {
   // ============================================
 
   test.describe('Pagination', () => {
-    test('should navigate to next page', async ({ page }) => {
+    test('should navigate to next page', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -298,7 +298,7 @@ test.describe('Products Flow', () => {
       await expect(page).toHaveURL(/page=2/);
     });
 
-    test('should navigate to previous page', async ({ page }) => {
+    test('should navigate to previous page', async ({ mockedPage: page }) => {
       await page.goto('/products?page=2');
 
       await page.locator('[data-testid="prev-page"]').click();
@@ -306,7 +306,7 @@ test.describe('Products Flow', () => {
       await expect(page).toHaveURL(/page=1/);
     });
 
-    test('should navigate to specific page', async ({ page }) => {
+    test('should navigate to specific page', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -315,7 +315,7 @@ test.describe('Products Flow', () => {
       await expect(page).toHaveURL(/page=3/);
     });
 
-    test('should show current page indicator', async ({ page }) => {
+    test('should show current page indicator', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -328,7 +328,7 @@ test.describe('Products Flow', () => {
   // ============================================
 
   test.describe('View Modes', () => {
-    test('should switch to list view', async ({ page }) => {
+    test('should switch to list view', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -337,7 +337,7 @@ test.describe('Products Flow', () => {
       await expect(page.locator('[data-testid="products-list"]')).toBeVisible();
     });
 
-    test('should switch to grid view', async ({ page }) => {
+    test('should switch to grid view', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -347,7 +347,7 @@ test.describe('Products Flow', () => {
       await expect(page.locator('[data-testid="products-grid"]')).toBeVisible();
     });
 
-    test('should persist view mode preference', async ({ page }) => {
+    test('should persist view mode preference', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -363,7 +363,7 @@ test.describe('Products Flow', () => {
   // ============================================
 
   test.describe('Bulk Actions', () => {
-    test('should select multiple products', async ({ page }) => {
+    test('should select multiple products', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -373,7 +373,7 @@ test.describe('Products Flow', () => {
       await expect(page.locator('[data-testid="selected-count"]')).toContainText('2');
     });
 
-    test('should select all products', async ({ page }) => {
+    test('should select all products', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -384,7 +384,7 @@ test.describe('Products Flow', () => {
       );
     });
 
-    test('should add selected to favorites', async ({ page }) => {
+    test('should add selected to favorites', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -394,7 +394,7 @@ test.describe('Products Flow', () => {
       await expect(page.locator('[data-testid="toast"]')).toContainText(/adicionado|added/i);
     });
 
-    test('should export selected products', async ({ page }) => {
+    test('should export selected products', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 
@@ -410,7 +410,7 @@ test.describe('Products Flow', () => {
   // ============================================
 
   test.describe('Infinite Scroll', () => {
-    test('should load more products on scroll', async ({ page }) => {
+    test('should load more products on scroll', async ({ mockedPage: page }) => {
       const products = new ProductsPage(page);
       await products.goto();
 

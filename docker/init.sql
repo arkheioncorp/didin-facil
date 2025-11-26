@@ -70,6 +70,20 @@ CREATE TABLE IF NOT EXISTS license_devices (
 CREATE INDEX idx_license_devices_license_id ON license_devices(license_id);
 
 -- ===========================================
+-- Quota Usage Table
+-- ===========================================
+CREATE TABLE IF NOT EXISTS quota_usage (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    quota_type VARCHAR(50) NOT NULL,
+    count INTEGER DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_quota_usage_user_id ON quota_usage(user_id);
+CREATE INDEX idx_quota_usage_type_date ON quota_usage(quota_type, created_at);
+
+-- ===========================================
 -- Products Table
 -- ===========================================
 CREATE TABLE IF NOT EXISTS products (
@@ -261,15 +275,7 @@ CREATE TRIGGER update_payments_updated_at
 -- Initial Data
 -- ===========================================
 
--- Insert default admin user (password: admin123 - change in production!)
-INSERT INTO users (id, email, password_hash, name, is_active, is_verified)
-VALUES (
-    uuid_generate_v4(),
-    'admin@tiktrend.local',
-    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.K6hD/BuVhQTzXK',
-    'Admin',
-    true,
-    true
-) ON CONFLICT DO NOTHING;
+-- Default admin user removed for security.
+-- Please create an admin user manually or via a secure setup script.
 
 COMMIT;

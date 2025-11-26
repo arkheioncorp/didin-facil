@@ -1,7 +1,7 @@
 // Custom React hooks for TikTrend Finder
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/lib/tauri";
-import type { SearchFilters, License, CopyTone } from "@/types";
+import type { SearchFilters, License, CopyTone, CopyType } from "@/types";
 
 
 // Query keys
@@ -76,7 +76,7 @@ export function useGenerateCopy() {
       productId: string;
       productTitle: string;
       productDescription: string;
-      copyType: any;
+      copyType: CopyType;
       tone: string;
       language: string;
     }) =>
@@ -122,13 +122,14 @@ export function useStartScraper() {
       maxProducts: number;
       categories: string[];
       useProxy: boolean;
+      headless?: boolean;
     }) =>
       api.startScraper({
         maxProducts: config.maxProducts,
         categories: config.categories,
         useProxy: config.useProxy,
         intervalMinutes: 60, // Default
-        headless: true, // Default
+        headless: config.headless ?? true, // Default to true if not provided
         timeout: 30000, // Default
       }),
     onSuccess: () => {
@@ -136,6 +137,24 @@ export function useStartScraper() {
       queryClient.invalidateQueries({ queryKey: queryKeys.products });
       queryClient.invalidateQueries({ queryKey: queryKeys.stats });
     },
+  });
+}
+
+export function useStopScraper() {
+  return useMutation({
+    mutationFn: () => api.stopScraper(),
+  });
+}
+
+export function useTestProxy() {
+  return useMutation({
+    mutationFn: (proxy: string) => api.testProxy(proxy),
+  });
+}
+
+export function useSyncProducts() {
+  return useMutation({
+    mutationFn: () => api.syncProducts(),
   });
 }
 

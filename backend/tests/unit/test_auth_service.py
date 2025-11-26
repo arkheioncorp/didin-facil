@@ -3,7 +3,7 @@ Authentication Service Unit Tests
 """
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 from datetime import datetime, timedelta
 
 from api.services.auth import AuthService

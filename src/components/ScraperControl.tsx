@@ -1,27 +1,61 @@
 import React from "react";
-import { Play, Square, Loader2, TrendingUp, Package, AlertCircle } from "lucide-react";
+import { Play, Square, Loader2, TrendingUp, Package, AlertCircle, Settings2, RefreshCw, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useStartScraper } from "@/hooks";
+import { useStartScraper, useTestProxy, useSyncProducts } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/core";
 import { toast } from "@/hooks/use-toast";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
-interface ScraperStatus {
-    is_running: boolean;
-    current_category?: string;
-    products_found: number;
-    progress_percentage: number;
-    status_message: string;
-}
+import { ScraperStatus } from "@/types";
 
 export function ScraperControl() {
-    const [selectedCategories, setSelectedCategories] = React.useState<string[]>(["trending"]);
-    const [maxProducts, setMaxProducts] = React.useState(50);
-    const startScraper = useStartScraper();
+    // Initialize from localStorage or default
+    const [selectedCategories, setSelectedCategories] = React.useState<string[]>(() => {
+        const saved = localStorage.getItem("scraper_categories");
+        return saved ? JSON.parse(saved) : ["trending"];
+    });
 
-    // Poll scraper status every 2 seconds
+    const [maxProducts, setMaxProducts] = React.useState(() => {
+        const saved = localStorage.getItem("scraper_max_products");
+        return saved ? parseInt(saved) : 50;
+    });
+
+    const [headless, setHeadless] = React.useState(() => {
+        const saved = localStorage.getItem("scraper_headless");
+        return saved ? JSON.parse(saved) : true;
+    });
+
+    const startScraper = useStartScraper();
+    const testProxy = useTestProxy();
+    const syncProducts = useSyncProducts();
+    const logsEndRef = React.useRef<HTMLDivElement>(null);
+    const [proxyToTest, setProxyToTest] = React.useState("");
+
+    // Persist changes
+    React.useEffect(() => {
+        localStorage.setItem("scraper_categories", JSON.stringify(selectedCategories));
+    }, [selectedCategories]);
+
+    React.useEffect(() => {
+        localStorage.setItem("scraper_max_products", maxProducts.toString());
+    }, [maxProducts]);
+
+    React.useEffect(() => {
+        localStorage.setItem("scraper_headless", JSON.stringify(headless));
+    }, [headless]);
+
+    // Poll scraper status every 1 second for smoother logs
     const { data: status } = useQuery<ScraperStatus>({
         queryKey: ["scraperStatus"],
         queryFn: async () => {
@@ -29,16 +63,27 @@ export function ScraperControl() {
                 return await invoke<ScraperStatus>("get_scraper_status");
             } catch {
                 return {
-                    is_running: false,
-                    products_found: 0,
-                    progress_percentage: 0,
-                    status_message: "Pronto para iniciar",
+                    isRunning: false,
+                    productsFound: 0,
+                    progress: 0,
+                    currentProduct: null,
+                    errors: [],
+                    startedAt: null,
+                    statusMessage: "Pronto para iniciar",
+                    logs: []
                 };
             }
         },
-        refetchInterval: 2000,
+        refetchInterval: 1000,
         refetchIntervalInBackground: true,
     });
+
+    // Auto-scroll logs
+    React.useEffect(() => {
+        if (logsEndRef.current) {
+            logsEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [status?.logs]);
 
     const handleStartScraping = async () => {
         if (selectedCategories.length === 0) {
@@ -55,6 +100,7 @@ export function ScraperControl() {
                 maxProducts,
                 categories: selectedCategories,
                 useProxy: false,
+                headless,
             });
 
             toast({
@@ -86,6 +132,32 @@ export function ScraperControl() {
         }
     };
 
+    const handleTestProxy = async () => {
+        if (!proxyToTest) return;
+        const isValid = await testProxy.mutateAsync(proxyToTest);
+        toast({
+            title: isValid ? "✅ Proxy Válido" : "❌ Proxy Inválido",
+            description: isValid ? "Conexão estabelecida com sucesso" : "Não foi possível conectar",
+            variant: isValid ? "default" : "destructive",
+        });
+    };
+
+    const handleSync = async () => {
+        try {
+            const count = await syncProducts.mutateAsync();
+            toast({
+                title: "Sincronização Concluída",
+                description: `${count} produtos enviados para o servidor`,
+            });
+        } catch (e) {
+            toast({
+                title: "Erro na Sincronização",
+                description: String(e),
+                variant: "destructive",
+            });
+        }
+    };
+
     const categories = [
         { id: "trending", label: "🔥 Em Alta", icon: TrendingUp },
         { id: "beauty", label: "💄 Beleza", icon: Package },
@@ -94,9 +166,11 @@ export function ScraperControl() {
         { id: "home", label: "🏠 Casa", icon: Package },
     ];
 
-    const isRunning = status?.is_running || false;
-    const progress = status?.progress_percentage || 0;
-    const productsFound = status?.products_found || 0;
+    const isRunning = status?.isRunning || false;
+    const progress = status?.progress || 0;
+    const productsFound = status?.productsFound || 0;
+    const logs = status?.logs || [];
+    const statusMessage = status?.statusMessage || "Pronto para iniciar";
 
     return (
         <Card className="col-span-2">
@@ -110,9 +184,9 @@ export function ScraperControl() {
                     </div>
                     <div className="flex items-center gap-2">
                         {isRunning ? (
-                            <Badge variant="default" className="bg-green-500 text-white">
+                            <Badge variant="default" className="bg-green-500 text-white animate-pulse">
                                 <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                                Coletando...
+                                {statusMessage}
                             </Badge>
                         ) : (
                             <Badge variant="secondary">
@@ -171,25 +245,62 @@ export function ScraperControl() {
                     </div>
                 </div>
 
-                {isRunning && (
-                    <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                            <span className="font-medium">Progresso</span>
-                            <span className="text-muted-foreground">
-                                {productsFound} produtos encontrados
-                            </span>
-                        </div>
-                        <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-primary transition-all duration-300"
-                                style={{ width: `${progress}%` }}
-                            />
-                        </div>
+                {/* Headless Mode */}
+                <div className="flex items-center justify-between p-3 border rounded-lg bg-secondary/20">
+                    <div className="space-y-0.5">
+                        <label className="text-sm font-medium">Modo Headless</label>
                         <p className="text-xs text-muted-foreground">
-                            {status?.status_message || "Processando..."}
+                            Ocultar navegador durante a coleta
                         </p>
                     </div>
-                )}
+                    <Button
+                        variant={headless ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setHeadless(!headless)}
+                        disabled={isRunning}
+                    >
+                        {headless ? "Ativado" : "Desativado"}
+                    </Button>
+                </div>
+
+                {/* Progress & Logs */}
+                <div className="space-y-4">
+                    {isRunning && (
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="font-medium">Progresso Geral</span>
+                                <span className="text-muted-foreground">
+                                    {productsFound} produtos encontrados
+                                </span>
+                            </div>
+                            <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-primary transition-all duration-300"
+                                    style={{ width: `${progress}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Visual Log Terminal */}
+                    <div className="bg-black/90 rounded-lg p-4 font-mono text-xs h-48 overflow-y-auto border border-border shadow-inner">
+                        <div className="space-y-1">
+                            {logs.length === 0 ? (
+                                <div className="text-muted-foreground opacity-50 italic">
+                                    Aguardando início do processo...
+                                </div>
+                            ) : (
+                                logs.map((log, i) => (
+                                    <div key={i} className="text-green-400/90 break-words">
+                                        <span className="opacity-50 mr-2">{log.split(']')[0]}]</span>
+                                        <span>{log.split(']')[1]}</span>
+                                    </div>
+                                ))
+                            )}
+                            <div ref={logsEndRef} />
+                        </div>
+                    </div>
+                </div>
 
                 {/* Actions */}
                 <div className="flex gap-3">
@@ -225,6 +336,39 @@ export function ScraperControl() {
                     )}
                 </div>
 
+                {/* Proxy Testing */}
+                <div className="space-y-3">
+                    <label className="text-sm font-medium">🧪 Testar Proxy</label>
+                    <div className="flex gap-2">
+                        <Input
+                            placeholder="http://meu-proxy:porta"
+                            value={proxyToTest}
+                            onChange={(e) => setProxyToTest(e.target.value)}
+                            disabled={isRunning}
+                            className="flex-1"
+                        />
+                        <Button
+                            onClick={handleTestProxy}
+                            disabled={isRunning}
+                            className="whitespace-nowrap"
+                        >
+                            Testar
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Sync Products */}
+                <div className="space-y-3">
+                    <label className="text-sm font-medium">🔄 Sincronizar Produtos</label>
+                    <Button
+                        onClick={handleSync}
+                        disabled={isRunning}
+                        className="w-full"
+                    >
+                        Sincronizar Agora
+                    </Button>
+                </div>
+
                 {/* Info Alert */}
                 <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
                     <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
@@ -237,6 +381,57 @@ export function ScraperControl() {
                     </div>
                 </div>
             </CardContent>
+
+            {/* Advanced Tools Dialog */}
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button variant="outline" size="icon" className="shrink-0">
+                        <Settings2 className="w-4 h-4" />
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Ferramentas Avançadas</DialogTitle>
+                        <DialogDescription>
+                            Utilitários para manutenção do scraper
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Testar Proxy</label>
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder="http://user:pass@ip:port"
+                                    value={proxyToTest}
+                                    onChange={(e) => setProxyToTest(e.target.value)}
+                                />
+                                <Button
+                                    onClick={handleTestProxy}
+                                    disabled={testProxy.isPending}
+                                >
+                                    {testProxy.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wifi className="w-4 h-4" />}
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Sincronizar Dados</label>
+                            <Button
+                                variant="secondary"
+                                className="w-full"
+                                onClick={handleSync}
+                                disabled={syncProducts.isPending}
+                            >
+                                {syncProducts.isPending ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <RefreshCw className="w-4 h-4 mr-2" />
+                                )}
+                                Enviar Produtos para Nuvem
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </Card>
     );
 }

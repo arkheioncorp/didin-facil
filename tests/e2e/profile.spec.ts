@@ -6,7 +6,7 @@
 import { test, expect } from './fixtures';
 
 test.describe('Profile Flow', () => {
-  test.use({ storageState: '.auth/user.json' });
+  test.use({ storageState: 'tests/e2e/.auth/user.json' });
 
   // ============================================
   // PROFILE PAGE LOADING

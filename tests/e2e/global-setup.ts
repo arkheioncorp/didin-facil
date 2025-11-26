@@ -19,7 +19,7 @@ async function globalSetup(config: FullConfig) {
     fs.mkdirSync(authDir, { recursive: true });
   }
 
-  // Create empty auth file for unauthenticated tests
+  // Create empty auth file for unauthenticated tests (only if it doesn't exist)
   const emptyAuthPath = path.join(authDir, "user.json");
   if (!fs.existsSync(emptyAuthPath)) {
     fs.writeFileSync(
@@ -28,7 +28,7 @@ async function globalSetup(config: FullConfig) {
     );
   }
 
-  // Setup browser for authentication
+  // Setup browser to verify dev server
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -36,14 +36,22 @@ async function globalSetup(config: FullConfig) {
   try {
     // Wait for the dev server to be ready
     const baseURL = config.projects[0]?.use?.baseURL || "http://localhost:5173";
-    await page.goto(baseURL, { timeout: 30000 });
-    console.log(`✅ Dev server is ready at ${baseURL}`);
-
-    // Perform login for authenticated tests (if needed)
-    // This creates a logged-in state that can be reused
     
-    // Save storage state for authenticated tests
-    await context.storageState({ path: emptyAuthPath });
+    // Just verify the server is up, don't navigate to a specific page
+    let retries = 5;
+    while (retries > 0) {
+      try {
+        await page.goto(baseURL, { timeout: 10000 });
+        console.log(`✅ Dev server is ready at ${baseURL}`);
+        break;
+      } catch {
+        retries--;
+        if (retries === 0) throw new Error("Dev server not ready");
+        console.log(`⏳ Waiting for dev server... (${retries} retries left)`);
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+
     console.log("✅ Auth state saved");
   } catch (error) {
     console.error("❌ Global setup failed:", error);

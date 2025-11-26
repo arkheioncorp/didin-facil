@@ -51,7 +51,7 @@ class TikTokParser:
             # Last resort fallback
             try:
                 return await self._extract_from_dom(page)
-            except:
+            except Exception:
                 return []
     
     async def parse_product_detail(self, page: Page) -> Optional[dict]:

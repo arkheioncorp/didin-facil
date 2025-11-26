@@ -7,8 +7,7 @@ from contextlib import asynccontextmanager
 from typing import Any, Dict, List, Optional, Union
 
 from databases import Database
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.pool import QueuePool
+from sqlalchemy import MetaData
 
 from .config import settings
 

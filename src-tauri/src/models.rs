@@ -32,8 +32,21 @@ pub struct Product {
     pub is_trending: bool,
     pub is_on_sale: bool,
     pub in_stock: bool,
+    pub stock_level: Option<i32>,
     pub collected_at: String,
     pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "../src/types/tauri-bindings.ts")]
+pub struct ProductHistory {
+    pub id: String,
+    pub product_id: String,
+    pub price: f64,
+    pub sales_count: i32,
+    pub stock_level: Option<i32>,
+    pub collected_at: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
@@ -172,7 +185,9 @@ pub struct ScraperStatus {
     pub current_product: Option<String>,
     pub products_found: i32,
     pub errors: Vec<String>,
+    pub logs: Vec<String>,
     pub started_at: Option<String>,
+    pub status_message: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

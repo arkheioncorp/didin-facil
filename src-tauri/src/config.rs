@@ -53,7 +53,7 @@ pub struct AppSettings {
     pub openai_model: String,
     pub default_copy_type: String,
     pub default_copy_tone: String,
-    
+
     pub credentials: CredentialsConfig,
     pub scraper: ScraperConfig,
     pub license: LicenseConfig,
@@ -74,7 +74,7 @@ impl Default for AppSettings {
             openai_model: "gpt-4".to_string(),
             default_copy_type: "tiktok_hook".to_string(),
             default_copy_tone: "urgent".to_string(),
-            
+
             credentials: CredentialsConfig {
                 openai_key: "".to_string(),
                 proxies: Vec::new(),

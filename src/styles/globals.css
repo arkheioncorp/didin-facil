@@ -15,7 +15,7 @@
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 215.4 16.3% 36%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
@@ -23,29 +23,37 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 346 100% 50%;
-    --radius: 0.5rem;
+    --radius: 0.625rem;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+    --card: 224 71% 6%;
+    --card-foreground: 213 31% 91%;
+    --popover: 224 71% 6%;
+    --popover-foreground: 213 31% 91%;
     --primary: 346 100% 50%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 222 47% 11%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215 20.2% 55%;
+    --accent: 216 34% 17%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
     --ring: 346 100% 50%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
   }
 }
 
@@ -59,31 +67,48 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  
+  /* Melhoria #10: Tipografia consistente */
+  h1 {
+    @apply text-3xl font-bold tracking-tight;
+  }
+  h2 {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+  h3 {
+    @apply text-xl font-semibold;
+  }
+  h4 {
+    @apply text-lg font-medium;
+  }
 }
 
 @layer utilities {
-  /* Custom scrollbar */
+  /* Custom scrollbar - Melhoria visual */
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--muted)) transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
+    border-radius: 10px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.3);
-    border-radius: 3px;
+    background-color: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(var(--muted-foreground) / 0.5);
+    background-color: hsl(var(--muted-foreground) / 0.4);
   }
 
   /* Hide scrollbar */
@@ -96,19 +121,23 @@
     display: none;
   }
 
-  /* Gradient text */
+  /* Gradient text - Melhoria #6 */
   .gradient-text {
     @apply bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary bg-clip-text text-transparent;
   }
 
-  /* Glass effect */
+  /* Glass effect - Melhoria #9 */
   .glass {
-    @apply bg-background/80 backdrop-blur-sm;
+    @apply bg-background/80 backdrop-blur-md border border-white/10;
   }
 
-  /* Shimmer loading animation */
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-md shadow-xl shadow-black/5;
+  }
+
+  /* Melhoria #24: Shimmer loading animation aprimorado */
   .shimmer {
-    @apply relative overflow-hidden bg-muted;
+    @apply relative overflow-hidden bg-muted/50 rounded-md;
   }
 
   .shimmer::after {
@@ -117,15 +146,41 @@
     transform: translateX(-100%);
     background: linear-gradient(
       90deg,
-      transparent,
-      hsl(var(--background) / 0.4),
-      transparent
+      transparent 0%,
+      hsl(var(--background) / 0.3) 20%,
+      hsl(var(--background) / 0.6) 50%,
+      hsl(var(--background) / 0.3) 80%,
+      transparent 100%
     );
-    animation: shimmer 2s infinite;
+    animation: shimmer 1.5s infinite;
+  }
+  
+  /* Melhoria #1: Transições suaves nos cards */
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .card-hover:hover {
+    @apply -translate-y-1 shadow-lg shadow-black/10;
+  }
+  
+  /* Melhoria #7: Cursor pointer consistente */
+  .interactive {
+    @apply cursor-pointer select-none;
+  }
+  
+  /* Melhoria #27: Floating action button */
+  .fab {
+    @apply fixed bottom-6 right-6 z-50 shadow-lg shadow-tiktrend-primary/25 rounded-full;
+  }
+  
+  /* Melhoria #28: Success feedback animation */
+  .success-pulse {
+    animation: success-pulse 0.6s ease-out;
   }
 }
 
-/* Custom animations */
+/* Custom animations - Melhoria #5, #6, #26, #28 */
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
@@ -144,7 +199,7 @@
 @keyframes slide-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -152,10 +207,21 @@
   }
 }
 
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 @keyframes scale-in {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.9);
   }
   to {
     opacity: 1;
@@ -163,33 +229,323 @@
   }
 }
 
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes success-pulse {
+  0% {
+    box-shadow: 0 0 0 0 hsl(var(--success) / 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px hsl(var(--success) / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--success) / 0);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 .animate-fade-in {
-  animation: fade-in 0.2s ease-out;
+  animation: fade-in 0.3s ease-out;
 }
 
 .animate-slide-up {
-  animation: slide-up 0.3s ease-out;
+  animation: slide-up 0.4s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
 }
 
 .animate-scale-in {
   animation: scale-in 0.2s ease-out;
 }
 
-/* Product card hover effect */
+.animate-bounce-in {
+  animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Product card hover effect - Melhoria #1, #13 */
 .product-card {
-  @apply transition-all duration-200;
+  @apply transition-all duration-300 ease-out;
 }
 
 .product-card:hover {
-  @apply -translate-y-1 shadow-lg;
+  @apply -translate-y-2 shadow-xl shadow-black/10;
 }
 
-/* TikTok-style gradient background */
+.product-card:hover .product-actions {
+  @apply opacity-100 translate-y-0;
+}
+
+.product-actions {
+  @apply opacity-0 translate-y-2 transition-all duration-200;
+}
+
+/* TikTok-style gradient background - Melhoria #11 */
 .tiktrend-gradient {
   background: linear-gradient(135deg, #FF0050 0%, #00F2EA 100%);
 }
 
-/* Focus styles */
+.tiktrend-gradient-subtle {
+  background: linear-gradient(135deg, rgba(255, 0, 80, 0.1) 0%, rgba(0, 242, 234, 0.1) 100%);
+}
+
+.tiktrend-gradient-animated {
+  background: linear-gradient(-45deg, #FF0050, #FF0080, #00F2EA, #00D4FF);
+  background-size: 400% 400%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* Melhoria #12: Active indicator no sidebar */
+.nav-active {
+  @apply relative;
+}
+
+.nav-active::before {
+  content: "";
+  @apply absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-tiktrend-primary;
+}
+
+/* Melhoria #18: Avatar com borda gradiente */
+.avatar-gradient {
+  background: linear-gradient(135deg, #FF0050 0%, #00F2EA 100%);
+  padding: 3px;
+}
+
+.avatar-gradient > * {
+  @apply bg-background rounded-full;
+}
+
+/* Focus styles - Melhoria #8 */
 .focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
+  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-shadow;
+}
+
+.focus-visible-ring:focus-visible {
+  @apply ring-2 ring-primary ring-offset-2 ring-offset-background;
+}
+
+/* Melhoria #15: Empty states */
+.empty-state {
+  @apply flex flex-col items-center justify-center py-16 text-center;
+}
+
+.empty-state-icon {
+  @apply w-24 h-24 mb-6 text-muted-foreground/30;
+}
+
+.empty-state-title {
+  @apply text-xl font-semibold text-foreground mb-2;
+}
+
+.empty-state-description {
+  @apply text-muted-foreground max-w-sm;
+}
+
+/* Melhoria #19: Copy preview style */
+.copy-preview {
+  @apply relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 text-white;
+}
+
+.copy-preview::before {
+  content: "";
+  @apply absolute inset-0 rounded-xl bg-gradient-to-r from-tiktrend-primary/20 to-tiktrend-secondary/20 opacity-50;
+}
+
+/* Melhoria #20: Pagination moderna */
+.pagination-dot {
+  @apply w-2 h-2 rounded-full bg-muted transition-all duration-200;
+}
+
+.pagination-dot.active {
+  @apply w-8 bg-tiktrend-primary;
+}
+
+/* Melhoria #25: Toast melhorado */
+.toast-success {
+  @apply border-l-4 border-l-green-500 bg-green-50 dark:bg-green-950/50;
+}
+
+.toast-error {
+  @apply border-l-4 border-l-red-500 bg-red-50 dark:bg-red-950/50;
+}
+
+.toast-warning {
+  @apply border-l-4 border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/50;
+}
+
+/* Melhoria #21: Onboarding spotlight */
+.spotlight {
+  @apply relative;
+}
+
+.spotlight::after {
+  content: "";
+  @apply absolute -inset-2 rounded-xl border-2 border-dashed border-tiktrend-primary animate-pulse pointer-events-none;
+}
+
+/* Melhoria #30: Mobile improvements */
+@media (max-width: 768px) {
+  .mobile-full {
+    @apply w-full;
+  }
+  
+  .mobile-stack {
+    @apply flex-col;
+  }
+  
+  .mobile-hide {
+    @apply hidden;
+  }
+  
+  .mobile-card {
+    @apply rounded-none border-x-0;
+  }
+  
+  /* Touch-friendly sizing */
+  .mobile-touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Mobile-optimized spacing */
+  .container {
+    @apply px-4;
+  }
+  
+  /* Bottom safe area for mobile */
+  .mobile-safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  /* Mobile floating action button */
+  .fab {
+    @apply bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-4;
+  }
+  
+  /* Mobile scroll improvements */
+  .mobile-scroll-x {
+    @apply overflow-x-auto -mx-4 px-4;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  
+  .mobile-scroll-x::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Smaller screens */
+@media (max-width: 480px) {
+  .xs-full {
+    @apply w-full;
+  }
+  
+  .xs-stack {
+    @apply flex-col space-y-2;
+  }
+  
+  .xs-text-center {
+    @apply text-center;
+  }
+  
+  /* Compact cards on small screens */
+  .product-card {
+    @apply p-3;
+  }
+  
+  /* Larger touch targets on small screens */
+  button,
+  [role="button"],
+  a {
+    @apply min-h-[40px];
+  }
+}
+
+/* Tablet improvements */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-cols-2 {
+    @apply grid-cols-2;
+  }
+  
+  .tablet-hide {
+    @apply hidden;
+  }
+}
+
+/* Prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode improvements */
+@media (prefers-contrast: high) {
+  .tiktrend-gradient {
+    background: #FF0050;
+  }
+  
+  .text-muted-foreground {
+    @apply text-foreground;
+  }
 }

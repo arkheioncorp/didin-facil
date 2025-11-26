@@ -32,6 +32,9 @@ class SecurityMonitor:
     @staticmethod
     def check_debugger() -> bool:
         """Check if the application is being debugged"""
+        if os.environ.get("ALLOW_DEBUGGER", "false").lower() == "true":
+            return False
+
         # Check sys.gettrace
         if sys.gettrace() is not None:
             return True

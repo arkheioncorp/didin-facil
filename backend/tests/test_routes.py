@@ -7,7 +7,6 @@ import pytest
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import HTTPException
-from fastapi.testclient import TestClient
 
 # ==========================================
 # COPY ROUTES TESTS
@@ -99,7 +98,7 @@ class TestCopyRoutes:
                     result = await generate_copy(request, mock_user)
                     
                     assert result.copy_text == "📦 Produto incrível!"
-                    assert result.cached == False
+                    assert not result.cached
                     assert result.quota_remaining == 49
     
     @pytest.mark.asyncio
@@ -147,7 +146,7 @@ class TestCopyRoutes:
                 
                 result = await generate_copy(request, mock_user)
                 
-                assert result.cached == True
+                assert result.cached
                 assert result.quota_remaining == 50
     
     @pytest.mark.asyncio
@@ -348,7 +347,7 @@ class TestLicenseRoutes:
             
             result = await validate_license(request)
             
-            assert result.valid == True
+            assert result.valid
             assert result.plan == "pro"
             assert result.jwt == "jwt_token"
     
@@ -600,7 +599,7 @@ class TestLicenseRoutes:
             
             result = await get_license_status(mock_user)
             
-            assert result["has_license"] == True
+            assert result["has_license"]
             assert result["plan"] == "pro"
             assert result["devices"]["active"] == 2
     
@@ -617,7 +616,7 @@ class TestLicenseRoutes:
             
             result = await get_license_status(mock_user)
             
-            assert result["has_license"] == False
+            assert not result["has_license"]
             assert result["plan"] == "free"
     
     @pytest.mark.asyncio
@@ -656,7 +655,7 @@ class TestWebhooksRoutes:
             
             # Note: Real signature verification would need proper HMAC
             result = verify_mercadopago_signature(b"body", None, "req_id")
-            assert result == False  # No signature provided
+            assert not result  # No signature provided
     
     @pytest.mark.asyncio
     async def test_verify_signature_missing(self):
@@ -667,7 +666,7 @@ class TestWebhooksRoutes:
             mock_settings.MERCADO_PAGO_WEBHOOK_SECRET = "test_secret"
             
             result = verify_mercadopago_signature(b"body", None, "req_id")
-            assert result == False
+            assert not result
     
     @pytest.mark.asyncio
     async def test_handle_payment_approved(self):

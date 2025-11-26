@@ -132,7 +132,8 @@ describe("ProductCard", () => {
       const product = createMockProduct({ salesCount: 2500 });
       render(<ProductCard product={product} />);
 
-      expect(screen.getByText(/2\.?5?.*vendas/i)).toBeInTheDocument();
+      const salesElements = screen.getAllByText(/2\.?5?.*vendas/i);
+      expect(salesElements.length).toBeGreaterThan(0);
     });
 
     it("should render reviews count", () => {

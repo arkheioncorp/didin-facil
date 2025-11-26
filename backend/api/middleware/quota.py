@@ -3,13 +3,10 @@ Quota Management Middleware
 User quota validation and enforcement
 """
 
-import os
 from datetime import datetime, timedelta
-from typing import Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException
 
-from api.database.connection import database
 
 
 class QuotaExceededError(Exception):

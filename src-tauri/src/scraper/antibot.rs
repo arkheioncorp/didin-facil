@@ -1,10 +1,10 @@
 // Anti-Detection Module
 // Browser fingerprint randomization and stealth techniques
 
+use anyhow::Result;
 use chromiumoxide::Page;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use anyhow::Result;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Fingerprint {
@@ -31,14 +31,12 @@ impl AntiDetection {
 
     pub fn generate_fingerprint(&self) -> Fingerprint {
         let mut rng = rand::thread_rng();
-        
+
         let user_agents = vec![
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            // Transparent User-Agent for ethical scraping
+            "Mozilla/5.0 (compatible; TikTrendFinder/1.0; +https://tiktrendfinder.com/bot) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
         ];
-        
+
         let screens = vec![
             (1920, 1080),
             (1366, 768),
@@ -46,20 +44,27 @@ impl AntiDetection {
             (1440, 900),
             (2560, 1440),
         ];
-        
+
         let screen_idx = rng.gen_range(0..screens.len());
         let screen = screens[screen_idx];
-        
+
         let ua_idx = rng.gen_range(0..user_agents.len());
         let user_agent = user_agents[ua_idx].to_string();
-        
+
         Fingerprint {
             user_agent: user_agent.clone(),
             screen_width: screen.0,
             screen_height: screen.1,
             locale: "pt-BR".to_string(),
             timezone: "America/Sao_Paulo".to_string(),
-            platform: if user_agent.contains("Windows") { "Win32" } else if user_agent.contains("Mac") { "MacIntel" } else { "Linux x86_64" }.to_string(),
+            platform: if user_agent.contains("Windows") {
+                "Win32"
+            } else if user_agent.contains("Mac") {
+                "MacIntel"
+            } else {
+                "Linux x86_64"
+            }
+            .to_string(),
             vendor: "Google Inc.".to_string(),
             webgl_vendor: "Google Inc. (NVIDIA)".to_string(),
             webgl_renderer: "ANGLE (NVIDIA GeForce GTX 1080 Direct3D11 vs_5_0 ps_5_0)".to_string(),
@@ -69,12 +74,17 @@ impl AntiDetection {
         }
     }
 
-    pub async fn inject_stealth_scripts(&self, page: &Page, fingerprint: Option<&Fingerprint>) -> Result<()> {
+    pub async fn inject_stealth_scripts(
+        &self,
+        page: &Page,
+        fingerprint: Option<&Fingerprint>,
+    ) -> Result<()> {
         // Main stealth script
         page.evaluate(Self::get_stealth_script()).await?;
-        
+
         if let Some(fp) = fingerprint {
-            let script = format!(r#"
+            let script = format!(
+                r#"
                 Object.defineProperty(navigator, 'userAgent', {{ get: () => '{}' }});
                 Object.defineProperty(navigator, 'platform', {{ get: () => '{}' }});
                 Object.defineProperty(navigator, 'language', {{ get: () => '{}' }});
@@ -83,14 +93,27 @@ impl AntiDetection {
                 Object.defineProperty(screen, 'height', {{ get: () => {} }});
                 Object.defineProperty(navigator, 'hardwareConcurrency', {{ get: () => {} }});
                 Object.defineProperty(navigator, 'deviceMemory', {{ get: () => {} }});
-            "#, 
-            fp.user_agent, fp.platform, fp.locale, fp.locale,
-            fp.screen_width, fp.screen_height,
-            fp.hardware_concurrency, fp.device_memory);
-            
+                Object.defineProperty(navigator, 'webdriver', {{ get: () => false }});
+                // Mock plugins to look like a regular browser
+                Object.defineProperty(navigator, 'plugins', {{ get: () => [
+                    {{ name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' }},
+                    {{ name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' }},
+                    {{ name: 'Native Client', filename: 'internal-nacl-plugin', description: '' }}
+                ] }});
+            "#,
+                fp.user_agent,
+                fp.platform,
+                fp.locale,
+                fp.locale,
+                fp.screen_width,
+                fp.screen_height,
+                fp.hardware_concurrency,
+                fp.device_memory
+            );
+
             page.evaluate(script).await?;
         }
-        
+
         log::debug!("Injected stealth scripts");
         Ok(())
     }

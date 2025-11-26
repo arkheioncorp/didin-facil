@@ -4,7 +4,6 @@ Backup scraper when TikTok scraping fails
 """
 
 import asyncio
-import random
 import re
 import uuid
 import hashlib
@@ -13,7 +12,7 @@ from typing import List, Optional
 
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page
 
-from ..config import ScraperConfig, USER_AGENTS
+from ..config import ScraperConfig
 from ..utils.proxy import ProxyPool
 
 

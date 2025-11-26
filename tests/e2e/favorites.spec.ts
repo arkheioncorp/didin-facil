@@ -8,7 +8,7 @@ import { FavoritesPage } from './pages/FavoritesPage';
 import { ProductsPage } from './pages/ProductsPage';
 
 test.describe('Favorites Management Flow', () => {
-  test.use({ storageState: '.auth/user.json' }); // Use authenticated state
+  test.use({ storageState: 'tests/e2e/.auth/user.json' }); // Use authenticated state
 
   // ============================================
   // ADDING FAVORITES TESTS

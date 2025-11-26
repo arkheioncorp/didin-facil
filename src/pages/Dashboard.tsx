@@ -10,34 +10,114 @@ import type { DashboardStats } from "@/types";
 import type { SearchHistoryItem } from "@/types";
 import { useNavigate } from "react-router-dom";
 
+// Melhoria #22: Mini sparkline chart component
+const MiniSparkline: React.FC<{ data: number[]; color?: string; height?: number }> = ({
+  data,
+  color = "var(--tiktrend-primary)",
+  height = 32
+}) => {
+  if (data.length < 2) return null;
+
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+
+  const points = data.map((value, i) => {
+    const x = (i / (data.length - 1)) * 100;
+    const y = height - ((value - min) / range) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  const areaPoints = `0,${height} ${points} 100,${height}`;
+
+  return (
+    <svg viewBox={`0 0 100 ${height}`} className="w-full h-8 overflow-visible" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="sparklineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon
+        points={areaPoints}
+        fill="url(#sparklineGradient)"
+      />
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+      {/* Last point indicator */}
+      <circle
+        cx="100"
+        cy={height - ((data[data.length - 1] - min) / range) * height}
+        r="3"
+        fill={color}
+        className="animate-pulse"
+      />
+    </svg>
+  );
+};
+
+// Melhoria #4, #11: StatCard com gradiente e melhor espaçamento
 const StatCard: React.FC<{
   title: string;
   value: string | number;
   description?: string;
   icon: React.ReactNode;
   trend?: { value: number; isPositive: boolean };
+  sparklineData?: number[];
   isLoading?: boolean;
-}> = ({ title, value, description, icon, trend, isLoading }) => (
-  <Card data-testid="stats-card">
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      <div className="h-8 w-8 rounded-lg bg-tiktrend-primary/10 flex items-center justify-center text-tiktrend-primary">
+  gradient?: boolean;
+  delay?: number;
+}> = ({ title, value, description, icon, trend, sparklineData, isLoading, gradient, delay = 0 }) => (
+  <Card
+    data-testid="stats-card"
+    className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${gradient ? 'bg-gradient-to-br from-tiktrend-primary/5 via-transparent to-tiktrend-secondary/5' : ''}`}
+    style={{ animationDelay: `${delay}ms` }}
+  >
+    {/* Decorative gradient blob */}
+    {gradient && (
+      <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-tiktrend-primary/10 to-tiktrend-secondary/10 rounded-full blur-2xl" />
+    )}
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+      <CardTitle data-testid="stat-label" className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-tiktrend-primary/10 to-tiktrend-secondary/10 flex items-center justify-center text-tiktrend-primary shadow-sm">
         {icon}
       </div>
     </CardHeader>
     <CardContent>
       {isLoading ? (
-        <Skeleton className="h-8 w-24" />
+        <Skeleton className="h-9 w-28" />
       ) : (
-        <div className="text-2xl font-bold">{typeof value === 'number' ? value.toLocaleString("pt-BR") : value}</div>
+        <div data-testid="stat-value" className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+          {typeof value === 'number' ? value.toLocaleString("pt-BR") : value}
+        </div>
       )}
       {description && (
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
+        <p className="text-sm text-muted-foreground mt-1.5">{description}</p>
+      )}
+      {/* Melhoria #22: Sparkline trend chart */}
+      {sparklineData && sparklineData.length > 1 && (
+        <div className="mt-3 opacity-70">
+          <MiniSparkline
+            data={sparklineData}
+            color={trend?.isPositive ? "rgb(34, 197, 94)" : trend?.isPositive === false ? "rgb(239, 68, 68)" : "hsl(var(--tiktrend-primary))"}
+          />
+        </div>
       )}
       {trend && (
-        <div className="flex items-center gap-1 mt-2">
-          <Badge variant={trend.isPositive ? "success" : "destructive"}>
-            {trend.isPositive ? "+" : ""}{trend.value}%
+        <div className="flex items-center gap-2 mt-3">
+          <Badge
+            variant={trend.isPositive ? "success" : "destructive"}
+            size="sm"
+            className="font-medium"
+          >
+            {trend.isPositive ? "↑" : "↓"} {Math.abs(trend.value)}%
           </Badge>
           <span className="text-xs text-muted-foreground">vs última semana</span>
         </div>
@@ -91,158 +171,232 @@ export const Dashboard: React.FC = () => {
   const handleCopy = () => navigate("/copy");
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="flex flex-col gap-2" data-testid="welcome-message">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Bem-vindo ao TikTrend Finder! Encontre os produtos mais vendidos do TikTok Shop.
-        </p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Welcome Section - Melhoria #21: Onboarding visual */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" data-testid="welcome-message">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Bem-vindo ao TikTrend Finder! Encontre os produtos mais vendidos do TikTok Shop.
+          </p>
+        </div>
+        {/* Quick action pill - Melhoria #21 */}
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-tiktrend-primary/10 to-tiktrend-secondary/10 border border-tiktrend-primary/20">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-tiktrend-primary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-tiktrend-primary"></span>
+          </span>
+          <span className="text-sm font-medium text-tiktrend-primary">Pronto para buscar</span>
+        </div>
       </div>
 
       {error && (
-        <Card className="border-destructive">
-          <CardContent className="pt-4">
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="pt-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+              <span className="text-destructive text-lg">!</span>
+            </div>
             <p className="text-destructive text-sm">{error}</p>
           </CardContent>
         </Card>
       )}
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Grid - Melhoria #4, #11 */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Produtos Coletados"
           value={stats?.totalProducts ?? 0}
           description="Total na base de dados"
-          icon={<ProductsIcon size={18} />}
+          icon={<ProductsIcon size={20} />}
           isLoading={isLoading}
+          delay={0}
         />
         <StatCard
           title="Em Alta"
           value={stats?.trendingProducts ?? 0}
           description="Produtos trending agora"
-          icon={<TrendingIcon size={18} />}
+          icon={<TrendingIcon size={20} />}
           trend={{ value: 12, isPositive: true }}
+          sparklineData={[15, 23, 18, 35, 42, 38, 52]}
           isLoading={isLoading}
+          gradient
+          delay={50}
         />
         <StatCard
           title="Favoritos"
           value={stats?.favoriteCount ?? 0}
           description="Salvos para análise"
-          icon={<FavoritesIcon size={18} />}
+          icon={<FavoritesIcon size={20} />}
+          sparklineData={[8, 12, 10, 15, 14, 18, 22]}
           isLoading={isLoading}
+          delay={100}
         />
         <StatCard
           title="Copies Geradas"
           value={stats?.copiesGenerated ?? 0}
           description="Textos criados com IA"
-          icon={<SparkleIcon size={18} />}
+          icon={<SparkleIcon size={20} />}
           isLoading={isLoading}
+          delay={150}
         />
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="col-span-2" data-testid="quick-actions">
-          <CardHeader>
-            <CardTitle>Ações Rápidas</CardTitle>
+      {/* Quick Actions - Melhoria visual */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="col-span-full lg:col-span-2 overflow-hidden" data-testid="quick-actions">
+          <div className="absolute inset-0 bg-gradient-to-br from-tiktrend-primary/5 via-transparent to-tiktrend-secondary/5" />
+          <CardHeader className="relative">
+            <CardTitle className="flex items-center gap-2">
+              <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-tiktrend-primary to-tiktrend-secondary flex items-center justify-center text-white text-sm">
+                ⚡
+              </span>
+              Ações Rápidas
+            </CardTitle>
             <CardDescription>
               Comece sua pesquisa de produtos ou gere copies para vendas
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex gap-3 flex-wrap">
-            <Button variant="tiktrend" className="gap-2" onClick={handleSearch}>
-              <SearchIcon size={16} />
+          <CardContent className="relative flex gap-3 flex-wrap">
+            <Button variant="tiktrend" size="lg" className="gap-2 shadow-lg" onClick={handleSearch} data-testid="quick-search-btn" data-action="new-search">
+              <SearchIcon size={18} />
               Nova Busca
             </Button>
-            <Button variant="outline" className="gap-2" onClick={handleTrending}>
-              <TrendingIcon size={16} />
+            <Button variant="outline" size="lg" className="gap-2" onClick={handleTrending} data-testid="quick-trending-btn" data-action="trending">
+              <TrendingIcon size={18} />
               Ver Trending
             </Button>
-            <Button variant="outline" className="gap-2" onClick={handleCopy}>
-              <SparkleIcon size={16} />
+            <Button variant="outline" size="lg" className="gap-2" onClick={handleCopy} data-testid="quick-copy-btn" data-action="generate-copy">
+              <SparkleIcon size={18} />
               Gerar Copy
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* Scraper Control */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* Scraper Control & Categories */}
+      <div className="grid gap-6 md:grid-cols-3">
         <ScraperControl />
 
-        <Card data-testid="trending-products">
+        <Card data-testid="trending-products" className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Top Categorias</CardTitle>
-            <CardDescription>Mais produtos coletados</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-tiktrend-primary animate-pulse" />
+              Top Categorias
+            </CardTitle>
+            <CardDescription>Categorias com mais produtos coletados</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-6 w-full" />
+                  <div key={i} className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                    <Skeleton className="h-4 flex-1" />
+                    <Skeleton className="h-6 w-12 rounded-full" />
+                  </div>
                 ))}
               </div>
             ) : stats?.topCategories && stats.topCategories.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {stats.topCategories.map((category, index) => (
-                  <div key={category.name} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {index + 1}.
+                  <div
+                    key={category.name}
+                    className="flex items-center justify-between p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-tiktrend-primary/20 to-tiktrend-secondary/20 flex items-center justify-center text-sm font-bold text-tiktrend-primary">
+                        {index + 1}
                       </span>
-                      <span className="text-sm">{category.name}</span>
+                      <span className="font-medium group-hover:text-tiktrend-primary transition-colors">{category.name}</span>
                     </div>
-                    <Badge variant="secondary">{category.count}</Badge>
+                    <Badge variant="secondary" className="font-mono">{category.count}</Badge>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Nenhuma categoria encontrada
-              </p>
+              <div className="empty-state py-8">
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4 mx-auto">
+                  <TrendingIcon size={24} className="text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground">Nenhuma categoria encontrada</p>
+                <p className="text-sm text-muted-foreground/60 mt-1">Execute o scraper para coletar produtos</p>
+              </div>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Recent Activity */}
-      <Card data-testid="recent-products">
-        <CardHeader>
-          <CardTitle>Atividade Recente</CardTitle>
-          <CardDescription>
-            Suas últimas buscas e ações na plataforma
-          </CardDescription>
+      {/* Recent Activity - Melhoria #15: Empty states melhorados */}
+      <Card data-testid="recent-products" className="overflow-hidden">
+        <CardHeader className="border-b bg-muted/30">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Atividade Recente</CardTitle>
+              <CardDescription>
+                Suas últimas buscas e ações na plataforma
+              </CardDescription>
+            </div>
+            {searchHistory.length > 0 && (
+              <Badge variant="secondary" className="font-mono">{searchHistory.length}</Badge>
+            )}
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-12 w-full" />
+                <div key={i} className="flex items-center gap-4 p-3">
+                  <Skeleton className="h-10 w-10 rounded-xl" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-3 w-1/4" />
+                  </div>
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </div>
               ))}
             </div>
           ) : searchHistory.length > 0 ? (
-            <div className="space-y-3">
-              {searchHistory.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-3">
-                    <SearchIcon size={16} className="text-muted-foreground" />
+            <div className="space-y-2">
+              {searchHistory.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all cursor-pointer group animate-slide-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-tiktrend-primary/10 to-tiktrend-secondary/10 flex items-center justify-center text-tiktrend-primary group-hover:scale-110 transition-transform">
+                      <SearchIcon size={18} />
+                    </div>
                     <div>
-                      <p className="text-sm font-medium">{item.query || "Busca sem termo"}</p>
-                      <div className="text-xs text-muted-foreground">
-                        {item.resultsCount} resultados • {new Date(item.searchedAt).toLocaleDateString("pt-BR")}
-                      </div>
+                      <p className="font-medium group-hover:text-tiktrend-primary transition-colors">
+                        {item.query || "Busca sem termo"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {item.resultsCount} resultados • {new Date(item.searchedAt).toLocaleDateString("pt-BR", { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </p>
                     </div>
                   </div>
-                  <Badge variant="outline">{item.resultsCount}</Badge>
+                  <Badge variant="outline" className="font-mono group-hover:border-tiktrend-primary group-hover:text-tiktrend-primary transition-colors">
+                    {item.resultsCount}
+                  </Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <SearchIcon size={48} className="mx-auto mb-4 opacity-50" />
-              <p>Nenhuma atividade recente</p>
-              <p className="text-sm">Faça sua primeira busca para ver resultados aqui</p>
+            <div className="empty-state py-12">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-tiktrend-primary/10 to-tiktrend-secondary/10 flex items-center justify-center mb-6 mx-auto">
+                <SearchIcon size={32} className="text-tiktrend-primary/50" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Nenhuma atividade recente</h3>
+              <p className="text-muted-foreground max-w-sm mx-auto">
+                Faça sua primeira busca para ver os resultados aqui
+              </p>
+              <Button variant="tiktrend" className="mt-6" onClick={handleSearch}>
+                <SearchIcon size={16} className="mr-2" />
+                Começar Busca
+              </Button>
             </div>
           )}
         </CardContent>

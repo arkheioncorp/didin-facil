@@ -10,7 +10,6 @@ from fastapi import APIRouter, Depends, Query, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
 
 from api.middleware.auth import get_current_user
-from api.middleware.quota import check_quota
 from api.services.cache import CacheService
 from api.services.scraper import ScraperOrchestrator
 

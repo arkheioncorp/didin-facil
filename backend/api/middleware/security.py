@@ -1,7 +1,6 @@
-from fastapi import Request, HTTPException, status
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 import os
-import secrets
 
 # Generate a session secret if not provided (fallback)
 # In production, this should be passed from the Tauri app via env vars

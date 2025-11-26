@@ -10,6 +10,8 @@ coverage/
 
 # Python
 __pycache__/
+.ruff_cache/
+.mypy_cache/
 *.py[cod]
 *$py.class
 venv/
@@ -19,6 +21,7 @@ env/
 *.log
 
 # Rust / Tauri
+target/
 src-tauri/target/
 src-tauri/gen/
 src-tauri/Cargo.lock
@@ -37,4 +40,8 @@ Thumbs.db
 playwright-report/
 test-results/
 *_output.txt
+stats.html
 
+
+*storybook.log
+storybook-static

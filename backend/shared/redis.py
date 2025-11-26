@@ -5,9 +5,8 @@ Async Redis connection pool and utilities
 
 import asyncio
 from contextlib import asynccontextmanager
-from typing import Optional, Union
+from typing import Optional
 
-import redis.asyncio as redis
 from redis.asyncio import ConnectionPool, Redis
 
 from .config import settings

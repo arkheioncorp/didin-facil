@@ -7,7 +7,6 @@ import os
 import json
 import hashlib
 from typing import Any, Optional
-from datetime import timedelta
 
 import redis.asyncio as aioredis
 

@@ -3,11 +3,9 @@ Webhooks Routes
 Mercado Pago payment webhooks and other integrations
 """
 
-import os
 import hmac
 import hashlib
 import json
-from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Request, HTTPException, status, Header
 from pydantic import BaseModel
@@ -262,8 +260,9 @@ def verify_mercadopago_signature(
         manifest = f"id:{request_id};request-id:{request_id};ts:{ts};"
         
         # Calculate expected signature
+        secret = settings.MERCADOPAGO_WEBHOOK_SECRET or "dev-secret"
         expected = hmac.new(
-            MP_WEBHOOK_SECRET.encode(),
+            secret.encode(),
             manifest.encode(),
             hashlib.sha256
         ).hexdigest()

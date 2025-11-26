@@ -8,7 +8,7 @@ import { SearchPage } from './pages/SearchPage';
 import { ProductsPage } from './pages/ProductsPage';
 
 test.describe('Search and Filtering Flow', () => {
-  test.use({ storageState: '.auth/user.json' }); // Use authenticated state
+  test.use({ storageState: 'tests/e2e/.auth/user.json' }); // Use authenticated state
 
   // ============================================
   // SEARCH TESTS

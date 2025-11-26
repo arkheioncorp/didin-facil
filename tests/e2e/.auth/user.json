@@ -5,8 +5,28 @@
       "origin": "http://localhost:5173",
       "localStorage": [
         {
+          "name": "i18nextLng",
+          "value": "pt-BR"
+        },
+        {
           "name": "tiktrend-user",
-          "value": "{\"state\":{\"user\":{\"id\":\"user_1764129274941\",\"email\":\"test@example.com\",\"name\":\"test\",\"plan\":\"trial\",\"planExpiresAt\":\"2025-12-03T03:54:34.941Z\",\"createdAt\":\"2025-11-26T03:54:34.941Z\"},\"license\":{\"isValid\":true,\"plan\":\"trial\",\"features\":{\"searchesPerMonth\":10,\"copiesPerMonth\":5,\"favoriteLists\":1,\"exportEnabled\":false,\"schedulerEnabled\":false},\"expiresAt\":\"2025-12-03T03:54:34.941Z\",\"usageThisMonth\":{\"searches\":0,\"copies\":0}},\"isAuthenticated\":true,\"theme\":\"system\"},\"version\":0}"
+          "value": "{\"state\":{\"user\":{\"id\":\"user_1764194553190\",\"email\":\"test@example.com\",\"name\":\"test\",\"plan\":\"trial\",\"planExpiresAt\":\"2025-12-03T22:02:33.190Z\",\"createdAt\":\"2025-11-26T22:02:33.190Z\"},\"license\":{\"isValid\":true,\"plan\":\"trial\",\"features\":{\"searchesPerMonth\":10,\"copiesPerMonth\":5,\"favoriteLists\":1,\"exportEnabled\":false,\"schedulerEnabled\":false},\"expiresAt\":\"2025-12-03T22:02:33.190Z\",\"usageThisMonth\":{\"searches\":0,\"copies\":0}},\"isAuthenticated\":true,\"theme\":\"system\"},\"version\":0}"
+        },
+        {
+          "name": "scraper_max_products",
+          "value": "50"
+        },
+        {
+          "name": "scraper_headless",
+          "value": "true"
+        },
+        {
+          "name": "tutorial_completed",
+          "value": "true"
+        },
+        {
+          "name": "scraper_categories",
+          "value": "[\"trending\"]"
         }
       ]
     }

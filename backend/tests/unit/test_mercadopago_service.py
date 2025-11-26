@@ -6,7 +6,6 @@ Tests for payment processing and subscription management
 import pytest
 import httpx
 from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime
 
 import sys
 import os

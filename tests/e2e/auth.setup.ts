@@ -18,18 +18,28 @@ setup("authenticate", async ({ page }) => {
   // Wait for the page to load
   await expect(page).toHaveTitle(/TikTrend/i);
 
-  // Fill in login form
-  await page.fill('[data-testid="email-input"]', "test@example.com");
-  await page.fill('[data-testid="password-input"]', "password123");
+  // Check if we're already on login page or redirected to dashboard
+  const isLoginPage = await page.locator('[data-testid="email-input"]').isVisible({ timeout: 3000 }).catch(() => false);
 
-  // Submit the form
-  await page.click('[data-testid="login-button"]');
+  if (isLoginPage) {
+    // Fill in login form
+    await page.fill('[data-testid="email-input"]', "test@example.com");
+    await page.fill('[data-testid="password-input"]', "password123");
 
-  // Wait for navigation to dashboard
-  await page.waitForURL("**/", { timeout: 10000 });
+    // Submit the form
+    await page.click('[data-testid="login-button"]');
+
+    // Wait for navigation to dashboard
+    await page.waitForURL("**/", { timeout: 10000 });
+  }
 
   // Verify we're logged in
-  await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
+  await expect(page.locator('[data-testid="user-menu"]')).toBeVisible({ timeout: 10000 });
+
+  // Mark tutorial as completed to prevent it from blocking tests
+  await page.evaluate(() => {
+    localStorage.setItem('tutorial_completed', 'true');
+  });
 
   // Save storage state
   await page.context().storageState({ path: authFile });

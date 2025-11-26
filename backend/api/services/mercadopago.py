@@ -4,8 +4,6 @@ Payment processing and subscription management
 """
 
 import uuid
-from datetime import datetime
-from typing import Optional
 
 import httpx
 

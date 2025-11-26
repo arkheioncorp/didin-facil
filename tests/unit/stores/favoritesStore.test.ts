@@ -471,21 +471,23 @@ describe('FavoritesStore', () => {
   });
 
   describe('Persistence', () => {
-    it('should persist favorites to localStorage', () => {
+    it('should persist favorites to localStorage', async () => {
       const product = createMockProduct({ id: 'product-1' });
 
       act(() => {
         useFavoritesStore.getState().addFavorite(product);
       });
-
+      
+      await new Promise(resolve => setTimeout(resolve, 0));
       expect(localStorageMock.setItem).toHaveBeenCalled();
     });
 
-    it('should persist collections to localStorage', () => {
+    it('should persist collections to localStorage', async () => {
       act(() => {
         useFavoritesStore.getState().createCollection('Test Collection');
       });
 
+      await new Promise(resolve => setTimeout(resolve, 0));
       expect(localStorageMock.setItem).toHaveBeenCalled();
     });
   });

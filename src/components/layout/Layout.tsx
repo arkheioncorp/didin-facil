@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { Tutorial } from "@/components/Tutorial";
 
 interface LayoutProps {
   children?: React.ReactNode;
@@ -22,6 +23,7 @@ export const Layout: React.FC<LayoutProps> = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Tutorial />
       {/* Sidebar - Hidden on mobile, visible on desktop */}
       <div className="hidden lg:block">
         <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />

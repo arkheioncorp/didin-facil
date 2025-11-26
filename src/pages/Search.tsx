@@ -197,6 +197,7 @@ export const Search: React.FC = () => {
             </div>
 
             {/* Price Range */}
+            {/* Melhoria #14: Price Range visual */}
             <div>
               <h4 className="text-sm font-medium mb-3">Faixa de Preço (R$)</h4>
               <div className="flex gap-2">
@@ -205,14 +206,15 @@ export const Search: React.FC = () => {
                   placeholder="Mín"
                   value={priceMin}
                   onChange={(e) => setPriceMin(e.target.value)}
-                  className="w-full"
+                  className="w-full text-center"
                 />
+                <span className="text-muted-foreground self-center">—</span>
                 <Input
                   type="number"
                   placeholder="Máx"
                   value={priceMax}
                   onChange={(e) => setPriceMax(e.target.value)}
-                  className="w-full"
+                  className="w-full text-center"
                 />
               </div>
             </div>
@@ -228,7 +230,8 @@ export const Search: React.FC = () => {
               />
             </div>
 
-            <Button variant="tiktrend" className="w-full" onClick={handleSearch}>
+            <Button variant="tiktrend" className="w-full gap-2" onClick={handleSearch}>
+              <SearchIcon size={16} />
               Aplicar Filtros
             </Button>
           </CardContent>
@@ -236,19 +239,22 @@ export const Search: React.FC = () => {
 
         {/* Main Content Area */}
         <div className="lg:col-span-3 space-y-6">
-          {/* Search History */}
+          {/* Search History - Melhoria visual */}
           {searchHistory.length > 0 && !hasSearched && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Buscas Recentes</CardTitle>
+            <Card className="border-dashed">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-sm">🕐</span>
+                  Buscas Recentes
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {searchHistory.slice(0, 8).map((term, index) => (
                     <Badge
                       key={index}
-                      variant="secondary"
-                      className="cursor-pointer hover:bg-secondary/80"
+                      variant="outline"
+                      className="cursor-pointer hover:bg-accent hover:border-tiktrend-primary transition-all px-3 py-1.5"
                       onClick={() => handleQuickSearch(term)}
                     >
                       {term}
@@ -259,71 +265,101 @@ export const Search: React.FC = () => {
             </Card>
           )}
 
-          {/* Error State */}
+          {/* Error State - Melhoria #15 */}
           {error && (
-            <Card className="border-destructive">
-              <CardContent className="pt-4">
+            <Card className="border-destructive/50 bg-destructive/5">
+              <CardContent className="pt-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                  <span className="text-destructive text-lg">!</span>
+                </div>
                 <p className="text-destructive text-sm">{error}</p>
               </CardContent>
             </Card>
           )}
 
-          {/* Loading State */}
+          {/* Loading State - Melhoria #24 */}
           {isSearching && (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Card key={i}>
-                  <CardContent className="p-4">
-                    <Skeleton className="h-40 w-full mb-4" />
-                    <Skeleton className="h-4 w-3/4 mb-2" />
+                <Card key={i} className="overflow-hidden">
+                  <Skeleton className="aspect-square" />
+                  <CardContent className="p-4 space-y-3">
+                    <Skeleton className="h-4 w-3/4" />
                     <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-6 w-1/3" />
                   </CardContent>
                 </Card>
               ))}
             </div>
           )}
 
-          {/* Results */}
+          {/* Results - Melhoria visual */}
           {!isSearching && hasSearched && searchResults.length > 0 && (
             <>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {totalResults.toLocaleString("pt-BR")} produtos encontrados
+              <div className="flex items-center justify-between bg-muted/50 rounded-xl px-4 py-3">
+                <p className="text-sm font-medium">
+                  <span className="text-tiktrend-primary font-bold">{totalResults.toLocaleString("pt-BR")}</span>
+                  {" "}produtos encontrados
                 </p>
+                <Badge variant="success" dot>Atualizado agora</Badge>
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {searchResults.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                {searchResults.map((product, index) => (
+                  <div
+                    key={product.id}
+                    className="animate-slide-up"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <ProductCard product={product} />
+                  </div>
                 ))}
               </div>
             </>
           )}
 
-          {/* No Results */}
+          {/* No Results - Melhoria #15 */}
           {!isSearching && hasSearched && searchResults.length === 0 && (
             <Card className="min-h-[300px] flex items-center justify-center">
-              <div className="text-center p-8">
-                <SearchIcon size={48} className="mx-auto mb-4 text-muted-foreground/50" />
+              <div className="empty-state">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-tiktrend-primary/10 to-tiktrend-secondary/10 flex items-center justify-center mb-6">
+                  <SearchIcon size={32} className="text-tiktrend-primary/50" />
+                </div>
                 <h3 className="text-xl font-semibold mb-2">Nenhum produto encontrado</h3>
                 <p className="text-muted-foreground max-w-md">
                   Tente outros termos de busca ou ajuste os filtros.
                 </p>
+                <Button variant="outline" className="mt-4" onClick={clearFilters}>
+                  Limpar Filtros
+                </Button>
               </div>
             </Card>
           )}
 
-          {/* Empty State - Before Search */}
+          {/* Empty State - Before Search - Melhoria #15 */}
           {!isSearching && !hasSearched && (
-            <Card className="min-h-[400px] flex items-center justify-center">
-              <div className="text-center p-8">
-                <div className="mx-auto w-16 h-16 rounded-full bg-tiktrend-primary/10 flex items-center justify-center mb-4">
-                  <TrendingIcon size={32} className="text-tiktrend-primary" />
+            <Card className="min-h-[400px] flex items-center justify-center relative overflow-hidden">
+              {/* Background decoration */}
+              <div className="absolute inset-0 bg-gradient-to-br from-tiktrend-primary/5 via-transparent to-tiktrend-secondary/5" />
+              <div className="empty-state relative z-10">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-tiktrend-primary/20 to-tiktrend-secondary/20 flex items-center justify-center mb-6 mx-auto animate-float">
+                  <TrendingIcon size={40} className="text-tiktrend-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Comece sua busca</h3>
-                <p className="text-muted-foreground max-w-md">
+                <h3 className="text-2xl font-bold mb-3">Comece sua busca</h3>
+                <p className="text-muted-foreground max-w-md mb-6">
                   Digite palavras-chave para encontrar os produtos mais vendidos do TikTok Shop.
-                  Use filtros de categoria para refinar seus resultados.
                 </p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {["Gadgets", "Beleza", "Casa"].map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="outline"
+                      className="cursor-pointer hover:bg-tiktrend-primary hover:text-white hover:border-tiktrend-primary transition-all px-4 py-2"
+                      onClick={() => handleQuickSearch(tag)}
+                    >
+                      Buscar "{tag}"
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </Card>
           )}

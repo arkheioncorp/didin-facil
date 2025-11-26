@@ -4,8 +4,7 @@ Tests for scraping jobs and product data management
 """
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime
+from unittest.mock import AsyncMock, patch
 
 import sys
 import os

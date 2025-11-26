@@ -4,9 +4,8 @@ User authentication and JWT token management
 """
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
-import hashlib
 import secrets
 
 from jose import jwt

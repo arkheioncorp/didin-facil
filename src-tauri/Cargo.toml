@@ -15,6 +15,7 @@ tauri-plugin-shell = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-http = "2"
+tauri-plugin-log = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["full"] }
@@ -27,6 +28,9 @@ regex = "1"
 thiserror = "1"
 log = "0.4"
 env_logger = "0.11"
+dotenv = "0.15"
+tracing = "0.1"
+tracing-subscriber = "0.3"
 
 # Scraping dependencies
 chromiumoxide = { version = "0.7", features = ["tokio-runtime"] }

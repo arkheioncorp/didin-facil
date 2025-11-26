@@ -8,7 +8,6 @@ import time
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timedelta
 from fastapi import HTTPException
-from fastapi.testclient import TestClient
 
 import sys
 import os
@@ -39,7 +38,6 @@ class TestAuthMiddleware:
     @pytest.mark.asyncio
     async def test_get_current_user_valid_token(self, mock_database, valid_user):
         """Test getting current user with valid token"""
-        from backend.api.middleware.auth import get_current_user, get_user_by_id
         
         mock_credentials = MagicMock()
         mock_credentials.credentials = self._create_token('user-123')
@@ -52,12 +50,11 @@ class TestAuthMiddleware:
     @pytest.mark.asyncio
     async def test_get_current_user_expired_token(self):
         """Test rejection of expired token"""
-        from backend.api.middleware.auth import get_current_user
         
         mock_credentials = MagicMock()
         mock_credentials.credentials = 'expired_token'
         
-        with pytest.raises(HTTPException) as exc_info:
+        with pytest.raises(HTTPException):
             with patch('jose.jwt.decode') as mock_decode:
                 mock_decode.return_value = {
                     'sub': 'user-123',
@@ -68,7 +65,6 @@ class TestAuthMiddleware:
     @pytest.mark.asyncio
     async def test_get_current_user_invalid_token(self):
         """Test rejection of invalid token"""
-        from backend.api.middleware.auth import get_current_user
         
         mock_credentials = MagicMock()
         mock_credentials.credentials = 'invalid_token'
@@ -78,7 +74,6 @@ class TestAuthMiddleware:
     @pytest.mark.asyncio
     async def test_get_current_user_missing_subject(self):
         """Test rejection of token without subject"""
-        from backend.api.middleware.auth import get_current_user
         
         # Token without 'sub' claim should be rejected
 
@@ -109,9 +104,8 @@ class TestAuthMiddleware:
 
     def test_create_access_token(self):
         """Test creating access token"""
-        from backend.api.middleware.auth import create_access_token
         
-        expires_at = datetime.utcnow() + timedelta(hours=24)
+        datetime.utcnow() + timedelta(hours=24)
         
         # Token creation test
         # token = create_access_token('user-123', 'HWID-123', expires_at)
@@ -193,9 +187,9 @@ class TestQuotaMiddleware:
             {'used': 30}
         ])
         
-        result = await get_user_quota('user-123', 'searches', mock_db)
+        await get_user_quota('user-123', 'searches', mock_db)
         
-        expected_remaining = PLAN_QUOTAS['basic']['searches_per_month'] - 30
+        PLAN_QUOTAS['basic']['searches_per_month'] - 30
         # Result should include remaining calculation
 
     @pytest.mark.asyncio
@@ -208,7 +202,7 @@ class TestQuotaMiddleware:
             {'used': 0}
         ])
         
-        result = await get_user_quota('user-123', 'copies', mock_db)
+        await get_user_quota('user-123', 'copies', mock_db)
         
         # Should have reset_date in result
 
@@ -268,7 +262,7 @@ class TestRateLimitMiddleware:
         
         # First few requests should pass
         for _ in range(5):
-            response = await rate_limiter.dispatch(mock_request, call_next)
+            await rate_limiter.dispatch(mock_request, call_next)
             assert call_next.called
 
     @pytest.mark.asyncio
@@ -292,7 +286,7 @@ class TestRateLimitMiddleware:
         mock_request.url.path = '/health'
         call_next = AsyncMock(return_value=MagicMock())
         
-        response = await rate_limiter.dispatch(mock_request, call_next)
+        await rate_limiter.dispatch(mock_request, call_next)
         
         call_next.assert_called_once()
 
@@ -303,7 +297,7 @@ class TestRateLimitMiddleware:
         mock_request.url.path = '/docs'
         call_next = AsyncMock(return_value=MagicMock())
         
-        response = await rate_limiter.dispatch(mock_request, call_next)
+        await rate_limiter.dispatch(mock_request, call_next)
         
         call_next.assert_called_once()
 
@@ -353,7 +347,7 @@ class TestRateLimitMiddleware:
         rate_limiter.request_counts[client_id] = [old_time] * 100
         
         # New request should pass (old ones cleaned)
-        response = await rate_limiter.dispatch(mock_request, call_next)
+        await rate_limiter.dispatch(mock_request, call_next)
         
         call_next.assert_called_once()
 

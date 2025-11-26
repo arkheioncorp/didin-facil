@@ -8,7 +8,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { DashboardPage } from './pages/DashboardPage';
 
 test.describe('Settings Flow', () => {
-  test.use({ storageState: '.auth/user.json' });
+  test.use({ storageState: 'tests/e2e/.auth/user.json' });
 
   // ============================================
   // SETTINGS PAGE LOADING

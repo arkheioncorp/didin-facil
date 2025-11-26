@@ -10,6 +10,7 @@ import { generateCopy, getCopyHistory, getFavorites } from "@/lib/tauri";
 import type { FavoriteWithProduct, CopyHistory } from "@/types";
 import type { CopyType, CopyTone } from "@/types";
 import { analytics } from "@/lib/analytics";
+import { useToast } from "@/hooks/use-toast";
 
 interface CopyFormState {
   selectedProductId: string | null;
@@ -20,6 +21,7 @@ interface CopyFormState {
 }
 
 export const Copy: React.FC = () => {
+  const { toast } = useToast();
   const [favorites, setFavorites] = React.useState<FavoriteWithProduct[]>([]);
   const [copyHistory, setCopyHistory] = React.useState<CopyHistory[]>([]);
   const [isLoadingFavorites, setIsLoadingFavorites] = React.useState(true);
@@ -102,6 +104,20 @@ export const Copy: React.FC = () => {
     } catch (error) {
       console.error("Error generating copy:", error);
       setState((prev) => ({ ...prev, isGenerating: false }));
+
+      if (String(error).includes("QUOTA_EXCEEDED")) {
+        toast({
+          title: "Limite de cota atingido",
+          description: "Você atingiu o limite de gerações do seu plano. Atualize para continuar.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro ao gerar copy",
+          description: "Ocorreu um erro ao gerar a copy. Tente novamente.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -198,7 +214,7 @@ export const Copy: React.FC = () => {
               </div>
             </div>
 
-            {/* Tone */}
+            {/* Tone - Melhoria #14 */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Tom de Voz</label>
               <div className="flex flex-wrap gap-2">
@@ -206,7 +222,7 @@ export const Copy: React.FC = () => {
                   <Badge
                     key={tone.id}
                     variant={state.tone === tone.id ? "tiktrend" : "outline"}
-                    className="cursor-pointer py-1.5 px-3"
+                    className="cursor-pointer py-2 px-4 transition-all hover:scale-105"
                     onClick={() => setState((prev) => ({ ...prev, tone: tone.id as CopyTone }))}
                   >
                     {tone.icon} {tone.name}
@@ -219,54 +235,91 @@ export const Copy: React.FC = () => {
             <Button
               variant="tiktrend"
               size="lg"
-              className="w-full gap-2"
+              className="w-full gap-2 shadow-lg shadow-tiktrend-primary/25"
               onClick={handleGenerate}
               disabled={!state.selectedProductId || state.isGenerating}
             >
-              <SparkleIcon size={18} />
-              {state.isGenerating ? "Gerando..." : "Gerar Copy"}
+              <SparkleIcon size={18} className={state.isGenerating ? "animate-spin" : ""} />
+              {state.isGenerating ? "Gerando..." : "Gerar Copy com IA"}
             </Button>
           </CardContent>
         </Card>
 
-        {/* Result */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Copy Gerada</CardTitle>
+        {/* Result - Melhoria #19: Preview estilo post */}
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b bg-muted/30">
+            <CardTitle className="flex items-center gap-2">
+              <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-tiktrend-primary to-tiktrend-secondary flex items-center justify-center text-white text-sm">
+                ✨
+              </span>
+              Copy Gerada
+            </CardTitle>
             <CardDescription>
               Copie e use nas suas campanhas de marketing
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {state.isGenerating ? (
-              <div className="space-y-4">
+              <div className="space-y-4 animate-pulse">
+                <div className="flex items-center gap-3 mb-4">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                </div>
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-32 w-full rounded-xl" />
               </div>
             ) : state.generatedCopy ? (
               <div className="space-y-4">
-                <div className="bg-muted rounded-lg p-4 whitespace-pre-wrap font-mono text-sm max-h-[300px] overflow-y-auto">
-                  {state.generatedCopy}
+                {/* Post preview - TikTok style */}
+                <div className="copy-preview rounded-xl p-5 bg-gradient-to-br from-gray-900 to-gray-800 text-white relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-tiktrend-primary/10 to-tiktrend-secondary/10" />
+                  <div className="relative">
+                    {/* Fake profile header */}
+                    <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary flex items-center justify-center text-sm font-bold">
+                        TT
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">@sua_loja</p>
+                        <p className="text-xs text-gray-400">Agora</p>
+                      </div>
+                    </div>
+                    {/* Copy content */}
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed max-h-[250px] overflow-y-auto scrollbar-thin">
+                      {state.generatedCopy}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" className="gap-2 flex-1" onClick={copyToClipboard}>
+                  <Button
+                    variant="tiktrend"
+                    className="gap-2 flex-1 shadow-lg"
+                    onClick={copyToClipboard}
+                  >
                     <CopyIcon size={16} />
-                    Copiar
+                    Copiar Texto
                   </Button>
-                  <Button variant="outline" className="gap-2 flex-1" onClick={regenerate}>
+                  <Button variant="outline" className="gap-2" onClick={regenerate}>
                     <SparkleIcon size={16} />
-                    Gerar Outra
+                    Regenerar
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="min-h-[300px] flex items-center justify-center text-center text-muted-foreground">
-                <div>
-                  <SparkleIcon size={48} className="mx-auto mb-4 opacity-50" />
-                  <p>Selecione um produto e clique em "Gerar Copy"</p>
-                  <p className="text-sm mt-2">para criar textos persuasivos com IA</p>
+              <div className="min-h-[300px] flex items-center justify-center text-center">
+                <div className="empty-state">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-tiktrend-primary/10 to-tiktrend-secondary/10 flex items-center justify-center mb-6 mx-auto animate-float">
+                    <SparkleIcon size={32} className="text-tiktrend-primary/50" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Pronto para criar</h3>
+                  <p className="text-muted-foreground text-sm">
+                    Selecione um produto e clique em "Gerar Copy"
+                  </p>
                 </div>
               </div>
             )}
@@ -274,46 +327,55 @@ export const Copy: React.FC = () => {
         </Card>
       </div>
 
-      {/* History */}
+      {/* History - Melhoria visual */}
       <Card>
-        <CardHeader>
-          <CardTitle>Histórico de Copies</CardTitle>
-          <CardDescription>
-            Suas copies geradas recentemente
-          </CardDescription>
+        <CardHeader className="border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Histórico de Copies</CardTitle>
+              <CardDescription>
+                Suas copies geradas recentemente
+              </CardDescription>
+            </div>
+            {copyHistory.length > 0 && (
+              <Badge variant="secondary" className="font-mono">{copyHistory.length}</Badge>
+            )}
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {isLoadingHistory ? (
             <div className="space-y-4">
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-xl" />
             </div>
           ) : copyHistory.length > 0 ? (
-            <div className="space-y-4">
-              {copyHistory.map((copy) => (
+            <div className="space-y-3">
+              {copyHistory.map((copy, index) => (
                 <div
                   key={copy.id}
-                  className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                  className="p-4 border rounded-xl hover:bg-accent/50 hover:border-tiktrend-primary/30 transition-all cursor-pointer group animate-slide-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline">{copy.copyType}</Badge>
-                      <Badge variant="secondary">{copy.tone}</Badge>
+                      <Badge variant="outline" size="sm">{copy.copyType}</Badge>
+                      <Badge variant="secondary" size="sm">{copy.tone}</Badge>
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(copy.createdAt).toLocaleDateString("pt-BR")}
+                      {new Date(copy.createdAt).toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' })}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                     {copy.content}
                   </p>
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-2">
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-8 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={() => navigator.clipboard.writeText(copy.content)}
                     >
-                      <CopyIcon size={14} className="mr-1" />
+                      <CopyIcon size={12} className="mr-1" />
                       Copiar
                     </Button>
                     {copy.isFavorite && (
@@ -324,8 +386,12 @@ export const Copy: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Nenhuma copy gerada ainda</p>
+            <div className="empty-state py-12">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4 mx-auto">
+                <CopyIcon size={24} className="text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground">Nenhuma copy gerada ainda</p>
+              <p className="text-sm text-muted-foreground/60 mt-1">Suas copies aparecerão aqui</p>
             </div>
           )}
         </CardContent>

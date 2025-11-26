@@ -6,7 +6,7 @@ Browser fingerprint randomization and stealth techniques
 import random
 from typing import Dict, Any
 
-from ..config import USER_AGENTS, SCREEN_RESOLUTIONS, LOCALES
+from ..config import SCREEN_RESOLUTIONS, LOCALES
 
 
 class AntiDetection:

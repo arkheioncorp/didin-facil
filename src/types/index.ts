@@ -26,8 +26,18 @@ export interface Product {
   isTrending: boolean;
   isOnSale: boolean;
   inStock: boolean;
+  stockLevel?: number | null;
   collectedAt: string;
   updatedAt: string;
+}
+
+export interface ProductHistory {
+  id: string;
+  productId: string;
+  price: number;
+  salesCount: number;
+  stockLevel: number | null;
+  collectedAt: string;
 }
 
 // Filter types
@@ -242,7 +252,9 @@ export interface ScraperStatus {
   currentProduct: string | null;
   productsFound: number;
   errors: string[];
+  logs: string[];
   startedAt: string | null;
+  statusMessage: string | null;
 }
 
 export interface CollectionLog {
@@ -315,6 +327,7 @@ export interface SearchHistoryItem {
 // Settings types
 export interface Setting {
   key: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any;
   category: string;
   updatedAt: string;

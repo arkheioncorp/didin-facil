@@ -10,6 +10,7 @@ import type { AppSettings } from "@/types";
 
 const steps = [
   { id: "welcome", title: "Bem-vindo" },
+  { id: "responsibility", title: "Responsabilidade" },
   { id: "license", title: "Licença" },
   { id: "preferences", title: "Preferências" },
   { id: "finish", title: "Concluir" },
@@ -18,11 +19,15 @@ const steps = [
 export const SetupWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = React.useState(0);
   const [licenseKey, setLicenseKey] = React.useState("");
+  const [acceptedTerms, setAcceptedTerms] = React.useState(false);
   const { theme, setTheme } = useUserStore();
   const navigate = useNavigate();
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
+      if (steps[currentStep].id === "responsibility" && !acceptedTerms) {
+        return; // Block if terms not accepted
+      }
       setCurrentStep(currentStep + 1);
     } else {
       handleFinish();
@@ -33,16 +38,16 @@ export const SetupWizard: React.FC = () => {
     try {
       // Get current defaults
       const currentSettings = await invoke<AppSettings>("get_settings");
-      
+
       // Update with wizard data
       const newSettings: AppSettings = {
         ...currentSettings,
         theme: theme,
         license: {
-            ...currentSettings.license,
-            key: licenseKey || null,
-            plan: licenseKey ? "starter" : "trial",
-            isActive: true
+          ...currentSettings.license,
+          key: licenseKey || null,
+          plan: licenseKey ? "starter" : "trial",
+          isActive: true
         }
       };
 
@@ -66,6 +71,52 @@ export const SetupWizard: React.FC = () => {
               Sua ferramenta definitiva para encontrar produtos vencedores no TikTok Shop.
               Vamos configurar seu ambiente em poucos passos.
             </p>
+          </div>
+        );
+      case "responsibility":
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium text-red-600 flex items-center gap-2">
+                ⚠️ Termo de Responsabilidade
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                O TikTrend Finder é uma ferramenta poderosa para análise de mercado.
+                Para garantir a segurança da sua conta e a longevidade da ferramenta,
+                você deve concordar com as seguintes práticas:
+              </p>
+            </div>
+
+            <div className="bg-muted/50 p-4 rounded-lg text-sm space-y-3 border border-border">
+              <div className="flex gap-2">
+                <span>1.</span>
+                <p>O scraping é limitado a <strong>1 requisição a cada 5-10 segundos</strong> para evitar bloqueios.</p>
+              </div>
+              <div className="flex gap-2">
+                <span>2.</span>
+                <p>O software se identifica de forma transparente como <strong>TikTrendFinder</strong>.</p>
+              </div>
+              <div className="flex gap-2">
+                <span>3.</span>
+                <p>Você é responsável pelo uso ético da ferramenta, respeitando os termos de serviço das plataformas.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 pt-4">
+              <input
+                type="checkbox"
+                id="terms"
+                className="h-4 w-4 rounded border-gray-300 text-tiktrend-primary focus:ring-tiktrend-primary"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+              />
+              <label
+                htmlFor="terms"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Li e concordo com os termos de responsabilidade e uso ético.
+              </label>
+            </div>
           </div>
         );
       case "license":
@@ -131,9 +182,8 @@ export const SetupWizard: React.FC = () => {
             {steps.map((step, index) => (
               <div
                 key={step.id}
-                className={`h-2 flex-1 rounded-full mx-1 ${
-                  index <= currentStep ? "bg-tiktrend-primary" : "bg-muted"
-                }`}
+                className={`h-2 flex-1 rounded-full mx-1 ${index <= currentStep ? "bg-tiktrend-primary" : "bg-muted"
+                  }`}
               />
             ))}
           </div>
@@ -152,7 +202,11 @@ export const SetupWizard: React.FC = () => {
               >
                 Voltar
               </Button>
-              <Button onClick={handleNext} variant="tiktrend">
+              <Button
+                onClick={handleNext}
+                variant="tiktrend"
+                disabled={steps[currentStep].id === "responsibility" && !acceptedTerms}
+              >
                 {currentStep === steps.length - 1 ? "Começar" : "Próximo"}
               </Button>
             </div>

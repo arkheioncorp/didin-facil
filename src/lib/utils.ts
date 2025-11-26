@@ -27,8 +27,9 @@ export function formatPercentage(value: number): string {
 }
 
 export function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength)}...`;
+  const chars = [...text];
+  if (chars.length <= maxLength) return text;
+  return `${chars.slice(0, maxLength).join("")}...`;
 }
 
 export function generateId(): string {

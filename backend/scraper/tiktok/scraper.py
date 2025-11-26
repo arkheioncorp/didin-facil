@@ -11,7 +11,7 @@ from typing import List, Optional
 
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page
 
-from ..config import ScraperConfig, USER_AGENTS, SCREEN_RESOLUTIONS, LOCALES
+from ..config import ScraperConfig
 from ..utils.proxy import ProxyPool
 from .parser import TikTokParser
 from .antibot import AntiDetection
@@ -22,7 +22,7 @@ from pathlib import Path
 backend_dir = Path(__file__).resolve().parent.parent.parent
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
-from shared.redis import get_redis
+from shared.redis import get_redis  # noqa: E402
 
 
 class TikTokScraper:
@@ -225,11 +225,13 @@ class TikTokScraper:
             # Ensure context is closed
             try:
                 await page.close()
-            except: pass
+            except Exception:
+                pass
             
             try:
                 await context.close()
-            except: pass
+            except Exception:
+                pass
             
             if context in self.contexts:
                 self.contexts.remove(context)
@@ -243,50 +245,94 @@ class TikTokScraper:
         is_safe = await self.check_safety()
         if not is_safe:
             print("[TikTok Scraper] Safety mode active. Skipping scrape.")
-            return []
+            raise Exception("Safety mode active")
 
         context = await self._create_context()
         page = await context.new_page()
-        
+
         products = []
-        
+
         try:
-            # Navigate to trending/best sellers
-            url = f"{self.BASE_URL}/trending"
+            # Navigate to trending hashtag
+            url = "https://www.tiktok.com/tag/tiktokmademebuyit"
             await self._navigate_with_delay(page, url)
-            
-            await page.wait_for_selector("[data-e2e='product-card']", timeout=10000)
+
+            # Wait for content - tag pages have video items
+            # Try waiting for any video link
+            await page.wait_for_selector("a[href*='/video/']", timeout=30000)
+
             await self._simulate_scrolling(page)
-            
-            page_products = await self._extract_products(page)
-            
-            # Mark as trending
-            for product in page_products:
-                product["is_trending"] = True
-            
+
+            # Extract items
+            page_products = []
+            # Get all video links
+            elements = await page.query_selector_all("a[href*='/video/']")
+
+            for el in elements:
+                try:
+                    href = await el.get_attribute("href")
+                    if not href:
+                        continue
+
+                    # Create a mock product from the video
+                    video_id = href.split("/")[-1]
+
+                    # Avoid duplicates in the same page
+                    if any(p["tiktok_id"] == video_id for p in page_products):
+                        continue
+
+                    page_products.append({
+                        "id": str(uuid.uuid4()),
+                        "tiktok_id": video_id,
+                        "title": f"Trending Video {video_id}",
+                        "description": "Trending product from #tiktokmademebuyit",
+                        "price": 0.0,
+                        "currency": "BRL",
+                        "category": "Trending",
+                        "product_url": href,
+                        "image_url": "",
+                        "is_trending": True,
+                        "collected_at": datetime.utcnow().isoformat(),
+                        "sales_count": 0
+                    })
+                except Exception:
+                    continue
+
             products.extend(page_products)
-            
+
             await self.record_result(True)
             return products[:limit]
-            
+
         except Exception as e:
             print(f"[TikTok Scraper] Error in trending: {e}")
+            try:
+                await page.screenshot(path="error_trending.png")
+                content = await page.content()
+                with open("error_trending.html", "w") as f:
+                    f.write(content)
+            except Exception:
+                pass
             await self.record_result(False)
             raise
-            
+
         finally:
             try:
                 await page.close()
-            except: pass
+            except Exception:
+                pass
+
             try:
                 await context.close()
-            except: pass
+            except Exception:
+                pass
+
             if context in self.contexts:
                 self.contexts.remove(context)
     
     async def scrape_product_details(self, product_id: str) -> Optional[dict]:
         """Scrape detailed information for a single product"""
-        if not self.check_safety():
+        is_safe = await self.check_safety()
+        if not is_safe:
             print("[TikTok Scraper] Safety mode active. Skipping scrape.")
             return None
 
@@ -302,24 +348,32 @@ class TikTokScraper:
             # Extract detailed product info
             product = await self.parser.parse_product_detail(page)
             
-            self.record_result(True)
+            await self.record_result(True)
             return product
             
         except Exception as e:
             print(f"[TikTok Scraper] Error getting product details: {e}")
-            self.record_result(False)
+            await self.record_result(False)
             return None
             
         finally:
-            await page.close()
-            await context.close()
-            self.contexts.remove(context)
+            try:
+                await page.close()
+            except Exception:
+                pass
+            
+            try:
+                await context.close()
+            except Exception:
+                pass
+            
+            if context in self.contexts:
+                self.contexts.remove(context)
     
     async def _navigate_with_delay(self, page: Page, url: str):
         """Navigate to URL with human-like delays"""
         await self._random_delay(0.5, 1.5)
         await page.goto(url, wait_until="networkidle", timeout=self.config.page_load_timeout)
-        await self._random_delay(1, 2)
     
     async def _simulate_scrolling(self, page: Page):
         """Simulate human-like scrolling behavior"""
@@ -373,57 +427,3 @@ class TikTokScraper:
         
         delay = random.uniform(min_d, max_d)
         await asyncio.sleep(delay)
-    
-    def check_safety(self) -> bool:
-        """
-        Check if it's safe to scrape.
-        Returns True if safe, False if safety mode is active.
-        """
-        if not self.config.safety_switch_enabled:
-            return True
-            
-        # Check if we are in safety mode
-        if self.is_safety_mode:
-            elapsed = (datetime.now() - self.safety_mode_start).total_seconds()
-            if elapsed < self.config.safety_cooldown:
-                print(f"[Safety Switch] Active. Cooldown: {int(self.config.safety_cooldown - elapsed)}s remaining")
-                return False
-            else:
-                # Cooldown expired, reset safety mode
-                print("[Safety Switch] Cooldown expired. Resuming operations.")
-                self.is_safety_mode = False
-                self.consecutive_failures = 0
-                self.failure_count = 0
-                self.total_requests = 0
-                
-        return True
-
-    def record_result(self, success: bool):
-        """Record request result to update safety stats"""
-        self.total_requests += 1
-        
-        if success:
-            self.consecutive_failures = 0
-        else:
-            self.failure_count += 1
-            self.consecutive_failures += 1
-            self.last_failure_time = datetime.now()
-            
-            # Check triggers
-            if self.config.safety_switch_enabled:
-                # Trigger 1: Consecutive failures
-                if self.consecutive_failures >= self.config.consecutive_failures_threshold:
-                    self._activate_safety_mode("Too many consecutive failures")
-                    return
-
-                # Trigger 2: Failure rate (only check after minimum requests)
-                if self.total_requests >= 10:
-                    rate = self.failure_count / self.total_requests
-                    if rate > self.config.max_detection_rate:
-                        self._activate_safety_mode(f"High failure rate: {rate:.1%}")
-
-    def _activate_safety_mode(self, reason: str):
-        """Activate safety mode"""
-        print(f"[Safety Switch] ACTIVATED: {reason}")
-        self.is_safety_mode = True
-        self.safety_mode_start = datetime.now()

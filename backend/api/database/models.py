@@ -4,7 +4,6 @@ Used for migrations with Alembic
 """
 
 from datetime import datetime
-from typing import Optional, List
 
 from sqlalchemy import (
     Column, String, Integer, Float, Boolean, DateTime, 

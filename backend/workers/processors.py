@@ -7,7 +7,7 @@ import asyncio
 import json
 import uuid
 from datetime import datetime
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Optional
 
 import sys
 sys.path.insert(0, str(__file__).rsplit("/", 3)[0])
@@ -261,7 +261,7 @@ class NotificationProcessor(JobProcessor):
         # TODO: Implement email sending (e.g., via SendGrid, SES)
         recipient = job.get("recipient")
         subject = job.get("subject")
-        body = job.get("body")
+        job.get("body")
         
         print(f"[Email] Would send to {recipient}: {subject}")
         
@@ -273,7 +273,7 @@ class NotificationProcessor(JobProcessor):
         # TODO: Implement push notification
         user_id = job.get("user_id")
         title = job.get("title")
-        message = job.get("message")
+        job.get("message")
         
         print(f"[Push] Would send to user {user_id}: {title}")
         

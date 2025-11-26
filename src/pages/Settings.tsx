@@ -294,6 +294,27 @@ export const Settings: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Tutorial */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Tutorial</CardTitle>
+          <CardDescription>
+            Reveja o tutorial interativo da plataforma
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            variant="outline"
+            onClick={() => {
+              localStorage.removeItem('tutorial_completed');
+              window.dispatchEvent(new Event('restart_tutorial'));
+            }}
+          >
+            Reiniciar Tutorial
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Copy Settings */}
       <Card>
         <CardHeader>

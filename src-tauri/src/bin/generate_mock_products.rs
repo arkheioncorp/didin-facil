@@ -25,7 +25,7 @@ fn generate_products(count: usize) -> Vec<String> {
     let mut rng = rand::thread_rng();
     let mut products = Vec::new();
     
-    let categories = vec![
+    let categories = [
         ("Beleza & Skincare", get_beauty_products()),
         ("Eletrônicos", get_electronics_products()),
         ("Casa & Decorações", get_home_products()),

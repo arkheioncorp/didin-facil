@@ -8,6 +8,8 @@ import { TikTrendIcon, EyeIcon, EyeOffIcon } from "@/components/icons";
 import { useUserStore } from "@/stores";
 import { useNavigate, useLocation } from "react-router-dom";
 
+import { authService } from "@/services/auth";
+
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,70 +62,134 @@ export const Login: React.FC = () => {
     setIsLoading(true);
     setErrors({});
 
-    // Simulating login/register
-    setTimeout(() => {
-      if (formData.email === "wrong@example.com") {
-         setErrors({ root: "Credenciais incorretas" });
-         setIsLoading(false);
-         return;
+    try {
+      // DEV MODE: Mock login for development/testing
+      const isDev = import.meta.env.DEV || !import.meta.env.VITE_API_URL;
+      
+      if (isDev) {
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Mock validation
+        if (formData.email === "wrong@example.com") {
+          throw { response: { data: { detail: "Credenciais incorretas ou inválidas" } } };
+        }
+
+        // Mock user data
+        const mockUser = {
+          id: "user_" + Date.now(),
+          email: formData.email,
+          name: formData.name || formData.email.split("@")[0],
+          plan: "trial" as const,
+          planExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date().toISOString(),
+        };
+
+        const mockLicense = {
+          isValid: true,
+          plan: "trial" as const,
+          features: {
+            searchesPerMonth: 10,
+            copiesPerMonth: 5,
+            favoriteLists: 1,
+            exportEnabled: false,
+            schedulerEnabled: false,
+          },
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          usageThisMonth: {
+            searches: 0,
+            copies: 0,
+          },
+        };
+
+        setUser(mockUser);
+        setLicense(mockLicense);
+        navigate("/");
+        return;
       }
 
-      // Mock user data
-      const mockUser = {
-        id: "user_" + Date.now(),
-        email: formData.email,
-        name: formData.name || formData.email.split("@")[0],
-        plan: "trial" as const,
-        planExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        createdAt: new Date().toISOString(),
-      };
+      // PRODUCTION MODE: Use real API
+      // Get HWID (mock for now, should come from Tauri)
+      let hwid = localStorage.getItem('device_hwid');
+      if (!hwid) {
+        // Simple UUID generation if crypto.randomUUID is not available
+        hwid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+        localStorage.setItem('device_hwid', hwid);
+      }
 
-      const mockLicense = {
-        isValid: true,
-        plan: "trial" as const,
-        features: {
-          searchesPerMonth: 10,
-          copiesPerMonth: 5,
-          favoriteLists: 1,
-          exportEnabled: false,
-          schedulerEnabled: false,
-        },
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        usageThisMonth: {
-          searches: 0,
-          copies: 0,
-        },
-      };
+      if (isRegister) {
+        await authService.register(formData.email, formData.password, formData.name);
+        setErrors({ root: "Conta criada com sucesso! Verifique seu email para ativar." });
+        setIsRegister(false);
+      } else {
+        const response = await authService.login(formData.email, formData.password, hwid);
+        
+        // Use license from response or fallback
+        const license = response.license || {
+            isValid: true,
+            plan: response.user.plan,
+            features: {
+              searchesPerMonth: 10,
+              copiesPerMonth: 5,
+              favoriteLists: 1,
+              exportEnabled: false,
+              schedulerEnabled: false,
+            },
+            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            usageThisMonth: {
+              searches: 0,
+              copies: 0,
+            },
+        };
 
-      setUser(mockUser);
-      setLicense(mockLicense);
+        setUser(response.user);
+        setLicense(license);
+        navigate("/");
+      }
+    } catch (error) {
+      console.error(error);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setErrors({ root: (error as any).response?.data?.detail || "Erro ao conectar com o servidor" });
+    } finally {
       setIsLoading(false);
-      navigate("/");
-    }, 1500);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-tiktrend-primary/5 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto flex items-center justify-center gap-2">
-            <TikTrendIcon size={48} />
-            <span className="text-2xl font-bold bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary bg-clip-text text-transparent">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-tiktrend-primary/5 p-4 relative overflow-hidden">
+      {/* Background decorations - Melhoria #17 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-tiktrend-primary/10 rounded-full blur-3xl animate-float" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-tiktrend-secondary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-tiktrend-primary/5 to-tiktrend-secondary/5 rounded-full blur-3xl" />
+      </div>
+
+      <Card className="w-full max-w-md relative backdrop-blur-sm bg-card/95 border-border/50 shadow-2xl animate-scale-in">
+        <CardHeader className="text-center space-y-6 pb-2">
+          {/* Logo with animation */}
+          <div className="mx-auto flex items-center justify-center gap-3 group">
+            <div className="transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <TikTrendIcon size={52} />
+            </div>
+            <span className="text-3xl font-bold bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary bg-clip-text text-transparent">
               TikTrend Finder
             </span>
           </div>
-          <div>
-            <CardTitle className="text-xl">
+          <div className="space-y-2">
+            <CardTitle className="text-2xl font-bold">
               {isRegister ? "Criar Conta" : "Bem-vindo de Volta"}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-base">
               {isRegister
                 ? "Crie sua conta para começar a encontrar produtos em alta"
                 : "Entre para continuar encontrando produtos virais"}
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           {errors.root && (
             <div
               className="mb-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm"
@@ -139,6 +205,7 @@ export const Login: React.FC = () => {
                 <Label htmlFor="name">Nome</Label>
                 <Input
                   id="name"
+                  data-testid="name-input"
                   placeholder="Seu nome"
                   value={formData.name}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -152,7 +219,7 @@ export const Login: React.FC = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 data-testid="email-input"

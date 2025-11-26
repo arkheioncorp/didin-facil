@@ -71,17 +71,21 @@
 ### Alta Prioridade (P0)
 - [x] Executar `npm install` e validar dependências
 - [x] Corrigir erros de TypeScript (`npm run type-check`)
-- [ ] Testar `npm run tauri:dev`
-- [ ] Testar Docker Compose localmente
+- [x] Testar `npm run tauri:dev` ✅ Funcionando
+- [x] Testar Docker Compose localmente ✅ API + Redis + PostgreSQL + Scraper rodando
 - [ ] Build final para Windows e Linux
 
 ### Média Prioridade (P1)
+
+- [x] Conectar Login Real (Frontend -> Backend)
+- [x] Adicionar Índices Compostos (Database Performance)
+- [x] Implementar Feedback de Cota (Frontend/Backend)
 - [ ] Testes unitários (Vitest)
 - [ ] Testes Python (Pytest)
 - [ ] Testar checkout Mercado Pago sandbox
-- [ ] Migrations Alembic
 
 ### Baixa Prioridade (P2)
+
 - [ ] Animações Framer Motion
 - [ ] Tutorial de onboarding
 - [ ] Temas customizados adicionais
@@ -135,6 +139,7 @@
 - Todas as datas dos documentos sincronizadas para 25/11/2025
 
 ### Semana 8: Refinamento e Correções (Atual)
+
 - [x] Atualização de Preços (Starter R$29.90, Pro R$79.90, Enterprise R$199.90)
 - [x] Validação de Build (Correção de erros TypeScript e Linting)
 - [x] Implementação de Scraping Safety Switch (Anti-detection fallback)

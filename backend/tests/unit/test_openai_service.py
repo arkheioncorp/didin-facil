@@ -4,8 +4,6 @@ OpenAI Service Unit Tests
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime
-import uuid
 
 from api.services.openai import OpenAIService
 

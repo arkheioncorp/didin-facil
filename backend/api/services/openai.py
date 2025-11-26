@@ -5,12 +5,12 @@ AI copy generation with quota management
 
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Optional
 
 from openai import AsyncOpenAI
 
-from api.database.connection import database
+from api.database.connection import database, get_db
 from api.services.cache import CacheService
 
 

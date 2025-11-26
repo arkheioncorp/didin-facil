@@ -147,7 +147,7 @@ describe('SearchStore', () => {
       });
 
       const state = useSearchStore.getState();
-      expect(state.filters.sortBy).toBe('price');
+      expect(state.filters.sortBy).toBe('price_asc');
       expect(state.filters.sortOrder).toBe('asc');
     });
 
@@ -336,28 +336,31 @@ describe('SearchStore', () => {
   });
 
   describe('Persistence', () => {
-    it('should persist filters to localStorage', () => {
+    it('should persist filters to localStorage', async () => {
       act(() => {
         useSearchStore.getState().setFilters({ query: 'persistent query' });
       });
 
       // Check localStorage was called
+      await new Promise(resolve => setTimeout(resolve, 0));
       expect(localStorageMock.setItem).toHaveBeenCalled();
     });
 
-    it('should persist config to localStorage', () => {
+    it('should persist config to localStorage', async () => {
       act(() => {
         useSearchStore.getState().setConfig({ maxResults: 150 });
       });
 
+      await new Promise(resolve => setTimeout(resolve, 0));
       expect(localStorageMock.setItem).toHaveBeenCalled();
     });
 
-    it('should persist search history to localStorage', () => {
+    it('should persist search history to localStorage', async () => {
       act(() => {
         useSearchStore.getState().addToHistory('persistent search');
       });
 
+      await new Promise(resolve => setTimeout(resolve, 0));
       expect(localStorageMock.setItem).toHaveBeenCalled();
     });
   });

@@ -37,8 +37,8 @@ export class LoginPage {
 
   // Navigate to login page
   async goto() {
-    await this.page.goto("/login");
-    await this.page.waitForLoadState("networkidle");
+    await this.page.goto("/login", { waitUntil: "domcontentloaded" });
+    await this.emailInput.waitFor({ state: "visible" });
   }
 
   // Fill login form

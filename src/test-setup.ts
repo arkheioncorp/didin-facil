@@ -17,7 +17,7 @@ const mockTauriApi = {
 };
 
 // Mock window.__TAURI__
-global.window = Object.create(window);
+// global.window = Object.create(window); // This line might be causing issues with JSDOM
 Object.defineProperty(window, '__TAURI__', {
     value: mockTauriApi,
     writable: true,
@@ -33,19 +33,16 @@ vi.mock('@tauri-apps/api/tauri', () => ({
 }));
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    value: vi.fn().mockImplementation((query) => ({
-        matches: false,
-        media: query,
-        onchange: null,
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        dispatchEvent: vi.fn(),
-    })),
-});
+vi.stubGlobal('matchMedia', vi.fn((query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+})));
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
@@ -56,6 +53,7 @@ global.IntersectionObserver = class IntersectionObserver {
         return [];
     }
     unobserve() { }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any;
 
 // Mock ResizeObserver
@@ -64,4 +62,5 @@ global.ResizeObserver = class ResizeObserver {
     disconnect() { }
     observe() { }
     unobserve() { }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any;

@@ -21,9 +21,10 @@ use models::ScraperStatus;
 pub struct ScraperState(pub Arc<Mutex<ScraperStatus>>);
 
 fn main() {
-    env_logger::init();
+    dotenv::dotenv().ok();
     
     tauri::Builder::default()
+        .plugin(tauri_plugin_log::Builder::default().build())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
@@ -34,7 +35,9 @@ fn main() {
             current_product: None,
             products_found: 0,
             errors: vec![],
+            logs: vec![],
             started_at: None,
+            status_message: None,
         }))))
         .setup(|app| {
             // Initialize database
@@ -52,6 +55,7 @@ fn main() {
             commands::search_products,
             commands::get_products,
             commands::get_product_by_id,
+            commands::get_product_history,
             // Favorite commands
             commands::add_favorite,
             commands::remove_favorite,
@@ -69,6 +73,10 @@ fn main() {
             commands::scrape_tiktok_shop,
             commands::get_scraper_status,
             commands::stop_scraper,
+            commands::test_proxy,
+            commands::sync_products,
+            commands::update_selectors,
+            commands::fetch_job,
             // Search history commands
             commands::save_search_history,
             commands::get_search_history,

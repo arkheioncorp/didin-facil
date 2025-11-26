@@ -48,6 +48,16 @@ export class DashboardPage {
     }).catch(() => {});
   }
 
+  // Wait for dashboard to load on mobile (sidebar is hidden)
+  async waitForLoadMobile() {
+    await expect(this.header).toBeVisible();
+    // Wait for stats to load
+    await this.page.waitForSelector('[data-testid="stats-card"]', {
+      state: "visible",
+      timeout: 10000,
+    }).catch(() => {});
+  }
+
   // Get stats card values
   async getStatsValues(): Promise<Record<string, string>> {
     const cards = await this.statsCards.all();

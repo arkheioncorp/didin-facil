@@ -11,9 +11,7 @@ from typing import List, Optional
 
 import redis.asyncio as redis
 
-from shared.config import settings
 from api.database.connection import database
-from api.services.cache import CacheService
 
 
 # Redis settings
@@ -34,7 +32,7 @@ def format_product(row) -> dict:
     if isinstance(product.get("images"), str):
         try:
             product["images"] = json.loads(product["images"])
-        except:
+        except Exception:
             product["images"] = []
     elif product.get("images") is None:
         product["images"] = []
@@ -42,7 +40,7 @@ def format_product(row) -> dict:
     if isinstance(product.get("metadata"), str):
         try:
             product["metadata"] = json.loads(product["metadata"])
-        except:
+        except Exception:
             product["metadata"] = {}
     elif product.get("metadata") is None:
         product["metadata"] = {}
@@ -65,13 +63,12 @@ class ScraperOrchestrator:
         min_price: Optional[float] = None,
         max_price: Optional[float] = None,
         min_sales: Optional[int] = None,
-        sort_by: str = "sales_count",
+        sort_by: str = "sales_30d",
         sort_order: str = "desc"
     ) -> dict:
-        """Get products from database with filters"""
+        """Get paginated products with filters"""
         
-        # Build query
-        conditions = ["1=1"]
+        conditions = ["deleted_at IS NULL"]
         count_params = {}
         query_params = {"limit": per_page, "offset": (page - 1) * per_page}
         
@@ -79,7 +76,7 @@ class ScraperOrchestrator:
             conditions.append("category = :category")
             count_params["category"] = category
             query_params["category"] = category
-        
+    
         if min_price is not None:
             conditions.append("price >= :min_price")
             count_params["min_price"] = min_price
@@ -100,10 +97,10 @@ class ScraperOrchestrator:
         # Validate sort column
         valid_sorts = [
             "sales_count", "price", "rating", 
-            "trending_score", "created_at"
+            "trending_score", "created_at", "sales_30d"
         ]
         if sort_by not in valid_sorts:
-            sort_by = "sales_count"
+            sort_by = "sales_30d"
         
         order = "DESC" if sort_order.lower() == "desc" else "ASC"
         
@@ -149,7 +146,8 @@ class ScraperOrchestrator:
         count_result = await self.db.fetch_one(
             """
             SELECT COUNT(*) as total FROM products 
-            WHERE title ILIKE :query OR description ILIKE :query
+            WHERE (title ILIKE :query OR description ILIKE :query) 
+            AND deleted_at IS NULL
             """,
             {"query": search_term}
         )
@@ -159,7 +157,8 @@ class ScraperOrchestrator:
         results = await self.db.fetch_all(
             """
             SELECT * FROM products 
-            WHERE title ILIKE :query OR description ILIKE :query
+            WHERE (title ILIKE :query OR description ILIKE :query) 
+            AND deleted_at IS NULL
             ORDER BY sales_count DESC
             LIMIT :limit OFFSET :offset
             """,
@@ -188,7 +187,7 @@ class ScraperOrchestrator:
     ) -> dict:
         """Get trending products (high sales velocity)"""
         
-        conditions = ["1=1"]  # Always true base condition
+        conditions = ["deleted_at IS NULL"]
         count_params = {}
         query_params = {"limit": per_page, "offset": (page - 1) * per_page}
         
@@ -299,46 +298,50 @@ class ScraperOrchestrator:
         return data
     
     async def save_products(self, products: List[dict]) -> int:
-        """Save products to database (upsert)"""
-        
-        saved_count = 0
-        
-        for product in products:
-            await self.db.execute(
-                """
-                INSERT INTO products (
-                    id, tiktok_id, title, description, price, original_price,
-                    currency, category, subcategory, seller_name, seller_rating,
-                    product_rating, reviews_count, sales_count, sales_7d,
-                    sales_30d, commission_rate, image_url, images, video_url,
-                    product_url, affiliate_url, has_free_shipping, is_trending,
-                    is_on_sale, in_stock, collected_at, updated_at
-                ) VALUES (
-                    :id, :tiktok_id, :title, :description, :price,
-                    :original_price, :currency, :category, :subcategory,
-                    :seller_name, :seller_rating, :product_rating,
-                    :reviews_count, :sales_count, :sales_7d, :sales_30d,
-                    :commission_rate, :image_url, :images, :video_url,
-                    :product_url, :affiliate_url, :has_free_shipping,
-                    :is_trending, :is_on_sale, :in_stock, :collected_at, NOW()
-                )
-                ON CONFLICT (tiktok_id) DO UPDATE SET
-                    title = EXCLUDED.title,
-                    description = EXCLUDED.description,
-                    price = EXCLUDED.price,
-                    original_price = EXCLUDED.original_price,
-                    sales_count = EXCLUDED.sales_count,
-                    sales_7d = EXCLUDED.sales_7d,
-                    sales_30d = EXCLUDED.sales_30d,
-                    product_rating = EXCLUDED.product_rating,
-                    reviews_count = EXCLUDED.reviews_count,
-                    is_trending = EXCLUDED.is_trending,
-                    is_on_sale = EXCLUDED.is_on_sale,
-                    in_stock = EXCLUDED.in_stock,
-                    updated_at = NOW()
-                """,
-                product
+        """Save products to database (upsert) in batches"""
+        if not products:
+            return 0
+            
+        query = """
+            INSERT INTO products (
+                id, tiktok_id, title, description, price, original_price,
+                currency, category, subcategory, seller_name, seller_rating,
+                product_rating, reviews_count, sales_count, sales_7d,
+                sales_30d, commission_rate, image_url, images, video_url,
+                product_url, affiliate_url, has_free_shipping, is_trending,
+                is_on_sale, in_stock, collected_at, updated_at
+            ) VALUES (
+                :id, :tiktok_id, :title, :description, :price,
+                :original_price, :currency, :category, :subcategory,
+                :seller_name, :seller_rating, :product_rating,
+                :reviews_count, :sales_count, :sales_7d, :sales_30d,
+                :commission_rate, :image_url, :images, :video_url,
+                :product_url, :affiliate_url, :has_free_shipping,
+                :is_trending, :is_on_sale, :in_stock, :collected_at, NOW()
             )
-            saved_count += 1
+            ON CONFLICT (tiktok_id) DO UPDATE SET
+                title = EXCLUDED.title,
+                description = EXCLUDED.description,
+                price = EXCLUDED.price,
+                original_price = EXCLUDED.original_price,
+                sales_count = EXCLUDED.sales_count,
+                sales_7d = EXCLUDED.sales_7d,
+                sales_30d = EXCLUDED.sales_30d,
+                product_rating = EXCLUDED.product_rating,
+                reviews_count = EXCLUDED.reviews_count,
+                is_trending = EXCLUDED.is_trending,
+                is_on_sale = EXCLUDED.is_on_sale,
+                in_stock = EXCLUDED.in_stock,
+                updated_at = NOW()
+        """
         
-        return saved_count
+        # Process in batches of 100
+        batch_size = 100
+        total_saved = 0
+        
+        for i in range(0, len(products), batch_size):
+            batch = products[i:i + batch_size]
+            await self.db.execute_many(query, batch)
+            total_saved += len(batch)
+            
+        return total_saved

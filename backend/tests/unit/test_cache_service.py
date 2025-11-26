@@ -4,8 +4,7 @@ Tests for Redis caching layer
 """
 
 import pytest
-import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 from datetime import datetime
 
 # Import the service
@@ -257,7 +256,8 @@ class TestCacheService:
     async def test_get_or_set_with_sync_factory(self, cache_service, mock_redis):
         """Test get_or_set works with synchronous factory"""
         mock_redis.get = AsyncMock(return_value=None)
-        factory = lambda: {"sync": True}
+        def factory():
+            return {"sync": True}
         
         with patch('backend.api.services.cache.get_redis', return_value=mock_redis):
             result = await cache_service.get_or_set('key', factory)
@@ -367,5 +367,5 @@ class TestCacheServiceEdgeCases:
         mock_redis.get = AsyncMock(return_value='{"test": true}')
         
         with patch('backend.api.services.cache.get_redis', return_value=mock_redis):
-            result = await cache_service.get('key:with:colons')
+            await cache_service.get('key:with:colons')
             mock_redis.get.assert_called_with('tiktrend:key:with:colons')

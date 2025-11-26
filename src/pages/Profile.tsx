@@ -48,34 +48,36 @@ export const Profile: React.FC = () => {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* User Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Informações da Conta</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary flex items-center justify-center text-white text-2xl font-bold">
-                {mockUser.name?.charAt(0) || "U"}
+        {/* User Info - Melhoria #18: Avatar gradiente */}
+        <Card className="overflow-hidden">
+          <div className="h-24 bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary" />
+          <CardHeader className="-mt-12">
+            <div className="flex items-end gap-4">
+              {/* Avatar with gradient border */}
+              <div className="avatar-gradient rounded-full p-1 shadow-xl">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-tiktrend-primary to-tiktrend-secondary flex items-center justify-center text-white text-3xl font-bold">
+                  {mockUser.name?.charAt(0) || "U"}
+                </div>
               </div>
-              <div>
-                <div className="font-semibold text-lg">{mockUser.name || "Usuário"}</div>
+              <div className="pb-2">
+                <div className="font-bold text-xl">{mockUser.name || "Usuário"}</div>
                 <div className="text-muted-foreground">{mockUser.email}</div>
               </div>
             </div>
-
-            <div className="pt-4 border-t space-y-2">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Membro desde</span>
-                <span>{new Date(mockUser.createdAt).toLocaleDateString("pt-BR")}</span>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-muted/50">
+              <div>
+                <span className="text-sm text-muted-foreground">Membro desde</span>
+                <p className="font-medium">{new Date(mockUser.createdAt).toLocaleDateString("pt-BR")}</p>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">ID da conta</span>
-                <span className="font-mono text-sm">{mockUser.id}</span>
+              <div>
+                <span className="text-sm text-muted-foreground">ID da conta</span>
+                <p className="font-mono text-sm truncate">{mockUser.id}</p>
               </div>
             </div>
 
-            <Button variant="outline" className="w-full mt-4" onClick={logout}>
+            <Button variant="outline" className="w-full gap-2" onClick={logout}>
               Sair da Conta
             </Button>
           </CardContent>

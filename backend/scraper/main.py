@@ -14,7 +14,6 @@ from .tiktok.scraper import TikTokScraper
 from .aliexpress.scraper import AliExpressScraper
 from .utils.proxy import ProxyPool
 
-import sys
 from pathlib import Path
 
 # Add backend directory to sys.path to allow importing shared modules
@@ -22,9 +21,8 @@ backend_dir = Path(__file__).resolve().parent.parent
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
-from shared.redis import get_redis
-from shared.postgres import get_db
-from shared.config import settings
+from shared.redis import get_redis  # noqa: E402
+from shared.postgres import get_db  # noqa: E402
 
 
 class ScraperWorker:

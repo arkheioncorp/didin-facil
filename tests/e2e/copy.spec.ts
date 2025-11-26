@@ -8,7 +8,7 @@ import { CopyPage } from './pages/CopyPage';
 import { ProductsPage } from './pages/ProductsPage';
 
 test.describe('AI Copy Generation Flow', () => {
-  test.use({ storageState: '.auth/user.json' }); // Use authenticated state
+  test.use({ storageState: 'tests/e2e/.auth/user.json' }); // Use authenticated state
 
   // ============================================
   // COPY GENERATION TESTS

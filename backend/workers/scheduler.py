@@ -12,7 +12,6 @@ from typing import Callable, Dict, List, Optional
 import sys
 sys.path.insert(0, str(__file__).rsplit("/", 3)[0])
 from shared.redis import get_redis
-from shared.config import settings
 
 
 class Job:

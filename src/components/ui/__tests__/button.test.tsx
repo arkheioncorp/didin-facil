@@ -18,7 +18,7 @@ describe('Button', () => {
     it('applies size prop correctly', () => {
         const { container } = render(<Button size="lg">Large</Button>);
         const button = container.querySelector('button');
-        expect(button?.className).toContain('h-11');
+        expect(button?.className).toContain('h-12');
     });
 
     it('handles onClick events', async () => {

@@ -101,14 +101,11 @@ describe('ProductCard', () => {
             </BrowserRouter>
         );
 
-        // Find button by its position (right side of image container)
-        const buttons = screen.getAllByRole('button');
-        const favoriteButton = buttons.find(btn =>
-            btn.className.includes('absolute') && btn.className.includes('right-2')
-        );
+        // Find button by test id
+        const favoriteButton = screen.getByTestId('favorite-button');
 
         expect(favoriteButton).toBeDefined();
-        await user.click(favoriteButton!);
+        await user.click(favoriteButton);
 
         expect(mockOnFavorite).toHaveBeenCalledWith(mockProduct);
     });

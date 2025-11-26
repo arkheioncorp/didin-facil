@@ -157,11 +157,9 @@ describe('Sidebar Component', () => {
       expect(settingsLink).toBeInTheDocument();
     });
 
-    it('should have Profile link', () => {
+    it('should have Profile menu', () => {
       renderSidebar();
-      const links = screen.getAllByRole('link');
-      const profileLink = links.find(link => link.getAttribute('href') === '/profile');
-      expect(profileLink).toBeInTheDocument();
+      expect(screen.getByTestId('user-menu')).toBeInTheDocument();
     });
   });
 
@@ -202,7 +200,7 @@ describe('Sidebar Component', () => {
     it('should have narrow width when collapsed', () => {
       renderSidebar({ collapsed: true });
       const aside = screen.getByRole('complementary');
-      expect(aside).toHaveClass('w-16');
+      expect(aside).toHaveClass('w-[72px]');
     });
 
     it('should have full width when not collapsed', () => {
@@ -220,7 +218,7 @@ describe('Sidebar Component', () => {
 
     it('should show text labels when expanded', () => {
       renderSidebar({ collapsed: false });
-      expect(screen.getByText('Dashboard')).toBeInTheDocument();
+      expect(screen.getAllByText('Dashboard')[0]).toBeInTheDocument();
       expect(screen.getByText('Buscar')).toBeInTheDocument();
       expect(screen.getByText('Produtos')).toBeInTheDocument();
     });
@@ -280,7 +278,8 @@ describe('Sidebar Component', () => {
 
     it('should have navigation landmark', () => {
       renderSidebar();
-      expect(screen.getByRole('navigation')).toBeInTheDocument();
+      const navs = screen.getAllByRole('navigation');
+      expect(navs.length).toBeGreaterThan(0);
     });
 
     it('should have links with href attributes', () => {

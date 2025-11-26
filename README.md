@@ -153,6 +153,33 @@ npm run lint:fix         # Corrigir automaticamente
 npm run type-check       # Verificar tipos TypeScript
 ```
 
+### Comandos Úteis (Makefile)
+
+Para facilitar o desenvolvimento, utilize os comandos do Makefile:
+
+```bash
+# Iniciar ambiente de desenvolvimento (Frontend + Backend)
+make dev
+
+# Iniciar apenas o Frontend
+make dev-frontend
+
+# Iniciar apenas o Backend
+make dev-backend
+
+# Subir containers Docker (Banco de Dados, Redis, API)
+make docker-up
+
+# Parar containers Docker
+make docker-down
+
+# Executar testes (Unitários + Backend)
+make test
+
+# Construir aplicação para produção
+make build
+```
+
 ---
 
 ## 📁 Estrutura do Projeto

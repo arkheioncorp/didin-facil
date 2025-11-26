@@ -8,7 +8,7 @@ import { SubscriptionPage } from './pages/SubscriptionPage';
 import { SettingsPage } from './pages/SettingsPage';
 
 test.describe('Subscription and Payment Flow', () => {
-  test.use({ storageState: '.auth/user.json' }); // Use authenticated state
+  test.use({ storageState: 'tests/e2e/.auth/user.json' }); // Use authenticated state
 
   // ============================================
   // SUBSCRIPTION DISPLAY TESTS
