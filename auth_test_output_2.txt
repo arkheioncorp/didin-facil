@@ -1,0 +1,2185 @@
+
+> tiktrend-finder@1.0.0 test:e2e
+> playwright test tests/e2e/auth.spec.ts
+
+[2m[WebServer] [22m
+[2m[WebServer] [22m> tiktrend-finder@1.0.0 dev
+[2m[WebServer] [22m> vite
+[2m[WebServer] [22m
+[2m[WebServer] [22m[32m✔[0m [33mConsole Ninja[0m extension is connected to [33mVite[0m, see [36mhttps://tinyurl.com/2vt8jxzw[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m1717[22m[2m[0m ms[22m
+[2m[WebServer] [22m
+[2m[WebServer] [22m  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+[2m[WebServer] [22m[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+🚀 Starting global setup...
+✅ Dev server is ready at http://localhost:5173
+✅ Auth state saved
+✅ Global setup complete
+
+Running 97 tests using 6 workers
+
+  ✓   1 [setup] › tests/e2e/auth.setup.ts:14:1 › authenticate (2.2s)
+  ✓   4 [chromium] › tests/e2e/auth.spec.ts:16:5 › Authentication Flow › Login › should display login form correctly (2.2s)
+  ✓   8 [chromium] › tests/e2e/auth.spec.ts:81:5 › Authentication Flow › Login › should show password toggle functionality (2.1s)
+  ✘   6 [chromium] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials (12.3s)
+  ✘   2 [chromium] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form (12.6s)
+  ✘   5 [chromium] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format (12.7s)
+  ✘   7 [chromium] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials (12.6s)
+  ✘   3 [chromium] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login (13.4s)
+  ✘  12 [chromium] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data (11.2s)
+  ✘  11 [chromium] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly (11.6s)
+  ✘  10 [chromium] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch (11.8s)
+  ✘  13 [chromium] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password (11.7s)
+  ✘  14 [chromium] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully (11.1s)
+  ✘   9 [chromium] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login (30.2s)
+  ✓  19 [firefox] › tests/e2e/auth.spec.ts:16:5 › Authentication Flow › Login › should display login form correctly (4.7s)
+  ✘  15 [chromium] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login (11.6s)
+  ✘  16 [chromium] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout (11.7s)
+  ✘  17 [chromium] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes (11.4s)
+  ✘  18 [firefox] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form (14.5s)
+  ✓  24 [firefox] › tests/e2e/auth.spec.ts:81:5 › Authentication Flow › Login › should show password toggle functionality (3.6s)
+  ✘  21 [firefox] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials (12.0s)
+  ✘  20 [firefox] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format (13.3s)
+  ✘  22 [firefox] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials (13.3s)
+  ✘  25 [firefox] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly (11.6s)
+  ✘  23 [firefox] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login (14.8s)
+  ✘  27 [firefox] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch (12.8s)
+  ✘  28 [firefox] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password (12.6s)
+  ✘  29 [firefox] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data (12.3s)
+  ✘  34 [webkit] › tests/e2e/auth.spec.ts:16:5 › Authentication Flow › Login › should display login form correctly (3ms)
+  ✘  35 [webkit] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form (3ms)
+  ✘  36 [webkit] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format (4ms)
+  ✘  30 [firefox] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully (11.9s)
+  ✘  37 [webkit] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials (4ms)
+  ✘  31 [firefox] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout (12.0s)
+  ✘  38 [webkit] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials (7ms)
+  ✘  39 [webkit] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login (6ms)
+  ✘  40 [webkit] › tests/e2e/auth.spec.ts:81:5 › Authentication Flow › Login › should show password toggle functionality (7ms)
+  ✘  41 [webkit] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login (7ms)
+  ✘  42 [webkit] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly (5ms)
+  ✘  43 [webkit] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch (7ms)
+  ✘  44 [webkit] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password (8ms)
+  ✘  45 [webkit] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data (5ms)
+  ✘  46 [webkit] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully (7ms)
+  ✘  47 [webkit] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout (7ms)
+  ✘  48 [webkit] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login (5ms)
+  ✘  32 [firefox] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login (11.8s)
+  ✘  49 [webkit] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes (5ms)
+  ✘  26 [firefox] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login (30.2s)
+  ✘  33 [firefox] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes (12.3s)
+  ✓  50 [mobile-chrome] › tests/e2e/auth.spec.ts:16:5 › Authentication Flow › Login › should display login form correctly (2.3s)
+  ✓  55 [mobile-chrome] › tests/e2e/auth.spec.ts:81:5 › Authentication Flow › Login › should show password toggle functionality (2.1s)
+  ✘  52 [mobile-chrome] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format (12.3s)
+  ✘  51 [mobile-chrome] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form (12.4s)
+  ✘  53 [mobile-chrome] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials (12.3s)
+  ✘  54 [mobile-chrome] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials (12.3s)
+  ✘  56 [mobile-chrome] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login (12.0s)
+[2m[WebServer] [22m[2m22:14:10[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Login.tsx, /src/styles/globals.css[22m
+[2m[WebServer] [22m[2m22:14:13[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/services/stats.ts[22m
+[2m[WebServer] [22m[2m22:14:13[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/services/license.ts[22m
+[2m[WebServer] [22m[2m22:14:13[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/services/scraper.ts[22m
+  ✘  58 [mobile-chrome] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly (10.7s)
+  ✘  59 [mobile-chrome] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch (10.7s)
+  ✘  60 [mobile-chrome] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password (10.8s)
+  ✘  61 [mobile-chrome] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data (10.7s)
+  ✘  62 [mobile-chrome] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully (10.7s)
+  ✘  66 [mobile-safari] › tests/e2e/auth.spec.ts:16:5 › Authentication Flow › Login › should display login form correctly (6ms)
+  ✘  67 [mobile-safari] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form (5ms)
+  ✘  68 [mobile-safari] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format (4ms)
+  ✘  69 [mobile-safari] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials (5ms)
+  ✘  70 [mobile-safari] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials (6ms)
+  ✘  71 [mobile-safari] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login (6ms)
+[2m[WebServer] [22m[2m22:14:23[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Login.tsx, /src/styles/globals.css[22m
+  ✘  72 [mobile-safari] › tests/e2e/auth.spec.ts:81:5 › Authentication Flow › Login › should show password toggle functionality (6ms)
+  ✘  73 [mobile-safari] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login (5ms)
+  ✘  74 [mobile-safari] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly (4ms)
+  ✘  75 [mobile-safari] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch (5ms)
+  ✘  76 [mobile-safari] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password (5ms)
+  ✘  77 [mobile-safari] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data (6ms)
+[2m[WebServer] [22m[2m22:14:27[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Login.tsx, /src/styles/globals.css[22m
+[2m[WebServer] [22m[2m22:14:27[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/services/history.ts[22m
+  ✘  57 [mobile-chrome] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login (30.4s)
+  ✘  78 [mobile-safari] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout (14ms)
+  ✘  79 [mobile-safari] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully (8ms)
+  ✘  80 [mobile-safari] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login (8ms)
+  ✘  64 [mobile-chrome] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout (11.0s)
+  ✘  63 [mobile-chrome] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login (11.1s)
+  ✘  81 [mobile-safari] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes (6ms)
+  ✘  65 [mobile-chrome] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes (11.1s)
+  ✓  82 [tauri-webview] › tests/e2e/auth.spec.ts:16:5 › Authentication Flow › Login › should display login form correctly (2.1s)
+  ✓  83 [tauri-webview] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form (1.9s)
+  ✓  88 [tauri-webview] › tests/e2e/auth.spec.ts:81:5 › Authentication Flow › Login › should show password toggle functionality (1.9s)
+[2m[WebServer] [22m[2m22:14:39[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Login.tsx, /src/styles/globals.css[22m
+[2m[WebServer] [22m[2m22:14:40[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Login.tsx, /src/styles/globals.css[22m
+  ✘  85 [tauri-webview] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials (11.9s)
+  ✘  84 [tauri-webview] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials (12.0s)
+  ✘  86 [tauri-webview] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format (12.0s)
+  ✘  87 [tauri-webview] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login (12.0s)
+[2m[WebServer] [22m[2m22:14:44[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Login.tsx, /src/styles/globals.css[22m
+  ✘  90 [tauri-webview] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly (10.8s)
+[2m[WebServer] [22m[2m22:14:50[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/services/export.ts[22m
+  ✘  91 [tauri-webview] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch (11.1s)
+  ✘  92 [tauri-webview] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password (11.2s)
+  ✘  93 [tauri-webview] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data (11.1s)
+  ✘  94 [tauri-webview] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully (10.9s)
+  ✘  95 [tauri-webview] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout (10.8s)
+  ✘  89 [tauri-webview] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login (30.5s)
+  ✘  97 [tauri-webview] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login (11.4s)
+  ✘  96 [tauri-webview] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes (11.8s)
+🧹 Starting global teardown...
+✅ Global teardown complete
+
+
+  1) [chromium] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="email-error"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="email-error"]')[22m
+
+
+      30 |       await loginPage.submitButton.click();
+      31 |
+    > 32 |       await expect(loginPage.emailError).toBeVisible();
+         |                                          ^
+      33 |     });
+      34 |
+      35 |     test('should show error for invalid email format', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:32:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-0ac10-ation-errors-for-empty-form-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-0ac10-ation-errors-for-empty-form-chromium/error-context.md
+
+  2) [chromium] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="email-error"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="email-error"]')[22m
+
+
+      41 |       await loginPage.submitButton.click();
+      42 |
+    > 43 |       await expect(loginPage.emailError).toBeVisible();
+         |                                          ^
+      44 |     });
+      45 |
+      46 |     test('should show error for invalid credentials', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:43:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-4cfd8-or-for-invalid-email-format-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-4cfd8-or-for-invalid-email-format-chromium/error-context.md
+
+  3) [chromium] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="error-alert"], [role="alert"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="error-alert"], [role="alert"]')[22m
+
+
+      50 |       await loginPage.login('wrong@example.com', 'wrongpassword');
+      51 |
+    > 52 |       await expect(loginPage.errorAlert).toBeVisible();
+         |                                          ^
+      53 |       await expect(loginPage.errorAlert).toContainText(/invalid|incorret/i);
+      54 |     });
+      55 |
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:52:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-23ef3-ror-for-invalid-credentials-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-23ef3-ror-for-invalid-credentials-chromium/error-context.md
+
+  4) [chromium] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/dashboard/[39m
+    Received string:  [31m"http://localhost:5173/"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 10000ms[22m
+    [2m    5 × unexpected value "http://localhost:5173/login"[22m
+    [2m    9 × unexpected value "http://localhost:5173/"[22m
+
+
+      61 |       await loginPage.login('test@example.com', 'correct_password');
+      62 |
+    > 63 |       await expect(page).toHaveURL(/dashboard/);
+         |                          ^
+      64 |       await expect(dashboardPage.welcomeMessage).toBeVisible();
+      65 |     });
+      66 |
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:63:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-75245-ully-with-valid-credentials-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-75245-ully-with-valid-credentials-chromium/error-context.md
+
+  5) [chromium] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="welcome-message"], h1:has-text("Bem-vindo"), h1:has-text("Welcome")')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="welcome-message"], h1:has-text("Bem-vindo"), h1:has-text("Welcome")')[22m
+
+
+      76 |       // Should still be authenticated
+      77 |       const dashboardPage = new DashboardPage(page);
+    > 78 |       await expect(dashboardPage.welcomeMessage).toBeVisible();
+         |                                                  ^
+      79 |     });
+      80 |
+      81 |     test('should show password toggle functionality', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:78:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-af77d-d-remember-user-after-login-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-af77d-d-remember-user-after-login-chromium/error-context.md
+
+  6) [chromium] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.waitForURL: Test timeout of 30000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation to "**/register" until "load"
+    ============================================================
+
+       at pages/LoginPage.ts:89
+
+      87 |   async goToRegister() {
+      88 |     await this.registerLink.click();
+    > 89 |     await this.page.waitForURL("**/register");
+         |                     ^
+      90 |   }
+      91 |
+      92 |   // Navigate to register (alias)
+        at LoginPage.goToRegister (/home/jhonslife/Didin Facil/tests/e2e/pages/LoginPage.ts:89:21)
+        at LoginPage.navigateToRegister (/home/jhonslife/Didin Facil/tests/e2e/pages/LoginPage.ts:94:5)
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:109:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-245cf--to-registration-from-login-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-245cf--to-registration-from-login-chromium/error-context.md
+
+  7) [chromium] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByLabel(/nome|name/i)
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      115 |       await page.goto('/register');
+      116 |
+    > 117 |       await expect(page.getByLabel(/nome|name/i)).toBeVisible();
+          |                                                   ^
+      118 |       await expect(page.getByLabel(/email/i)).toBeVisible();
+      119 |       await expect(page.getByLabel(/senha|password/i).first()).toBeVisible();
+      120 |       await expect(page.getByLabel(/confirmar|confirm/i)).toBeVisible();
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:117:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-2529e-registration-form-correctly-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-2529e-registration-form-correctly-chromium/error-context.md
+
+  8) [chromium] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch 
+
+    TimeoutError: locator.fill: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      125 |       await page.goto('/register');
+      126 |
+    > 127 |       await page.getByLabel(/nome|name/i).fill('Test User');
+          |                                           ^
+      128 |       await page.getByLabel(/email/i).fill('test@example.com');
+      129 |       await page.getByLabel(/^senha|^password/i).fill('password123');
+      130 |       await page.getByLabel(/confirmar|confirm/i).fill('different_password');
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:127:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-daad3-ation-for-password-mismatch-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-daad3-ation-for-password-mismatch-chromium/error-context.md
+
+  9) [chromium] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password 
+
+    TimeoutError: locator.fill: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      138 |       await page.goto('/register');
+      139 |
+    > 140 |       await page.getByLabel(/nome|name/i).fill('Test User');
+          |                                           ^
+      141 |       await page.getByLabel(/email/i).fill('test@example.com');
+      142 |       await page.getByLabel(/^senha|^password/i).fill('123');
+      143 |       await page.getByLabel(/confirmar|confirm/i).fill('123');
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:140:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-97236-alidation-for-weak-password-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-97236-alidation-for-weak-password-chromium/error-context.md
+
+  10) [chromium] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data 
+
+    TimeoutError: locator.fill: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      151 |       await page.goto('/register');
+      152 |
+    > 153 |       await page.getByLabel(/nome|name/i).fill('New User');
+          |                                           ^
+      154 |       await page.getByLabel(/email/i).fill('newuser@example.com');
+      155 |       await page.getByLabel(/^senha|^password/i).fill('SecurePassword123!');
+      156 |       await page.getByLabel(/confirmar|confirm/i).fill('SecurePassword123!');
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:153:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-602c3-uccessfully-with-valid-data-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-602c3-uccessfully-with-valid-data-chromium/error-context.md
+
+  11) [chromium] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="user-menu"]')[22m
+
+
+       at pages/DashboardPage.ts:75
+
+      73 |   // Open user menu
+      74 |   async openUserMenu() {
+    > 75 |     await this.userMenu.click();
+         |                         ^
+      76 |     await expect(this.page.locator('[data-testid="user-dropdown"]')).toBeVisible();
+      77 |   }
+      78 |
+        at DashboardPage.openUserMenu (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:75:25)
+        at DashboardPage.logout (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:81:16)
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:174:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-Logout-should-logout-successfully-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-Logout-should-logout-successfully-chromium/error-context.md
+
+  12) [chromium] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="user-menu"]')[22m
+
+
+       at pages/DashboardPage.ts:75
+
+      73 |   // Open user menu
+      74 |   async openUserMenu() {
+    > 75 |     await this.userMenu.click();
+         |                         ^
+      76 |     await expect(this.page.locator('[data-testid="user-dropdown"]')).toBeVisible();
+      77 |   }
+      78 |
+        at DashboardPage.openUserMenu (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:75:25)
+        at DashboardPage.logout (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:81:16)
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:183:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-431fe-lear-session-data-on-logout-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-431fe-lear-session-data-on-logout-chromium/error-context.md
+
+  13) [chromium] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/login/[39m
+    Received string:  [31m"http://localhost:5173/dashboard"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 10000ms[22m
+    [2m    13 × unexpected value "http://localhost:5173/dashboard"[22m
+
+
+      199 |       await page.goto('/dashboard');
+      200 |
+    > 201 |       await expect(page).toHaveURL(/login/);
+          |                          ^
+      202 |     });
+      203 |
+      204 |     test('should redirect unauthenticated users from protected routes', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:201:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-S-3a37f-uthenticated-users-to-login-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-S-3a37f-uthenticated-users-to-login-chromium/error-context.md
+
+  14) [chromium] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/login/[39m
+    Received string:  [31m"http://localhost:5173/search"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 10000ms[22m
+    [2m    13 × unexpected value "http://localhost:5173/search"[22m
+
+
+      207 |       for (const route of protectedRoutes) {
+      208 |         await page.goto(route);
+    > 209 |         await expect(page).toHaveURL(/login/);
+          |                            ^
+      210 |       }
+      211 |     });
+      212 |   });
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:209:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-S-3e7af-users-from-protected-routes-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-S-3e7af-users-from-protected-routes-chromium/error-context.md
+
+  15) [firefox] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="email-error"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="email-error"]')[22m
+
+
+      30 |       await loginPage.submitButton.click();
+      31 |
+    > 32 |       await expect(loginPage.emailError).toBeVisible();
+         |                                          ^
+      33 |     });
+      34 |
+      35 |     test('should show error for invalid email format', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:32:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-0ac10-ation-errors-for-empty-form-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-0ac10-ation-errors-for-empty-form-firefox/error-context.md
+
+  16) [firefox] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="email-error"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="email-error"]')[22m
+
+
+      41 |       await loginPage.submitButton.click();
+      42 |
+    > 43 |       await expect(loginPage.emailError).toBeVisible();
+         |                                          ^
+      44 |     });
+      45 |
+      46 |     test('should show error for invalid credentials', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:43:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-4cfd8-or-for-invalid-email-format-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-4cfd8-or-for-invalid-email-format-firefox/error-context.md
+
+  17) [firefox] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="error-alert"], [role="alert"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="error-alert"], [role="alert"]')[22m
+
+
+      50 |       await loginPage.login('wrong@example.com', 'wrongpassword');
+      51 |
+    > 52 |       await expect(loginPage.errorAlert).toBeVisible();
+         |                                          ^
+      53 |       await expect(loginPage.errorAlert).toContainText(/invalid|incorret/i);
+      54 |     });
+      55 |
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:52:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-23ef3-ror-for-invalid-credentials-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-23ef3-ror-for-invalid-credentials-firefox/error-context.md
+
+  18) [firefox] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/dashboard/[39m
+    Received string:  [31m"http://localhost:5173/"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 10000ms[22m
+    [2m    5 × unexpected value "http://localhost:5173/login"[22m
+    [2m    9 × unexpected value "http://localhost:5173/"[22m
+
+
+      61 |       await loginPage.login('test@example.com', 'correct_password');
+      62 |
+    > 63 |       await expect(page).toHaveURL(/dashboard/);
+         |                          ^
+      64 |       await expect(dashboardPage.welcomeMessage).toBeVisible();
+      65 |     });
+      66 |
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:63:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-75245-ully-with-valid-credentials-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-75245-ully-with-valid-credentials-firefox/error-context.md
+
+  19) [firefox] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="welcome-message"], h1:has-text("Bem-vindo"), h1:has-text("Welcome")')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="welcome-message"], h1:has-text("Bem-vindo"), h1:has-text("Welcome")')[22m
+
+
+      76 |       // Should still be authenticated
+      77 |       const dashboardPage = new DashboardPage(page);
+    > 78 |       await expect(dashboardPage.welcomeMessage).toBeVisible();
+         |                                                  ^
+      79 |     });
+      80 |
+      81 |     test('should show password toggle functionality', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:78:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-af77d-d-remember-user-after-login-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-af77d-d-remember-user-after-login-firefox/error-context.md
+
+  20) [firefox] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.waitForURL: Test timeout of 30000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation to "**/register" until "load"
+    ============================================================
+
+       at pages/LoginPage.ts:89
+
+      87 |   async goToRegister() {
+      88 |     await this.registerLink.click();
+    > 89 |     await this.page.waitForURL("**/register");
+         |                     ^
+      90 |   }
+      91 |
+      92 |   // Navigate to register (alias)
+        at LoginPage.goToRegister (/home/jhonslife/Didin Facil/tests/e2e/pages/LoginPage.ts:89:21)
+        at LoginPage.navigateToRegister (/home/jhonslife/Didin Facil/tests/e2e/pages/LoginPage.ts:94:5)
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:109:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-245cf--to-registration-from-login-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-245cf--to-registration-from-login-firefox/error-context.md
+
+  21) [firefox] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByLabel(/nome|name/i)
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      115 |       await page.goto('/register');
+      116 |
+    > 117 |       await expect(page.getByLabel(/nome|name/i)).toBeVisible();
+          |                                                   ^
+      118 |       await expect(page.getByLabel(/email/i)).toBeVisible();
+      119 |       await expect(page.getByLabel(/senha|password/i).first()).toBeVisible();
+      120 |       await expect(page.getByLabel(/confirmar|confirm/i)).toBeVisible();
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:117:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-2529e-registration-form-correctly-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-2529e-registration-form-correctly-firefox/error-context.md
+
+  22) [firefox] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch 
+
+    TimeoutError: locator.fill: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      125 |       await page.goto('/register');
+      126 |
+    > 127 |       await page.getByLabel(/nome|name/i).fill('Test User');
+          |                                           ^
+      128 |       await page.getByLabel(/email/i).fill('test@example.com');
+      129 |       await page.getByLabel(/^senha|^password/i).fill('password123');
+      130 |       await page.getByLabel(/confirmar|confirm/i).fill('different_password');
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:127:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-daad3-ation-for-password-mismatch-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-daad3-ation-for-password-mismatch-firefox/error-context.md
+
+  23) [firefox] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password 
+
+    TimeoutError: locator.fill: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      138 |       await page.goto('/register');
+      139 |
+    > 140 |       await page.getByLabel(/nome|name/i).fill('Test User');
+          |                                           ^
+      141 |       await page.getByLabel(/email/i).fill('test@example.com');
+      142 |       await page.getByLabel(/^senha|^password/i).fill('123');
+      143 |       await page.getByLabel(/confirmar|confirm/i).fill('123');
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:140:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-97236-alidation-for-weak-password-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-97236-alidation-for-weak-password-firefox/error-context.md
+
+  24) [firefox] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data 
+
+    TimeoutError: locator.fill: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      151 |       await page.goto('/register');
+      152 |
+    > 153 |       await page.getByLabel(/nome|name/i).fill('New User');
+          |                                           ^
+      154 |       await page.getByLabel(/email/i).fill('newuser@example.com');
+      155 |       await page.getByLabel(/^senha|^password/i).fill('SecurePassword123!');
+      156 |       await page.getByLabel(/confirmar|confirm/i).fill('SecurePassword123!');
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:153:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-602c3-uccessfully-with-valid-data-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-602c3-uccessfully-with-valid-data-firefox/error-context.md
+
+  25) [firefox] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="user-menu"]')[22m
+
+
+       at pages/DashboardPage.ts:75
+
+      73 |   // Open user menu
+      74 |   async openUserMenu() {
+    > 75 |     await this.userMenu.click();
+         |                         ^
+      76 |     await expect(this.page.locator('[data-testid="user-dropdown"]')).toBeVisible();
+      77 |   }
+      78 |
+        at DashboardPage.openUserMenu (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:75:25)
+        at DashboardPage.logout (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:81:16)
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:174:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-Logout-should-logout-successfully-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-Logout-should-logout-successfully-firefox/error-context.md
+
+  26) [firefox] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="user-menu"]')[22m
+
+
+       at pages/DashboardPage.ts:75
+
+      73 |   // Open user menu
+      74 |   async openUserMenu() {
+    > 75 |     await this.userMenu.click();
+         |                         ^
+      76 |     await expect(this.page.locator('[data-testid="user-dropdown"]')).toBeVisible();
+      77 |   }
+      78 |
+        at DashboardPage.openUserMenu (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:75:25)
+        at DashboardPage.logout (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:81:16)
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:183:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-431fe-lear-session-data-on-logout-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-431fe-lear-session-data-on-logout-firefox/error-context.md
+
+  27) [firefox] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/login/[39m
+    Received string:  [31m"http://localhost:5173/dashboard"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 10000ms[22m
+    [2m    14 × unexpected value "http://localhost:5173/dashboard"[22m
+
+
+      199 |       await page.goto('/dashboard');
+      200 |
+    > 201 |       await expect(page).toHaveURL(/login/);
+          |                          ^
+      202 |     });
+      203 |
+      204 |     test('should redirect unauthenticated users from protected routes', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:201:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-S-3a37f-uthenticated-users-to-login-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-S-3a37f-uthenticated-users-to-login-firefox/error-context.md
+
+  28) [firefox] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/login/[39m
+    Received string:  [31m"http://localhost:5173/search"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 10000ms[22m
+    [2m    14 × unexpected value "http://localhost:5173/search"[22m
+
+
+      207 |       for (const route of protectedRoutes) {
+      208 |         await page.goto(route);
+    > 209 |         await expect(page).toHaveURL(/login/);
+          |                            ^
+      210 |       }
+      211 |     });
+      212 |   });
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:209:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-S-3e7af-users-from-protected-routes-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-S-3e7af-users-from-protected-routes-firefox/error-context.md
+
+  29) [webkit] › tests/e2e/auth.spec.ts:16:5 › Authentication Flow › Login › should display login form correctly 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  30) [webkit] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  31) [webkit] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  32) [webkit] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  33) [webkit] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  34) [webkit] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  35) [webkit] › tests/e2e/auth.spec.ts:81:5 › Authentication Flow › Login › should show password toggle functionality 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  36) [webkit] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  37) [webkit] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  38) [webkit] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  39) [webkit] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  40) [webkit] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  41) [webkit] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  42) [webkit] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  43) [webkit] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  44) [webkit] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  45) [mobile-chrome] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="email-error"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="email-error"]')[22m
+
+
+      30 |       await loginPage.submitButton.click();
+      31 |
+    > 32 |       await expect(loginPage.emailError).toBeVisible();
+         |                                          ^
+      33 |     });
+      34 |
+      35 |     test('should show error for invalid email format', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:32:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-0ac10-ation-errors-for-empty-form-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-0ac10-ation-errors-for-empty-form-mobile-chrome/error-context.md
+
+  46) [mobile-chrome] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="email-error"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="email-error"]')[22m
+
+
+      41 |       await loginPage.submitButton.click();
+      42 |
+    > 43 |       await expect(loginPage.emailError).toBeVisible();
+         |                                          ^
+      44 |     });
+      45 |
+      46 |     test('should show error for invalid credentials', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:43:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-4cfd8-or-for-invalid-email-format-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-4cfd8-or-for-invalid-email-format-mobile-chrome/error-context.md
+
+  47) [mobile-chrome] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="error-alert"], [role="alert"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="error-alert"], [role="alert"]')[22m
+
+
+      50 |       await loginPage.login('wrong@example.com', 'wrongpassword');
+      51 |
+    > 52 |       await expect(loginPage.errorAlert).toBeVisible();
+         |                                          ^
+      53 |       await expect(loginPage.errorAlert).toContainText(/invalid|incorret/i);
+      54 |     });
+      55 |
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:52:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-23ef3-ror-for-invalid-credentials-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-23ef3-ror-for-invalid-credentials-mobile-chrome/error-context.md
+
+  48) [mobile-chrome] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/dashboard/[39m
+    Received string:  [31m"http://localhost:5173/"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 10000ms[22m
+    [2m    5 × unexpected value "http://localhost:5173/login"[22m
+    [2m    9 × unexpected value "http://localhost:5173/"[22m
+
+
+      61 |       await loginPage.login('test@example.com', 'correct_password');
+      62 |
+    > 63 |       await expect(page).toHaveURL(/dashboard/);
+         |                          ^
+      64 |       await expect(dashboardPage.welcomeMessage).toBeVisible();
+      65 |     });
+      66 |
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:63:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-75245-ully-with-valid-credentials-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-75245-ully-with-valid-credentials-mobile-chrome/error-context.md
+
+  49) [mobile-chrome] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="welcome-message"], h1:has-text("Bem-vindo"), h1:has-text("Welcome")')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="welcome-message"], h1:has-text("Bem-vindo"), h1:has-text("Welcome")')[22m
+
+
+      76 |       // Should still be authenticated
+      77 |       const dashboardPage = new DashboardPage(page);
+    > 78 |       await expect(dashboardPage.welcomeMessage).toBeVisible();
+         |                                                  ^
+      79 |     });
+      80 |
+      81 |     test('should show password toggle functionality', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:78:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-af77d-d-remember-user-after-login-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-af77d-d-remember-user-after-login-mobile-chrome/error-context.md
+
+  50) [mobile-chrome] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.waitForURL: Test timeout of 30000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation to "**/register" until "load"
+      navigated to "http://localhost:5173/login"
+      navigated to "http://localhost:5173/login"
+    ============================================================
+
+       at pages/LoginPage.ts:89
+
+      87 |   async goToRegister() {
+      88 |     await this.registerLink.click();
+    > 89 |     await this.page.waitForURL("**/register");
+         |                     ^
+      90 |   }
+      91 |
+      92 |   // Navigate to register (alias)
+        at LoginPage.goToRegister (/home/jhonslife/Didin Facil/tests/e2e/pages/LoginPage.ts:89:21)
+        at LoginPage.navigateToRegister (/home/jhonslife/Didin Facil/tests/e2e/pages/LoginPage.ts:94:5)
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:109:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-245cf--to-registration-from-login-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  51) [mobile-chrome] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByLabel(/nome|name/i)
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      115 |       await page.goto('/register');
+      116 |
+    > 117 |       await expect(page.getByLabel(/nome|name/i)).toBeVisible();
+          |                                                   ^
+      118 |       await expect(page.getByLabel(/email/i)).toBeVisible();
+      119 |       await expect(page.getByLabel(/senha|password/i).first()).toBeVisible();
+      120 |       await expect(page.getByLabel(/confirmar|confirm/i)).toBeVisible();
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:117:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-2529e-registration-form-correctly-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-2529e-registration-form-correctly-mobile-chrome/error-context.md
+
+  52) [mobile-chrome] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch 
+
+    TimeoutError: locator.fill: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+    [2m    - waiting for" http://localhost:5173/register" navigation to finish...[22m
+    [2m    - navigated to "http://localhost:5173/register"[22m
+
+
+      125 |       await page.goto('/register');
+      126 |
+    > 127 |       await page.getByLabel(/nome|name/i).fill('Test User');
+          |                                           ^
+      128 |       await page.getByLabel(/email/i).fill('test@example.com');
+      129 |       await page.getByLabel(/^senha|^password/i).fill('password123');
+      130 |       await page.getByLabel(/confirmar|confirm/i).fill('different_password');
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:127:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-daad3-ation-for-password-mismatch-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-daad3-ation-for-password-mismatch-mobile-chrome/error-context.md
+
+  53) [mobile-chrome] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password 
+
+    TimeoutError: locator.fill: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      138 |       await page.goto('/register');
+      139 |
+    > 140 |       await page.getByLabel(/nome|name/i).fill('Test User');
+          |                                           ^
+      141 |       await page.getByLabel(/email/i).fill('test@example.com');
+      142 |       await page.getByLabel(/^senha|^password/i).fill('123');
+      143 |       await page.getByLabel(/confirmar|confirm/i).fill('123');
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:140:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-97236-alidation-for-weak-password-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-97236-alidation-for-weak-password-mobile-chrome/error-context.md
+
+  54) [mobile-chrome] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data 
+
+    TimeoutError: locator.fill: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      151 |       await page.goto('/register');
+      152 |
+    > 153 |       await page.getByLabel(/nome|name/i).fill('New User');
+          |                                           ^
+      154 |       await page.getByLabel(/email/i).fill('newuser@example.com');
+      155 |       await page.getByLabel(/^senha|^password/i).fill('SecurePassword123!');
+      156 |       await page.getByLabel(/confirmar|confirm/i).fill('SecurePassword123!');
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:153:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-602c3-uccessfully-with-valid-data-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-602c3-uccessfully-with-valid-data-mobile-chrome/error-context.md
+
+  55) [mobile-chrome] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="user-menu"]')[22m
+
+
+       at pages/DashboardPage.ts:75
+
+      73 |   // Open user menu
+      74 |   async openUserMenu() {
+    > 75 |     await this.userMenu.click();
+         |                         ^
+      76 |     await expect(this.page.locator('[data-testid="user-dropdown"]')).toBeVisible();
+      77 |   }
+      78 |
+        at DashboardPage.openUserMenu (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:75:25)
+        at DashboardPage.logout (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:81:16)
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:174:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-Logout-should-logout-successfully-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-Logout-should-logout-successfully-mobile-chrome/error-context.md
+
+  56) [mobile-chrome] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="user-menu"]')[22m
+
+
+       at pages/DashboardPage.ts:75
+
+      73 |   // Open user menu
+      74 |   async openUserMenu() {
+    > 75 |     await this.userMenu.click();
+         |                         ^
+      76 |     await expect(this.page.locator('[data-testid="user-dropdown"]')).toBeVisible();
+      77 |   }
+      78 |
+        at DashboardPage.openUserMenu (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:75:25)
+        at DashboardPage.logout (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:81:16)
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:183:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-431fe-lear-session-data-on-logout-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-431fe-lear-session-data-on-logout-mobile-chrome/error-context.md
+
+  57) [mobile-chrome] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/login/[39m
+    Received string:  [31m"http://localhost:5173/dashboard"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 10000ms[22m
+    [2m    13 × unexpected value "http://localhost:5173/dashboard"[22m
+
+
+      199 |       await page.goto('/dashboard');
+      200 |
+    > 201 |       await expect(page).toHaveURL(/login/);
+          |                          ^
+      202 |     });
+      203 |
+      204 |     test('should redirect unauthenticated users from protected routes', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:201:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-S-3a37f-uthenticated-users-to-login-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-S-3a37f-uthenticated-users-to-login-mobile-chrome/error-context.md
+
+  58) [mobile-chrome] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/login/[39m
+    Received string:  [31m"http://localhost:5173/search"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 10000ms[22m
+    [2m    13 × unexpected value "http://localhost:5173/search"[22m
+
+
+      207 |       for (const route of protectedRoutes) {
+      208 |         await page.goto(route);
+    > 209 |         await expect(page).toHaveURL(/login/);
+          |                            ^
+      210 |       }
+      211 |     });
+      212 |   });
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:209:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-S-3e7af-users-from-protected-routes-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-S-3e7af-users-from-protected-routes-mobile-chrome/error-context.md
+
+  59) [mobile-safari] › tests/e2e/auth.spec.ts:16:5 › Authentication Flow › Login › should display login form correctly 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  60) [mobile-safari] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  61) [mobile-safari] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  62) [mobile-safari] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  63) [mobile-safari] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  64) [mobile-safari] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  65) [mobile-safari] › tests/e2e/auth.spec.ts:81:5 › Authentication Flow › Login › should show password toggle functionality 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  66) [mobile-safari] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  67) [mobile-safari] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  68) [mobile-safari] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  69) [mobile-safari] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  70) [mobile-safari] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  71) [mobile-safari] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  72) [mobile-safari] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  73) [mobile-safari] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  74) [mobile-safari] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libavif16                   ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+
+  75) [tauri-webview] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="email-error"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="email-error"]')[22m
+
+
+      41 |       await loginPage.submitButton.click();
+      42 |
+    > 43 |       await expect(loginPage.emailError).toBeVisible();
+         |                                          ^
+      44 |     });
+      45 |
+      46 |     test('should show error for invalid credentials', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:43:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-4cfd8-or-for-invalid-email-format-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-4cfd8-or-for-invalid-email-format-tauri-webview/error-context.md
+
+  76) [tauri-webview] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="error-alert"], [role="alert"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="error-alert"], [role="alert"]')[22m
+
+
+      50 |       await loginPage.login('wrong@example.com', 'wrongpassword');
+      51 |
+    > 52 |       await expect(loginPage.errorAlert).toBeVisible();
+         |                                          ^
+      53 |       await expect(loginPage.errorAlert).toContainText(/invalid|incorret/i);
+      54 |     });
+      55 |
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:52:42
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-23ef3-ror-for-invalid-credentials-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-23ef3-ror-for-invalid-credentials-tauri-webview/error-context.md
+
+  77) [tauri-webview] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/dashboard/[39m
+    Received string:  [31m"http://localhost:5173/"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 10000ms[22m
+    [2m    5 × unexpected value "http://localhost:5173/login"[22m
+    [2m    9 × unexpected value "http://localhost:5173/"[22m
+
+
+      61 |       await loginPage.login('test@example.com', 'correct_password');
+      62 |
+    > 63 |       await expect(page).toHaveURL(/dashboard/);
+         |                          ^
+      64 |       await expect(dashboardPage.welcomeMessage).toBeVisible();
+      65 |     });
+      66 |
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:63:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-75245-ully-with-valid-credentials-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-75245-ully-with-valid-credentials-tauri-webview/error-context.md
+
+  78) [tauri-webview] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[data-testid="welcome-message"], h1:has-text("Bem-vindo"), h1:has-text("Welcome")')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('[data-testid="welcome-message"], h1:has-text("Bem-vindo"), h1:has-text("Welcome")')[22m
+
+
+      76 |       // Should still be authenticated
+      77 |       const dashboardPage = new DashboardPage(page);
+    > 78 |       await expect(dashboardPage.welcomeMessage).toBeVisible();
+         |                                                  ^
+      79 |     });
+      80 |
+      81 |     test('should show password toggle functionality', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:78:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-af77d-d-remember-user-after-login-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-af77d-d-remember-user-after-login-tauri-webview/error-context.md
+
+  79) [tauri-webview] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.waitForURL: Test timeout of 30000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation to "**/register" until "load"
+      navigated to "http://localhost:5173/login"
+    ============================================================
+
+       at pages/LoginPage.ts:89
+
+      87 |   async goToRegister() {
+      88 |     await this.registerLink.click();
+    > 89 |     await this.page.waitForURL("**/register");
+         |                     ^
+      90 |   }
+      91 |
+      92 |   // Navigate to register (alias)
+        at LoginPage.goToRegister (/home/jhonslife/Didin Facil/tests/e2e/pages/LoginPage.ts:89:21)
+        at LoginPage.navigateToRegister (/home/jhonslife/Didin Facil/tests/e2e/pages/LoginPage.ts:94:5)
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:109:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-245cf--to-registration-from-login-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-245cf--to-registration-from-login-tauri-webview/error-context.md
+
+  80) [tauri-webview] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByLabel(/nome|name/i)
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      115 |       await page.goto('/register');
+      116 |
+    > 117 |       await expect(page.getByLabel(/nome|name/i)).toBeVisible();
+          |                                                   ^
+      118 |       await expect(page.getByLabel(/email/i)).toBeVisible();
+      119 |       await expect(page.getByLabel(/senha|password/i).first()).toBeVisible();
+      120 |       await expect(page.getByLabel(/confirmar|confirm/i)).toBeVisible();
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:117:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-2529e-registration-form-correctly-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-2529e-registration-form-correctly-tauri-webview/error-context.md
+
+  81) [tauri-webview] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch 
+
+    TimeoutError: locator.fill: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      125 |       await page.goto('/register');
+      126 |
+    > 127 |       await page.getByLabel(/nome|name/i).fill('Test User');
+          |                                           ^
+      128 |       await page.getByLabel(/email/i).fill('test@example.com');
+      129 |       await page.getByLabel(/^senha|^password/i).fill('password123');
+      130 |       await page.getByLabel(/confirmar|confirm/i).fill('different_password');
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:127:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-daad3-ation-for-password-mismatch-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-daad3-ation-for-password-mismatch-tauri-webview/error-context.md
+
+  82) [tauri-webview] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password 
+
+    TimeoutError: locator.fill: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      138 |       await page.goto('/register');
+      139 |
+    > 140 |       await page.getByLabel(/nome|name/i).fill('Test User');
+          |                                           ^
+      141 |       await page.getByLabel(/email/i).fill('test@example.com');
+      142 |       await page.getByLabel(/^senha|^password/i).fill('123');
+      143 |       await page.getByLabel(/confirmar|confirm/i).fill('123');
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:140:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-97236-alidation-for-weak-password-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-97236-alidation-for-weak-password-tauri-webview/error-context.md
+
+  83) [tauri-webview] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data 
+
+    TimeoutError: locator.fill: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel(/nome|name/i)[22m
+
+
+      151 |       await page.goto('/register');
+      152 |
+    > 153 |       await page.getByLabel(/nome|name/i).fill('New User');
+          |                                           ^
+      154 |       await page.getByLabel(/email/i).fill('newuser@example.com');
+      155 |       await page.getByLabel(/^senha|^password/i).fill('SecurePassword123!');
+      156 |       await page.getByLabel(/confirmar|confirm/i).fill('SecurePassword123!');
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:153:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-R-602c3-uccessfully-with-valid-data-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-R-602c3-uccessfully-with-valid-data-tauri-webview/error-context.md
+
+  84) [tauri-webview] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="user-menu"]')[22m
+
+
+       at pages/DashboardPage.ts:75
+
+      73 |   // Open user menu
+      74 |   async openUserMenu() {
+    > 75 |     await this.userMenu.click();
+         |                         ^
+      76 |     await expect(this.page.locator('[data-testid="user-dropdown"]')).toBeVisible();
+      77 |   }
+      78 |
+        at DashboardPage.openUserMenu (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:75:25)
+        at DashboardPage.logout (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:81:16)
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:174:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-Logout-should-logout-successfully-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-Logout-should-logout-successfully-tauri-webview/error-context.md
+
+  85) [tauri-webview] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="user-menu"]')[22m
+
+
+       at pages/DashboardPage.ts:75
+
+      73 |   // Open user menu
+      74 |   async openUserMenu() {
+    > 75 |     await this.userMenu.click();
+         |                         ^
+      76 |     await expect(this.page.locator('[data-testid="user-dropdown"]')).toBeVisible();
+      77 |   }
+      78 |
+        at DashboardPage.openUserMenu (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:75:25)
+        at DashboardPage.logout (/home/jhonslife/Didin Facil/tests/e2e/pages/DashboardPage.ts:81:16)
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:183:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-L-431fe-lear-session-data-on-logout-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-L-431fe-lear-session-data-on-logout-tauri-webview/error-context.md
+
+  86) [tauri-webview] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/login/[39m
+    Received string:  [31m"http://localhost:5173/dashboard"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 10000ms[22m
+    [2m    13 × unexpected value "http://localhost:5173/dashboard"[22m
+
+
+      199 |       await page.goto('/dashboard');
+      200 |
+    > 201 |       await expect(page).toHaveURL(/login/);
+          |                          ^
+      202 |     });
+      203 |
+      204 |     test('should redirect unauthenticated users from protected routes', async ({ page }) => {
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:201:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-S-3a37f-uthenticated-users-to-login-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-S-3a37f-uthenticated-users-to-login-tauri-webview/error-context.md
+
+  87) [tauri-webview] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/login/[39m
+    Received string:  [31m"http://localhost:5173/search"[39m
+    Timeout: 10000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 10000ms[22m
+    [2m    13 × unexpected value "http://localhost:5173/search"[22m
+
+
+      207 |       for (const route of protectedRoutes) {
+      208 |         await page.goto(route);
+    > 209 |         await expect(page).toHaveURL(/login/);
+          |                            ^
+      210 |       }
+      211 |     });
+      212 |   });
+        at /home/jhonslife/Didin Facil/tests/e2e/auth.spec.ts:209:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/artifacts/auth-Authentication-Flow-S-3e7af-users-from-protected-routes-tauri-webview/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/artifacts/auth-Authentication-Flow-S-3e7af-users-from-protected-routes-tauri-webview/error-context.md
+
+  87 failed
+    [chromium] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form 
+    [chromium] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format 
+    [chromium] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials 
+    [chromium] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials 
+    [chromium] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login 
+    [chromium] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login 
+    [chromium] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly 
+    [chromium] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch 
+    [chromium] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password 
+    [chromium] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data 
+    [chromium] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully 
+    [chromium] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout 
+    [chromium] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login 
+    [chromium] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes 
+    [firefox] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form 
+    [firefox] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format 
+    [firefox] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials 
+    [firefox] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials 
+    [firefox] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login 
+    [firefox] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login 
+    [firefox] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly 
+    [firefox] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch 
+    [firefox] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password 
+    [firefox] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data 
+    [firefox] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully 
+    [firefox] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout 
+    [firefox] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login 
+    [firefox] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes 
+    [webkit] › tests/e2e/auth.spec.ts:16:5 › Authentication Flow › Login › should display login form correctly 
+    [webkit] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form 
+    [webkit] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format 
+    [webkit] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials 
+    [webkit] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials 
+    [webkit] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login 
+    [webkit] › tests/e2e/auth.spec.ts:81:5 › Authentication Flow › Login › should show password toggle functionality 
+    [webkit] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login 
+    [webkit] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly 
+    [webkit] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch 
+    [webkit] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password 
+    [webkit] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data 
+    [webkit] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully 
+    [webkit] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout 
+    [webkit] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login 
+    [webkit] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login 
+    [mobile-chrome] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes 
+    [mobile-safari] › tests/e2e/auth.spec.ts:16:5 › Authentication Flow › Login › should display login form correctly 
+    [mobile-safari] › tests/e2e/auth.spec.ts:26:5 › Authentication Flow › Login › should show validation errors for empty form 
+    [mobile-safari] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format 
+    [mobile-safari] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials 
+    [mobile-safari] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials 
+    [mobile-safari] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login 
+    [mobile-safari] › tests/e2e/auth.spec.ts:81:5 › Authentication Flow › Login › should show password toggle functionality 
+    [mobile-safari] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login 
+    [mobile-safari] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly 
+    [mobile-safari] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch 
+    [mobile-safari] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password 
+    [mobile-safari] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data 
+    [mobile-safari] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully 
+    [mobile-safari] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout 
+    [mobile-safari] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login 
+    [mobile-safari] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes 
+    [tauri-webview] › tests/e2e/auth.spec.ts:35:5 › Authentication Flow › Login › should show error for invalid email format 
+    [tauri-webview] › tests/e2e/auth.spec.ts:46:5 › Authentication Flow › Login › should show error for invalid credentials 
+    [tauri-webview] › tests/e2e/auth.spec.ts:56:5 › Authentication Flow › Login › should login successfully with valid credentials 
+    [tauri-webview] › tests/e2e/auth.spec.ts:67:5 › Authentication Flow › Login › should remember user after login 
+    [tauri-webview] › tests/e2e/auth.spec.ts:105:5 › Authentication Flow › Registration › should navigate to registration from login 
+    [tauri-webview] › tests/e2e/auth.spec.ts:114:5 › Authentication Flow › Registration › should display registration form correctly 
+    [tauri-webview] › tests/e2e/auth.spec.ts:124:5 › Authentication Flow › Registration › should show validation for password mismatch 
+    [tauri-webview] › tests/e2e/auth.spec.ts:137:5 › Authentication Flow › Registration › should show validation for weak password 
+    [tauri-webview] › tests/e2e/auth.spec.ts:150:5 › Authentication Flow › Registration › should register successfully with valid data 
+    [tauri-webview] › tests/e2e/auth.spec.ts:170:5 › Authentication Flow › Logout › should logout successfully 
+    [tauri-webview] › tests/e2e/auth.spec.ts:179:5 › Authentication Flow › Logout › should clear session data on logout 
+    [tauri-webview] › tests/e2e/auth.spec.ts:198:5 › Authentication Flow › Session Management › should redirect unauthenticated users to login 
+    [tauri-webview] › tests/e2e/auth.spec.ts:204:5 › Authentication Flow › Session Management › should redirect unauthenticated users from protected routes 
+  10 passed (2.8m)
+
+To open last HTML report run:
+[36m[39m
+[36m  npx playwright show-report[39m
+[36m[39m

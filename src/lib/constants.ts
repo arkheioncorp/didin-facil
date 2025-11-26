@@ -1,0 +1,150 @@
+// Application constants
+export const APP_NAME = "TikTrend Finder";
+export const APP_VERSION = "1.0.0";
+
+// API endpoints
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "https://api.tiktrend.app";
+export const LICENSE_SERVER_URL = import.meta.env.VITE_LICENSE_URL || "https://license.tiktrend.app";
+
+// Pagination
+export const DEFAULT_PAGE_SIZE = 20;
+export const MAX_PAGE_SIZE = 100;
+
+// Limits
+export const MAX_FAVORITE_LISTS = 20;
+export const MAX_FILTER_PRESETS = 10;
+export const MAX_SEARCH_HISTORY = 100;
+export const MAX_COPY_HISTORY = 100;
+
+// Subscription plans
+export const PLANS = {
+  trial: {
+    name: "Trial",
+    price: 0,
+    duration: 7, // days
+    features: {
+      searchesPerMonth: 10,
+      copiesPerMonth: 5,
+      favoriteLists: 2,
+      exportEnabled: false,
+      schedulerEnabled: false,
+    },
+  },
+  basic: {
+    name: "Básico",
+    price: 10,
+    duration: 30, // days
+    features: {
+      searchesPerMonth: 100,
+      copiesPerMonth: 50,
+      favoriteLists: 5,
+      exportEnabled: true,
+      schedulerEnabled: false,
+    },
+  },
+  pro: {
+    name: "Pro",
+    price: 29,
+    duration: 30, // days
+    features: {
+      searchesPerMonth: -1, // unlimited
+      copiesPerMonth: -1, // unlimited
+      favoriteLists: -1, // unlimited
+      exportEnabled: true,
+      schedulerEnabled: true,
+    },
+  },
+} as const;
+
+// Categories
+export const CATEGORIES = [
+  { id: "beauty", name: "Beleza", icon: "✨", slug: "beauty" },
+  { id: "fashion", name: "Moda", icon: "👗", slug: "fashion" },
+  { id: "home", name: "Casa", icon: "🏠", slug: "home" },
+  { id: "electronics", name: "Eletrônicos", icon: "📱", slug: "electronics" },
+  { id: "health", name: "Saúde", icon: "💪", slug: "health" },
+  { id: "sports", name: "Esportes", icon: "⚽", slug: "sports" },
+  { id: "toys", name: "Brinquedos", icon: "🎮", slug: "toys" },
+  { id: "pet", name: "Pet Shop", icon: "🐾", slug: "pet" },
+  { id: "baby", name: "Bebê", icon: "👶", slug: "baby" },
+  { id: "auto", name: "Automotivo", icon: "🚗", slug: "auto" },
+] as const;
+
+// Product categories (for search filters)
+export const PRODUCT_CATEGORIES = [
+  { id: "beauty", label: "Beleza & Skincare", icon: "✨" },
+  { id: "fashion", label: "Moda & Acessórios", icon: "👗" },
+  { id: "electronics", label: "Eletrônicos", icon: "📱" },
+  { id: "home", label: "Casa & Decoração", icon: "🏠" },
+  { id: "health", label: "Saúde & Fitness", icon: "💪" },
+  { id: "sports", label: "Esportes", icon: "⚽" },
+  { id: "toys", label: "Brinquedos & Games", icon: "🎮" },
+  { id: "pet", label: "Pet Shop", icon: "🐾" },
+  { id: "baby", label: "Bebê & Kids", icon: "👶" },
+  { id: "auto", label: "Automotivo", icon: "🚗" },
+  { id: "jewelry", label: "Joias & Bijuterias", icon: "💎" },
+  { id: "office", label: "Escritório", icon: "💼" },
+  { id: "gadgets", label: "Gadgets", icon: "🔌" },
+  { id: "outdoor", label: "Outdoor & Camping", icon: "⛺" },
+  { id: "kitchen", label: "Cozinha", icon: "🍳" },
+  { id: "tools", label: "Ferramentas", icon: "🔧" },
+  { id: "garden", label: "Jardim", icon: "🌱" },
+  { id: "other", label: "Outros", icon: "📦" },
+] as const;
+
+// Copy types
+export const COPY_TYPES = [
+  { id: "facebook_ad", name: "Anúncio Facebook/Instagram", icon: "📢" },
+  { id: "tiktok_hook", name: "Hook TikTok", icon: "🎵" },
+  { id: "product_description", name: "Descrição de Produto", icon: "📝" },
+  { id: "story_reels", name: "Story/Reels", icon: "📸" },
+  { id: "email", name: "Email Marketing", icon: "📧" },
+  { id: "whatsapp", name: "WhatsApp", icon: "💬" },
+] as const;
+
+// Copy tones
+export const COPY_TONES = [
+  { id: "urgent", name: "Urgente/Escassez", icon: "🔥" },
+  { id: "educational", name: "Educativo", icon: "💡" },
+  { id: "casual", name: "Descontraído", icon: "😄" },
+  { id: "professional", name: "Profissional", icon: "👔" },
+  { id: "emotional", name: "Emocional", icon: "💖" },
+  { id: "authority", name: "Autoridade", icon: "🏆" },
+] as const;
+
+// Sort options
+export const SORT_OPTIONS = [
+  { id: "trending", name: "Em Alta", field: "is_trending" },
+  { id: "sales", name: "Mais Vendidos", field: "sales_count" },
+  { id: "price_asc", name: "Menor Preço", field: "price" },
+  { id: "price_desc", name: "Maior Preço", field: "price" },
+  { id: "rating", name: "Melhor Avaliação", field: "product_rating" },
+  { id: "recent", name: "Mais Recentes", field: "collected_at" },
+] as const;
+
+// Price ranges
+export const PRICE_RANGES = [
+  { min: 0, max: 50, label: "Até R$50" },
+  { min: 50, max: 100, label: "R$50 - R$100" },
+  { min: 100, max: 200, label: "R$100 - R$200" },
+  { min: 200, max: 500, label: "R$200 - R$500" },
+  { min: 500, max: Infinity, label: "Acima de R$500" },
+] as const;
+
+// Sales ranges
+export const SALES_RANGES = [
+  { min: 0, max: 100, label: "Até 100 vendas" },
+  { min: 100, max: 500, label: "100 - 500 vendas" },
+  { min: 500, max: 1000, label: "500 - 1k vendas" },
+  { min: 1000, max: 5000, label: "1k - 5k vendas" },
+  { min: 5000, max: Infinity, label: "Mais de 5k vendas" },
+] as const;
+
+// Keyboard shortcuts
+export const SHORTCUTS = {
+  search: "Ctrl+K",
+  newSearch: "Ctrl+N",
+  favorites: "Ctrl+F",
+  settings: "Ctrl+,",
+  export: "Ctrl+E",
+} as const;

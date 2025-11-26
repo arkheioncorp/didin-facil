@@ -1,0 +1,1 @@
+"""TikTrend Finder API Gateway"""

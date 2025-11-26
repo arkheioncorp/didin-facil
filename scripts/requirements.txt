@@ -1,0 +1,70 @@
+# TikTrend Finder - Python Dependencies
+# Scraper and utilities
+
+# Web scraping
+playwright>=1.40.0
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# HTTP client
+httpx>=0.25.0
+aiohttp>=3.9.0
+
+# OpenAI integration
+openai>=1.5.0
+
+# Utils
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+
+# CLI
+click>=8.1.0
+rich>=13.0.0
+
+# Database
+sqlalchemy>=2.0.0
+aiosqlite>=0.19.0
+
+# ===============================================
+# TESTING DEPENDENCIES
+# ===============================================
+
+# Testing framework
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0
+pytest-xdist>=3.5.0  # parallel test execution
+pytest-timeout>=2.2.0
+pytest-sugar>=0.9.7  # better test output
+pytest-html>=4.1.1   # HTML reports
+
+# API testing
+httpx>=0.25.0  # async http client for testing
+respx>=0.20.0  # mock httpx requests
+asgi-lifespan>=2.1.0  # test ASGI apps
+
+# Fixtures and factories
+factory-boy>=3.3.0
+faker>=22.0.0
+
+# Coverage
+coverage[toml]>=7.4.0
+
+# Mocking
+responses>=0.24.0  # mock requests library
+freezegun>=1.4.0   # mock datetime
+
+# Load testing
+locust>=2.20.0
+
+# Code quality
+ruff>=0.1.0
+mypy>=1.8.0
+black>=24.1.0
+
+# Security testing
+bandit>=1.7.0
+safety>=2.3.0

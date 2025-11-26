@@ -1,0 +1,100 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'ubuntu-22.04'
+            args: ''
+            target: linux
+          - platform: 'windows-latest'
+            args: ''
+            target: windows
+          - platform: 'macos-latest'
+            args: ''
+            target: macos
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: ${{ matrix.target == 'linux' && 'x86_64-unknown-linux-gnu' || matrix.target == 'windows' && 'x86_64-pc-windows-msvc' || 'aarch64-apple-darwin,x86_64-apple-darwin' }}
+
+      - name: Install dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/requirements.txt
+          playwright install chromium
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'TikTrend Finder v__VERSION__'
+          releaseBody: |
+            ## TikTrend Finder v__VERSION__
+
+            ### Downloads
+            - **Windows**: TikTrend-Finder_x64_en-US.msi
+            - **Linux**: tiktrend-finder_amd64.deb / tiktrend-finder_amd64.AppImage
+            - **macOS**: TikTrend-Finder_x64.dmg / TikTrend-Finder_aarch64.dmg
+
+            ### Changelog
+            - Consulte as notas de versão completas
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+
+  create-release-notes:
+    needs: build-tauri
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Generate Release Notes
+        run: |
+          echo "## O que há de novo" > RELEASE_NOTES.md
+          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> RELEASE_NOTES.md
+      
+      - name: Upload Release Notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: RELEASE_NOTES.md

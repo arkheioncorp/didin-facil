@@ -1,0 +1,133 @@
+# Custom commands permissions
+
+[[permission]]
+identifier = "scrape-tiktok-shop"
+description = "Scrape TikTok Shop"
+commands.allow = ["scrape_tiktok_shop"]
+
+[[permission]]
+identifier = "get-scraper-status"
+description = "Get scraper status"
+commands.allow = ["get_scraper_status"]
+
+[[permission]]
+identifier = "stop-scraper"
+description = "Stop scraper"
+commands.allow = ["stop_scraper"]
+
+[[permission]]
+identifier = "search-products"
+description = "Search products"
+commands.allow = ["search_products"]
+
+[[permission]]
+identifier = "get-products"
+description = "Get products"
+commands.allow = ["get_products"]
+
+[[permission]]
+identifier = "get-product-by-id"
+description = "Get product by ID"
+commands.allow = ["get_product_by_id"]
+
+[[permission]]
+identifier = "add-favorite"
+description = "Add favorite"
+commands.allow = ["add_favorite"]
+
+[[permission]]
+identifier = "remove-favorite"
+description = "Remove favorite"
+commands.allow = ["remove_favorite"]
+
+[[permission]]
+identifier = "get-favorites"
+description = "Get favorites"
+commands.allow = ["get_favorites"]
+
+[[permission]]
+identifier = "create-favorite-list"
+description = "Create favorite list"
+commands.allow = ["create_favorite_list"]
+
+[[permission]]
+identifier = "get-favorite-lists"
+description = "Get favorite lists"
+commands.allow = ["get_favorite_lists"]
+
+[[permission]]
+identifier = "delete-favorite-list"
+description = "Delete favorite list"
+commands.allow = ["delete_favorite_list"]
+
+[[permission]]
+identifier = "generate-copy"
+description = "Generate copy"
+commands.allow = ["generate_copy"]
+
+[[permission]]
+identifier = "get-copy-history"
+description = "Get copy history"
+commands.allow = ["get_copy_history"]
+
+[[permission]]
+identifier = "get-user-stats"
+description = "Get user stats"
+commands.allow = ["get_user_stats"]
+
+[[permission]]
+identifier = "validate-license"
+description = "Validate license"
+commands.allow = ["validate_license"]
+
+[[permission]]
+identifier = "save-search-history"
+description = "Save search history"
+commands.allow = ["save_search_history"]
+
+[[permission]]
+identifier = "get-search-history"
+description = "Get search history"
+commands.allow = ["get_search_history"]
+
+[[permission]]
+identifier = "save-settings"
+description = "Save settings"
+commands.allow = ["save_settings"]
+
+[[permission]]
+identifier = "get-settings"
+description = "Get settings"
+commands.allow = ["get_settings"]
+
+[[permission]]
+identifier = "export-products"
+description = "Export products"
+commands.allow = ["export_products"]
+
+[[set]]
+identifier = "default"
+description = "All app commands"
+permissions = [
+    "scrape-tiktok-shop",
+    "get-scraper-status",
+    "stop-scraper",
+    "search-products",
+    "get-products",
+    "get-product-by-id",
+    "add-favorite",
+    "remove-favorite",
+    "get-favorites",
+    "create-favorite-list",
+    "get-favorite-lists",
+    "delete-favorite-list",
+    "generate-copy",
+    "get-copy-history",
+    "get-user-stats",
+    "validate-license",
+    "save-search-history",
+    "get-search-history",
+    "save-settings",
+    "get-settings",
+    "export-products",
+]

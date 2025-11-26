@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:5173",
+      "localStorage": [
+        {
+          "name": "tiktrend-user",
+          "value": "{\"state\":{\"user\":{\"id\":\"user_1764129274941\",\"email\":\"test@example.com\",\"name\":\"test\",\"plan\":\"trial\",\"planExpiresAt\":\"2025-12-03T03:54:34.941Z\",\"createdAt\":\"2025-11-26T03:54:34.941Z\"},\"license\":{\"isValid\":true,\"plan\":\"trial\",\"features\":{\"searchesPerMonth\":10,\"copiesPerMonth\":5,\"favoriteLists\":1,\"exportEnabled\":false,\"schedulerEnabled\":false},\"expiresAt\":\"2025-12-03T03:54:34.941Z\",\"usageThisMonth\":{\"searches\":0,\"copies\":0}},\"isAuthenticated\":true,\"theme\":\"system\"},\"version\":0}"
+        }
+      ]
+    }
+  ]
+}
