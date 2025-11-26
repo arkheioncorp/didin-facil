@@ -1,8 +1,21 @@
 # 📡 API Reference - TikTrend Finder
 
 **Versão:** 2.0  
-**Data:** 25 de Novembro de 2025  
+**Última Atualização:** 26 de Novembro de 2025  
 **Base URL:** `https://api.tiktrend.app/v1`
+
+---
+
+## 📑 Índice
+
+- [Autenticação](#-authentication)
+- [Produtos](#-products)
+- [Geração de Copy](#️-copy-generation)
+- [Licenciamento](#-license)
+- [Analytics](#-analytics)
+- [Webhooks](#-webhooks)
+- [Erros](#️-error-responses)
+- [Rate Limits](#-rate-limits)
 
 ---
 
@@ -346,4 +359,4 @@ X-RateLimit-Reset: 1700000000
 
 ---
 
-*Documento atualizado em 25/11/2025*
+*Documento atualizado em 26/11/2025*

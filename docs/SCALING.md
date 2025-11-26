@@ -1,7 +1,7 @@
 # 📈 Scaling Strategy - TikTrend Finder
 
 **Versão:** 2.0  
-**Data:** 25 de Novembro de 2025
+**Última Atualização:** 26 de Novembro de 2025
 
 ---
 
@@ -423,9 +423,9 @@ Cloudflare CDN (Global)
 
 ## 📚 Related Documents
 
-- [ARCHITECTURE.md](file:///home/jhonslife/Didin%20Facil/docs/ARCHITECTURE.md)
-- [DEPLOYMENT.md](file:///home/jhonslife/Didin%20Facil/docs/DEPLOYMENT.md)
+- [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ---
 
-*Documento atualizado em 25/11/2025*
+**Documento atualizado em 26/11/2025**

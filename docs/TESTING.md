@@ -1,7 +1,20 @@
 # 🧪 Testing Strategy - TikTrend Finder
 
 **Versão:** 2.0  
-**Data:** 25 de Novembro de 2025
+**Última Atualização:** 26 de Novembro de 2025
+
+---
+
+## 📑 Índice
+
+- [Objetivos](#-testing-goals)
+- [Arquitetura de Testes](#️-test-architecture)
+- [Executando Testes](#-executando-testes)
+- [Backend Testing](#️-backend-testing-fastapi)
+- [Frontend Testing](#-frontend-testing-react--vitest)
+- [E2E Testing](#-e2e-testing-playwright)
+- [CI/CD Pipeline](#-cicd-pipeline)
+- [Cobertura de Código](#-cobertura-de-código)
 
 ---
 
@@ -568,6 +581,7 @@ jobs:
 - [ ] Performance benchmarks met
 
 ### Continuous
+
 - [ ] Tests run on every commit
 - [ ] Coverage tracked over time
 - [ ] Flaky tests identified & fixed
@@ -577,9 +591,10 @@ jobs:
 
 ## 📚 Related Documents
 
-- [ARCHITECTURE.md](file:///home/jhonslife/Didin%20Facil/docs/ARCHITECTURE.md)
-- [DEPLOYMENT.md](file:///home/jhonslife/Didin%20Facil/docs/DEPLOYMENT.md)
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ---
 
-*Documento atualizado em 25/11/2025*
+**Documento atualizado em 26/11/2025**
+

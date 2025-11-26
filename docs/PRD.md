@@ -1,8 +1,8 @@
 # 📋 PRD - TikTrend Finder
 
 ## Product Requirements Document
-**Versão:** 1.0  
-**Data:** 25 de Novembro de 2025  
+**Versão:** 2.0  
+**Última Atualização:** 26 de Novembro de 2025  
 **Autor:** Didin Facil Team
 
 ---
@@ -568,4 +568,4 @@ Anti-bot: User-agent rotation, delays
 
 ---
 
-*Documento vivo - última atualização: 25/11/2025*
+*Documento vivo - última atualização: 26/11/2025*

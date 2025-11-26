@@ -117,7 +117,7 @@ mod tests {
         
         assert!(!manager.is_running().await);
         
-        manager.start().await.expect("Failed to start browser");
+        manager.start(None).await.expect("Failed to start browser");
         assert!(manager.is_running().await);
         
         let page = manager.new_page().await.expect("Failed to create page");

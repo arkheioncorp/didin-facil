@@ -1,7 +1,7 @@
 # 📅 Roadmap - TikTrend Finder
 
-**Versão:** 1.0  
-**Data:** 25 de Novembro de 2025  
+**Versão:** 2.0  
+**Última Atualização:** 26 de Novembro de 2025  
 **Duração Total:** 12 Semanas
 
 ---
@@ -476,4 +476,4 @@ Release    ░░ ░░ ░░ ░░ ░░ ░░ ░░ ░░ ░░ ░░
 
 ---
 
-*Última atualização: 25/11/2025*
+**Última atualização: 26/11/2025**

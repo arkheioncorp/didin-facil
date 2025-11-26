@@ -1,7 +1,7 @@
 # 🔐 Security - TikTrend Finder
 
 **Versão:** 2.0  
-**Data:** 25 de Novembro de 2025
+**Última Atualização:** 26 de Novembro de 2025
 
 ---
 
@@ -553,10 +553,10 @@ logger.warning(
 
 ## 📚 Related Documents
 
-- [ARCHITECTURE.md](file:///home/jhonslife/Didin%20Facil/docs/ARCHITECTURE.md)
-- [DATABASE-SCHEMA.md](file:///home/jhonslife/Didin%20Facil/docs/DATABASE-SCHEMA.md)
-- [DEPLOYMENT.md](file:///home/jhonslife/Didin%20Facil/docs/DEPLOYMENT.md)
+- [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [DATABASE-SCHEMA.md](./DATABASE-SCHEMA.md)
+- [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ---
 
-*Documento atualizado em 25/11/2025*
+**Documento atualizado em 26/11/2025**

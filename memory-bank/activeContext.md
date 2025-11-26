@@ -1,12 +1,12 @@
 # Active Context - TikTrend Finder
 
-**Última Atualização:** 25 de Novembro de 2025
+**Última Atualização:** 26 de Novembro de 2025
 
 ---
 
 ## 🎯 Current Goals
 
-1. **Validar Build** - Testar `npm install` e `npm run tauri:dev`
+1. **✅ Documentação Completa** - Todos os docs atualizados v2.0
 2. **Testar Backend** - Subir Docker Compose e validar endpoints
 3. **Integração Pagamentos** - Testar checkout Mercado Pago em sandbox
 4. **Build Produção** - Gerar instaladores Win/Linux
@@ -20,18 +20,26 @@
 
 ---
 
-## 📂 Recent Changes
+## 📂 Recent Changes (26/11/2025)
+
+### Scraper Refatorado
+- IDs determinísticos (MD5 hash) para evitar duplicatas
+- Reinicialização de browsers a cada 50 jobs
+- User-agents dinâmicos com fake-useragent
+- Safety switch persistido no Redis
+- Seletores com fallbacks robustos
 
 ### Documentação Atualizada
-- `ARCHITECTURE.md` - Refletindo estrutura real do projeto
-- `E2E-COMPATIBILITY-REPORT.md` - Status 95% MVP
-- `TESTING.md` - Correção de typo no título
-- `README.md` - Versão 2.0.0, stack atualizada
-- `progress.md` - Progresso detalhado
+- `README.md` - Reescrito completamente (v2.0)
+- `CHANGELOG.md` - Criado com histórico completo
+- `CONTRIBUTING.md` - Criado com guidelines
+- Todos os docs em `/docs/` atualizados para 26/11/2025
+- Links file:// corrigidos para relativos
 
-### Backend Criado
-- `/backend/shared/config.py` - Configuração Pydantic Settings
-- Validação completa da estrutura FastAPI
+### Limpeza
+- Removidos: coverage/, playwright-report/, test-results/
+- Removidos: auth_test_output*.txt, test_output*.txt
+- Removidos: DEBUG_BROWSER_CONSOLE.js, DEBUG_CHECKLIST.md
 
 ---
 

@@ -1,10 +1,23 @@
 # 🏗️ Arquitetura Técnica - TikTrend Finder
 
 **Versão:** 2.0 (Híbrida)  
-**Data:** 25 de Novembro de 2025
+**Última Atualização:** 26 de Novembro de 2025
 
 > [!IMPORTANT]
 > **Mudança Arquitetural:** Versão 2.0 adota arquitetura **híbrida** (desktop + cloud services) para resolver problemas críticos de escalabilidade, segurança e anti-scraping.
+
+---
+
+## 📑 Índice
+
+- [Visão Geral](#-visão-geral-da-arquitetura)
+- [Decisões Arquiteturais](#-decisões-arquiteturais)
+- [Stack Tecnológica](#️-stack-tecnológica)
+- [Fluxos de Dados](#-fluxos-de-dados)
+- [Componentes do Sistema](#-componentes-do-sistema)
+- [Segurança](#-segurança)
+- [Escalabilidade](#-escalabilidade)
+- [Observabilidade](#-observabilidade)
 
 ---
 
@@ -1071,4 +1084,4 @@ Ver [SCALING.md](file:///home/jhonslife/Didin%20Facil/docs/SCALING.md) para deta
 
 ---
 
-*Documento atualizado em 25/11/2025 - Versão 2.0 (Arquitetura Híbrida)*
+*Documento atualizado em 26/11/2025 - Versão 2.0 (Arquitetura Híbrida)*

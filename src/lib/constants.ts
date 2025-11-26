@@ -70,12 +70,12 @@ export const CATEGORIES = [
   { id: "auto", name: "Automotivo", icon: "🚗", slug: "auto" },
 ] as const;
 
-// Product categories (for search filters)
+// Product categories (for search filters) - labels MUST match database values
 export const PRODUCT_CATEGORIES = [
   { id: "beauty", label: "Beleza & Skincare", icon: "✨" },
   { id: "fashion", label: "Moda & Acessórios", icon: "👗" },
   { id: "electronics", label: "Eletrônicos", icon: "📱" },
-  { id: "home", label: "Casa & Decoração", icon: "🏠" },
+  { id: "home", label: "Casa & Decorações", icon: "🏠" },
   { id: "health", label: "Saúde & Fitness", icon: "💪" },
   { id: "sports", label: "Esportes", icon: "⚽" },
   { id: "toys", label: "Brinquedos & Games", icon: "🎮" },
@@ -91,6 +91,28 @@ export const PRODUCT_CATEGORIES = [
   { id: "garden", label: "Jardim", icon: "🌱" },
   { id: "other", label: "Outros", icon: "📦" },
 ] as const;
+
+// Map category ID to database value
+export const CATEGORY_ID_TO_DB: Record<string, string> = {
+  beauty: "Beleza & Skincare",
+  fashion: "Moda & Acessórios",
+  electronics: "Eletrônicos",
+  home: "Casa & Decorações",
+  health: "Saúde & Fitness",
+  sports: "Esportes",
+  toys: "Brinquedos & Games",
+  pet: "Pet Shop",
+  baby: "Bebê & Kids",
+  auto: "Automotivo",
+  jewelry: "Joias & Bijuterias",
+  office: "Escritório",
+  gadgets: "Gadgets",
+  outdoor: "Outdoor & Camping",
+  kitchen: "Cozinha",
+  tools: "Ferramentas",
+  garden: "Jardim",
+  other: "Outros",
+};
 
 // Copy types
 export const COPY_TYPES = [
@@ -121,6 +143,16 @@ export const SORT_OPTIONS = [
   { id: "rating", name: "Melhor Avaliação", field: "product_rating" },
   { id: "recent", name: "Mais Recentes", field: "collected_at" },
 ] as const;
+
+// Map sort ID to database field
+export const SORT_ID_TO_FIELD: Record<string, { field: string; order: string }> = {
+  trending: { field: "is_trending", order: "DESC" },
+  sales: { field: "sales_count", order: "DESC" },
+  price_asc: { field: "price", order: "ASC" },
+  price_desc: { field: "price", order: "DESC" },
+  rating: { field: "product_rating", order: "DESC" },
+  recent: { field: "collected_at", order: "DESC" },
+};
 
 // Price ranges
 export const PRICE_RANGES = [

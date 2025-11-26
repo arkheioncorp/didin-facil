@@ -1,7 +1,7 @@
 # 💾 Database Schema - TikTrend Finder
 
 **Versão:** 2.0 (Híbrida)  
-**Data:** 25 de Novembro de 2025
+**Última Atualização:** 26 de Novembro de 2025
 
 > [!IMPORTANT]
 > **Mudança Arquitetural:** Versão 2.0 utiliza **PostgreSQL** (Cloud) + **SQLCipher** (Local) para balancear compartilhamento de dados e privacidade.
@@ -229,10 +229,10 @@ WHERE id = 1;
 
 ## 📚 Documentos Relacionados
 
-- [ARCHITECTURE.md](file:///home/jhonslife/Didin%20Facil/docs/ARCHITECTURE.md)
-- [API-REFERENCE.md](file:///home/jhonslife/Didin%20Facil/docs/API-REFERENCE.md)
-- [SECURITY.md](file:///home/jhonslife/Didin%20Facil/docs/SECURITY.md)
+- [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [API-REFERENCE.md](./API-REFERENCE.md)
+- [SECURITY.md](./SECURITY.md)
 
 ---
 
-*Documento atualizado em 25/11/2025*
+**Documento atualizado em 26/11/2025**

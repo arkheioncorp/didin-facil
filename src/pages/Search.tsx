@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SearchIcon, FilterIcon, TrendingIcon } from "@/components/icons";
 import { ProductCard } from "@/components/product";
 import { useSearchStore } from "@/stores";
-import { PRODUCT_CATEGORIES } from "@/lib/constants";
+import { PRODUCT_CATEGORIES, CATEGORY_ID_TO_DB, SORT_ID_TO_FIELD } from "@/lib/constants";
 import { searchProducts, saveSearchHistory } from "@/lib/tauri";
 import { analytics } from "@/lib/analytics";
 import type { Product, SearchFilters } from "@/types";
@@ -36,13 +36,21 @@ export const Search: React.FC = () => {
         addToHistory(query);
       }
       
+      // Map category IDs to database values
+      const mappedCategories = selectedCategories
+        .map(id => CATEGORY_ID_TO_DB[id])
+        .filter(Boolean);
+      
+      // Map sort ID to database field
+      const mappedSortBy = SORT_ID_TO_FIELD[filters.sortBy] || filters.sortBy;
+      
       const searchFilters: Partial<SearchFilters> = {
         query: query.trim() || undefined,
-        categories: selectedCategories,
+        categories: mappedCategories,
         priceMin: priceMin ? parseFloat(priceMin) : undefined,
         priceMax: priceMax ? parseFloat(priceMax) : undefined,
         salesMin: minSales ? parseInt(minSales) : undefined,
-        sortBy: filters.sortBy,
+        sortBy: mappedSortBy as unknown as SearchFilters["sortBy"],
         sortOrder: filters.sortOrder,
         page: 1,
         pageSize: 20,

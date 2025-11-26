@@ -1,7 +1,7 @@
 # 📖 User Stories - TikTrend Finder
 
-**Versão:** 1.0  
-**Data:** 25 de Novembro de 2025
+**Versão:** 2.0  
+**Última Atualização:** 26 de Novembro de 2025
 
 ---
 
