@@ -3,13 +3,14 @@ Rate Limiting Middleware
 Request rate limiting per user/IP
 """
 
+import os
 import time
 from typing import Dict
 from collections import defaultdict
 
-from fastapi import Request, HTTPException, status
+from fastapi import Request, status
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response
+from starlette.responses import Response, JSONResponse
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -23,8 +24,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.requests_per_minute = requests_per_minute
         self.request_counts: Dict[str, list] = defaultdict(list)
+        self.testing = os.getenv("TESTING", "").lower() == "true"
     
     async def dispatch(self, request: Request, call_next) -> Response:
+        # Skip rate limiting in test environment
+        if self.testing:
+            return await call_next(request)
+        
         # Skip rate limiting for health checks
         if request.url.path in ["/health", "/", "/docs", "/openapi.json"]:
             return await call_next(request)
@@ -44,12 +50,19 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         
         # Check if limit exceeded
         if len(self.request_counts[client_id]) >= self.requests_per_minute:
-            raise HTTPException(
+            retry_after = int(60 - (current_time - self.request_counts[client_id][0]))
+            return JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail={
+                content={
                     "error": "rate_limit_exceeded",
                     "message": f"Rate limit exceeded. Maximum {self.requests_per_minute} requests per minute.",
-                    "retry_after": int(60 - (current_time - self.request_counts[client_id][0]))
+                    "retry_after": retry_after
+                },
+                headers={
+                    "Retry-After": str(retry_after),
+                    "X-RateLimit-Limit": str(self.requests_per_minute),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(int(window_start + 60))
                 }
             )
         

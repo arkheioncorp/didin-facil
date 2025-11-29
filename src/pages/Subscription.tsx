@@ -6,30 +6,27 @@ import { Separator } from "@/components/ui/separator";
 import { TikTrendIcon, StarIcon } from "@/components/icons";
 import { useUserStore } from "@/stores";
 import { useNavigate } from "react-router-dom";
-import { PLANS } from "@/lib/constants";
+import { LICENSE_PRICE, CREDIT_PACKS, CREDIT_COSTS } from "@/lib/constants";
 
 export const Subscription: React.FC = () => {
   const navigate = useNavigate();
   const { license, setLicense } = useUserStore();
   const [isProcessing, setIsProcessing] = React.useState(false);
-  const [selectedPlan, setSelectedPlan] = React.useState<"basic" | "pro" | null>(null);
+  const [selectedItem, setSelectedItem] = React.useState<string | null>(null);
 
-  const handleSubscribe = async (plan: "basic" | "pro") => {
-    setSelectedPlan(plan);
+  const handlePurchaseLicense = async () => {
+    setSelectedItem("license");
     setIsProcessing(true);
 
     // TODO: Integrate with Mercado Pago
-    // For now, simulate subscription
+    // Simulating purchase
     setTimeout(() => {
       const newLicense = {
         isValid: true,
-        plan: plan,
-        features: PLANS[plan].features,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        usageThisMonth: {
-          searches: 0,
-          copies: 0,
-        },
+        isLifetime: true,
+        activatedAt: new Date().toISOString(),
+        maxDevices: 2,
+        activeDevices: 1,
       };
       setLicense(newLicense);
       setIsProcessing(false);
@@ -37,42 +34,23 @@ export const Subscription: React.FC = () => {
     }, 2000);
   };
 
-  const plans = [
-    {
-      id: "basic" as const,
-      name: "Básico",
-      price: 10,
-      description: "Perfeito para começar",
-      features: [
-        { text: "100 buscas/mês", included: true },
-        { text: "50 copies/mês", included: true },
-        { text: "5 listas de favoritos", included: true },
-        { text: "Exportação CSV/Excel", included: true },
-        { text: "Agendador de coleta", included: false },
-        { text: "Suporte prioritário", included: false },
-      ],
-      popular: true,
-    },
-    {
-      id: "pro" as const,
-      name: "Pro",
-      price: 29,
-      description: "Para profissionais",
-      features: [
-        { text: "Buscas ilimitadas", included: true },
-        { text: "Copies ilimitadas", included: true },
-        { text: "Listas ilimitadas", included: true },
-        { text: "Exportação completa", included: true },
-        { text: "Agendador de coleta", included: true },
-        { text: "Suporte prioritário", included: true },
-      ],
-      popular: false,
-    },
-  ];
+  const handlePurchaseCredits = async (packId: string) => {
+    setSelectedItem(packId);
+    setIsProcessing(true);
+
+    // TODO: Integrate with Mercado Pago
+    setTimeout(() => {
+      // Update credits balance
+      setIsProcessing(false);
+      alert(`Pacote ${CREDIT_PACKS[packId as keyof typeof CREDIT_PACKS].name} comprado com sucesso!`);
+    }, 2000);
+  };
+
+  const hasLicense = license?.isValid && license?.isLifetime;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-tiktrend-primary/5 p-4 py-12">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -81,28 +59,41 @@ export const Subscription: React.FC = () => {
               TikTrend Finder
             </span>
           </div>
-          <h1 className="text-3xl font-bold mb-2">Escolha seu Plano</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            {hasLicense ? "Comprar Créditos IA" : "Adquira sua Licença"}
+          </h1>
           <p className="text-muted-foreground">
-            Desbloqueie todo o potencial do TikTrend Finder
+            {hasLicense 
+              ? "Use créditos para gerar copies com Inteligência Artificial"
+              : "Pague uma vez, use para sempre"
+            }
           </p>
         </div>
 
-        {/* Current plan info */}
+        {/* Current status */}
         {license && (
           <Card className="mb-8">
             <CardContent className="py-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Plano Atual</p>
-                  <p className="font-semibold">{PLANS[license.plan].name}</p>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="font-semibold flex items-center gap-2">
+                    {hasLicense ? (
+                      <>
+                        <span className="text-green-500">✓</span>
+                        Licença Vitalícia Ativa
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-yellow-500">⚠</span>
+                        Sem Licença
+                      </>
+                    )}
+                  </p>
                 </div>
-                {license.plan === "trial" && (
+                {hasLicense && (
                   <Badge variant="secondary">
-                    {Math.ceil(
-                      (new Date(license.expiresAt).getTime() - Date.now()) /
-                        (1000 * 60 * 60 * 24)
-                    )}{" "}
-                    dias restantes
+                    {license.activeDevices}/{license.maxDevices} dispositivos
                   </Badge>
                 )}
               </div>
@@ -110,105 +101,148 @@ export const Subscription: React.FC = () => {
           </Card>
         )}
 
-        {/* Plans grid */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {plans.map((plan) => (
-            <Card
-              key={plan.id}
-              className={`relative ${
-                plan.popular
-                  ? "border-tiktrend-primary shadow-lg shadow-tiktrend-primary/20"
-                  : ""
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge variant="tiktrend" className="px-3">
-                    <StarIcon size={12} className="mr-1" />
-                    Mais Popular
-                  </Badge>
+        {/* Lifetime License Card */}
+        {!hasLicense && (
+          <Card className="mb-12 border-tiktrend-primary shadow-lg shadow-tiktrend-primary/20 relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <Badge variant="tiktrend" className="px-3">
+                <StarIcon size={12} className="mr-1" />
+                Pagamento Único
+              </Badge>
+            </div>
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-2xl">Licença Vitalícia</CardTitle>
+              <CardDescription>Pague uma vez, use para sempre</CardDescription>
+              <div className="mt-4">
+                <span className="text-5xl font-bold">R$ {LICENSE_PRICE.toFixed(2).replace(".", ",")}</span>
+                <span className="text-muted-foreground ml-2">pagamento único</span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Separator className="my-6" />
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                    Recursos Inclusos
+                  </h4>
+                  <ul className="space-y-2">
+                    <FeatureItem icon="🔍" text="Busca de produtos ilimitada" />
+                    <FeatureItem icon="🌐" text="Multi-fonte (TikTok, AliExpress)" />
+                    <FeatureItem icon="🎯" text="Filtros avançados" />
+                    <FeatureItem icon="⭐" text="Favoritos ilimitados" />
+                  </ul>
                 </div>
-              )}
-              <CardHeader className="text-center pb-2">
-                <CardTitle className="text-xl">{plan.name}</CardTitle>
-                <CardDescription>{plan.description}</CardDescription>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold">R${plan.price}</span>
-                  <span className="text-muted-foreground">/mês</span>
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                    Benefícios
+                  </h4>
+                  <ul className="space-y-2">
+                    <FeatureItem icon="📤" text="Exportação completa (CSV, Excel, JSON)" />
+                    <FeatureItem icon="🔄" text="Atualizações gratuitas" />
+                    <FeatureItem icon="💻" text="Até 2 dispositivos" />
+                    <FeatureItem icon="♾️" text="Sem mensalidades" />
+                  </ul>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <Separator className="my-4" />
-                <ul className="space-y-3">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2 text-sm">
-                      {feature.included ? (
-                        <svg
-                          className="h-5 w-5 text-green-500 shrink-0"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="h-5 w-5 text-muted-foreground shrink-0"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      )}
-                      <span
-                        className={
-                          feature.included ? "" : "text-muted-foreground"
-                        }
-                      >
-                        {feature.text}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  variant={plan.popular ? "tiktrend" : "outline"}
-                  className="w-full mt-6"
-                  disabled={isProcessing}
-                  onClick={() => handleSubscribe(plan.id)}
-                >
-                  {isProcessing && selectedPlan === plan.id ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      Processando...
-                    </span>
-                  ) : license?.plan === plan.id ? (
-                    "Plano Atual"
-                  ) : (
-                    `Assinar ${plan.name}`
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+              <Button
+                variant="tiktrend"
+                size="lg"
+                className="w-full"
+                disabled={isProcessing}
+                onClick={handlePurchaseLicense}
+              >
+                {isProcessing && selectedItem === "license" ? (
+                  <LoadingSpinner text="Processando..." />
+                ) : (
+                  "Comprar Licença Vitalícia"
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Credit Packs */}
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-2">Pacotes de Créditos IA</h2>
+            <p className="text-muted-foreground">
+              {hasLicense 
+                ? "Use créditos para gerar copies e análises com IA"
+                : "Adquira a licença para desbloquear créditos IA"
+              }
+            </p>
+          </div>
+
+          {/* Credit costs info */}
+          <Card className="mb-6 bg-muted/50">
+            <CardContent className="py-4">
+              <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-tiktrend-primary font-bold">{CREDIT_COSTS.copy}</span>
+                  <span className="text-muted-foreground">crédito = 1 copy</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-tiktrend-primary font-bold">{CREDIT_COSTS.trendAnalysis}</span>
+                  <span className="text-muted-foreground">créditos = análise de tendência</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-tiktrend-primary font-bold">{CREDIT_COSTS.nicheReport}</span>
+                  <span className="text-muted-foreground">créditos = relatório de nicho</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Credit packs grid */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {Object.entries(CREDIT_PACKS).map(([id, pack]) => (
+              <Card 
+                key={id} 
+                className={`relative ${id === "pro" ? "border-tiktrend-primary" : ""} ${!hasLicense ? "opacity-60" : ""}`}
+              >
+                {id === "pro" && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge variant="tiktrend" className="px-3">
+                      Melhor Custo
+                    </Badge>
+                  </div>
+                )}
+                <CardHeader className="text-center pb-2">
+                  <CardTitle className="text-xl">{pack.name}</CardTitle>
+                  <div className="mt-2">
+                    <span className="text-3xl font-bold text-tiktrend-primary">{pack.credits}</span>
+                    <span className="text-muted-foreground ml-1">créditos</span>
+                  </div>
+                  <div className="mt-2">
+                    <span className="text-2xl font-bold">R$ {pack.price.toFixed(2).replace(".", ",")}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    R$ {pack.pricePerCredit.toFixed(2).replace(".", ",")} por crédito
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    variant={id === "pro" ? "tiktrend" : "outline"}
+                    className="w-full"
+                    disabled={isProcessing || !hasLicense}
+                    onClick={() => handlePurchaseCredits(id)}
+                  >
+                    {isProcessing && selectedItem === id ? (
+                      <LoadingSpinner text="Processando..." />
+                    ) : !hasLicense ? (
+                      "Requer Licença"
+                    ) : (
+                      "Comprar Créditos"
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            ℹ️ Créditos não expiram. Use quando precisar.
+          </p>
         </div>
 
         {/* Payment methods */}
@@ -221,9 +255,9 @@ export const Subscription: React.FC = () => {
               <span className="font-semibold text-blue-600">Mercado Pago</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>💳 Cartão</span>
-              <span>•</span>
               <span>📱 Pix</span>
+              <span>•</span>
+              <span>💳 Cartão (3x sem juros)</span>
               <span>•</span>
               <span>🏦 Boleto</span>
             </div>
@@ -239,25 +273,50 @@ export const Subscription: React.FC = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">
-                  Posso cancelar a qualquer momento?
+                  A licença é realmente vitalícia?
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Sim! Você pode cancelar sua assinatura a qualquer momento sem
-                  taxas adicionais.
+                  Sim! Você paga R$ 49,90 uma única vez e tem acesso ao app para sempre. 
+                  Sem mensalidades ou taxas recorrentes.
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">
-                  Como funciona o trial?
+                  Preciso de créditos para usar o app?
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  O trial de 7 dias é gratuito e não requer cartão de crédito.
+                  Não! A busca de produtos é ilimitada. Créditos são apenas para 
+                  gerar copies com IA, um recurso opcional.
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">
+                  Os créditos expiram?
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Não! Seus créditos nunca expiram. Use quando precisar.
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">
+                  Posso usar em mais de um computador?
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Sim! A licença permite uso em até 2 dispositivos simultaneamente.
                 </p>
               </CardContent>
             </Card>
@@ -274,3 +333,33 @@ export const Subscription: React.FC = () => {
     </div>
   );
 };
+
+// Helper components
+const FeatureItem: React.FC<{ icon: string; text: string }> = ({ icon, text }) => (
+  <li className="flex items-center gap-2 text-sm">
+    <span>{icon}</span>
+    <span>{text}</span>
+  </li>
+);
+
+const LoadingSpinner: React.FC<{ text: string }> = ({ text }) => (
+  <span className="flex items-center gap-2">
+    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+        fill="none"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+    {text}
+  </span>
+);

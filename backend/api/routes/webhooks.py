@@ -9,6 +9,7 @@ import json
 
 from fastapi import APIRouter, Request, HTTPException, status, Header
 from pydantic import BaseModel
+from typing import Optional
 
 from api.services.mercadopago import MercadoPagoService
 from api.services.license import LicenseService
@@ -28,6 +29,18 @@ class MercadoPagoWebhook(BaseModel):
     live_mode: bool
     type: str
     user_id: str
+
+
+class EvolutionWebhook(BaseModel):
+    """Evolution API webhook payload"""
+    event: str
+    instance: str
+    data: dict
+    destination: Optional[str] = None
+    date_time: Optional[str] = None
+    sender: Optional[str] = None
+    server_url: Optional[str] = None
+    apikey: Optional[str] = None
 
 
 @router.post("/mercadopago")
@@ -82,64 +95,75 @@ async def handle_payment_event(
     mp_service: MercadoPagoService,
     license_service: LicenseService,
 ):
-    """Handle payment events"""
+    """Handle payment events for lifetime license and credits"""
     payment_id = data.get("id")
-    
+
     if not payment_id:
         return
-    
+
     # Get payment details from Mercado Pago
     payment = await mp_service.get_payment(payment_id)
-    
+
     if action == "payment.created":
         # Log payment initiation
         await mp_service.log_event("payment_created", payment)
-        
+
     elif action == "payment.approved":
-        # Payment successful - activate or extend license
+        # Payment successful - activate license or add credits
         user_email = payment.get("payer", {}).get("email")
-        plan = payment.get("metadata", {}).get("plan", "starter")
-        
+        product_type = payment.get("metadata", {}).get("product_type", "license")
+        credits_amount = payment.get("metadata", {}).get("credits", 0)
+
         if user_email:
-            # Check if user already has a license
-            existing = await license_service.get_license_by_email(user_email)
-            
-            if existing:
-                # Extend existing license
-                await license_service.extend_license(
-                    license_id=existing["id"],
-                    days=30,  # Monthly subscription
-                    payment_id=str(payment_id)
-                )
-            else:
-                # Create new license
-                license_key = await license_service.create_license(
+            if product_type == "license":
+                # Lifetime license purchase
+                existing = await license_service.get_license_by_email(user_email)
+
+                if not existing:
+                    # Create new lifetime license
+                    license_key = await license_service.create_license(
+                        email=user_email,
+                        plan="lifetime",
+                        duration_days=-1,  # Lifetime = no expiration
+                        payment_id=str(payment_id)
+                    )
+
+                    # Send license key via email
+                    await mp_service.send_license_email(
+                        user_email, license_key, "lifetime"
+                    )
+
+            elif product_type == "credits":
+                # Credits pack purchase
+                await license_service.add_credits(
                     email=user_email,
-                    plan=plan,
-                    duration_days=30,
+                    amount=int(credits_amount),
                     payment_id=str(payment_id)
                 )
-                
-                # Send license key via email
-                await mp_service.send_license_email(user_email, license_key, plan)
-        
+
+                # Send credits confirmation email
+                await mp_service.send_credits_email(
+                    user_email, int(credits_amount)
+                )
+
         await mp_service.log_event("payment_approved", payment)
-        
+
     elif action == "payment.cancelled":
         await mp_service.log_event("payment_cancelled", payment)
-        
+
     elif action == "payment.refunded":
-        # Refund - deactivate license
+        # Refund - may deactivate license or deduct credits
         user_email = payment.get("payer", {}).get("email")
-        
-        if user_email:
+        product_type = payment.get("metadata", {}).get("product_type", "license")
+
+        if user_email and product_type == "license":
             license_info = await license_service.get_license_by_email(user_email)
             if license_info:
                 await license_service.deactivate_license(
                     license_id=license_info["id"],
                     reason="refund"
                 )
-        
+
         await mp_service.log_event("payment_refunded", payment)
 
 
@@ -149,55 +173,47 @@ async def handle_subscription_event(
     mp_service: MercadoPagoService,
     license_service: LicenseService,
 ):
-    """Handle subscription events"""
+    """
+    Handle subscription events.
+    Note: With lifetime license model, subscriptions are deprecated.
+    This handler is kept for backwards compatibility only.
+    """
     preapproval_id = data.get("id")
-    
+
     if not preapproval_id:
         return
-    
+
     subscription = await mp_service.get_subscription(preapproval_id)
-    
+
     if action == "created":
-        # New subscription created
+        # New subscription created (legacy)
         await mp_service.log_event("subscription_created", subscription)
-        
+
     elif action == "updated":
-        # Subscription updated (plan change, etc)
+        # Subscription updated (legacy - convert to lifetime if possible)
         status_value = subscription.get("status")
-        
+
         if status_value == "authorized":
-            # Subscription active
             user_email = subscription.get("payer_email")
-            plan = subscription.get("reason", "starter")  # Plan name in reason field
-            
+
             if user_email:
-                existing = await license_service.get_license_by_email(user_email)
-                
-                if existing:
-                    # Update plan if changed
-                    if existing["plan"] != plan:
-                        await license_service.update_plan(
-                            license_id=existing["id"],
-                            new_plan=plan
-                        )
-                    
-                    # Extend license
-                    await license_service.extend_license(
-                        license_id=existing["id"],
-                        days=30
+                existing = await license_service.get_license_by_email(
+                    user_email
+                )
+
+                if not existing:
+                    # Convert old subscription to lifetime license
+                    await license_service.create_license(
+                        email=user_email,
+                        plan="lifetime",
+                        duration_days=-1  # Lifetime = no expiration
                     )
-        
+
         await mp_service.log_event("subscription_updated", subscription)
-        
+
     elif action == "cancelled":
-        # Subscription cancelled
-        user_email = subscription.get("payer_email")
-        
-        if user_email:
-            license_info = await license_service.get_license_by_email(user_email)
-            if license_info:
-                # Don't deactivate immediately, let current period expire
-                await license_service.mark_for_expiration(license_info["id"])
+        # Subscription cancelled (legacy - lifetime licenses don't expire)
+        await mp_service.log_event("subscription_cancelled", subscription)
         
         await mp_service.log_event("subscription_cancelled", subscription)
 
@@ -282,6 +298,40 @@ async def stripe_webhook(request: Request):
     return {"status": "not_implemented"}
 
 
+@router.post("/evolution")
+async def evolution_webhook(payload: EvolutionWebhook):
+    """
+    Handle Evolution API webhooks.
+    
+    Events handled:
+    - MESSAGES_UPSERT: New message received
+    - QRCODE_UPDATED: New QR Code generated
+    - CONNECTION_UPDATE: Connection status changed
+    """
+    print(f"Received webhook: {payload.event} for instance {payload.instance}")
+    
+    if payload.event == "MESSAGES_UPSERT":
+        # Handle new message
+        message_data = payload.data
+        # TODO: Process message (save to DB, trigger chatbot, etc.)
+        print(f"New message: {message_data}")
+        
+    elif payload.event == "QRCODE_UPDATED":
+        # Handle QR Code update
+        qrcode_data = payload.data
+        # TODO: Update QR Code in frontend (via WebSocket or polling)
+        print(f"New QR Code: {qrcode_data.get('qrcode')}")
+        
+    elif payload.event == "CONNECTION_UPDATE":
+        # Handle connection update
+        connection_data = payload.data
+        status = connection_data.get("status")
+        reason = connection_data.get("reason")
+        print(f"Connection update: {status} - {reason}")
+        
+    return {"status": "received"}
+
+
 @router.get("/health")
 async def webhooks_health():
     """Webhook endpoint health check"""
@@ -289,6 +339,7 @@ async def webhooks_health():
         "status": "healthy",
         "endpoints": [
             "/webhooks/mercadopago",
-            "/webhooks/stripe"
+            "/webhooks/stripe",
+            "/webhooks/evolution"
         ]
     }

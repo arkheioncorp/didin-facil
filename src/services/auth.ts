@@ -1,5 +1,5 @@
 import axios from "axios";
-import { User, License } from "@/types";
+import { User, License, Credits } from "@/types";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -16,6 +16,7 @@ export interface LoginResponse {
   expires_at: string;
   user: User;
   license?: License;
+  credits?: Credits;
 }
 
 export const authService = {

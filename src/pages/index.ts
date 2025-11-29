@@ -7,3 +7,23 @@ export { Settings } from "./Settings";
 export { Profile } from "./Profile";
 export { Login } from "./Login";
 export { Subscription } from "./Subscription";
+export { SellerBot } from "./SellerBot";
+export { WhatsappPage } from "./Whatsapp";
+
+// Social Suite
+export { SocialDashboard } from "./social/SocialDashboard";
+export { InstagramAutomation } from "./social/InstagramAutomation";
+export { TikTokAutomation } from "./social/TikTokAutomation";
+export { YouTubeAutomation } from "./social/YouTubeAutomation";
+
+// Automation
+export { ChatbotBuilder } from "./automation/ChatbotBuilder";
+export { Scheduler } from "./automation/Scheduler";
+export { default as DLQPage } from "./automation/DLQ";
+
+// Admin
+export { default as MetricsPage } from "./admin/Metrics";
+
+// CRM
+export { CRMDashboard } from "./crm/CRMDashboard";
+export { Pipeline } from "./crm/Pipeline";

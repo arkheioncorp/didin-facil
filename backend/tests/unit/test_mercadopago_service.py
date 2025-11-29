@@ -11,416 +11,447 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from backend.api.services.mercadopago import MercadoPagoService
-
 
 class TestMercadoPagoService:
     """Test suite for MercadoPagoService"""
 
     @pytest.fixture
-    def mp_service(self):
+    def mock_db(self):
+        """Create a mock database"""
+        db_mock = AsyncMock()
+        db_mock.execute = AsyncMock()
+        db_mock.fetch_all = AsyncMock(return_value=[])
+        return db_mock
+
+    @pytest.fixture
+    def mp_service(self, mock_db):
         """Create a MercadoPago service instance"""
-        with patch.object(MercadoPagoService, '__init__', lambda x: None):
+        with patch('api.services.mercadopago.database', mock_db):
+            from api.services.mercadopago import MercadoPagoService
             service = MercadoPagoService()
-            service.access_token = 'TEST_ACCESS_TOKEN'
-            service.base_url = 'https://api.mercadopago.com'
-            service.headers = {
-                'Authorization': 'Bearer TEST_ACCESS_TOKEN',
-                'Content-Type': 'application/json'
-            }
+            service.db = mock_db
             return service
 
     @pytest.fixture
-    def mock_http_client(self):
-        """Create a mock HTTP client"""
-        mock_client = AsyncMock()
+    def mock_http_response(self):
+        """Create a mock HTTP response"""
         mock_response = MagicMock()
         mock_response.json.return_value = {}
         mock_response.raise_for_status = MagicMock()
         mock_response.status_code = 200
-        mock_client.get = AsyncMock(return_value=mock_response)
-        mock_client.post = AsyncMock(return_value=mock_response)
-        mock_client.put = AsyncMock(return_value=mock_response)
-        return mock_client
+        return mock_response
 
     # ==================== GET PAYMENT Tests ====================
 
     @pytest.mark.asyncio
-    async def test_get_payment_success(self, mp_service, mock_http_client):
+    async def test_get_payment_success(self, mp_service, mock_http_response):
         """Test getting payment details successfully"""
         expected_payment = {
             'id': '123456',
             'status': 'approved',
             'transaction_amount': 99.90
         }
-        mock_response = MagicMock()
-        mock_response.json.return_value = expected_payment
-        mock_response.raise_for_status = MagicMock()
-        mock_http_client.get = AsyncMock(return_value=mock_response)
+        mock_http_response.json.return_value = expected_payment
+        mock_client = AsyncMock()
+        mock_client.get = AsyncMock(return_value=mock_http_response)
         
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
+        with patch('httpx.AsyncClient') as mock_class:
+            mock_class.return_value.__aenter__ = AsyncMock(
+                return_value=mock_client
+            )
+            mock_class.return_value.__aexit__ = AsyncMock()
             
             result = await mp_service.get_payment('123456')
             
             assert result == expected_payment
-            mock_http_client.get.assert_called_once()
+            mock_client.get.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_get_payment_with_correct_url(self, mp_service, mock_http_client):
+    async def test_get_payment_with_correct_url(
+        self, mp_service, mock_http_response
+    ):
         """Test get_payment calls correct URL"""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {}
-        mock_response.raise_for_status = MagicMock()
-        mock_http_client.get = AsyncMock(return_value=mock_response)
+        mock_client = AsyncMock()
+        mock_client.get = AsyncMock(return_value=mock_http_response)
         
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
+        with patch('httpx.AsyncClient') as mock_class:
+            mock_class.return_value.__aenter__ = AsyncMock(
+                return_value=mock_client
+            )
+            mock_class.return_value.__aexit__ = AsyncMock()
             
-            await mp_service.get_payment('PAY-123')
+            await mp_service.get_payment('123456')
             
-            call_args = mock_http_client.get.call_args
-            assert 'v1/payments/PAY-123' in call_args[0][0]
+            call_args = mock_client.get.call_args
+            assert '/v1/payments/123456' in call_args[0][0]
 
     # ==================== GET SUBSCRIPTION Tests ====================
 
     @pytest.mark.asyncio
-    async def test_get_subscription_success(self, mp_service, mock_http_client):
+    async def test_get_subscription_success(
+        self, mp_service, mock_http_response
+    ):
         """Test getting subscription details successfully"""
-        expected_subscription = {
-            'id': 'preapproval-123',
+        expected_sub = {
+            'id': 'sub_123',
             'status': 'authorized',
-            'reason': 'TikTrend Pro'
+            'payer_email': 'test@example.com'
         }
-        mock_response = MagicMock()
-        mock_response.json.return_value = expected_subscription
-        mock_response.raise_for_status = MagicMock()
-        mock_http_client.get = AsyncMock(return_value=mock_response)
+        mock_http_response.json.return_value = expected_sub
+        mock_client = AsyncMock()
+        mock_client.get = AsyncMock(return_value=mock_http_response)
         
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
+        with patch('httpx.AsyncClient') as mock_class:
+            mock_class.return_value.__aenter__ = AsyncMock(
+                return_value=mock_client
+            )
+            mock_class.return_value.__aexit__ = AsyncMock()
             
-            result = await mp_service.get_subscription('preapproval-123')
+            result = await mp_service.get_subscription('sub_123')
             
-            assert result == expected_subscription
+            assert result == expected_sub
 
     # ==================== GET AUTHORIZED PAYMENT Tests ====================
 
     @pytest.mark.asyncio
-    async def test_get_authorized_payment_success(self, mp_service, mock_http_client):
+    async def test_get_authorized_payment_success(
+        self, mp_service, mock_http_response
+    ):
         """Test getting authorized payment details"""
-        expected = {'id': 'auth-123', 'status': 'approved'}
-        mock_response = MagicMock()
-        mock_response.json.return_value = expected
-        mock_response.raise_for_status = MagicMock()
-        mock_http_client.get = AsyncMock(return_value=mock_response)
+        expected_payment = {'id': 'auth_123', 'status': 'approved'}
+        mock_http_response.json.return_value = expected_payment
+        mock_client = AsyncMock()
+        mock_client.get = AsyncMock(return_value=mock_http_response)
         
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
+        with patch('httpx.AsyncClient') as mock_class:
+            mock_class.return_value.__aenter__ = AsyncMock(
+                return_value=mock_client
+            )
+            mock_class.return_value.__aexit__ = AsyncMock()
             
-            result = await mp_service.get_authorized_payment('auth-123')
+            result = await mp_service.get_authorized_payment('auth_123')
             
-            assert result == expected
+            assert result == expected_payment
 
-    # ==================== CREATE PREFERENCE Tests ====================
+    # ==================== CREATE PAYMENT Tests ====================
 
     @pytest.mark.asyncio
-    async def test_create_preference_starter(self, mp_service, mock_http_client):
-        """Test creating preference for starter plan"""
-        expected = {'id': 'pref-123', 'init_point': 'https://mp.com/checkout'}
-        mock_response = MagicMock()
-        mock_response.json.return_value = expected
-        mock_response.raise_for_status = MagicMock()
-        mock_http_client.post = AsyncMock(return_value=mock_response)
+    async def test_create_payment_success(
+        self, mp_service, mock_http_response
+    ):
+        """Test creating payment preference successfully"""
+        expected_response = {
+            'id': 'pref_123',
+            'init_point': 'https://mercadopago.com/checkout/123'
+        }
+        mock_http_response.json.return_value = expected_response
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_http_response)
         
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
+        with patch('httpx.AsyncClient') as mock_class:
+            mock_class.return_value.__aenter__ = AsyncMock(
+                return_value=mock_client
+            )
+            mock_class.return_value.__aexit__ = AsyncMock()
             
-            result = await mp_service.create_preference(
-                plan='starter',
+            result = await mp_service.create_payment(
+                title='Plano Pro',
+                price=79.90,
                 user_email='test@example.com',
-                user_id='user-123'
+                external_reference='user123:pro'
             )
             
-            assert result == expected
+            assert result == expected_response
+            mock_client.post.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_create_preference_pro(self, mp_service, mock_http_client):
-        """Test creating preference for pro plan"""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {'id': 'pref-pro'}
-        mock_response.raise_for_status = MagicMock()
-        mock_http_client.post = AsyncMock(return_value=mock_response)
+    async def test_create_payment_payload_structure(
+        self, mp_service, mock_http_response
+    ):
+        """Test create_payment sends correct payload structure"""
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_http_response)
         
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
+        with patch('httpx.AsyncClient') as mock_class:
+            mock_class.return_value.__aenter__ = AsyncMock(
+                return_value=mock_client
+            )
+            mock_class.return_value.__aexit__ = AsyncMock()
             
-            await mp_service.create_preference(
-                plan='pro',
-                user_email='test@example.com',
-                user_id='user-123'
+            await mp_service.create_payment(
+                title='Test Plan',
+                price=99.90,
+                user_email='buyer@test.com',
+                external_reference='ref123'
             )
             
-            call_args = mock_http_client.post.call_args
-            assert call_args is not None
-
-    @pytest.mark.asyncio
-    async def test_create_preference_enterprise(self, mp_service, mock_http_client):
-        """Test creating preference for enterprise plan"""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {'id': 'pref-ent'}
-        mock_response.raise_for_status = MagicMock()
-        mock_http_client.post = AsyncMock(return_value=mock_response)
-        
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
+            call_args = mock_client.post.call_args
+            payload = call_args.kwargs['json']
             
-            await mp_service.create_preference(
-                plan='enterprise',
-                user_email='enterprise@example.com',
-                user_id='user-456'
-            )
-            
-            mock_http_client.post.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_create_preference_unknown_plan_uses_default(self, mp_service, mock_http_client):
-        """Test creating preference with unknown plan uses default price"""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {'id': 'pref-default'}
-        mock_response.raise_for_status = MagicMock()
-        mock_http_client.post = AsyncMock(return_value=mock_response)
-        
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
-            
-            result = await mp_service.create_preference(
-                plan='unknown_plan',
-                user_email='test@example.com',
-                user_id='user-123'
-            )
-            
-            assert result is not None
-
-    @pytest.mark.asyncio
-    async def test_create_preference_includes_metadata(self, mp_service, mock_http_client):
-        """Test create_preference includes user metadata"""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {}
-        mock_response.raise_for_status = MagicMock()
-        mock_http_client.post = AsyncMock(return_value=mock_response)
-        
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
-            
-            await mp_service.create_preference(
-                plan='pro',
-                user_email='meta@test.com',
-                user_id='meta-user-123'
-            )
-            
-            call_args = mock_http_client.post.call_args
-            assert call_args is not None
+            assert 'items' in payload
+            assert payload['items'][0]['title'] == 'Test Plan'
+            assert payload['items'][0]['unit_price'] == 99.90
+            assert payload['payer']['email'] == 'buyer@test.com'
+            assert payload['external_reference'] == 'ref123'
 
     # ==================== CREATE SUBSCRIPTION Tests ====================
+    # Note: create_subscription is deprecated - raises NotImplementedError
+    # The system now uses lifetime license + credits model
 
     @pytest.mark.asyncio
-    async def test_create_subscription_starter(self, mp_service, mock_http_client):
-        """Test creating subscription for starter plan"""
-        expected = {'id': 'sub-123', 'init_point': 'https://mp.com/subscribe'}
-        mock_response = MagicMock()
-        mock_response.json.return_value = expected
-        mock_response.raise_for_status = MagicMock()
-        mock_http_client.post = AsyncMock(return_value=mock_response)
-        
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
-            
-            result = await mp_service.create_subscription(
+    async def test_create_subscription_raises_not_implemented(
+        self, mp_service, mock_http_response
+    ):
+        """Test create_subscription raises NotImplementedError (deprecated)"""
+        with pytest.raises(NotImplementedError) as exc_info:
+            await mp_service.create_subscription(
                 plan='starter',
                 user_email='test@example.com',
-                user_id='user-123'
+                user_id='user123'
             )
-            
-            assert result == expected
+        
+        assert "Subscriptions are deprecated" in str(exc_info.value)
+
+    # ==================== CREATE LICENSE PAYMENT Tests ====================
 
     @pytest.mark.asyncio
-    async def test_create_subscription_pro(self, mp_service, mock_http_client):
-        """Test creating subscription for pro plan"""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {'id': 'sub-pro'}
-        mock_response.raise_for_status = MagicMock()
-        mock_http_client.post = AsyncMock(return_value=mock_response)
+    async def test_create_license_payment_success(
+        self, mp_service, mock_http_response
+    ):
+        """Test creating lifetime license payment"""
+        expected_response = {'id': 'pref_123', 'init_point': 'https://...'}
+        mock_http_response.json.return_value = expected_response
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_http_response)
         
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
+        with patch('httpx.AsyncClient') as mock_class:
+            mock_class.return_value.__aenter__ = AsyncMock(
+                return_value=mock_client
+            )
+            mock_class.return_value.__aexit__ = AsyncMock()
             
-            result = await mp_service.create_subscription(
-                plan='pro',
-                user_email='pro@example.com',
-                user_id='user-456'
+            result = await mp_service.create_license_payment(
+                user_email='test@example.com',
+                user_id='user123'
             )
             
-            assert result['id'] == 'sub-pro'
+            assert result == expected_response
+            call_args = mock_client.post.call_args
+            payload = call_args.kwargs['json']
+            assert payload['items'][0]['unit_price'] == 49.90
+            assert 'Licença Vitalícia' in payload['items'][0]['title']
+            assert payload['metadata']['product_type'] == 'license'
 
     @pytest.mark.asyncio
-    async def test_create_subscription_enterprise(self, mp_service, mock_http_client):
-        """Test creating subscription for enterprise plan"""
-        mock_response = MagicMock()
-        mock_response.json.return_value = {'id': 'sub-enterprise'}
-        mock_response.raise_for_status = MagicMock()
-        mock_http_client.post = AsyncMock(return_value=mock_response)
+    async def test_create_license_payment_uses_correct_url(
+        self, mp_service, mock_http_response
+    ):
+        """Test create_license_payment calls correct URL"""
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_http_response)
         
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
+        with patch('httpx.AsyncClient') as mock_class:
+            mock_class.return_value.__aenter__ = AsyncMock(
+                return_value=mock_client
+            )
+            mock_class.return_value.__aexit__ = AsyncMock()
             
-            result = await mp_service.create_subscription(
-                plan='enterprise',
-                user_email='enterprise@example.com',
-                user_id='user-789'
+            await mp_service.create_license_payment(
+                user_email='test@example.com',
+                user_id='user123'
             )
             
-            assert result is not None
+            call_args = mock_client.post.call_args
+            assert '/checkout/preferences' in call_args[0][0]
+
+    @pytest.mark.asyncio
+    async def test_create_license_payment_external_reference(
+        self, mp_service, mock_http_response
+    ):
+        """Test create_license_payment sets correct external_reference"""
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_http_response)
+        
+        with patch('httpx.AsyncClient') as mock_class:
+            mock_class.return_value.__aenter__ = AsyncMock(
+                return_value=mock_client
+            )
+            mock_class.return_value.__aexit__ = AsyncMock()
+            
+            await mp_service.create_license_payment(
+                user_email='test@example.com',
+                user_id='user456'
+            )
+            
+            call_args = mock_client.post.call_args
+            payload = call_args.kwargs['json']
+            assert payload['external_reference'] == 'user456:lifetime'
 
     # ==================== CANCEL SUBSCRIPTION Tests ====================
 
     @pytest.mark.asyncio
-    async def test_cancel_subscription_success(self, mp_service, mock_http_client):
-        """Test canceling subscription successfully"""
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_http_client.put = AsyncMock(return_value=mock_response)
+    async def test_cancel_subscription_success(
+        self, mp_service, mock_http_response
+    ):
+        """Test cancelling subscription successfully"""
+        mock_http_response.status_code = 200
+        mock_client = AsyncMock()
+        mock_client.put = AsyncMock(return_value=mock_http_response)
         
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
+        with patch('httpx.AsyncClient') as mock_class:
+            mock_class.return_value.__aenter__ = AsyncMock(
+                return_value=mock_client
+            )
+            mock_class.return_value.__aexit__ = AsyncMock()
             
-            result = await mp_service.cancel_subscription('preapproval-123')
+            result = await mp_service.cancel_subscription('sub_123')
             
             assert result is True
+            call_args = mock_client.put.call_args
+            assert call_args.kwargs['json'] == {'status': 'cancelled'}
 
     @pytest.mark.asyncio
-    async def test_cancel_subscription_failure(self, mp_service, mock_http_client):
-        """Test canceling subscription when fails"""
-        mock_response = MagicMock()
-        mock_response.status_code = 404
-        mock_http_client.put = AsyncMock(return_value=mock_response)
+    async def test_cancel_subscription_failure(
+        self, mp_service, mock_http_response
+    ):
+        """Test cancelling subscription fails"""
+        mock_http_response.status_code = 400
+        mock_client = AsyncMock()
+        mock_client.put = AsyncMock(return_value=mock_http_response)
         
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
+        with patch('httpx.AsyncClient') as mock_class:
+            mock_class.return_value.__aenter__ = AsyncMock(
+                return_value=mock_client
+            )
+            mock_class.return_value.__aexit__ = AsyncMock()
             
-            result = await mp_service.cancel_subscription('invalid-preapproval')
+            result = await mp_service.cancel_subscription('invalid_sub')
             
             assert result is False
-
-    @pytest.mark.asyncio
-    async def test_cancel_subscription_sends_cancelled_status(self, mp_service, mock_http_client):
-        """Test cancel_subscription sends correct status"""
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_http_client.put = AsyncMock(return_value=mock_response)
-        
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_http_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
-            
-            await mp_service.cancel_subscription('preapproval-123')
-            
-            call_args = mock_http_client.put.call_args
-            assert call_args[1]['json'] == {'status': 'cancelled'}
 
     # ==================== LOG EVENT Tests ====================
 
     @pytest.mark.asyncio
-    async def test_log_event_success(self, mp_service):
+    async def test_log_event_success(self, mp_service, mock_db):
         """Test logging payment event"""
-        mock_db = AsyncMock()
+        await mp_service.log_event('payment.approved', {'amount': 99.90})
         
-        with patch('backend.api.services.mercadopago.get_db') as mock_get_db:
-            mock_get_db.return_value.__aenter__ = AsyncMock(return_value=mock_db)
-            mock_get_db.return_value.__aexit__ = AsyncMock()
-            
-            await mp_service.log_event('payment.created', {'payment_id': '123'})
-            
-            mock_db.execute.assert_called_once()
+        mock_db.execute.assert_called_once()
+        call_args = mock_db.execute.call_args
+        assert 'payment_events' in call_args[0][0]
 
     @pytest.mark.asyncio
-    async def test_log_event_stores_event_type(self, mp_service):
+    async def test_log_event_stores_event_type(self, mp_service, mock_db):
         """Test log_event stores correct event type"""
-        mock_db = AsyncMock()
+        await mp_service.log_event('subscription.created', {'plan': 'pro'})
         
-        with patch('backend.api.services.mercadopago.get_db') as mock_get_db:
-            mock_get_db.return_value.__aenter__ = AsyncMock(return_value=mock_db)
-            mock_get_db.return_value.__aexit__ = AsyncMock()
-            
-            await mp_service.log_event('subscription.updated', {'sub_id': '456'})
-            
-            call_args = mock_db.execute.call_args
-            params = call_args[0][1]
-            assert params['event_type'] == 'subscription.updated'
+        call_args = mock_db.execute.call_args
+        params = call_args[0][1]
+        assert params['event_type'] == 'subscription.created'
+
+    # ==================== SEND LICENSE EMAIL Tests ====================
+
+    @pytest.mark.asyncio
+    async def test_send_license_email(self, mp_service, capsys):
+        """Test send_license_email prints expected message"""
+        await mp_service.send_license_email(
+            email='user@test.com',
+            license_key='LIC-KEY-123',
+            plan='pro'
+        )
+        
+        captured = capsys.readouterr()
+        assert 'user@test.com' in captured.out
+        assert 'LIC-KEY-123' in captured.out
+
+    # ==================== GET PAYMENT HISTORY Tests ====================
+
+    @pytest.mark.asyncio
+    async def test_get_payment_history_with_results(self, mp_service, mock_db):
+        """Test getting payment history with results"""
+        payments = [
+            {'id': '1', 'amount': 29.90, 'plan': 'starter'},
+            {'id': '2', 'amount': 79.90, 'plan': 'pro'}
+        ]
+        mock_db.fetch_all = AsyncMock(return_value=payments)
+        
+        result = await mp_service.get_payment_history('user123')
+        
+        assert len(result) == 2
+        assert result[0]['amount'] == 29.90
+
+    @pytest.mark.asyncio
+    async def test_get_payment_history_empty(self, mp_service, mock_db):
+        """Test getting payment history with no results"""
+        mock_db.fetch_all = AsyncMock(return_value=[])
+        
+        result = await mp_service.get_payment_history('new_user')
+        
+        assert result == []
 
 
 class TestMercadoPagoServiceEdgeCases:
     """Edge case tests for MercadoPagoService"""
 
     @pytest.fixture
-    def mp_service(self):
-        with patch.object(MercadoPagoService, '__init__', lambda x: None):
+    def mock_db(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def mp_service(self, mock_db):
+        with patch('api.services.mercadopago.database', mock_db):
+            from api.services.mercadopago import MercadoPagoService
             service = MercadoPagoService()
-            service.access_token = 'TEST_TOKEN'
-            service.base_url = 'https://api.mercadopago.com'
-            service.headers = {'Authorization': 'Bearer TEST_TOKEN'}
+            service.db = mock_db
             return service
 
     @pytest.mark.asyncio
-    async def test_get_payment_raises_on_error(self, mp_service):
+    async def test_get_payment_raises_on_http_error(self, mp_service):
         """Test get_payment raises on HTTP error"""
-        mock_response = MagicMock()
-        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-            "Not Found", request=MagicMock(), response=MagicMock()
-        )
-        
+        # Configure mock client that raises on get
         mock_client = AsyncMock()
-        mock_client.get = AsyncMock(return_value=mock_response)
+        mock_client.get = AsyncMock(side_effect=httpx.HTTPStatusError(
+            'Not Found',
+            request=MagicMock(),
+            response=MagicMock()
+        ))
         
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
-            
+        # Use AsyncMock for the context manager
+        mock_async_client = AsyncMock()
+        mock_async_client.__aenter__.return_value = mock_client
+        mock_async_client.__aexit__.return_value = None
+        
+        with patch(
+            'api.services.mercadopago.httpx.AsyncClient',
+            return_value=mock_async_client
+        ):
             with pytest.raises(httpx.HTTPStatusError):
-                await mp_service.get_payment('invalid-id')
+                await mp_service.get_payment('invalid_id')
 
     @pytest.mark.asyncio
-    async def test_create_preference_with_empty_email(self, mp_service):
-        """Test creating preference with empty email"""
+    async def test_create_payment_with_special_chars_in_email(
+        self, mp_service
+    ):
+        """Test create_payment handles special characters in email"""
         mock_response = MagicMock()
-        mock_response.json.return_value = {'id': 'pref-123'}
+        mock_response.json.return_value = {'id': 'test'}
         mock_response.raise_for_status = MagicMock()
-        
         mock_client = AsyncMock()
         mock_client.post = AsyncMock(return_value=mock_response)
         
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_client)
-            mock_client_class.return_value.__aexit__ = AsyncMock()
+        with patch('httpx.AsyncClient') as mock_class:
+            mock_class.return_value.__aenter__ = AsyncMock(
+                return_value=mock_client
+            )
+            mock_class.return_value.__aexit__ = AsyncMock()
             
-            result = await mp_service.create_preference(
-                plan='starter',
-                user_email='',
-                user_id='user-123'
+            await mp_service.create_payment(
+                title='Test',
+                price=10.0,
+                user_email='test+tag@example.com',
+                external_reference='ref'
             )
             
-            assert result is not None
+            call_args = mock_client.post.call_args
+            payload = call_args.kwargs['json']
+            assert payload['payer']['email'] == 'test+tag@example.com'

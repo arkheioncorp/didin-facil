@@ -1,0 +1,106 @@
+# Worker Supervisor - Docker Compose Configuration
+# ================================================
+# Adiciona os workers como serviços gerenciados
+#
+# Uso:
+#   docker-compose -f docker-compose.yml -f docker-compose.workers.yml up -d
+#
+
+version: '3.8'
+
+services:
+  # ============================================
+  # Post Scheduler Worker
+  # ============================================
+  scheduler:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+    container_name: didin-scheduler
+    command: python -m workers.scheduler_runner
+    restart: unless-stopped
+    
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://didin:didin@postgres:5432/didin}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - SCHEDULER_CHECK_INTERVAL=30
+      - SCHEDULER_MAX_RETRIES=3
+      - SCHEDULER_HEALTH_PORT=8001
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    
+    networks:
+      - didin-network
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+  
+  # ============================================
+  # WhatsApp Reconnect Worker
+  # ============================================
+  whatsapp-reconnect:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+    container_name: didin-whatsapp-reconnect
+    command: python -m workers.whatsapp_reconnect
+    restart: unless-stopped
+    
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - EVOLUTION_API_URL=${EVOLUTION_API_URL}
+      - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
+      - RECONNECT_CHECK_INTERVAL=60
+    
+    depends_on:
+      redis:
+        condition: service_healthy
+    
+    networks:
+      - didin-network
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.05'
+          memory: 64M
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  didin-network:
+    external: true

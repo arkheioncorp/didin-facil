@@ -15,9 +15,8 @@ class TestAuthService:
     @pytest.fixture
     def auth_service(self):
         """Create AuthService instance for testing."""
-        with patch("api.services.auth.settings") as mock_settings:
-            mock_settings.JWT_SECRET_KEY = "test-secret-key"
-            mock_settings.JWT_ALGORITHM = "HS256"
+        with patch("api.services.auth.JWT_SECRET_KEY", "test-secret-key"), \
+             patch("api.services.auth.JWT_ALGORITHM", "HS256"):
             return AuthService()
 
     # ============================================
@@ -73,9 +72,7 @@ class TestAuthService:
             "password_hash": auth_service.hash_password("correct_password")
         }
 
-        with patch("api.services.auth.get_db") as mock_get_db:
-            mock_get_db.return_value.__aenter__.return_value = mock_db
-
+        with patch("api.services.auth.database", mock_db):
             result = await auth_service.authenticate("test@example.com", "correct_password")
 
             assert result is not None
@@ -91,9 +88,7 @@ class TestAuthService:
             "password_hash": auth_service.hash_password("correct_password")
         }
 
-        with patch("api.services.auth.get_db") as mock_get_db:
-            mock_get_db.return_value.__aenter__.return_value = mock_db
-
+        with patch("api.services.auth.database", mock_db):
             result = await auth_service.authenticate("test@example.com", "wrong_password")
 
             assert result is None
@@ -104,9 +99,7 @@ class TestAuthService:
         """Should return None for non-existent user."""
         mock_db.fetch_one.return_value = None
 
-        with patch("api.services.auth.get_db") as mock_get_db:
-            mock_get_db.return_value.__aenter__.return_value = mock_db
-
+        with patch("api.services.auth.database", mock_db):
             result = await auth_service.authenticate("nonexistent@example.com", "password")
 
             assert result is None
@@ -118,9 +111,7 @@ class TestAuthService:
         mock_user_data["is_active"] = False
         mock_db.fetch_one.return_value = mock_user_data
 
-        with patch("api.services.auth.get_db") as mock_get_db:
-            mock_get_db.return_value.__aenter__.return_value = mock_db
-
+        with patch("api.services.auth.database", mock_db):
             result = await auth_service.authenticate("test@example.com", "password")
 
             assert result is None
@@ -140,9 +131,7 @@ class TestAuthService:
             {"count": 0}  # Device count query
         ]
 
-        with patch("api.services.auth.get_db") as mock_get_db:
-            mock_get_db.return_value.__aenter__.return_value = mock_db
-
+        with patch("api.services.auth.database", mock_db):
             result = await auth_service.validate_hwid("user-123", "new-hwid")
 
             assert result is True
@@ -158,9 +147,7 @@ class TestAuthService:
             {"id": "device-123"}  # Device exists
         ]
 
-        with patch("api.services.auth.get_db") as mock_get_db:
-            mock_get_db.return_value.__aenter__.return_value = mock_db
-
+        with patch("api.services.auth.database", mock_db):
             result = await auth_service.validate_hwid("user-123", "existing-hwid")
 
             assert result is True
@@ -176,9 +163,7 @@ class TestAuthService:
             {"count": 2}  # Device count at max
         ]
 
-        with patch("api.services.auth.get_db") as mock_get_db:
-            mock_get_db.return_value.__aenter__.return_value = mock_db
-
+        with patch("api.services.auth.database", mock_db):
             result = await auth_service.validate_hwid("user-123", "new-device")
 
             assert result is False
@@ -189,9 +174,7 @@ class TestAuthService:
         """Should allow access with no license (free tier)."""
         mock_db.fetch_one.return_value = None  # No license
 
-        with patch("api.services.auth.get_db") as mock_get_db:
-            mock_get_db.return_value.__aenter__.return_value = mock_db
-
+        with patch("api.services.auth.database", mock_db):
             result = await auth_service.validate_hwid("user-123", "any-hwid")
 
             assert result is True
@@ -208,12 +191,11 @@ class TestAuthService:
             "id": "new-user-123",
             "email": "new@example.com",
             "name": "New User",
-            "plan": "free"
+            "plan": "lifetime",
+            "credits": 0
         }
 
-        with patch("api.services.auth.get_db") as mock_get_db:
-            mock_get_db.return_value.__aenter__.return_value = mock_db
-
+        with patch("api.services.auth.database", mock_db):
             result = await auth_service.create_user(
                 email="new@example.com",
                 password="secure_password",
@@ -221,7 +203,7 @@ class TestAuthService:
             )
 
             assert result["email"] == "new@example.com"
-            assert result["plan"] == "free"
+            assert result["plan"] == "lifetime"
 
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -231,12 +213,11 @@ class TestAuthService:
             "id": "new-user-123",
             "email": "new@example.com",
             "name": "New User",
-            "plan": "free"
+            "plan": "lifetime",
+            "credits": 0
         }
 
-        with patch("api.services.auth.get_db") as mock_get_db:
-            mock_get_db.return_value.__aenter__.return_value = mock_db
-
+        with patch("api.services.auth.database", mock_db):
             await auth_service.create_user(
                 email="new@example.com",
                 password="plain_password",

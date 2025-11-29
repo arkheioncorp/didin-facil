@@ -61,7 +61,7 @@ export const useFavoritesStore = create<FavoritesState>()(
         set((state: FavoritesState) => ({
           collections: [
             ...state.collections,
-            { id: Date.now().toString(), name, productIds: [] },
+            { id: crypto.randomUUID(), name, productIds: [] },
           ],
         })),
         

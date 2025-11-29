@@ -1,6 +1,6 @@
 # 📡 API Reference - TikTrend Finder
 
-**Versão:** 2.0  
+**Versão:** 1.0.0  
 **Última Atualização:** 26 de Novembro de 2025  
 **Base URL:** `https://api.tiktrend.app/v1`
 

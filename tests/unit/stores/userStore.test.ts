@@ -5,33 +5,31 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { act } from "@testing-library/react";
 import { useUserStore } from "@/stores/userStore";
-import type { User, License } from "@/types";
+import type { User, License, Credits } from "@/types";
 
-// Mock user data
+// Mock user data - novo modelo lifetime + credits
 const mockUser: User = {
   id: "user-123",
   email: "test@example.com",
   name: "Test User",
-  plan: "pro",
-  planExpiresAt: "2025-01-01T00:00:00Z",
+  hasLifetimeLicense: true,
+  licenseActivatedAt: "2024-01-15T00:00:00Z",
   createdAt: "2024-01-01T00:00:00Z",
 };
 
 const mockLicense: License = {
   isValid: true,
-  plan: "pro",
-  features: {
-    searchesPerMonth: 100,
-    copiesPerMonth: 50,
-    favoriteLists: 5,
-    exportEnabled: true,
-    schedulerEnabled: false,
-  },
-  expiresAt: "2025-01-01T00:00:00Z",
-  usageThisMonth: {
-    searches: 10,
-    copies: 5,
-  },
+  isLifetime: true,
+  activatedAt: "2024-01-15T00:00:00Z",
+  maxDevices: 2,
+  activeDevices: 1,
+};
+
+const mockCredits: Credits = {
+  balance: 50,
+  totalPurchased: 100,
+  totalUsed: 50,
+  lastPurchaseAt: "2024-06-01T00:00:00Z",
 };
 
 describe("useUserStore", () => {
@@ -293,27 +291,34 @@ describe("useUserStore", () => {
       expect(useUserStore.getState().isAuthenticated).toBe(false);
     });
 
-    it("should handle plan upgrade scenario", () => {
-      const { login, setLicense } = useUserStore.getState();
+    it("should handle license activation scenario", () => {
+      const { login, setLicense, setCredits } = useUserStore.getState();
 
-      // Login with basic plan
-      const basicUser = { ...mockUser, plan: "basic" as const };
-      const basicLicense = { ...mockLicense, plan: "basic" as const };
-
-      act(() => {
-        login(basicUser, basicLicense);
-      });
-
-      expect(useUserStore.getState().license?.plan).toBe("basic");
-
-      // Upgrade to pro
-      const proLicense = { ...mockLicense, plan: "pro" as const };
+      // Login without lifetime license
+      const freeUser: User = { ...mockUser, hasLifetimeLicense: false, licenseActivatedAt: null };
+      const freeLicense: License = { ...mockLicense, isLifetime: false, activatedAt: null };
 
       act(() => {
-        setLicense(proLicense);
+        login(freeUser, freeLicense);
       });
 
-      expect(useUserStore.getState().license?.plan).toBe("pro");
+      expect(useUserStore.getState().license?.isLifetime).toBe(false);
+
+      // Upgrade to lifetime
+      const lifetimeLicense: License = { ...mockLicense, isLifetime: true, activatedAt: new Date().toISOString() };
+
+      act(() => {
+        setLicense(lifetimeLicense);
+      });
+
+      expect(useUserStore.getState().license?.isLifetime).toBe(true);
+
+      // Add credits
+      act(() => {
+        setCredits(mockCredits);
+      });
+
+      expect(useUserStore.getState().credits?.balance).toBe(50);
     });
   });
 });

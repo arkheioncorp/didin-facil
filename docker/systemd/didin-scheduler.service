@@ -1,0 +1,56 @@
+[Unit]
+Description=Didin Fácil Post Scheduler Worker
+Documentation=https://github.com/arkheioncorp/didin-facil
+After=network.target redis.service postgresql.service
+Wants=redis.service postgresql.service
+
+[Service]
+Type=notify
+User=didin
+Group=didin
+WorkingDirectory=/var/www/didin-facil/backend
+
+# Ambiente
+Environment=PYTHONUNBUFFERED=1
+Environment=ENVIRONMENT=production
+Environment=SCHEDULER_CHECK_INTERVAL=30
+Environment=SCHEDULER_MAX_RETRIES=3
+Environment=SCHEDULER_HEALTH_PORT=8001
+EnvironmentFile=-/etc/didin-facil/scheduler.env
+
+# Comando
+ExecStart=/var/www/didin-facil/venv/bin/python -m workers.scheduler_runner
+
+# Restart automático
+Restart=always
+RestartSec=5
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+# Timeouts
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+# Graceful shutdown
+KillMode=mixed
+KillSignal=SIGTERM
+
+# Recursos
+MemoryMax=500M
+CPUQuota=50%
+
+# Segurança
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/www/didin-facil/logs
+ReadWritePaths=/tmp
+
+# Logging via journald
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=didin-scheduler
+
+[Install]
+WantedBy=multi-user.target

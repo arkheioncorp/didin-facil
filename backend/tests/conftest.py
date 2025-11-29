@@ -15,6 +15,28 @@ import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from fastapi import FastAPI
 
+
+# ============================================
+# HTTPX/STARLETTE COMPATIBILITY
+# ============================================
+# Handle incompatibility between Starlette 0.31.1 and httpx 0.28.1
+# where TestClient constructor changed
+
+def _create_test_client(app, **kwargs):
+    """Create a test client with compatibility for different httpx versions."""
+    try:
+        # Try new httpx style with ASGITransport
+        from httpx import ASGITransport as Transport
+        return AsyncClient(
+            transport=Transport(app=app),
+            base_url=kwargs.get("base_url", "http://test"),
+        )
+    except TypeError:
+        # Fallback for older versions
+        from starlette.testclient import TestClient
+        return TestClient(app, **kwargs)
+
+
 # Set testing environment
 os.environ["TESTING"] = "true"
 os.environ["DATABASE_URL"] = "postgresql://test:test@localhost:5432/tiktrend_test"
@@ -24,6 +46,50 @@ os.environ["JWT_ALGORITHM"] = "HS256"
 os.environ["OPENAI_API_KEY"] = "test-api-key"
 
 from api.main import app
+
+
+# ============================================
+# DEPENDENCY OVERRIDE CLEANUP (AUTOUSE)
+# ============================================
+
+@pytest.fixture(autouse=True)
+def cleanup_dependency_overrides():
+    """
+    Automatically clean up dependency_overrides between tests.
+    This prevents test pollution when fixtures modify app.dependency_overrides.
+    """
+    # Store original overrides (usually empty)
+    original_overrides = app.dependency_overrides.copy()
+    yield
+    # Restore original overrides after each test
+    app.dependency_overrides = original_overrides
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limiter_global():
+    """
+    Reset rate limiter state before each test to prevent 429 errors.
+    """
+    # Find and reset the rate limiter middleware
+    for middleware in app.user_middleware:
+        if hasattr(middleware, 'cls') and middleware.cls.__name__ == 'RateLimitMiddleware':
+            # Clear any stored state
+            if hasattr(middleware, 'kwargs') and 'app' in middleware.kwargs:
+                if hasattr(middleware.kwargs['app'], 'request_counts'):
+                    middleware.kwargs['app'].request_counts.clear()
+    
+    # Also clear via app middleware stack
+    try:
+        from api.middleware.ratelimit import RateLimitMiddleware
+        for attr_name in dir(app):
+            attr = getattr(app, attr_name, None)
+            if isinstance(attr, RateLimitMiddleware):
+                if hasattr(attr, 'request_counts'):
+                    attr.request_counts.clear()
+    except Exception:
+        pass
+    
+    yield
 
 
 # ============================================
@@ -92,14 +158,16 @@ def mock_auth_service():
             "id": "user-123",
             "email": "test@example.com",
             "name": "Test User",
-            "plan": "premium"
+            "plan": "lifetime",
+            "credits": 100
         })
         service.validate_hwid = AsyncMock(return_value=True)
         service.create_user = AsyncMock(return_value={
             "id": "user-456",
             "email": "new@example.com",
             "name": "New User",
-            "plan": "free"
+            "plan": "lifetime",
+            "credits": 0
         })
         service.create_token = MagicMock(return_value="test-jwt-token")
         service.verify_token = MagicMock(return_value={
@@ -139,17 +207,23 @@ def mock_cache_service():
 
 
 @pytest.fixture
+def mock_credits_service():
+    """Mock credits service."""
+    with patch("api.services.cache.CreditsService") as mock:
+        service = mock.return_value
+        service.get_cached_credits = AsyncMock(return_value=100)
+        service.set_cached_credits = AsyncMock(return_value=True)
+        service.invalidate_credits = AsyncMock(return_value=True)
+        yield service
+
+
+# Keep for backwards compatibility
+@pytest.fixture
 def mock_quota_service():
-    """Mock quota service."""
+    """Mock quota service (deprecated - use mock_credits_service)."""
     with patch("api.services.cache.QuotaService") as mock:
         service = mock.return_value
-        service.check_quota = AsyncMock(return_value=True)
-        service.increment = AsyncMock(return_value=1)
-        service.get_usage = AsyncMock(return_value={
-            "used": 10,
-            "limit": 100,
-            "remaining": 90
-        })
+        service.get_quota = AsyncMock(return_value={"used": 0, "limit": -1})
         yield service
 
 

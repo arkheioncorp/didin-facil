@@ -1,10 +1,29 @@
 -- ===========================================
 -- TikTrend Finder - Database Initialization
+-- Modelo: Licença Vitalícia + Créditos IA
 -- ===========================================
 
--- Enable UUID extension
+-- Enable Extensions on main database
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+CREATE EXTENSION IF NOT EXISTS "vector";
+
+-- ===========================================
+-- Chatwoot Database
+-- ===========================================
+CREATE DATABASE chatwoot_dev;
+
+-- Enable vector extension on chatwoot database
+\c chatwoot_dev
+CREATE EXTENSION IF NOT EXISTS "vector";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+\c tiktrend
+
+-- ===========================================
+-- Evolution API Database (WhatsApp)
+-- ===========================================
+CREATE DATABASE evolution_db;
 
 -- ===========================================
 -- Users Table
@@ -12,9 +31,17 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255),
     name VARCHAR(255),
     avatar_url TEXT,
+    -- Lifetime license flag
+    has_lifetime_license BOOLEAN DEFAULT false,
+    license_activated_at TIMESTAMP,
+    -- Credits system
+    credits_balance INTEGER DEFAULT 0,
+    credits_purchased INTEGER DEFAULT 0,
+    credits_used INTEGER DEFAULT 0,
+    -- Status
     is_active BOOLEAN DEFAULT true,
     is_verified BOOLEAN DEFAULT false,
     verification_token VARCHAR(255),
@@ -25,6 +52,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_has_license ON users(has_lifetime_license);
 
 -- ===========================================
 -- Licenses Table
@@ -33,18 +61,18 @@ CREATE TABLE IF NOT EXISTS licenses (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     license_key VARCHAR(255) UNIQUE NOT NULL,
-    plan VARCHAR(50) NOT NULL DEFAULT 'free',
+    is_lifetime BOOLEAN DEFAULT true,
     status VARCHAR(50) NOT NULL DEFAULT 'active',
-    max_devices INTEGER DEFAULT 1,
+    max_devices INTEGER DEFAULT 2,
     current_devices INTEGER DEFAULT 0,
-    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP,
+    payment_id VARCHAR(255),
+    activated_at TIMESTAMP,
+    expires_at TIMESTAMP, -- NULL for lifetime
     features JSONB DEFAULT '{}',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT valid_plan CHECK (plan IN ('free', 'starter', 'pro', 'enterprise')),
-    CONSTRAINT valid_status CHECK (status IN ('active', 'expired', 'suspended', 'cancelled'))
+    CONSTRAINT valid_status CHECK (status IN ('active', 'suspended', 'revoked'))
 );
 
 CREATE INDEX idx_licenses_user_id ON licenses(user_id);
@@ -70,18 +98,36 @@ CREATE TABLE IF NOT EXISTS license_devices (
 CREATE INDEX idx_license_devices_license_id ON license_devices(license_id);
 
 -- ===========================================
--- Quota Usage Table
+-- Credit Purchases Table
 -- ===========================================
-CREATE TABLE IF NOT EXISTS quota_usage (
+CREATE TABLE IF NOT EXISTS credit_purchases (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    quota_type VARCHAR(50) NOT NULL,
-    count INTEGER DEFAULT 1,
+    amount INTEGER NOT NULL,
+    pack_type VARCHAR(50), -- starter, pro, ultra
+    price DECIMAL(10, 2),
+    payment_id VARCHAR(255),
+    payment_status VARCHAR(50) DEFAULT 'completed',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_quota_usage_user_id ON quota_usage(user_id);
-CREATE INDEX idx_quota_usage_type_date ON quota_usage(quota_type, created_at);
+CREATE INDEX idx_credit_purchases_user_id ON credit_purchases(user_id);
+CREATE INDEX idx_credit_purchases_payment_id ON credit_purchases(payment_id);
+
+-- ===========================================
+-- Credit Usage Log (for AI features)
+-- ===========================================
+CREATE TABLE IF NOT EXISTS credit_usage (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    action_type VARCHAR(50) NOT NULL, -- copy, trend_analysis, niche_report
+    credits_spent INTEGER NOT NULL,
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_credit_usage_user_id ON credit_usage(user_id);
+CREATE INDEX idx_credit_usage_action_type ON credit_usage(action_type);
 
 -- ===========================================
 -- Products Table

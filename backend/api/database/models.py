@@ -25,7 +25,14 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=True)
     name = Column(String(255), nullable=True)
-    plan = Column(String(50), default="free", nullable=False)
+    # Lifetime license flag
+    has_lifetime_license = Column(Boolean, default=False)
+    license_activated_at = Column(DateTime, nullable=True)
+    # Credits system
+    credits_balance = Column(Integer, default=0)
+    credits_purchased = Column(Integer, default=0)
+    credits_used = Column(Integer, default=0)
+    # Status
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -43,9 +50,9 @@ class License(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     license_key = Column(String(50), unique=True, nullable=False, index=True)
-    plan = Column(String(50), nullable=False)
-    max_devices = Column(Integer, default=1)
-    expires_at = Column(DateTime, nullable=True)
+    is_lifetime = Column(Boolean, default=True)
+    max_devices = Column(Integer, default=2)
+    expires_at = Column(DateTime, nullable=True)  # NULL for lifetime
     activated_at = Column(DateTime, nullable=True)
     is_active = Column(Boolean, default=True)
     auto_renew = Column(Boolean, default=True)
@@ -187,3 +194,37 @@ class ScrapingJob(Base):
     __table_args__ = (
         Index("ix_scraping_jobs_status", "status", "priority"),
     )
+
+
+class WhatsAppInstance(Base):
+    """WhatsApp Instance model"""
+    __tablename__ = "whatsapp_instances"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    name = Column(String(100), nullable=False, unique=True)
+    status = Column(String(50), default="disconnected")  # disconnected, connecting, connected
+    webhook_url = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    messages = relationship("WhatsAppMessage", back_populates="instance")
+
+
+class WhatsAppMessage(Base):
+    """WhatsApp Message model"""
+    __tablename__ = "whatsapp_messages"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    instance_id = Column(UUID(as_uuid=True), ForeignKey("whatsapp_instances.id"), nullable=False)
+    remote_jid = Column(String(100), nullable=False)  # The phone number (remote JID)
+    from_me = Column(Boolean, default=False)
+    content = Column(Text, nullable=True)
+    message_type = Column(String(50), default="text")
+    status = Column(String(50), default="pending")  # pending, sent, delivered, read, failed
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    message_id = Column(String(100), nullable=True, index=True)  # ID from WhatsApp
+
+    # Relationships
+    instance = relationship("WhatsAppInstance", back_populates="messages")

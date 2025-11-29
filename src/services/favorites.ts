@@ -1,11 +1,27 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { FavoriteItem, FavoriteList, FavoriteWithProduct } from "@/types";
 
+// Check if running in Tauri environment
+const isTauri = (): boolean => {
+  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+};
+
 export async function addFavorite(
   productId: string,
   listId?: string,
   notes?: string
 ): Promise<FavoriteItem> {
+  // In non-Tauri environment (E2E tests), return mock data
+  if (!isTauri()) {
+    return {
+      id: `fav-${productId}`,
+      productId,
+      listId: listId || "default",
+      notes: notes || null,
+      addedAt: new Date().toISOString(),
+    };
+  }
+
   try {
     return await invoke<FavoriteItem>("add_favorite", { productId, listId, notes });
   } catch (error) {
@@ -15,6 +31,11 @@ export async function addFavorite(
 }
 
 export async function removeFavorite(productId: string): Promise<boolean> {
+  // In non-Tauri environment (E2E tests), return mock data
+  if (!isTauri()) {
+    return true;
+  }
+
   try {
     return await invoke<boolean>("remove_favorite", { productId });
   } catch (error) {

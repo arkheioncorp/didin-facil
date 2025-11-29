@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingIcon, ProductsIcon, FavoritesIcon, SearchIcon, SparkleIcon } from "@/components/icons";
-import { ScraperControl } from "@/components/ScraperControl";
+import { ScraperControl } from "@/components/scraper/ScraperControl";
 import { getUserStats, getSearchHistory } from "@/lib/tauri";
 import type { DashboardStats } from "@/types";
 import type { SearchHistoryItem } from "@/types";

@@ -20,6 +20,7 @@ use anyhow::{Context, Result};
 use rand::Rng;
 use std::sync::Arc;
 use sysinfo::System;
+use tauri::AppHandle;
 // Ensure SystemExt is available if needed, or just System
 use tokio::sync::Mutex;
 
@@ -34,11 +35,12 @@ pub struct TikTokScraper {
     status: Arc<Mutex<ScraperStatus>>,
     config: ScraperConfig,
     system: Arc<Mutex<System>>,
+    #[allow(dead_code)]
     research_api: ResearchApi,
 }
 
 impl TikTokScraper {
-    pub fn new(config: ScraperConfig, status: Arc<Mutex<ScraperStatus>>) -> Self {
+    pub fn new(config: ScraperConfig, status: Arc<Mutex<ScraperStatus>>, app_handle: Option<tauri::AppHandle>) -> Self {
         let proxy_pool = if config.use_proxy && !config.proxies.is_empty() {
             Some(ProxyPool::new(config.proxies.clone()))
         } else {
@@ -50,6 +52,10 @@ impl TikTokScraper {
 
         if let Some(path) = &config.user_data_path {
             browser = browser.with_user_data(std::path::PathBuf::from(path));
+        }
+
+        if let Some(handle) = app_handle {
+            browser = browser.with_app_handle(handle);
         }
 
         let research_api = ResearchApi::new(config.api_key.clone(), config.api_secret.clone());
@@ -255,6 +261,9 @@ impl TikTokScraper {
                 break;
             }
 
+            // Send update event
+            self.browser.send_browser_event(url.clone(), "Carregando página...".to_string(), None).await;
+
             // Wait for page to load
             self.add_log("⏳ Aguardando carregamento da página...".to_string())
                 .await;
@@ -268,6 +277,11 @@ impl TikTokScraper {
             }
 
             tokio::time::sleep(tokio::time::Duration::from_millis(delay)).await;
+
+            // Capture screenshot and update viewer
+            if let Ok(screenshot) = self.browser.capture_screenshot(&page).await {
+                 self.browser.send_browser_event(url.clone(), "Analisando página...".to_string(), Some(screenshot)).await;
+            }
 
             // Check if stopped after waiting
             if !self.status.lock().await.is_running {
@@ -427,6 +441,7 @@ impl Default for TikTokScraper {
                 started_at: None,
                 status_message: None,
             })),
+            None,
         )
     }
 }
@@ -471,6 +486,7 @@ mod tests {
                 started_at: None,
                 status_message: None,
             })),
+            None,
         );
 
         // Run scraper

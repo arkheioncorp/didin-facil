@@ -352,37 +352,32 @@ pub async fn validate_license(license_key: String) -> Result<License, String> {
 
                 Ok(License {
                     is_valid: api_response["valid"].as_bool().unwrap_or(false),
-                    plan: api_response["plan"].as_str().unwrap_or("free").to_string(),
+                    plan: api_response["plan"].as_str().unwrap_or("lifetime").to_string(),
                     features: PlanFeatures {
-                        searches_per_month: features
-                            .get("searches_per_month")
-                            .and_then(|v| v.as_i64())
-                            .unwrap_or(0) as i32,
-                        copies_per_month: features
-                            .get("copies_per_month")
-                            .and_then(|v| v.as_i64())
-                            .unwrap_or(0) as i32,
-                        favorite_lists: features
-                            .get("favorite_lists")
-                            .and_then(|v| v.as_i64())
-                            .unwrap_or(0) as i32,
+                        searches_unlimited: features
+                            .get("searches_unlimited")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(true),  // Lifetime = unlimited
+                        favorites_unlimited: features
+                            .get("favorites_unlimited")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(true),  // Lifetime = unlimited
                         export_enabled: features
                             .get("export_enabled")
                             .and_then(|v| v.as_bool())
-                            .unwrap_or(false),
+                            .unwrap_or(true),
                         scheduler_enabled: features
                             .get("scheduler_enabled")
                             .and_then(|v| v.as_bool())
-                            .unwrap_or(false),
+                            .unwrap_or(true),
                     },
                     expires_at: api_response["expires_at"]
                         .as_str()
                         .unwrap_or("")
                         .to_string(),
-                    usage_this_month: UsageStats {
-                        searches: 0,
-                        copies: 0,
-                    },
+                    credits: api_response["credits"]
+                        .as_i64()
+                        .unwrap_or(0) as i32,
                 })
             } else {
                 // Fallback to trial if API fails (e.g. 404, 500)
@@ -399,20 +394,16 @@ pub async fn validate_license(license_key: String) -> Result<License, String> {
                 is_valid: true,
                 plan: String::from("trial (offline)"),
                 features: PlanFeatures {
-                    searches_per_month: 10,
-                    copies_per_month: 5,
-                    favorite_lists: 2,
-                    export_enabled: false,
+                    searches_unlimited: true,
+                    favorites_unlimited: true,
+                    export_enabled: true,
                     scheduler_enabled: false,
                 },
                 expires_at: chrono::Utc::now()
                     .checked_add_signed(chrono::Duration::days(7))
                     .unwrap()
                     .to_rfc3339(),
-                usage_this_month: UsageStats {
-                    searches: 0,
-                    copies: 0,
-                },
+                credits: 10,  // Trial credits
             })
         }
     }
@@ -481,7 +472,7 @@ pub async fn scrape_tiktok_shop(
         }
     }
 
-    let scraper = TikTokScraper::new(scraper_config, state.0.clone());
+    let scraper = TikTokScraper::new(scraper_config, state.0.clone(), Some(app.clone()));
     let products = scraper.start().await.map_err(|e| e.to_string())?;
 
     // Save products to database

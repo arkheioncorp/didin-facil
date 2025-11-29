@@ -1,7 +1,7 @@
 /**
  * @fileoverview searchStore Unit Tests - 100% Coverage
  * @description Testes completos para o store de busca (searchStore)
- * 
+ *
  * Coverage Target: 100%
  * - All actions
  * - All state mutations
@@ -12,37 +12,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act } from '@testing-library/react';
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => {
-      store[key] = value;
-    }),
-    removeItem: vi.fn((key: string) => {
-      delete store[key];
-    }),
-    clear: vi.fn(() => {
-      store = {};
-    }),
-    get length() {
-      return Object.keys(store).length;
-    },
-    key: vi.fn((index: number) => Object.keys(store)[index] || null),
-  };
-})();
-
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-});
-
-// Import store after mocking localStorage
+// Import store
 import { useSearchStore } from '@/stores/searchStore';
 
 describe('SearchStore', () => {
   beforeEach(() => {
-    localStorageMock.clear();
+    window.localStorage.clear();
     vi.clearAllMocks();
     
     // Reset store to initial state
@@ -52,7 +27,7 @@ describe('SearchStore', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    // vi.restoreAllMocks(); // Removed to prevent clearing localStorage mock implementation
   });
 
   describe('Initial State', () => {
@@ -336,32 +311,43 @@ describe('SearchStore', () => {
   });
 
   describe('Persistence', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
     it('should persist filters to localStorage', async () => {
+      const setItemSpy = vi.spyOn(window.localStorage, 'setItem');
+      const newFilters = { query: 'test query' };
+
       act(() => {
-        useSearchStore.getState().setFilters({ query: 'persistent query' });
+        useSearchStore.getState().setFilters(newFilters);
       });
 
       // Check localStorage was called
-      await new Promise(resolve => setTimeout(resolve, 0));
-      expect(localStorageMock.setItem).toHaveBeenCalled();
+      await new Promise(resolve => setTimeout(resolve, 10));
+      expect(setItemSpy).toHaveBeenCalled();
     });
 
     it('should persist config to localStorage', async () => {
+      const setItemSpy = vi.spyOn(window.localStorage, 'setItem');
+      const newConfig = { maxResults: 100 };
+
       act(() => {
-        useSearchStore.getState().setConfig({ maxResults: 150 });
+        useSearchStore.getState().setConfig(newConfig);
       });
 
-      await new Promise(resolve => setTimeout(resolve, 0));
-      expect(localStorageMock.setItem).toHaveBeenCalled();
+      await new Promise(resolve => setTimeout(resolve, 10));
+      expect(setItemSpy).toHaveBeenCalled();
     });
 
     it('should persist search history to localStorage', async () => {
+      const setItemSpy = vi.spyOn(window.localStorage, 'setItem');
       act(() => {
-        useSearchStore.getState().addToHistory('persistent search');
+        useSearchStore.getState().addToHistory('test query');
       });
 
-      await new Promise(resolve => setTimeout(resolve, 0));
-      expect(localStorageMock.setItem).toHaveBeenCalled();
+      await new Promise(resolve => setTimeout(resolve, 10));
+      expect(setItemSpy).toHaveBeenCalled();
     });
   });
 

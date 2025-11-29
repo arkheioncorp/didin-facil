@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useStartScraper, useTestProxy, useSyncProducts } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { toast } from "@/hooks/use-toast";
 import {
     Dialog,
@@ -16,6 +17,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { BrowserViewer } from "@/components/scraper/BrowserViewer";
 
 import { ScraperStatus } from "@/types";
 
@@ -41,6 +43,27 @@ export function ScraperControl() {
     const syncProducts = useSyncProducts();
     const logsEndRef = React.useRef<HTMLDivElement>(null);
     const [proxyToTest, setProxyToTest] = React.useState("");
+    
+    // Browser viewer state
+    const [browserState, setBrowserState] = React.useState<{
+        url?: string;
+        screenshot?: string;
+        status?: string;
+    }>({});
+
+    // Listen to browser events
+    React.useEffect(() => {
+        const unlisten = listen<{url: string; screenshot?: string; status: string}>(
+            'browser-update',
+            (event) => {
+                setBrowserState(event.payload);
+            }
+        );
+        
+        return () => {
+            unlisten.then(fn => fn());
+        };
+    }, []);
 
     // Persist changes
     React.useEffect(() => {
@@ -432,6 +455,14 @@ export function ScraperControl() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* Browser Viewer */}
+            <BrowserViewer
+                isActive={isRunning}
+                currentUrl={browserState.url}
+                screenshot={browserState.screenshot}
+                status={browserState.status}
+            />
         </Card>
     );
 }

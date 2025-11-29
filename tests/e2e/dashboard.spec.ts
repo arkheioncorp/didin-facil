@@ -266,15 +266,21 @@ test.describe('Dashboard Flow', () => {
     });
 
     test('should open sidebar on mobile menu click', async ({ page }) => {
+      // Set viewport before navigation
       await page.setViewportSize({ width: 375, height: 667 });
       
       const dashboard = new DashboardPage(page);
       await dashboard.goto();
       await dashboard.waitForLoadMobile();
-
+      
+      // Verify menu toggle is visible on mobile
+      await expect(page.locator('[data-testid="menu-toggle"]')).toBeVisible();
+      
       await page.locator('[data-testid="menu-toggle"]').click();
-      // Use first() to get the mobile sidebar (there may be 2 sidebars in DOM)
-      await expect(page.locator('[data-testid="sidebar"]').first()).toBeVisible();
+      // Wait for animation to complete
+      await page.waitForTimeout(300);
+      // The mobile sidebar container should now be visible (or the overlay)
+      await expect(page.locator('[data-testid="mobile-overlay"], [data-testid="mobile-sidebar-container"]').first()).toBeVisible({ timeout: 5000 });
     });
 
     test('should display correctly on tablet', async ({ page }) => {

@@ -8,9 +8,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import auth, products, copy, license, webhooks
+from .routes import (
+    auth, products, copy, license, webhooks, bot,
+    whatsapp, chatwoot, instagram, tiktok, youtube, content, scheduler,
+    integrations, social_auth, metrics
+)
 from .middleware.ratelimit import RateLimitMiddleware
 from .middleware.security import SecurityHeadersMiddleware
+from .middleware.metrics import MetricsMiddleware
 from .database.connection import init_database, close_database
 from .utils.security import security_monitor
 from .utils.integrity import IntegrityChecker
@@ -54,6 +59,9 @@ app = FastAPI(
 # Security Middleware (Should be first)
 app.add_middleware(SecurityHeadersMiddleware)
 
+# Metrics Collection Middleware
+app.add_middleware(MetricsMiddleware)
+
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
@@ -72,6 +80,30 @@ app.include_router(products.router, prefix="/products", tags=["Products"])
 app.include_router(copy.router, prefix="/copy", tags=["AI Copy Generation"])
 app.include_router(license.router, prefix="/license", tags=["License Management"])
 app.include_router(webhooks.router, prefix="/webhooks", tags=["Webhooks"])
+app.include_router(bot.router, tags=["Seller Bot (Premium)"])
+app.include_router(whatsapp.router, prefix="/whatsapp", tags=["WhatsApp Automation"])
+app.include_router(chatwoot.router, prefix="/chatwoot", tags=["Customer Support"])
+app.include_router(instagram.router, prefix="/instagram", tags=["Instagram Automation"])
+app.include_router(tiktok.router, prefix="/tiktok", tags=["TikTok Automation"])
+app.include_router(youtube.router, prefix="/youtube", tags=["YouTube Automation"])
+app.include_router(content.router, prefix="/content", tags=["Content Generator"])
+app.include_router(
+    scheduler.router, prefix="/scheduler", tags=["Post Scheduler"]
+)
+app.include_router(
+    integrations.router,
+    prefix="/integrations",
+    tags=["n8n & Typebot Integrations"]
+)
+app.include_router(
+    social_auth.router,
+    prefix="/social-auth",
+    tags=["Social Media OAuth"]
+)
+app.include_router(
+    metrics.router,
+    tags=["Observability"]
+)
 
 
 @app.get("/health")

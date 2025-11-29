@@ -12,7 +12,9 @@ export default defineConfig({
             '**/node_modules/**',
             '**/dist/**',
             '**/e2e/**',
+            '**/tests/visual/**',
             '**/*.e2e.spec.ts',
+            '**/.trunk/**',
         ],
         css: true,
         coverage: {

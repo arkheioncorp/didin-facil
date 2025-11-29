@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
-import { Tutorial } from "@/components/Tutorial";
+import { Tutorial } from "@/components/features/Tutorial";
 
 interface LayoutProps {
   children?: React.ReactNode;
@@ -35,8 +35,9 @@ export const Layout: React.FC<LayoutProps> = () => {
           <div
             className="fixed inset-0 z-30 bg-background/80 backdrop-blur-sm lg:hidden"
             onClick={toggleMobileMenu}
+            data-testid="mobile-overlay"
           />
-          <div className="fixed left-0 top-0 z-40 lg:hidden">
+          <div className="fixed left-0 top-0 z-40 lg:hidden" data-testid="mobile-sidebar-container">
             <Sidebar collapsed={false} onToggle={toggleMobileMenu} />
           </div>
         </>

@@ -1,0 +1,48 @@
+[Unit]
+Description=Didin Fácil WhatsApp Reconnect Worker
+Documentation=https://github.com/arkheioncorp/didin-facil
+After=network.target redis.service
+Wants=redis.service
+
+[Service]
+Type=simple
+User=didin
+Group=didin
+WorkingDirectory=/var/www/didin-facil/backend
+
+# Ambiente
+Environment=PYTHONUNBUFFERED=1
+Environment=ENVIRONMENT=production
+Environment=RECONNECT_CHECK_INTERVAL=60
+EnvironmentFile=-/etc/didin-facil/whatsapp.env
+
+# Comando
+ExecStart=/var/www/didin-facil/venv/bin/python -m workers.whatsapp_reconnect
+
+# Restart automático
+Restart=always
+RestartSec=10
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+# Timeouts
+TimeoutStartSec=30
+TimeoutStopSec=15
+
+# Recursos
+MemoryMax=200M
+CPUQuota=20%
+
+# Segurança
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=didin-whatsapp-reconnect
+
+[Install]
+WantedBy=multi-user.target

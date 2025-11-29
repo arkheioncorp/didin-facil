@@ -478,7 +478,7 @@ mod tests {
     #[test]
     fn test_parse_stock_level() {
         let parser = TikTokParser::default();
-        
+
         // Case 1: "stock" field
         let data = json!({
             "id": "123",
@@ -508,7 +508,7 @@ mod tests {
         });
         let product = parser.parse_product_json(&data).unwrap();
         assert_eq!(product.stock_level, Some(25));
-        
+
         // Case 4: No stock info
         let data = json!({
             "id": "126",

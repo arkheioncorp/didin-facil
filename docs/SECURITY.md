@@ -1,6 +1,6 @@
 # 🔐 Security - TikTrend Finder
 
-**Versão:** 2.0  
+**Versão:** 1.0.0  
 **Última Atualização:** 26 de Novembro de 2025
 
 ---

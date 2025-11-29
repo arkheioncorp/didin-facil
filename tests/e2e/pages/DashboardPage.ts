@@ -82,6 +82,12 @@ export class DashboardPage {
 
   // Open user menu
   async openUserMenu() {
+    // Scroll sidebar to bottom if needed to make user menu visible
+    const sidebar = this.page.locator('[data-testid="sidebar"]');
+    await sidebar.evaluate((el) => el.scrollTo(0, el.scrollHeight));
+    
+    // Wait for user menu to be visible
+    await expect(this.userMenu).toBeVisible({ timeout: 5000 });
     await this.userMenu.click();
     await expect(this.page.locator('[data-testid="user-dropdown"]')).toBeVisible();
   }

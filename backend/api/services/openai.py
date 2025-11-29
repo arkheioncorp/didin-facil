@@ -1,6 +1,6 @@
 """
 OpenAI Service
-AI copy generation with quota management
+AI copy generation with credits system
 """
 
 import os
@@ -20,8 +20,8 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4-turbo-preview")
 
 
 class OpenAIService:
-    """OpenAI API proxy with quota management"""
-    
+    """OpenAI API proxy with credits management"""
+
     def __init__(self):
         self.client = AsyncOpenAI(api_key=OPENAI_API_KEY)
         self.cache_service = CacheService()
@@ -199,47 +199,38 @@ Sempre responda APENAS com o texto da copy, sem explicações ou comentários ad
             prompt += f"**Instruções adicionais:** {custom_instructions}\n"
         
         prompt += "\nGere a copy agora:"
-        
+
         return prompt
-    
-    async def get_quota_status(self, user_id: str) -> dict:
-        """Get user's copy generation quota"""
-        quota = await self.quota_service.get_quota(user_id, "copies")
-        
-        # Get plan limits
+
+    async def get_credits_status(self, user_id: str) -> dict:
+        """Get user's credits balance"""
         async with get_db() as db:
             user = await db.fetch_one(
-                "SELECT plan FROM users WHERE id = :user_id",
+                "SELECT credits, has_lifetime_license FROM users WHERE id = :user_id",
                 {"user_id": user_id}
             )
-        
-        plan_limits = {
-            "free": 5,
-            "starter": 50,
-            "pro": 200,
-            "enterprise": 1000
-        }
-        
-        plan = user["plan"] if user else "free"
-        limit = plan_limits.get(plan, 5)
-        
-        # Calculate reset date (first of next month)
-        now = datetime.utcnow()
-        if now.month == 12:
-            reset_date = datetime(now.year + 1, 1, 1)
-        else:
-            reset_date = datetime(now.year, now.month + 1, 1)
-        
+
+        credits = user["credits"] if user else 0
+        has_license = user["has_lifetime_license"] if user else False
+
         return {
-            "used": quota.get("used", 0),
-            "limit": limit,
-            "remaining": max(0, limit - quota.get("used", 0)),
-            "reset_date": reset_date
+            "credits": credits,
+            "has_lifetime_license": has_license
         }
-    
-    async def increment_quota(self, user_id: str) -> int:
-        """Increment user's copy usage quota"""
-        return await self.quota_service.increment_quota(user_id, "copies")
+
+    async def deduct_credits(self, user_id: str, amount: int = 1) -> int:
+        """Deduct credits from user's balance"""
+        async with get_db() as db:
+            result = await db.execute(
+                """
+                UPDATE users 
+                SET credits = credits - :amount 
+                WHERE id = :user_id AND credits >= :amount
+                RETURNING credits
+                """,
+                {"user_id": user_id, "amount": amount}
+            )
+            return result if result else 0
     
     async def save_to_history(
         self,

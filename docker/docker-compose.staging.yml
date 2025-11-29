@@ -1,0 +1,111 @@
+# ============================================================================
+# TikTrend Finder - Docker Compose (Staging/Production)
+# ============================================================================
+# Configuração para deploy em staging/produção
+# Uso: docker compose -f docker-compose.staging.yml up -d
+# ============================================================================
+
+services:
+  # ============================================================================
+  # API Gateway (FastAPI)
+  # ============================================================================
+  api:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+      target: production
+    container_name: tiktrend-api-staging
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=staging
+      - DEBUG=false
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MERCADO_PAGO_ACCESS_TOKEN=${MERCADO_PAGO_ACCESS_TOKEN}
+      - MERCADOPAGO_WEBHOOK_SECRET=${MERCADOPAGO_WEBHOOK_SECRET}
+      # Evolution API (WhatsApp)
+      - EVOLUTION_API_URL=${EVOLUTION_API_URL}
+      - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
+      # Chatwoot
+      - CHATWOOT_API_URL=${CHATWOOT_API_URL}
+      - CHATWOOT_ACCESS_TOKEN=${CHATWOOT_ACCESS_TOKEN}
+      - CHATWOOT_ACCOUNT_ID=${CHATWOOT_ACCOUNT_ID:-1}
+      # Integrations
+      - N8N_API_URL=${N8N_API_URL}
+      - N8N_API_KEY=${N8N_API_KEY}
+      - TYPEBOT_API_URL=${TYPEBOT_API_URL}
+      - TYPEBOT_PUBLIC_ID=${TYPEBOT_PUBLIC_ID}
+      # Social OAuth
+      - INSTAGRAM_CLIENT_ID=${INSTAGRAM_CLIENT_ID}
+      - INSTAGRAM_CLIENT_SECRET=${INSTAGRAM_CLIENT_SECRET}
+      - TIKTOK_CLIENT_KEY=${TIKTOK_CLIENT_KEY}
+      - TIKTOK_CLIENT_SECRET=${TIKTOK_CLIENT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      # CDN/Storage
+      - CDN_URL=${CDN_URL}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_ENDPOINT=${R2_ENDPOINT}
+      # Monitoring
+      - SENTRY_DSN=${SENTRY_DSN}
+      - POSTHOG_API_KEY=${POSTHOG_API_KEY}
+      # CORS
+      - CORS_ORIGINS=${CORS_ORIGINS:-https://app.tiktrend.com.br}
+      - FRONTEND_URL=${FRONTEND_URL:-https://app.tiktrend.com.br}
+      - API_URL=${API_URL:-https://api.tiktrend.com.br}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============================================================================
+  # Scraper Worker
+  # ============================================================================
+  scraper:
+    build:
+      context: ..
+      dockerfile: docker/scraper.Dockerfile
+      target: production
+    container_name: tiktrend-scraper-staging
+    restart: always
+    environment:
+      - ENVIRONMENT=staging
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - PROXY_POOL_URL=${PROXY_POOL_URL}
+      - SCRAPER_RATE_LIMIT=3
+      - SCRAPER_RETRY_COUNT=5
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

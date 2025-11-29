@@ -1,7 +1,7 @@
 /**
  * @fileoverview favoritesStore Unit Tests - 100% Coverage
  * @description Testes completos para o store de favoritos (favoritesStore)
- * 
+ *
  * Coverage Target: 100%
  * - All actions (add, remove, toggle, clear)
  * - Collections management
@@ -13,32 +13,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act } from '@testing-library/react';
 import type { Product } from '@/types';
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => {
-      store[key] = value;
-    }),
-    removeItem: vi.fn((key: string) => {
-      delete store[key];
-    }),
-    clear: vi.fn(() => {
-      store = {};
-    }),
-    get length() {
-      return Object.keys(store).length;
-    },
-    key: vi.fn((index: number) => Object.keys(store)[index] || null),
-  };
-})();
-
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-});
-
-// Import store after mocking
+// Import store
 import { useFavoritesStore } from '@/stores/favoritesStore';
 
 // Test helper: create mock product
@@ -76,7 +51,7 @@ const createMockProduct = (overrides: Partial<Product> = {}): Product => ({
 
 describe('FavoritesStore', () => {
   beforeEach(() => {
-    localStorageMock.clear();
+    window.localStorage.clear();
     vi.clearAllMocks();
     
     // Reset store to initial state
@@ -87,7 +62,7 @@ describe('FavoritesStore', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    // vi.restoreAllMocks(); // Removed to prevent clearing localStorage mock implementation
   });
 
   describe('Initial State', () => {
@@ -471,24 +446,30 @@ describe('FavoritesStore', () => {
   });
 
   describe('Persistence', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
     it('should persist favorites to localStorage', async () => {
+      const setItemSpy = vi.spyOn(window.localStorage, 'setItem');
       const product = createMockProduct({ id: 'product-1' });
 
       act(() => {
         useFavoritesStore.getState().addFavorite(product);
       });
       
-      await new Promise(resolve => setTimeout(resolve, 0));
-      expect(localStorageMock.setItem).toHaveBeenCalled();
+      await new Promise(resolve => setTimeout(resolve, 10));
+      expect(setItemSpy).toHaveBeenCalled();
     });
 
     it('should persist collections to localStorage', async () => {
+      const setItemSpy = vi.spyOn(window.localStorage, 'setItem');
       act(() => {
         useFavoritesStore.getState().createCollection('Test Collection');
       });
 
-      await new Promise(resolve => setTimeout(resolve, 0));
-      expect(localStorageMock.setItem).toHaveBeenCalled();
+      await new Promise(resolve => setTimeout(resolve, 10));
+      expect(setItemSpy).toHaveBeenCalled();
     });
   });
 

@@ -298,25 +298,30 @@ async def cleanup_old_products_job():
         print(f"[Job] Cleaned up {deleted} old products")
 
 
-async def reset_daily_quotas_job():
-    """Reset daily API quotas"""
+async def cleanup_expired_cache_job():
+    """
+    Cleanup expired cache entries.
+    Note: Quotas are deprecated - using credits system now.
+    """
     redis = await get_redis()
-    
-    # Find and reset all quota keys
+
+    # Cleanup old rate limit keys
     cursor = 0
-    reset_count = 0
-    
+    cleanup_count = 0
+
     while True:
-        cursor, keys = await redis.scan(cursor, match="quota:daily:*")
-        
+        cursor, keys = await redis.scan(cursor, match="ratelimit:*")
+
         for key in keys:
-            await redis.delete(key)
-            reset_count += 1
-        
+            ttl = await redis.ttl(key)
+            if ttl == -1:  # No expiry set, delete old keys
+                await redis.delete(key)
+                cleanup_count += 1
+
         if cursor == 0:
             break
-    
-    print(f"[Job] Reset {reset_count} daily quotas")
+
+    print(f"[Job] Cleaned up {cleanup_count} expired cache entries")
 
 
 async def check_license_expiry_job():
@@ -375,9 +380,9 @@ def create_default_scheduler() -> Scheduler:
     ))
     
     scheduler.add_job(Job(
-        name="reset_daily_quotas",
-        handler=reset_daily_quotas_job,
-        cron_expression="0 0 * * *",  # Daily at midnight
+        name="cleanup_expired_cache",
+        handler=cleanup_expired_cache_job,
+        cron_expression="0 4 * * *",  # Daily at 4 AM
         interval_minutes=1440,
     ))
     

@@ -4,60 +4,70 @@
 
 ---
 
-## 🎯 Current Goals
+## 🎯 Objetivos Atuais
 
-1. **✅ Documentação Completa** - Todos os docs atualizados v2.0
-2. **Testar Backend** - Subir Docker Compose e validar endpoints
-3. **Integração Pagamentos** - Testar checkout Mercado Pago em sandbox
-4. **Build Produção** - Gerar instaladores Win/Linux
+1. **✅ Documentação Consolidada** - Todos os docs sincronizados v1.0.0
+2. **🔄 Build de Produção** - Gerar instaladores Windows + Linux
+3. **⏳ Testes de Integração** - Validar fluxo completo (Frontend → Backend → Scraper)
+4. **⏳ Deploy Backend** - Publicar API em ambiente de staging
 
 ---
 
-## 🚧 Current Blockers
+## 🚧 Blockers Atuais
 
 - Nenhum blocker crítico identificado
-- Aguardando testes de build real
+- Aguardando validação final de builds
 
 ---
 
-## 📂 Recent Changes (26/11/2025)
+## 📂 Mudanças Recentes (26/11/2025)
 
-### Scraper Refatorado
-- IDs determinísticos (MD5 hash) para evitar duplicatas
-- Reinicialização de browsers a cada 50 jobs
-- User-agents dinâmicos com fake-useragent
-- Safety switch persistido no Redis
-- Seletores com fallbacks robustos
+### Documentação Consolidada
+- `README.md` - Versão atualizada para 1.0.0, preços corrigidos, links GitHub atualizados
+- Estrutura de pastas reflete código real (10 services, 5 rotas, 9 páginas)
+- Preços alinhados com productContext: Free, Starter (R$29,90), Pro (R$79,90), Enterprise (R$199,90)
 
-### Documentação Atualizada
-- `README.md` - Reescrito completamente (v2.0)
-- `CHANGELOG.md` - Criado com histórico completo
-- `CONTRIBUTING.md` - Criado com guidelines
-- Todos os docs em `/docs/` atualizados para 26/11/2025
-- Links file:// corrigidos para relativos
+### Stack Verificada
+- **Frontend:** 9 páginas, 4 stores Zustand, 17+ componentes UI
+- **Backend FastAPI:** 5 rotas, 10 services, middlewares completos
+- **Tauri:** v2.0 com comandos IPC configurados
+- **Scraper:** Playwright com anti-detection
 
-### Limpeza
-- Removidos: coverage/, playwright-report/, test-results/
-- Removidos: auth_test_output*.txt, test_output*.txt
-- Removidos: DEBUG_BROWSER_CONSOLE.js, DEBUG_CHECKLIST.md
+### Infraestrutura
+- Docker Compose: API + PostgreSQL + Redis + Scraper
+- CI/CD: GitHub Actions configurado
+- Observabilidade: Métricas e logs estruturados
 
 ---
 
-## 🔍 Focus Areas
+## 🔍 Áreas de Foco
 
 | Área | Status | Próximo Passo |
 |------|--------|---------------|
-| Frontend | ✅ 100% | Aguardando testes |
-| Backend Tauri | ✅ 95% | Validar commands |
-| Backend FastAPI | ✅ 100% | Deploy |
+| Frontend React | ✅ 100% | Testes E2E |
+| Backend Tauri | ✅ 95% | Build final |
+| Backend FastAPI | ✅ 100% | Deploy staging |
 | Documentação | ✅ 100% | Manter atualizada |
-| Testes | ⚠️ 30% | Implementar Vitest/Pytest |
-| CI/CD | ✅ 90% | Validar builds |
+| Testes | ⚠️ 30% | Vitest + Pytest |
+| CI/CD | ✅ 90% | Validar release |
 
 ---
 
-## 💡 Notes
+## 📊 Métricas do Projeto
 
-- Projeto em estado pré-MVP, pronto para testes finais
-- Arquitetura híbrida (Tauri + FastAPI) validada
-- Todas as dependências documentadas
+| Componente | Quantidade |
+|------------|-----------|
+| Páginas React | 9 |
+| Stores Zustand | 4 |
+| Componentes UI | 17+ |
+| Rotas FastAPI | 5 |
+| Services Backend | 10 |
+| Docs Técnicos | 10 |
+
+---
+
+## 💡 Notas
+
+- Versão atual: **1.0.0** (package.json + tauri.conf.json)
+- Arquitetura híbrida (Desktop + Cloud) validada
+- Pronto para testes finais e primeiro release

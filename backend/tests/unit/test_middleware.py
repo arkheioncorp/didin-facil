@@ -1,410 +1,698 @@
 """
-Middleware Tests - 100% Coverage
-Tests for auth, quota, and ratelimit middleware
+Middleware Unit Tests
+Tests for request_id, ratelimit, and security middleware
 """
-
 import pytest
-import time
 from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime, timedelta
-from fastapi import HTTPException
+from fastapi import FastAPI, Request
+from httpx import AsyncClient, ASGITransport
 
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+from api.middleware.request_id import RequestIDMiddleware
+from api.middleware.ratelimit import RateLimitMiddleware
+from api.middleware.security import SecurityHeadersMiddleware
 
 
-# ==================== AUTH MIDDLEWARE TESTS ====================
+# ============== RequestIDMiddleware Tests ==============
 
-class TestAuthMiddleware:
-    """Test suite for authentication middleware"""
-
+class TestRequestIDMiddleware:
+    
     @pytest.fixture
-    def mock_database(self):
-        """Create a mock database"""
-        return AsyncMock()
-
-    @pytest.fixture
-    def valid_user(self):
-        """Valid user data"""
-        return {
-            'id': 'user-123',
-            'email': 'test@example.com',
-            'name': 'Test User',
-            'plan': 'pro',
-            'created_at': datetime.now()
-        }
-
+    def app_with_request_id(self):
+        app = FastAPI()
+        app.add_middleware(RequestIDMiddleware)
+        
+        @app.get("/test")
+        async def test_endpoint(request: Request):
+            return {"request_id": request.state.request_id}
+        
+        return app
+    
     @pytest.mark.asyncio
-    async def test_get_current_user_valid_token(self, mock_database, valid_user):
-        """Test getting current user with valid token"""
+    async def test_request_id_added_to_response(self, app_with_request_id):
+        async with AsyncClient(
+            transport=ASGITransport(app=app_with_request_id),
+            base_url="http://test"
+        ) as client:
+            response = await client.get("/test")
         
-        mock_credentials = MagicMock()
-        mock_credentials.credentials = self._create_token('user-123')
-        
-        with patch('backend.api.middleware.auth.get_user_by_id', 
-                   new_callable=AsyncMock, return_value=valid_user):
-            # This would need actual JWT token creation
-            pass
-
+        assert response.status_code == 200
+        assert "X-Request-ID" in response.headers
+        assert len(response.headers["X-Request-ID"]) == 36  # UUID format
+    
     @pytest.mark.asyncio
-    async def test_get_current_user_expired_token(self):
-        """Test rejection of expired token"""
+    async def test_request_id_is_uuid(self, app_with_request_id):
+        import uuid
+        async with AsyncClient(
+            transport=ASGITransport(app=app_with_request_id),
+            base_url="http://test"
+        ) as client:
+            response = await client.get("/test")
         
-        mock_credentials = MagicMock()
-        mock_credentials.credentials = 'expired_token'
+        request_id = response.headers["X-Request-ID"]
+        # Validate UUID format
+        try:
+            uuid.UUID(request_id)
+            is_valid_uuid = True
+        except ValueError:
+            is_valid_uuid = False
         
-        with pytest.raises(HTTPException):
-            with patch('jose.jwt.decode') as mock_decode:
-                mock_decode.return_value = {
-                    'sub': 'user-123',
-                    'exp': (datetime.utcnow() - timedelta(hours=1)).timestamp()
-                }
-                # Would raise HTTPException for expired token
-
+        assert is_valid_uuid
+    
     @pytest.mark.asyncio
-    async def test_get_current_user_invalid_token(self):
-        """Test rejection of invalid token"""
+    async def test_request_id_available_in_request_state(
+        self, app_with_request_id
+    ):
+        async with AsyncClient(
+            transport=ASGITransport(app=app_with_request_id),
+            base_url="http://test"
+        ) as client:
+            response = await client.get("/test")
         
-        mock_credentials = MagicMock()
-        mock_credentials.credentials = 'invalid_token'
-        
-        # Invalid tokens should raise HTTPException 401
-
+        data = response.json()
+        assert "request_id" in data
+        assert data["request_id"] == response.headers["X-Request-ID"]
+    
     @pytest.mark.asyncio
-    async def test_get_current_user_missing_subject(self):
-        """Test rejection of token without subject"""
+    async def test_unique_request_ids(self, app_with_request_id):
+        async with AsyncClient(
+            transport=ASGITransport(app=app_with_request_id),
+            base_url="http://test"
+        ) as client:
+            response1 = await client.get("/test")
+            response2 = await client.get("/test")
         
-        # Token without 'sub' claim should be rejected
-
-    @pytest.mark.asyncio
-    async def test_get_current_user_user_not_found(self, mock_database):
-        """Test rejection when user not found in database"""
-        from backend.api.middleware.auth import get_user_by_id
-        
-        with patch('backend.api.middleware.auth.database') as mock_db:
-            mock_db.fetch_one = AsyncMock(return_value=None)
-            
-            result = await get_user_by_id('nonexistent-user')
-            
-            assert result is None
-
-    @pytest.mark.asyncio
-    async def test_get_user_by_id_found(self, mock_database, valid_user):
-        """Test getting user by ID when exists"""
-        from backend.api.middleware.auth import get_user_by_id
-        
-        with patch('backend.api.middleware.auth.database') as mock_db:
-            mock_db.fetch_one = AsyncMock(return_value=valid_user)
-            
-            result = await get_user_by_id('user-123')
-            
-            assert result is not None
-            assert result['id'] == 'user-123'
-
-    def test_create_access_token(self):
-        """Test creating access token"""
-        
-        datetime.utcnow() + timedelta(hours=24)
-        
-        # Token creation test
-        # token = create_access_token('user-123', 'HWID-123', expires_at)
-        # assert isinstance(token, str)
-
-    def _create_token(self, user_id: str, hwid: str = 'HWID-123') -> str:
-        """Helper to create test tokens"""
-        from jose import jwt
-        from backend.api.middleware.auth import JWT_SECRET_KEY, JWT_ALGORITHM
-        
-        return jwt.encode(
-            {
-                'sub': user_id,
-                'hwid': hwid,
-                'exp': (datetime.utcnow() + timedelta(hours=24)).timestamp()
-            },
-            JWT_SECRET_KEY,
-            algorithm=JWT_ALGORITHM
-        )
+        id1 = response1.headers["X-Request-ID"]
+        id2 = response2.headers["X-Request-ID"]
+        assert id1 != id2
 
 
-# ==================== QUOTA MIDDLEWARE TESTS ====================
-
-class TestQuotaMiddleware:
-    """Test suite for quota middleware"""
-
-    @pytest.fixture
-    def mock_db(self):
-        return AsyncMock()
-
-    @pytest.mark.asyncio
-    async def test_get_user_quota_trial_plan(self, mock_db):
-        """Test quota limits for trial plan"""
-        from backend.api.middleware.quota import get_user_quota, PLAN_QUOTAS
-        
-        mock_db.fetchrow = AsyncMock(side_effect=[
-            {'plan': 'trial'},  # User plan
-            {'used': 5}  # Current usage
-        ])
-        
-        result = await get_user_quota('user-123', 'searches', mock_db)
-        
-        assert result['limit'] == PLAN_QUOTAS['trial']['searches_per_month']
-
-    @pytest.mark.asyncio
-    async def test_get_user_quota_pro_plan_unlimited(self, mock_db):
-        """Test unlimited quota for pro plan"""
-        from backend.api.middleware.quota import get_user_quota, PLAN_QUOTAS
-        
-        mock_db.fetchrow = AsyncMock(side_effect=[
-            {'plan': 'pro'},
-            {'used': 1000}
-        ])
-        
-        result = await get_user_quota('user-123', 'searches', mock_db)
-        
-        # Pro plan should have unlimited (-1)
-        assert result['limit'] == -1 or result['limit'] == PLAN_QUOTAS['pro']['searches_per_month']
-
-    @pytest.mark.asyncio
-    async def test_get_user_quota_user_not_found(self, mock_db):
-        """Test quota check when user not found"""
-        from backend.api.middleware.quota import get_user_quota
-        
-        mock_db.fetchrow = AsyncMock(return_value=None)
-        
-        with pytest.raises(HTTPException) as exc_info:
-            await get_user_quota('nonexistent', 'searches', mock_db)
-        
-        assert exc_info.value.status_code == 404
-
-    @pytest.mark.asyncio
-    async def test_get_user_quota_remaining_calculation(self, mock_db):
-        """Test remaining quota calculation"""
-        from backend.api.middleware.quota import get_user_quota, PLAN_QUOTAS
-        
-        mock_db.fetchrow = AsyncMock(side_effect=[
-            {'plan': 'basic'},
-            {'used': 30}
-        ])
-        
-        await get_user_quota('user-123', 'searches', mock_db)
-        
-        PLAN_QUOTAS['basic']['searches_per_month'] - 30
-        # Result should include remaining calculation
-
-    @pytest.mark.asyncio
-    async def test_get_user_quota_period_boundaries(self, mock_db):
-        """Test quota period boundaries (month start/end)"""
-        from backend.api.middleware.quota import get_user_quota
-        
-        mock_db.fetchrow = AsyncMock(side_effect=[
-            {'plan': 'trial'},
-            {'used': 0}
-        ])
-        
-        await get_user_quota('user-123', 'copies', mock_db)
-        
-        # Should have reset_date in result
-
-    def test_plan_quotas_configuration(self):
-        """Test plan quotas are properly configured"""
-        from backend.api.middleware.quota import PLAN_QUOTAS
-        
-        assert 'trial' in PLAN_QUOTAS
-        assert 'basic' in PLAN_QUOTAS
-        assert 'pro' in PLAN_QUOTAS
-        assert 'enterprise' in PLAN_QUOTAS
-        
-        # Check trial has limited quotas
-        assert PLAN_QUOTAS['trial']['searches_per_month'] > 0
-        assert PLAN_QUOTAS['trial']['copies_per_month'] > 0
-
-    def test_quota_exceeded_error(self):
-        """Test QuotaExceededError exception"""
-        from backend.api.middleware.quota import QuotaExceededError
-        
-        error = QuotaExceededError("Quota exceeded", reset_date=datetime.now())
-        
-        assert error.message == "Quota exceeded"
-        assert error.reset_date is not None
-
-
-# ==================== RATE LIMIT MIDDLEWARE TESTS ====================
+# ============== RateLimitMiddleware Tests ==============
 
 class TestRateLimitMiddleware:
-    """Test suite for rate limiting middleware"""
-
+    
     @pytest.fixture
-    def rate_limiter(self):
-        """Create rate limit middleware instance"""
-        from backend.api.middleware.ratelimit import RateLimitMiddleware
-        mock_app = MagicMock()
-        return RateLimitMiddleware(mock_app, requests_per_minute=60)
-
-    @pytest.fixture
-    def mock_request(self):
-        """Create a mock request"""
-        request = MagicMock()
-        request.url.path = '/api/products'
-        request.headers = {}
-        request.client.host = '127.0.0.1'
-        return request
-
-    def test_rate_limiter_initialization(self, rate_limiter):
-        """Test rate limiter initialization"""
-        assert rate_limiter.requests_per_minute == 60
-        assert rate_limiter.request_counts is not None
-
+    def app_with_ratelimit(self, monkeypatch):
+        from fastapi.responses import JSONResponse
+        from fastapi.exceptions import HTTPException as FastAPIHTTPException
+        
+        # Disable TESTING bypass for these specific tests
+        monkeypatch.setenv("TESTING", "")
+        
+        app = FastAPI()
+        app.add_middleware(RateLimitMiddleware, requests_per_minute=5)
+        
+        # Add exception handler for proper HTTPException handling
+        @app.exception_handler(FastAPIHTTPException)
+        async def http_exception_handler(request, exc):
+            return JSONResponse(
+                status_code=exc.status_code,
+                content=exc.detail if isinstance(exc.detail, dict) else {
+                    "detail": exc.detail
+                }
+            )
+        
+        @app.get("/test")
+        async def test_endpoint():
+            return {"status": "ok"}
+        
+        @app.get("/health")
+        async def health():
+            return {"status": "healthy"}
+        
+        return app
+    
     @pytest.mark.asyncio
-    async def test_rate_limiter_allows_requests_under_limit(self, rate_limiter, mock_request):
-        """Test requests under limit are allowed"""
-        call_next = AsyncMock(return_value=MagicMock())
+    async def test_request_within_limit(self, app_with_ratelimit):
+        async with AsyncClient(
+            transport=ASGITransport(app=app_with_ratelimit),
+            base_url="http://test"
+        ) as client:
+            response = await client.get("/test")
         
-        # First few requests should pass
-        for _ in range(5):
-            await rate_limiter.dispatch(mock_request, call_next)
-            assert call_next.called
-
+        assert response.status_code == 200
+    
     @pytest.mark.asyncio
-    async def test_rate_limiter_blocks_excessive_requests(self, rate_limiter, mock_request):
-        """Test excessive requests are blocked"""
-        call_next = AsyncMock(return_value=MagicMock())
-        
-        # Simulate many requests from same IP
-        client_id = rate_limiter._get_client_id(mock_request)
-        rate_limiter.request_counts[client_id] = [time.time()] * 60
-        
-        with pytest.raises(HTTPException) as exc_info:
-            await rate_limiter.dispatch(mock_request, call_next)
-        
-        assert exc_info.value.status_code == 429
-
+    async def test_health_endpoint_not_rate_limited(self, app_with_ratelimit):
+        async with AsyncClient(
+            transport=ASGITransport(app=app_with_ratelimit),
+            base_url="http://test"
+        ) as client:
+            # Make many requests to health
+            for _ in range(20):
+                response = await client.get("/health")
+                assert response.status_code == 200
+    
     @pytest.mark.asyncio
-    async def test_rate_limiter_skips_health_check(self, rate_limiter):
-        """Test rate limiter skips health check endpoint"""
+    async def test_rate_limit_headers_present(self, app_with_ratelimit):
+        async with AsyncClient(
+            transport=ASGITransport(app=app_with_ratelimit),
+            base_url="http://test"
+        ) as client:
+            response = await client.get("/test")
+        
+        assert "X-RateLimit-Limit" in response.headers
+        assert "X-RateLimit-Remaining" in response.headers
+        assert "X-RateLimit-Reset" in response.headers
+    
+    @pytest.mark.asyncio
+    async def test_rate_limit_remaining_decreases(self, app_with_ratelimit):
+        async with AsyncClient(
+            transport=ASGITransport(app=app_with_ratelimit),
+            base_url="http://test"
+        ) as client:
+            response1 = await client.get("/test")
+            remaining1 = int(response1.headers["X-RateLimit-Remaining"])
+            
+            response2 = await client.get("/test")
+            remaining2 = int(response2.headers["X-RateLimit-Remaining"])
+        
+        assert remaining2 < remaining1
+    
+    @pytest.mark.asyncio
+    async def test_rate_limit_exceeded(self, app_with_ratelimit):
+        async with AsyncClient(
+            transport=ASGITransport(app=app_with_ratelimit),
+            base_url="http://test"
+        ) as client:
+            # Exhaust the rate limit (5 requests)
+            for _ in range(5):
+                await client.get("/test")
+            
+            # Next request should fail with 429
+            response = await client.get("/test")
+            assert response.status_code == 429
+
+
+class TestRateLimitMiddlewareClientId:
+    
+    def test_get_client_id_with_bearer_token(self):
+        app = FastAPI()
+        middleware = RateLimitMiddleware(app, requests_per_minute=60)
+        
         mock_request = MagicMock()
-        mock_request.url.path = '/health'
-        call_next = AsyncMock(return_value=MagicMock())
+        mock_request.headers = {"Authorization": "Bearer abc123xyz789token"}
+        mock_request.client = MagicMock()
+        mock_request.client.host = "127.0.0.1"
         
-        await rate_limiter.dispatch(mock_request, call_next)
+        client_id = middleware._get_client_id(mock_request)
+        assert client_id.startswith("user:")
+    
+    def test_get_client_id_with_forwarded_header(self):
+        app = FastAPI()
+        middleware = RateLimitMiddleware(app, requests_per_minute=60)
         
-        call_next.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_rate_limiter_skips_docs(self, rate_limiter):
-        """Test rate limiter skips docs endpoint"""
         mock_request = MagicMock()
-        mock_request.url.path = '/docs'
-        call_next = AsyncMock(return_value=MagicMock())
+        mock_request.headers = {"X-Forwarded-For": "192.168.1.1, 10.0.0.1"}
+        mock_request.client = MagicMock()
+        mock_request.client.host = "127.0.0.1"
         
-        await rate_limiter.dispatch(mock_request, call_next)
+        client_id = middleware._get_client_id(mock_request)
+        assert client_id == "ip:192.168.1.1"
+    
+    def test_get_client_id_fallback_to_client_host(self):
+        app = FastAPI()
+        middleware = RateLimitMiddleware(app, requests_per_minute=60)
         
-        call_next.assert_called_once()
-
-    def test_get_client_id_from_bearer_token(self, rate_limiter, mock_request):
-        """Test client ID extraction from bearer token"""
-        mock_request.headers = {'Authorization': 'Bearer abc123def456789'}
-        
-        client_id = rate_limiter._get_client_id(mock_request)
-        
-        assert client_id.startswith('user:')
-
-    def test_get_client_id_from_forwarded_header(self, rate_limiter, mock_request):
-        """Test client ID extraction from X-Forwarded-For header"""
-        mock_request.headers = {'X-Forwarded-For': '192.168.1.1, 10.0.0.1'}
-        
-        client_id = rate_limiter._get_client_id(mock_request)
-        
-        assert client_id == 'ip:192.168.1.1'
-
-    def test_get_client_id_from_client_host(self, rate_limiter, mock_request):
-        """Test client ID extraction from request client host"""
+        mock_request = MagicMock()
         mock_request.headers = {}
-        mock_request.client.host = '127.0.0.1'
+        mock_request.client = MagicMock()
+        mock_request.client.host = "10.0.0.5"
         
-        client_id = rate_limiter._get_client_id(mock_request)
+        client_id = middleware._get_client_id(mock_request)
+        assert client_id == "ip:10.0.0.5"
+    
+    def test_get_client_id_no_client(self):
+        app = FastAPI()
+        middleware = RateLimitMiddleware(app, requests_per_minute=60)
         
-        assert client_id == 'ip:127.0.0.1'
-
-    def test_get_client_id_unknown_client(self, rate_limiter):
-        """Test client ID when client is None"""
         mock_request = MagicMock()
         mock_request.headers = {}
         mock_request.client = None
         
-        client_id = rate_limiter._get_client_id(mock_request)
+        client_id = middleware._get_client_id(mock_request)
+        assert client_id == "unknown"
+
+
+# ============== SecurityHeadersMiddleware Tests ==============
+
+class TestSecurityHeadersMiddleware:
+    
+    @pytest.fixture
+    def app_with_security(self):
+        app = FastAPI()
+        app.add_middleware(SecurityHeadersMiddleware)
         
-        assert client_id == 'unknown'
+        @app.get("/test")
+        async def test_endpoint():
+            return {"status": "ok"}
+        
+        @app.get("/docs")
+        async def docs():
+            return {"docs": "swagger"}
+        
+        return app
+    
+    @pytest.mark.asyncio
+    async def test_security_headers_added(self, app_with_security):
+        async with AsyncClient(
+            transport=ASGITransport(app=app_with_security),
+            base_url="http://test"
+        ) as client:
+            response = await client.get("/test")
+        
+        assert response.headers["X-Content-Type-Options"] == "nosniff"
+        assert response.headers["X-Frame-Options"] == "DENY"
+        assert response.headers["X-XSS-Protection"] == "1; mode=block"
+        assert "Strict-Transport-Security" in response.headers
+    
+    @pytest.mark.asyncio
+    async def test_hsts_header_value(self, app_with_security):
+        async with AsyncClient(
+            transport=ASGITransport(app=app_with_security),
+            base_url="http://test"
+        ) as client:
+            response = await client.get("/test")
+        
+        hsts = response.headers["Strict-Transport-Security"]
+        assert "max-age=31536000" in hsts
+        assert "includeSubDomains" in hsts
+    
+    @pytest.mark.asyncio
+    async def test_docs_endpoint_skipped(self, app_with_security):
+        async with AsyncClient(
+            transport=ASGITransport(app=app_with_security),
+            base_url="http://test"
+        ) as client:
+            response = await client.get("/docs")
+        
+        # Docs should still work (security check skipped)
+        assert response.status_code == 200
+
+
+# ============== Auth Middleware Tests ==============
+
+class TestAuthMiddleware:
+    """Tests for auth middleware functions"""
+
+    @pytest.fixture
+    def mock_database(self):
+        """Mock the database module"""
+        with patch("api.middleware.auth.database") as mock_db:
+            mock_db.fetch_one = AsyncMock()
+            yield mock_db
 
     @pytest.mark.asyncio
-    async def test_rate_limiter_cleans_old_requests(self, rate_limiter, mock_request):
-        """Test old requests are cleaned from window"""
-        call_next = AsyncMock(return_value=MagicMock())
+    async def test_get_user_by_id_found(self, mock_database):
+        """Test get_user_by_id returns user when found"""
+        from api.middleware.auth import get_user_by_id
         
-        client_id = rate_limiter._get_client_id(mock_request)
-        # Add old requests (> 60 seconds ago)
-        old_time = time.time() - 120
-        rate_limiter.request_counts[client_id] = [old_time] * 100
+        mock_database.fetch_one.return_value = {
+            "id": "user_123",
+            "email": "test@example.com",
+            "name": "Test User",
+            "plan": "lifetime",
+            "created_at": "2024-01-01T00:00:00"
+        }
         
-        # New request should pass (old ones cleaned)
-        await rate_limiter.dispatch(mock_request, call_next)
+        result = await get_user_by_id("user_123")
         
-        call_next.assert_called_once()
+        assert result is not None
+        assert result["id"] == "user_123"
+        assert result["email"] == "test@example.com"
 
     @pytest.mark.asyncio
-    async def test_rate_limiter_adds_headers(self, rate_limiter, mock_request):
-        """Test rate limit headers are added to response"""
-        mock_response = MagicMock()
-        mock_response.headers = {}
-        call_next = AsyncMock(return_value=mock_response)
+    async def test_get_user_by_id_not_found(self, mock_database):
+        """Test get_user_by_id returns None when not found"""
+        from api.middleware.auth import get_user_by_id
         
-        await rate_limiter.dispatch(mock_request, call_next)
+        mock_database.fetch_one.return_value = None
         
-        assert 'X-RateLimit-Limit' in mock_response.headers
-        assert 'X-RateLimit-Remaining' in mock_response.headers
-        assert 'X-RateLimit-Reset' in mock_response.headers
+        result = await get_user_by_id("nonexistent")
+        
+        assert result is None
+
+    def test_create_access_token(self):
+        """Test create_access_token generates valid JWT"""
+        from api.middleware.auth import create_access_token
+        from datetime import datetime, timedelta
+        from jose import jwt
+        
+        expires_at = datetime.utcnow() + timedelta(hours=12)
+        token = create_access_token(
+            user_id="user_123",
+            hwid="hwid_abc",
+            expires_at=expires_at
+        )
+        
+        assert token is not None
+        assert len(token) > 0
+        
+        # Decode and verify
+        from api.middleware.auth import JWT_SECRET_KEY, JWT_ALGORITHM
+        payload = jwt.decode(
+            token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM]
+        )
+        assert payload["sub"] == "user_123"
+        assert payload["hwid"] == "hwid_abc"
 
     @pytest.mark.asyncio
-    async def test_rate_limiter_error_includes_retry_after(self, rate_limiter, mock_request):
-        """Test 429 error includes retry_after"""
-        call_next = AsyncMock()
+    async def test_get_current_user_valid_token(self, mock_database):
+        """Test get_current_user with valid token"""
+        from api.middleware.auth import (
+            get_current_user,
+            create_access_token
+        )
+        from datetime import datetime, timedelta
         
-        client_id = rate_limiter._get_client_id(mock_request)
-        rate_limiter.request_counts[client_id] = [time.time()] * 60
+        mock_database.fetch_one.return_value = {
+            "id": "user_123",
+            "email": "test@example.com",
+            "name": "Test User",
+            "plan": "lifetime",
+            "created_at": "2024-01-01T00:00:00"
+        }
+        
+        expires_at = datetime.utcnow() + timedelta(hours=12)
+        token = create_access_token(
+            user_id="user_123",
+            hwid="hwid_abc",
+            expires_at=expires_at
+        )
+        
+        # Create mock credentials
+        mock_creds = MagicMock()
+        mock_creds.credentials = token
+        
+        user = await get_current_user(mock_creds)
+        
+        assert user["id"] == "user_123"
+        assert user["email"] == "test@example.com"
+
+    @pytest.mark.asyncio
+    async def test_get_current_user_invalid_token(self, mock_database):
+        """Test get_current_user rejects invalid token"""
+        from api.middleware.auth import get_current_user
+        from fastapi import HTTPException
+        
+        mock_creds = MagicMock()
+        mock_creds.credentials = "invalid.token.here"
         
         with pytest.raises(HTTPException) as exc_info:
-            await rate_limiter.dispatch(mock_request, call_next)
+            await get_current_user(mock_creds)
         
-        assert 'retry_after' in exc_info.value.detail
-
-
-class TestMiddlewareIntegration:
-    """Integration tests for middleware components"""
+        assert exc_info.value.status_code == 401
 
     @pytest.mark.asyncio
-    async def test_auth_and_quota_integration(self):
-        """Test auth and quota middleware work together"""
-        # Authenticated user should have quota checked
-        pass
+    async def test_get_current_user_expired_token(self, mock_database):
+        """Test get_current_user rejects expired token"""
+        from api.middleware.auth import (
+            get_current_user,
+            create_access_token
+        )
+        from datetime import datetime, timedelta
+        from fastapi import HTTPException
+        
+        # Create expired token
+        expires_at = datetime.utcnow() - timedelta(hours=1)
+        token = create_access_token(
+            user_id="user_123",
+            hwid="hwid_abc",
+            expires_at=expires_at
+        )
+        
+        mock_creds = MagicMock()
+        mock_creds.credentials = token
+        
+        with pytest.raises(HTTPException) as exc_info:
+            await get_current_user(mock_creds)
+        
+        assert exc_info.value.status_code == 401
+        assert "expired" in exc_info.value.detail.lower()
 
     @pytest.mark.asyncio
-    async def test_rate_limit_per_user(self):
-        """Test rate limits are per-user when authenticated"""
-        from backend.api.middleware.ratelimit import RateLimitMiddleware
+    async def test_get_current_user_user_not_found(self, mock_database):
+        """Test get_current_user when user not in database"""
+        from api.middleware.auth import (
+            get_current_user,
+            create_access_token
+        )
+        from datetime import datetime, timedelta
+        from fastapi import HTTPException
         
-        mock_app = MagicMock()
-        limiter = RateLimitMiddleware(mock_app, requests_per_minute=10)
+        mock_database.fetch_one.return_value = None
         
-        # Two different users should have separate limits
-        request1 = MagicMock()
-        request1.headers = {'Authorization': 'Bearer user1token123456'}
-        request1.url.path = '/api/test'
+        expires_at = datetime.utcnow() + timedelta(hours=12)
+        token = create_access_token(
+            user_id="deleted_user",
+            hwid="hwid_abc",
+            expires_at=expires_at
+        )
         
-        request2 = MagicMock()
-        request2.headers = {'Authorization': 'Bearer user2token123456'}
-        request2.url.path = '/api/test'
+        mock_creds = MagicMock()
+        mock_creds.credentials = token
         
-        id1 = limiter._get_client_id(request1)
-        id2 = limiter._get_client_id(request2)
+        with pytest.raises(HTTPException) as exc_info:
+            await get_current_user(mock_creds)
         
-        assert id1 != id2
+        assert exc_info.value.status_code == 401
+        assert "not found" in exc_info.value.detail.lower()
+
+
+# ============== Quota/Credits Middleware Tests ==============
+
+class TestQuotaMiddleware:
+    """Tests for quota/credits middleware functions"""
+
+    @pytest.fixture
+    def mock_db(self):
+        """Create mock database connection"""
+        mock = AsyncMock()
+        mock.fetchrow = AsyncMock()
+        mock.execute = AsyncMock()
+        return mock
+
+    def test_insufficient_credits_error(self):
+        """Test InsufficientCreditsError exception"""
+        from api.middleware.quota import InsufficientCreditsError
+        
+        error = InsufficientCreditsError(
+            "Not enough credits",
+            required=5,
+            available=2
+        )
+        
+        assert error.message == "Not enough credits"
+        assert error.required == 5
+        assert error.available == 2
+        assert str(error) == "Not enough credits"
+
+    def test_quota_exceeded_error_alias(self):
+        """Test QuotaExceededError is alias"""
+        from api.middleware.quota import (
+            QuotaExceededError,
+            InsufficientCreditsError
+        )
+        
+        assert QuotaExceededError is InsufficientCreditsError
+
+    def test_credit_costs_defined(self):
+        """Test credit costs are properly defined"""
+        from api.middleware.quota import CREDIT_COSTS
+        
+        assert "copy" in CREDIT_COSTS
+        assert "trend_analysis" in CREDIT_COSTS
+        assert "niche_report" in CREDIT_COSTS
+        assert CREDIT_COSTS["copy"] == 1
+        assert CREDIT_COSTS["trend_analysis"] == 2
+        assert CREDIT_COSTS["niche_report"] == 5
+
+    @pytest.mark.asyncio
+    async def test_get_user_credits_success(self, mock_db):
+        """Test getting user credits"""
+        from api.middleware.quota import get_user_credits
+        
+        mock_db.fetchrow.return_value = {
+            "balance": 100,
+            "total_purchased": 150,
+            "total_used": 50
+        }
+        
+        result = await get_user_credits("user_123", mock_db)
+        
+        assert result["balance"] == 100
+        assert result["total_purchased"] == 150
+        assert result["total_used"] == 50
+
+    @pytest.mark.asyncio
+    async def test_get_user_credits_not_found(self, mock_db):
+        """Test get_user_credits raises for missing user"""
+        from api.middleware.quota import get_user_credits
+        from fastapi import HTTPException
+        
+        mock_db.fetchrow.return_value = None
+        
+        with pytest.raises(HTTPException) as exc_info:
+            await get_user_credits("missing", mock_db)
+        
+        assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_check_credits_sufficient(self, mock_db):
+        """Test check_credits with sufficient balance"""
+        from api.middleware.quota import check_credits
+        
+        mock_db.fetchrow.return_value = {
+            "balance": 100,
+            "total_purchased": 100,
+            "total_used": 0
+        }
+        
+        result = await check_credits("user_123", "copy", mock_db)
+        
+        assert result["balance"] == 100
+        assert result["required"] == 1
+        assert result["remaining_after"] == 99
+
+    @pytest.mark.asyncio
+    async def test_check_credits_insufficient(self, mock_db):
+        """Test check_credits raises for insufficient balance"""
+        from api.middleware.quota import (
+            check_credits,
+            InsufficientCreditsError
+        )
+        
+        mock_db.fetchrow.return_value = {
+            "balance": 0,
+            "total_purchased": 10,
+            "total_used": 10
+        }
+        
+        with pytest.raises(InsufficientCreditsError) as exc_info:
+            await check_credits("user_123", "copy", mock_db)
+        
+        assert exc_info.value.required == 1
+        assert exc_info.value.available == 0
+
+    @pytest.mark.asyncio
+    async def test_check_credits_trend_analysis(self, mock_db):
+        """Test check_credits for trend_analysis (2 credits)"""
+        from api.middleware.quota import check_credits
+        
+        mock_db.fetchrow.return_value = {
+            "balance": 10,
+            "total_purchased": 10,
+            "total_used": 0
+        }
+        
+        result = await check_credits("user_123", "trend_analysis", mock_db)
+        
+        assert result["required"] == 2
+        assert result["remaining_after"] == 8
+
+    @pytest.mark.asyncio
+    async def test_deduct_credits_success(self, mock_db):
+        """Test successful credit deduction"""
+        from api.middleware.quota import deduct_credits
+        
+        mock_db.fetchrow.return_value = {"new_balance": 99}
+        
+        result = await deduct_credits("user_123", "copy", mock_db)
+        
+        assert result["new_balance"] == 99
+        assert result["cost"] == 1
+
+    @pytest.mark.asyncio
+    async def test_deduct_credits_insufficient(self, mock_db):
+        """Test deduct_credits raises when insufficient"""
+        from api.middleware.quota import (
+            deduct_credits,
+            InsufficientCreditsError
+        )
+        
+        mock_db.fetchrow.return_value = None  # UPDATE returns nothing
+        
+        with pytest.raises(InsufficientCreditsError):
+            await deduct_credits("user_123", "copy", mock_db)
+
+    @pytest.mark.asyncio
+    async def test_add_credits_success(self, mock_db):
+        """Test adding credits to user"""
+        from api.middleware.quota import add_credits
+        
+        mock_db.fetchrow.return_value = {"new_balance": 200}
+        
+        result = await add_credits("user_123", 100, "pay_123", mock_db)
+        
+        assert result["new_balance"] == 200
+        assert result["added"] == 100
+        mock_db.execute.assert_called_once()  # Log purchase
+
+    @pytest.mark.asyncio
+    async def test_add_credits_without_payment_id(self, mock_db):
+        """Test adding credits without payment logging"""
+        from api.middleware.quota import add_credits
+        
+        mock_db.fetchrow.return_value = {"new_balance": 150}
+        
+        result = await add_credits("user_123", 50, None, mock_db)
+        
+        assert result["new_balance"] == 150
+        mock_db.execute.assert_not_called()  # No log
+
+    @pytest.mark.asyncio
+    async def test_add_credits_user_not_found(self, mock_db):
+        """Test add_credits raises for missing user"""
+        from api.middleware.quota import add_credits
+        from fastapi import HTTPException
+        
+        mock_db.fetchrow.return_value = None
+        
+        with pytest.raises(HTTPException) as exc_info:
+            await add_credits("missing", 100, None, mock_db)
+        
+        assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_legacy_check_copy_quota(self, mock_db):
+        """Test legacy check_copy_quota function"""
+        from api.middleware.quota import check_copy_quota
+        
+        mock_db.fetchrow.return_value = {
+            "balance": 50,
+            "total_purchased": 50,
+            "total_used": 0
+        }
+        
+        result = await check_copy_quota("user_123", mock_db)
+        
+        assert result["required"] == 1
+
+    @pytest.mark.asyncio
+    async def test_legacy_get_user_quota(self, mock_db):
+        """Test legacy get_user_quota function"""
+        from api.middleware.quota import get_user_quota
+        
+        mock_db.fetchrow.return_value = {
+            "balance": 75,
+            "total_purchased": 100,
+            "total_used": 25
+        }
+        
+        result = await get_user_quota("user_123", "copy", mock_db)
+        
+        assert result["used"] == 25
+        assert result["remaining"] == 75
+        assert result["limit"] == -1
+        assert result["plan"] == "lifetime"
+
+    @pytest.mark.asyncio
+    async def test_legacy_increment_quota(self, mock_db):
+        """Test legacy increment_quota function"""
+        from api.middleware.quota import increment_quota
+        
+        mock_db.fetchrow.return_value = {"new_balance": 49}
+        
+        await increment_quota("user_123", "copy", 1, mock_db)
+        
+        mock_db.fetchrow.assert_called()
+

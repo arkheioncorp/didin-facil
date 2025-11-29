@@ -97,29 +97,29 @@ pub struct User {
 #[ts(export, export_to = "../src/types/tauri-bindings.ts")]
 pub struct License {
     pub is_valid: bool,
-    pub plan: String,
+    pub plan: String,  // "lifetime" or "trial"
     pub features: PlanFeatures,
-    pub expires_at: String,
-    pub usage_this_month: UsageStats,
+    pub expires_at: String,  // Empty = lifetime (never expires)
+    pub credits: i32,  // Créditos IA disponíveis
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "../src/types/tauri-bindings.ts")]
 pub struct PlanFeatures {
-    pub searches_per_month: i32,
-    pub copies_per_month: i32,
-    pub favorite_lists: i32,
+    pub searches_unlimited: bool,  // Lifetime = true
+    pub favorites_unlimited: bool,  // Lifetime = true
     pub export_enabled: bool,
     pub scheduler_enabled: bool,
 }
 
+// Deprecated - keeping for backwards compatibility
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "../src/types/tauri-bindings.ts")]
 pub struct UsageStats {
-    pub searches: i32,
-    pub copies: i32,
+    pub credits_used: i32,
+    pub credits_remaining: i32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

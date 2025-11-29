@@ -14,14 +14,13 @@ class TestOpenAIService:
     @pytest.fixture
     def openai_service(self):
         """Create OpenAIService instance for testing."""
-        with patch("api.services.openai.settings") as mock_settings:
-            mock_settings.OPENAI_API_KEY = "test-api-key"
-            mock_settings.OPENAI_MODEL = "gpt-4-turbo-preview"
+        with patch("api.services.openai.OPENAI_API_KEY", "test-api-key"), \
+             patch("api.services.openai.OPENAI_MODEL", "gpt-4-turbo-preview"), \
+             patch("api.services.openai.AsyncOpenAI") as mock_client:
             
-            with patch("api.services.openai.AsyncOpenAI") as mock_client:
-                service = OpenAIService()
-                service.client = mock_client.return_value
-                return service
+            service = OpenAIService()
+            service.client = mock_client.return_value
+            return service
 
     @pytest.fixture
     def mock_openai_response(self):

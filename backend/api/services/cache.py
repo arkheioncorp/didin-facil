@@ -229,45 +229,71 @@ class RateLimitService:
         return max(0, limit - int(current))
 
 
+class CreditsService:
+    """Credits tracking using Redis for caching"""
+
+    def __init__(self):
+        self.prefix = "credits:"
+
+    async def get_cached_credits(self, user_id: str) -> Optional[int]:
+        """Get cached credits balance for user"""
+        redis = await get_redis()
+        key = f"{self.prefix}{user_id}"
+
+        try:
+            value = await redis.get(key)
+            return int(value) if value else None
+        finally:
+            await redis.aclose()
+
+    async def set_cached_credits(
+        self, user_id: str, credits: int, ttl: int = 300
+    ) -> bool:
+        """Cache credits balance (5 min default TTL)"""
+        redis = await get_redis()
+        key = f"{self.prefix}{user_id}"
+
+        try:
+            await redis.setex(key, ttl, credits)
+            return True
+        finally:
+            await redis.aclose()
+
+    async def invalidate_credits(self, user_id: str) -> bool:
+        """Invalidate cached credits after transaction"""
+        redis = await get_redis()
+        key = f"{self.prefix}{user_id}"
+
+        try:
+            await redis.delete(key)
+            return True
+        finally:
+            await redis.aclose()
+
+
+# Keep QuotaService for backwards compatibility (deprecated)
 class QuotaService:
-    """Monthly quota tracking using Redis"""
-    
+    """
+    Monthly quota tracking using Redis.
+    DEPRECATED: Use CreditsService instead.
+    Kept for backwards compatibility.
+    """
+
     def __init__(self):
         self.prefix = "quota:"
-    
+
     async def get_quota(self, user_id: str, quota_type: str) -> dict:
-        """Get current quota usage for user"""
-        redis = await get_redis()
-        key = f"{self.prefix}{quota_type}:{user_id}"
-        
-        data = await redis.hgetall(key)
-        
-        if not data:
-            return {"used": 0, "limit": 0, "reset_date": None}
-        
-        return {
-            "used": int(data.get(b"used", 0)),
-            "limit": int(data.get(b"limit", 0)),
-            "reset_date": data.get(b"reset_date", b"").decode()
-        }
-    
-    async def increment_quota(self, user_id: str, quota_type: str, amount: int = 1) -> int:
-        """Increment quota usage"""
-        redis = await get_redis()
-        key = f"{self.prefix}{quota_type}:{user_id}"
-        
-        return await redis.hincrby(key, "used", amount)
-    
-    async def reset_quota(self, user_id: str, quota_type: str, limit: int, reset_date: str):
-        """Reset quota for new period"""
-        redis = await get_redis()
-        key = f"{self.prefix}{quota_type}:{user_id}"
-        
-        await redis.hset(key, mapping={
-            "used": 0,
-            "limit": limit,
-            "reset_date": reset_date
-        })
-        
-        # Set expiry to reset date + 1 day buffer
-        await redis.expire(key, 32 * 24 * 60 * 60)  # 32 days
+        """Get current quota usage for user (deprecated)"""
+        return {"used": 0, "limit": -1, "reset_date": None}
+
+    async def increment_quota(
+        self, user_id: str, quota_type: str, amount: int = 1
+    ) -> int:
+        """Increment quota usage (deprecated - no-op)"""
+        return 0
+
+    async def reset_quota(
+        self, user_id: str, quota_type: str, limit: int, reset_date: str
+    ):
+        """Reset quota for new period (deprecated - no-op)"""
+        pass

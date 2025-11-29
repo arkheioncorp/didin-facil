@@ -1,0 +1,62 @@
+# Vendor Module Dependencies
+# ==========================
+# Dependências para os módulos de integração com redes sociais e marketing
+# Adicione estas ao requirements.txt principal ou instale separadamente
+
+# ==================== Core ====================
+httpx>=0.25.0              # HTTP client assíncrono
+aiofiles>=23.0.0           # Async file operations
+pydantic>=2.0.0            # Validação de dados
+python-dotenv>=1.0.0       # Variáveis de ambiente
+
+# ==================== WhatsApp ====================
+# Evolution API é um serviço externo, não precisa de deps Python
+# Para uso direto do Baileys, seria necessário Node.js
+
+# ==================== Instagram ====================
+instagrapi>=2.0.0          # Cliente não-oficial Instagram
+Pillow>=10.0.0             # Manipulação de imagens
+
+# ==================== TikTok ====================
+selenium>=4.15.0           # Automação de browser
+webdriver-manager>=4.0.0   # Gerenciador de webdrivers
+
+# ==================== YouTube ====================
+google-api-python-client>=2.100.0   # API do YouTube
+google-auth-oauthlib>=1.1.0         # OAuth2 para Google
+
+# ==================== Content Generation ====================
+# FFmpeg deve estar instalado no sistema:
+# - Ubuntu/Debian: apt install ffmpeg
+# - Mac: brew install ffmpeg
+# - Windows: choco install ffmpeg
+
+# Opcional para geração com IA
+openai>=1.0.0              # API OpenAI para legendas
+
+# ==================== Email Marketing ====================
+# Resend (recomendado) - não precisa lib especial, usa httpx
+# SendGrid
+# sendgrid>=6.10.0         # Descomentar se usar SendGrid
+
+# Templates
+Jinja2>=3.1.0              # Motor de templates
+Markdown>=3.5.0            # Markdown para HTML
+
+# ==================== Chatbots & Automation ====================
+# Typebot e n8n são serviços externos, usam httpx
+# Chatwoot também é serviço externo
+
+# ==================== CRM ====================
+# Usa apenas estruturas Python built-in
+
+# ==================== Scheduling ====================
+APScheduler>=3.10.0        # Agendamento de tarefas
+redis>=5.0.0               # Cache e filas (opcional)
+
+# ==================== Opcional: Video Processing ====================
+# moviepy>=1.0.3           # Alternativa Python para edição (mais lento que FFmpeg)
+# opencv-python>=4.8.0     # Processamento de imagem/vídeo
+
+# ==================== Testes ====================
+pytest-asyncio>=0.21.0     # Testes assíncronos

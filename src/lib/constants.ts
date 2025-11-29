@@ -16,12 +16,67 @@ export const MAX_FILTER_PRESETS = 10;
 export const MAX_SEARCH_HISTORY = 100;
 export const MAX_COPY_HISTORY = 100;
 
-// Subscription plans
+// License and Credits
+export const LICENSE_PRICE = 49.90;
+
+export const CREDIT_PACKS = {
+  starter: {
+    name: "Starter",
+    credits: 50,
+    price: 19.90,
+    pricePerCredit: 0.40,
+  },
+  pro: {
+    name: "Pro",
+    credits: 200,
+    price: 49.90,
+    pricePerCredit: 0.25,
+  },
+  ultra: {
+    name: "Ultra",
+    credits: 500,
+    price: 99.90,
+    pricePerCredit: 0.20,
+  },
+} as const;
+
+// Credit costs per action
+export const CREDIT_COSTS = {
+  copy: 1,           // 1 crédito por copy gerada
+  trendAnalysis: 2,  // 2 créditos por análise de tendência
+  nicheReport: 5,    // 5 créditos por relatório de nicho
+} as const;
+
+// Features included in lifetime license (no limits)
+export const LIFETIME_FEATURES = {
+  unlimitedSearches: true,
+  multiSource: true,       // TikTok Shop, AliExpress
+  advancedFilters: true,
+  unlimitedFavorites: true,
+  exportAll: true,         // CSV, Excel, JSON
+  freeUpdates: true,
+  maxDevices: 2,
+} as const;
+
+// Legacy PLANS constant for backward compatibility
 export const PLANS = {
+  lifetime: {
+    name: "Licença Vitalícia",
+    price: LICENSE_PRICE,
+    duration: -1, // lifetime (never expires)
+    features: {
+      searchesPerMonth: -1, // unlimited
+      copiesPerMonth: 0,    // uses credits
+      favoriteLists: -1,    // unlimited
+      exportEnabled: true,
+      schedulerEnabled: true,
+    },
+  },
+  // Deprecated plans - kept for migration
   trial: {
     name: "Trial",
     price: 0,
-    duration: 7, // days
+    duration: 7,
     features: {
       searchesPerMonth: 10,
       copiesPerMonth: 5,
@@ -33,7 +88,7 @@ export const PLANS = {
   basic: {
     name: "Básico",
     price: 10,
-    duration: 30, // days
+    duration: 30,
     features: {
       searchesPerMonth: 100,
       copiesPerMonth: 50,
@@ -45,11 +100,11 @@ export const PLANS = {
   pro: {
     name: "Pro",
     price: 29,
-    duration: 30, // days
+    duration: 30,
     features: {
-      searchesPerMonth: -1, // unlimited
-      copiesPerMonth: -1, // unlimited
-      favoriteLists: -1, // unlimited
+      searchesPerMonth: -1,
+      copiesPerMonth: -1,
+      favoriteLists: -1,
       exportEnabled: true,
       schedulerEnabled: true,
     },

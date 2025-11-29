@@ -51,6 +51,39 @@ class Settings(BaseSettings):
     SCRAPER_RETRY_COUNT: int = 3
     PROXY_POOL_URL: Optional[str] = None
     
+    # Evolution API (WhatsApp)
+    EVOLUTION_API_URL: str = "http://localhost:8082"
+    EVOLUTION_API_KEY: Optional[str] = "429683C4C977415CAAFCCE10F7D57E11"
+    EVOLUTION_WEBHOOK_URL: Optional[str] = "http://tiktrend-api:8000/webhooks/evolution"
+    
+    # Chatwoot (Customer Support)
+    CHATWOOT_API_URL: str = "http://localhost:3000"
+    CHATWOOT_ACCESS_TOKEN: Optional[str] = None
+    CHATWOOT_ACCOUNT_ID: int = 1
+    
+    # n8n Integration
+    N8N_API_URL: Optional[str] = None
+    N8N_API_KEY: Optional[str] = None
+    
+    # Typebot Integration
+    TYPEBOT_API_URL: Optional[str] = None
+    TYPEBOT_PUBLIC_ID: Optional[str] = None
+    
+    # Social Media OAuth
+    INSTAGRAM_CLIENT_ID: Optional[str] = None
+    INSTAGRAM_CLIENT_SECRET: Optional[str] = None
+    TIKTOK_CLIENT_KEY: Optional[str] = None
+    TIKTOK_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    
+    # Instagram Credentials
+    INSTAGRAM_USERNAME: Optional[str] = None
+    INSTAGRAM_PASSWORD: Optional[str] = None
+    
+    # Data Directory
+    DATA_DIR: str = "data"
+    
     # CDN / Storage
     CDN_URL: str = "https://cdn.tiktrend.app"
     R2_BUCKET_NAME: str = "tiktrend-images"
@@ -63,9 +96,14 @@ class Settings(BaseSettings):
     POSTHOG_API_KEY: Optional[str] = None
     
     # CORS
-    CORS_ORIGINS: str = "tauri://localhost,http://localhost:1420,http://localhost:5173"
+    CORS_ORIGINS: str = "http://localhost:1420,http://localhost:3000,tauri://localhost"
     FRONTEND_URL: str = "http://localhost:5173"
     API_URL: str = "http://localhost:8000"
+
+    # Chatwoot
+    CHATWOOT_API_URL: Optional[str] = "https://app.chatwoot.com"
+    CHATWOOT_ACCESS_TOKEN: Optional[str] = None
+    CHATWOOT_ACCOUNT_ID: int = 1
 
     class Config:
         env_file = ".env"

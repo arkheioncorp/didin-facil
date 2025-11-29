@@ -11,23 +11,78 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - Suporte a macOS
 - Dashboard de analytics
 - Histórico de preços
+- App mobile (React Native)
+- Packs de Expansão
 
 ---
 
-## [2.0.0] - 2025-11-26
+## [1.0.0] - 2025-11-26
 
-### 🚀 Mudança Arquitetural Principal
-Migração completa para arquitetura **híbrida** (Desktop + Cloud) para resolver problemas de escalabilidade, segurança e anti-scraping.
+### 🎉 Release Inicial
+
+Primeira versão do TikTrend Finder com arquitetura híbrida (Desktop + Cloud).
+
+### Modelo de Monetização
+
+**Licença Vitalícia:** R$ 49,90 (pagamento único)
+- Busca ilimitada de produtos
+- Multi-fonte (TikTok Shop, AliExpress)
+- Filtros avançados, favoritos ilimitados
+- Exportação em todos os formatos
+- Atualizações de segurança gratuitas
+
+**Créditos IA (Opcional):**
+- Starter: 50 créditos por R$ 19,90
+- Pro: 200 créditos por R$ 49,90
+- Ultra: 500 créditos por R$ 99,90
+
+**Expansões Futuras:** Packs opcionais com novas funcionalidades
 
 ### Adicionado
-- **Backend Cloud (FastAPI):** API centralizada para autenticação, scraping e geração de copies
-- **Sistema de Scraping Centralizado:** Workers Python com Playwright rodando em servidor
-- **Proxy Pool Inteligente:** Rotação automática de proxies com health check
-- **Anti-Detection Avançado:** Fingerprint randomization, User-Agent dinâmico, stealth scripts
-- **Safety Switch:** Modo de segurança automático quando taxa de falhas atinge limite
-- **Cache Compartilhado (Redis):** Produtos e copies cacheados para todos os usuários
-- **Sistema de Quotas:** Controle de uso por plano (buscas, copies, listas)
-- **Fallback AliExpress:** Scraper alternativo quando TikTok Shop falha
+
+#### Core Features
+- **Dashboard de Produtos:** Grid com produtos trending do TikTok Shop
+- **Sistema de Filtros:** Categoria, preço, vendas, avaliação e mais
+- **Gerador de Copy IA:** Integração OpenAI GPT-4 para textos de marketing
+- **Listas de Favoritos:** Organize produtos com notas e tags
+- **Exportação:** CSV, Excel (XLSX), JSON
+- **Tema Claro/Escuro:** ThemeProvider com 3 modos
+
+#### Backend Cloud (FastAPI)
+- **5 Rotas API:** auth, products, copy, license, webhooks
+- **10 Services:** openai, auth, scraper, license, cache, mercadopago, redis, blacklist
+- **Middlewares:** auth, ratelimit, quota, security, request_id
+- **Database:** PostgreSQL + SQLAlchemy + Alembic migrations
+
+#### Scraper Worker
+- **TikTok Scraper:** Playwright com anti-bot e fingerprint randomization
+- **AliExpress Fallback:** Scraper alternativo para redundância
+- **Safety Switch:** Modo de segurança com persistência Redis
+- **IDs Determinísticos:** Hash MD5 para evitar duplicatas
+
+#### Desktop (Tauri 2.0)
+- **9 Páginas:** Dashboard, Search, Products, Favorites, Copy, Settings, Profile, Login, Subscription
+- **4 Stores Zustand:** products, search, favorites, user
+- **17+ Componentes UI:** shadcn/ui + Tailwind CSS
+
+#### DevOps
+- **Docker Compose:** API + PostgreSQL + Redis + Scraper
+- **CI/CD GitHub Actions:** lint, test, build (Windows + Linux)
+- **Scripts de Automação:** dev-setup, build-desktop, deploy-backend
+
+#### Documentação
+- PRD.md, ARCHITECTURE.md, API-REFERENCE.md
+- DATABASE-SCHEMA.md, DEPLOYMENT.md, SECURITY.md
+- TESTING.md, SCALING.md, USER-STORIES.md
+- ROADMAP.md, FAQ.md, CONTRIBUTING.md
+- Memory Bank (activeContext, progress, productContext)
+
+### Segurança
+- Criptografia TLS 1.3 para comunicações
+- SQLCipher para dados locais
+- JWT + HWID binding para autenticação
+- Argon2 para hash de senhas
+- Rate limiting por usuário
 - **IDs Determinísticos:** Prevenção de duplicatas no banco de dados
 - **Reinício Automático de Browsers:** Liberação de memória a cada 50 jobs
 

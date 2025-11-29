@@ -134,22 +134,20 @@ class LicenseService:
     async def create_license(
         self,
         email: str,
-        plan: str,
-        duration_days: int = 30,
+        plan: str = "lifetime",
+        duration_days: int = -1,  # -1 = lifetime
         payment_id: Optional[str] = None
     ) -> str:
-        """Create a new license."""
+        """Create a new lifetime license."""
         
         license_key = self.generate_license_key()
         license_id = str(uuid.uuid4())
-        expires_at = datetime.utcnow() + timedelta(days=duration_days)
         
-        max_devices = {
-            "free": 1,
-            "starter": 2,
-            "pro": 3,
-            "enterprise": 5
-        }.get(plan, 1)
+        # Lifetime license: no expiration
+        expires_at = None if duration_days == -1 else datetime.utcnow() + timedelta(days=duration_days)
+        
+        # All lifetime licenses get 2 devices
+        max_devices = 2
         
         # Get or create user
         user = await self.db.fetch_one(
@@ -159,28 +157,37 @@ class LicenseService:
         
         if user:
             user_id = user["id"]
+            # Update existing user to lifetime
+            await self.db.execute(
+                """
+                UPDATE users SET 
+                    has_lifetime_license = true,
+                    updated_at = NOW()
+                WHERE id = :id
+                """,
+                {"id": user_id}
+            )
         else:
             user_id = str(uuid.uuid4())
             await self.db.execute(
                 """
-                INSERT INTO users (id, email, plan, is_active, created_at)
-                VALUES (:id, :email, :plan, true, NOW())
+                INSERT INTO users (id, email, has_lifetime_license, credits_balance, is_active, created_at)
+                VALUES (:id, :email, true, 0, true, NOW())
                 """,
-                {"id": user_id, "email": email, "plan": plan}
+                {"id": user_id, "email": email}
             )
         
         # Create license
         await self.db.execute(
             """
             INSERT INTO licenses 
-            (id, user_id, license_key, plan, max_devices, expires_at, is_active, created_at, payment_id)
-            VALUES (:id, :user_id, :license_key, :plan, :max_devices, :expires_at, true, NOW(), :payment_id)
+            (id, user_id, license_key, is_lifetime, max_devices, expires_at, is_active, created_at, payment_id)
+            VALUES (:id, :user_id, :license_key, true, :max_devices, :expires_at, true, NOW(), :payment_id)
             """,
             {
                 "id": license_id,
                 "user_id": user_id,
                 "license_key": license_key,
-                "plan": plan,
                 "max_devices": max_devices,
                 "expires_at": expires_at,
                 "payment_id": payment_id
@@ -257,14 +264,9 @@ class LicenseService:
         )
     
     async def update_plan(self, license_id: str, new_plan: str):
-        """Update license plan"""
-        max_devices = {
-            "free": 1,
-            "starter": 2,
-            "pro": 3,
-            "enterprise": 5
-        }.get(new_plan, 1)
-        
+        """Update license plan (legacy - all plans are now lifetime)"""
+        max_devices = 2  # All lifetime licenses get 2 devices
+
         await self.db.execute(
             """
             UPDATE licenses
@@ -273,58 +275,97 @@ class LicenseService:
             """,
             {"license_id": license_id, "plan": new_plan, "max_devices": max_devices}
         )
+
+    async def add_credits(
+        self,
+        email: str,
+        amount: int,
+        payment_id: Optional[str] = None
+    ) -> int:
+        """Add credits to user account"""
+        # Get user by email
+        user = await self.db.fetch_one(
+            "SELECT id, credits FROM users WHERE email = :email",
+            {"email": email}
+        )
+
+        if not user:
+            return 0
+
+        user_id = user["id"]
+        new_balance = user["credits"] + amount
+
+        # Update user credits
+        await self.db.execute(
+            """
+            UPDATE users
+            SET credits = credits + :amount
+            WHERE id = :user_id
+            """,
+            {"user_id": user_id, "amount": amount}
+        )
+
+        # Log credit transaction
+        await self.db.execute(
+            """
+            INSERT INTO credit_transactions
+            (id, user_id, amount, type, payment_id, created_at)
+            VALUES (:id, :user_id, :amount, 'purchase', :payment_id, NOW())
+            """,
+            {
+                "id": str(uuid.uuid4()),
+                "user_id": user_id,
+                "amount": amount,
+                "payment_id": payment_id
+            }
+        )
+
+        return new_balance
     
     async def get_usage_stats(self, license_id: str) -> dict:
         """Get license usage statistics"""
-        
+
         result = await self.db.fetch_one(
             """
-            SELECT 
-                l.plan,
-                (SELECT COUNT(*) FROM copy_history ch 
-                    JOIN users u ON ch.user_id = u.id 
-                    JOIN licenses l2 ON l2.user_id = u.id 
-                    WHERE l2.id = :license_id 
-                    AND ch.created_at >= date_trunc('month', CURRENT_DATE)) as copies_this_month,
-                (SELECT COUNT(*) FROM license_devices ld 
-                    WHERE ld.license_id = :license_id AND ld.is_active = true) as active_devices
+            SELECT
+                l.is_lifetime,
+                u.credits,
+                (SELECT COUNT(*) FROM license_devices ld
+                    WHERE ld.license_id = :license_id
+                    AND ld.is_active = true) as active_devices
             FROM licenses l
+            JOIN users u ON l.user_id = u.id
             WHERE l.id = :license_id
             """,
             {"license_id": license_id}
         )
-        
-        plan_limits = {
-            "free": {"copies": 5, "products": 10},
-            "starter": {"copies": 50, "products": 100},
-            "pro": {"copies": 200, "products": 500},
-            "enterprise": {"copies": 1000, "products": -1}  # -1 = unlimited
-        }
-        
+
         if result:
-            limits = plan_limits.get(result["plan"], plan_limits["free"])
             return {
-                "copies_used": result["copies_this_month"],
-                "copies_limit": limits["copies"],
-                "products_limit": limits["products"],
-                "active_devices": result["active_devices"]
+                "is_lifetime": result["is_lifetime"],
+                "credits": result["credits"],
+                "active_devices": result["active_devices"],
+                # Lifetime = unlimited everything except credits
+                "searches_limit": -1,
+                "favorites_limit": -1,
+                "exports_limit": -1
             }
-        
+
         return {}
     
     def create_license_jwt(
         self,
         user_id: str,
         hwid: str,
-        plan: str,
-        expires_at: datetime
+        is_lifetime: bool,
+        expires_at: datetime = None
     ) -> str:
         """Create JWT token for license validation"""
         payload = {
             "sub": user_id,
             "hwid": hwid,
-            "plan": plan,
-            "exp": expires_at,
+            "is_lifetime": is_lifetime,
+            "exp": expires_at if expires_at else datetime.utcnow() + timedelta(days=365*100),  # 100 years for lifetime
             "iat": datetime.utcnow(),
             "iss": "tiktrend-license-service"
         }
@@ -360,49 +401,71 @@ class LicenseService:
         return "-".join(parts)
     
     @staticmethod
-    def get_plan_features(plan: str) -> dict:
-        """Get features for a plan"""
-        features = {
-            "free": {
-                "products_per_day": 10,
-                "copies_per_month": 5,
-                "favorites_limit": 10,
-                "export_formats": ["csv"],
-                "priority_support": False,
-                "api_access": False,
-                "trending_alerts": False,
-                "advanced_filters": False
-            },
-            "starter": {
-                "products_per_day": 100,
-                "copies_per_month": 50,
-                "favorites_limit": 100,
-                "export_formats": ["csv", "xlsx"],
-                "priority_support": False,
-                "api_access": False,
-                "trending_alerts": True,
-                "advanced_filters": True
-            },
-            "pro": {
-                "products_per_day": 500,
-                "copies_per_month": 200,
-                "favorites_limit": 500,
-                "export_formats": ["csv", "xlsx", "json"],
-                "priority_support": True,
-                "api_access": False,
-                "trending_alerts": True,
-                "advanced_filters": True
-            },
-            "enterprise": {
-                "products_per_day": -1,  # Unlimited
-                "copies_per_month": 1000,
-                "favorites_limit": -1,  # Unlimited
-                "export_formats": ["csv", "xlsx", "json", "api"],
-                "priority_support": True,
-                "api_access": True,
-                "trending_alerts": True,
-                "advanced_filters": True
+    def get_lifetime_features() -> dict:
+        """Get features included in lifetime license"""
+        return {
+            "unlimited_searches": True,
+            "unlimited_favorites": True,
+            "unlimited_exports": True,
+            "multi_source": True,  # TikTok, AliExpress
+            "advanced_filters": True,
+            "export_formats": ["csv", "xlsx", "json"],
+            "max_devices": 2,
+            "free_updates": True,
+            "priority_support": False,  # Available as add-on
+            "api_access": False,  # Future expansion
+            "seller_bot": False  # Requires Premium Bot subscription
+        }
+
+    @staticmethod
+    def get_premium_bot_features() -> dict:
+        """Get features for Premium Bot subscription (R$149.90/month)."""
+        return {
+            # Includes all lifetime features
+            "unlimited_searches": True,
+            "unlimited_favorites": True,
+            "unlimited_exports": True,
+            "multi_source": True,
+            "advanced_filters": True,
+            "export_formats": ["csv", "xlsx", "json"],
+            "max_devices": 3,  # Extra device for bot
+            "free_updates": True,
+            "priority_support": True,  # Included in Premium
+            "api_access": True,  # REST API access
+            # Premium Bot exclusive features
+            "seller_bot": True,
+            "seller_bot_features": {
+                "post_products": True,
+                "manage_orders": True,
+                "reply_messages": True,
+                "extract_analytics": True,
+                "max_tasks_per_day": 50,
+                "max_concurrent_tasks": 2,
+                "browser_profiles": 3,
+                "ai_powered_responses": True,
             }
         }
-        
-        return features.get(plan, features["free"])
+
+    @staticmethod
+    def get_plan_features(plan: str) -> dict:
+        """Get features for a plan."""
+        if plan == "lifetime":
+            return LicenseService.get_lifetime_features()
+
+        if plan == "premium_bot":
+            return LicenseService.get_premium_bot_features()
+
+        # Legacy plans - all redirect to needing lifetime
+        return {
+            "unlimited_searches": False,
+            "unlimited_favorites": False,
+            "unlimited_exports": False,
+            "multi_source": False,
+            "advanced_filters": False,
+            "export_formats": [],
+            "max_devices": 0,
+            "free_updates": False,
+            "priority_support": False,
+            "api_access": False,
+            "seller_bot": False
+        }

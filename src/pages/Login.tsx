@@ -13,7 +13,7 @@ import { authService } from "@/services/auth";
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setUser, setLicense } = useUserStore();
+  const { setUser, setLicense, setCredits } = useUserStore();
   const [isLoading, setIsLoading] = React.useState(false);
   const [isRegister, setIsRegister] = React.useState(location.pathname === "/register");
   
@@ -64,8 +64,11 @@ export const Login: React.FC = () => {
 
     try {
       // DEV MODE: Mock login for development/testing
-      const isDev = import.meta.env.DEV || !import.meta.env.VITE_API_URL;
-      
+      // Use mock login when in development mode or when no API URL is configured
+      const isDev = import.meta.env.DEV === true ||
+        import.meta.env.MODE === 'development' ||
+        !import.meta.env.VITE_API_URL;
+
       if (isDev) {
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -75,35 +78,34 @@ export const Login: React.FC = () => {
           throw { response: { data: { detail: "Credenciais incorretas ou inválidas" } } };
         }
 
-        // Mock user data
+        // Mock user data - novo modelo lifetime + credits
         const mockUser = {
           id: "user_" + Date.now(),
           email: formData.email,
           name: formData.name || formData.email.split("@")[0],
-          plan: "trial" as const,
-          planExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          hasLifetimeLicense: true,
+          licenseActivatedAt: new Date().toISOString(),
           createdAt: new Date().toISOString(),
         };
 
         const mockLicense = {
           isValid: true,
-          plan: "trial" as const,
-          features: {
-            searchesPerMonth: 10,
-            copiesPerMonth: 5,
-            favoriteLists: 1,
-            exportEnabled: false,
-            schedulerEnabled: false,
-          },
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          usageThisMonth: {
-            searches: 0,
-            copies: 0,
-          },
+          isLifetime: true,
+          activatedAt: new Date().toISOString(),
+          maxDevices: 2,
+          activeDevices: 1,
+        };
+
+        const mockCredits = {
+          balance: 10,  // Trial credits
+          totalPurchased: 0,
+          totalUsed: 0,
+          lastPurchaseAt: null,
         };
 
         setUser(mockUser);
         setLicense(mockLicense);
+        setCredits(mockCredits);
         navigate("/");
         return;
       }
@@ -126,27 +128,27 @@ export const Login: React.FC = () => {
         setIsRegister(false);
       } else {
         const response = await authService.login(formData.email, formData.password, hwid);
-        
-        // Use license from response or fallback
+
+        // Use license from response or create default lifetime license
         const license = response.license || {
-            isValid: true,
-            plan: response.user.plan,
-            features: {
-              searchesPerMonth: 10,
-              copiesPerMonth: 5,
-              favoriteLists: 1,
-              exportEnabled: false,
-              schedulerEnabled: false,
-            },
-            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-            usageThisMonth: {
-              searches: 0,
-              copies: 0,
-            },
+          isValid: true,
+          isLifetime: true,
+          activatedAt: new Date().toISOString(),
+          maxDevices: 2,
+          activeDevices: 1,
+        };
+
+        // Credits from response or default
+        const credits = response.credits || {
+          balance: 0,
+          totalPurchased: 0,
+          totalUsed: 0,
+          lastPurchaseAt: null,
         };
 
         setUser(response.user);
         setLicense(license);
+        setCredits(credits);
         navigate("/");
       }
     } catch (error) {

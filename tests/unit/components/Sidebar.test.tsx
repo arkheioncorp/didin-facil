@@ -23,6 +23,7 @@ vi.mock('@/components/icons', () => ({
   ProductsIcon: () => <span data-testid="products-icon">Products</span>,
   FavoritesIcon: () => <span data-testid="favorites-icon">Favorites</span>,
   CopyIcon: () => <span data-testid="copy-icon">Copy</span>,
+  BotIcon: () => <span data-testid="bot-icon">Bot</span>,
   SettingsIcon: () => <span data-testid="settings-icon">Settings</span>,
   UserIcon: () => <span data-testid="user-icon">User</span>,
   ChevronLeftIcon: () => <span data-testid="chevron-left">‹</span>,

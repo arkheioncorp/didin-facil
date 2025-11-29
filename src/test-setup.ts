@@ -64,3 +64,19 @@ global.ResizeObserver = class ResizeObserver {
     unobserve() { }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any;
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(() => null),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
+};
+
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+  writable: true,
+  configurable: true,
+});

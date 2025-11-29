@@ -98,58 +98,112 @@ class MercadoPagoService:
         user_email: str,
         user_id: str,
     ) -> dict:
-        """Create recurring subscription"""
-        
-        plan_configs = {
-            "starter": {
-                "reason": "TikTrend Finder - Starter Mensal",
-                "auto_recurring": {
-                    "frequency": 1,
-                    "frequency_type": "months",
-                    "transaction_amount": 29.90,
+        """
+        Create recurring subscription.
+        Note: Deprecated - using lifetime license + credits model now.
+        Kept for legacy support.
+        """
+
+        # Legacy subscriptions not supported in new model
+        # All purchases are now one-time (lifetime license or credit packs)
+        raise NotImplementedError(
+            "Subscriptions are deprecated. Use lifetime license + credits."
+        )
+
+    async def create_license_payment(
+        self,
+        user_email: str,
+        user_id: str,
+    ) -> dict:
+        """Create payment for lifetime license (R$ 49,90)"""
+        preference_data = {
+            "items": [
+                {
+                    "title": "Didin Fácil - Licença Vitalícia",
+                    "quantity": 1,
+                    "unit_price": 49.90,
                     "currency_id": "BRL"
                 }
+            ],
+            "payer": {
+                "email": user_email
             },
-            "pro": {
-                "reason": "TikTrend Finder - Pro Mensal",
-                "auto_recurring": {
-                    "frequency": 1,
-                    "frequency_type": "months",
-                    "transaction_amount": 79.90,
-                    "currency_id": "BRL"
-                }
+            "metadata": {
+                "product_type": "license",
+                "user_id": user_id
             },
-            "enterprise": {
-                "reason": "TikTrend Finder - Enterprise Mensal",
-                "auto_recurring": {
-                    "frequency": 1,
-                    "frequency_type": "months",
-                    "transaction_amount": 199.90,
-                    "currency_id": "BRL"
-                }
-            }
+            "back_urls": {
+                "success": f"{settings.FRONTEND_URL}/payment/success",
+                "failure": f"{settings.FRONTEND_URL}/payment/failure",
+                "pending": f"{settings.FRONTEND_URL}/payment/pending"
+            },
+            "auto_return": "approved",
+            "external_reference": f"{user_id}:lifetime",
+            "notification_url": f"{settings.API_URL}/webhooks/mercadopago"
         }
-        
-        config = plan_configs.get(plan, plan_configs["starter"])
-        
-        subscription_data = {
-            "payer_email": user_email,
-            "back_url": f"{settings.FRONTEND_URL}/subscription/callback",
-            "external_reference": f"{user_id}:{plan}",
-            **config
-        }
-        
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{self.base_url}/preapproval",
+                f"{self.base_url}/checkout/preferences",
                 headers=self.headers,
-                json=subscription_data
+                json=preference_data
             )
             response.raise_for_status()
             return response.json()
-    
+
+    async def create_credits_payment(
+        self,
+        user_email: str,
+        user_id: str,
+        pack: str,
+    ) -> dict:
+        """Create payment for credits pack"""
+        credit_packs = {
+            "starter": {"credits": 50, "price": 19.90},
+            "pro": {"credits": 200, "price": 49.90},
+            "ultra": {"credits": 500, "price": 99.90},
+        }
+
+        pack_info = credit_packs.get(pack, credit_packs["starter"])
+
+        preference_data = {
+            "items": [
+                {
+                    "title": f"Didin Fácil - {pack_info['credits']} Créditos IA",
+                    "quantity": 1,
+                    "unit_price": pack_info["price"],
+                    "currency_id": "BRL"
+                }
+            ],
+            "payer": {
+                "email": user_email
+            },
+            "metadata": {
+                "product_type": "credits",
+                "credits": pack_info["credits"],
+                "user_id": user_id
+            },
+            "back_urls": {
+                "success": f"{settings.FRONTEND_URL}/payment/success",
+                "failure": f"{settings.FRONTEND_URL}/payment/failure",
+                "pending": f"{settings.FRONTEND_URL}/payment/pending"
+            },
+            "auto_return": "approved",
+            "external_reference": f"{user_id}:credits:{pack}",
+            "notification_url": f"{settings.API_URL}/webhooks/mercadopago"
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/checkout/preferences",
+                headers=self.headers,
+                json=preference_data
+            )
+            response.raise_for_status()
+            return response.json()
+
     async def cancel_subscription(self, preapproval_id: str) -> bool:
-        """Cancel a subscription"""
+        """Cancel a subscription (legacy - deprecated)"""
         async with httpx.AsyncClient() as client:
             response = await client.put(
                 f"{self.base_url}/preapproval/{preapproval_id}",
@@ -157,7 +211,7 @@ class MercadoPagoService:
                 json={"status": "cancelled"}
             )
             return response.status_code == 200
-    
+
     async def log_event(self, event_type: str, data: dict):
         """Log payment event to database"""
         await self.db.execute(
@@ -171,29 +225,35 @@ class MercadoPagoService:
                 "data": str(data)  # JSON serialization
             }
         )
-    
+
     async def send_license_email(
         self,
         email: str,
         license_key: str,
         plan: str
     ):
-        """Send license key via email (placeholder - implement with email service)"""
+        """Send license key via email"""
         # TODO: Implement email sending (SendGrid, AWS SES, etc.)
-        # For now, just log
-        print(f"[EMAIL] Sending license to {email}: {license_key} ({plan})")
-    
+        print(f"[EMAIL] Licença enviada para {email}: {license_key} ({plan})")
+
+    async def send_credits_email(
+        self,
+        email: str,
+        credits_amount: int
+    ):
+        """Send credits purchase confirmation via email"""
+        # TODO: Implement email sending (SendGrid, AWS SES, etc.)
+        print(f"[EMAIL] Créditos adicionados para {email}: {credits_amount}")
+
     async def get_payment_history(self, user_id: str) -> list:
         """Get user's payment history"""
         results = await self.db.fetch_all(
             """
-            SELECT id, amount, plan, status, payment_method, created_at
+            SELECT id, amount, status, payment_method, created_at
             FROM payments
             WHERE user_id = :user_id
             ORDER BY created_at DESC
             """,
             {"user_id": user_id}
         )
-        return [dict(r) for r in results]
-        
         return [dict(r) for r in results]

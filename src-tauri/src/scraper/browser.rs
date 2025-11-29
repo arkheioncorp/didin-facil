@@ -2,13 +2,17 @@
 // Manages Chromium browser instances using chromiumoxide
 
 use anyhow::{Context, Result};
+use base64::{engine::general_purpose, Engine as _};
 use chromiumoxide::browser::{Browser, BrowserConfig};
+use chromiumoxide::cdp::browser_protocol::page::CaptureScreenshotParams;
 use chromiumoxide::layout::Point;
 use chromiumoxide::Page;
 use futures::StreamExt;
 use rand::Rng;
+use serde_json::json;
 use std::path::PathBuf;
 use std::sync::Arc;
+use tauri::{AppHandle, Emitter};
 use tokio::sync::Mutex;
 
 pub struct BrowserManager {
@@ -16,6 +20,7 @@ pub struct BrowserManager {
     headless: bool,
     timeout_secs: u64,
     user_data_dir: Option<PathBuf>,
+    app_handle: Option<AppHandle>,
 }
 
 impl BrowserManager {
@@ -25,7 +30,13 @@ impl BrowserManager {
             headless,
             timeout_secs: 30,
             user_data_dir: None,
+            app_handle: None,
         }
+    }
+
+    pub fn with_app_handle(mut self, handle: AppHandle) -> Self {
+        self.app_handle = Some(handle);
+        self
     }
 
     pub fn with_timeout(mut self, timeout: u64) -> Self {
@@ -143,6 +154,35 @@ impl BrowserManager {
             tokio::time::sleep(tokio::time::Duration::from_millis(delay)).await;
         }
         Ok(())
+    }
+
+    pub async fn capture_screenshot(&self, page: &Page) -> Result<String> {
+        let screenshot = page
+            .screenshot(CaptureScreenshotParams::default())
+            .await
+            .context("Failed to capture screenshot")?;
+
+        // Convert to base64
+        let base64 = general_purpose::STANDARD.encode(&screenshot);
+        Ok(format!("data:image/png;base64,{}", base64))
+    }
+
+    pub async fn send_browser_event(
+        &self,
+        url: String,
+        status: String,
+        screenshot: Option<String>,
+    ) {
+        if let Some(handle) = &self.app_handle {
+            let _ = handle.emit(
+                "browser-update",
+                json!({
+                    "url": url,
+                    "status": status,
+                    "screenshot": screenshot,
+                }),
+            );
+        }
     }
 }
 

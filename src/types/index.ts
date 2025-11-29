@@ -137,14 +137,36 @@ export interface User {
   id: string;
   email: string;
   name: string | null;
-  plan: "trial" | "basic" | "pro";
-  planExpiresAt: string;
+  hasLifetimeLicense: boolean;
+  licenseActivatedAt: string | null;
   createdAt: string;
 }
 
 export interface License {
   isValid: boolean;
-  plan: "trial" | "basic" | "pro";
+  isLifetime: boolean;
+  activatedAt: string | null;
+  maxDevices: number;
+  activeDevices: number;
+}
+
+export interface Credits {
+  balance: number;
+  totalPurchased: number;
+  totalUsed: number;
+  lastPurchaseAt: string | null;
+}
+
+export interface UserState {
+  user: User | null;
+  license: License | null;
+  credits: Credits | null;
+}
+
+// Legacy types for backward compatibility
+export interface LegacyLicense {
+  isValid: boolean;
+  plan: "trial" | "basic" | "pro" | "lifetime";
   features: PlanFeatures;
   expiresAt: string;
   usageThisMonth: {
@@ -197,10 +219,11 @@ export interface ScraperConfig {
 
 export interface LicenseConfig {
   key: string | null;
-  plan: string;
-  expiresAt: string | null;
+  plan: "lifetime" | "trial";
+  expiresAt: string | null; // null = lifetime (never expires)
   trialStarted: string | null;
   isActive: boolean;
+  credits: number; // Créditos IA disponíveis
 }
 
 export interface SystemConfig {

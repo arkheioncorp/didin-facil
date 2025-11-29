@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogOverlay,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,8 @@ import { formatCurrency, formatNumber } from "@/lib/utils";
 import type { Product, ProductHistory } from "@/types";
 import { ProductHistoryChart } from "./ProductHistoryChart";
 import { getProductHistory } from "@/services/products";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -37,6 +40,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onGenerateCopy,
 }) => {
   const [history, setHistory] = React.useState<ProductHistory[]>([]);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (product?.id) {
@@ -56,14 +61,32 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       )
     : 0;
 
+  const handleCopyInfo = async () => {
+    const info = `${product.title}\nPreço: ${formatCurrency(product.price)}\nVendas: ${formatNumber(product.salesCount)}\nAvaliação: ${product.productRating?.toFixed(1) || "N/A"}`;
+    await navigator.clipboard.writeText(info);
+    toast({
+      title: "Copiado!",
+      description: "Informações do produto copiadas para a área de transferência.",
+    });
+  };
+
+  const handleGenerateCopy = () => {
+    if (onGenerateCopy) {
+      onGenerateCopy(product);
+    } else {
+      navigate(`/copy?productId=${product.id}`);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogOverlay data-testid="modal-backdrop" />
       <DialogContent
         className="max-w-2xl p-0 overflow-hidden"
         data-testid="product-detail-modal"
       >
-        {/* Image Section */}
-        <div className="relative aspect-video bg-muted overflow-hidden">
+        {/* Image Section / Gallery */}
+        <div className="relative aspect-video bg-muted overflow-hidden" data-testid="product-gallery">
           <img
             src={
               product.imageUrl ||
@@ -139,11 +162,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <Badge variant="secondary" size="sm">
                 {product.category || "Sem categoria"}
               </Badge>
-              {product.sellerName && (
-                <span className="text-sm text-muted-foreground">
-                  por {product.sellerName}
-                </span>
-              )}
+              <span className="text-sm text-muted-foreground" data-testid="supplier-info">
+                por {product.sellerName || "Vendedor TikTok"}
+              </span>
             </div>
             <DialogTitle className="text-xl leading-tight">
               {product.title}
@@ -199,31 +220,37 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           <ProductHistoryChart history={history} />
 
           {/* Description */}
-          {product.description && (
-            <div>
-              <h4 className="text-sm font-medium mb-2">Descrição</h4>
-              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4">
-                {product.description}
-              </p>
-            </div>
-          )}
+          <div data-testid="product-description">
+            <h4 className="text-sm font-medium mb-2">Descrição</h4>
+            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4">
+              {product.description || "Sem descrição disponível."}
+            </p>
+          </div>
 
           {/* Actions */}
           <div className="flex gap-3 pt-4 border-t">
-            {onGenerateCopy && (
-              <Button
-                variant="tiktrend"
-                className="flex-1 gap-2"
-                onClick={() => onGenerateCopy(product)}
-              >
-                <CopyIcon size={16} />
-                Gerar Copy
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={handleCopyInfo}
+              data-testid="copy-info"
+            >
+              <CopyIcon size={16} />
+              Copiar Info
+            </Button>
+            <Button
+              variant="tiktrend"
+              className="flex-1 gap-2"
+              onClick={handleGenerateCopy}
+              data-testid="generate-copy"
+            >
+              <CopyIcon size={16} />
+              Gerar Copy
+            </Button>
             {product.productUrl && (
               <Button
                 variant="outline"
-                className="flex-1 gap-2"
+                className="gap-2"
                 onClick={() => window.open(product.productUrl, "_blank")}
               >
                 <ExportIcon size={16} />

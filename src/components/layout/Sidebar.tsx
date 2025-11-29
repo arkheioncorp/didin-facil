@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 import {
   TikTrendLogo,
   DashboardIcon,
@@ -12,6 +13,7 @@ import {
   ProductsIcon,
   FavoritesIcon,
   CopyIcon,
+  BotIcon,
   SettingsIcon,
   UserIcon,
   ChevronLeftIcon,
@@ -25,7 +27,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut } from "lucide-react";
+import { 
+  LogOut, 
+  MessageCircle, 
+  Crown, 
+  Share2, 
+  Instagram, 
+  Video, 
+  Youtube, 
+  Bot, 
+  BarChart3, 
+  Kanban,
+  Calendar
+} from "lucide-react";
 import { useUserStore } from "@/stores";
 
 interface SidebarProps {
@@ -38,37 +52,118 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
   const { t } = useTranslation();
   const { user, license, logout } = useUserStore();
 
-  const menuItems = [
+  const menuSections = [
     {
-      label: t("dashboard", "Dashboard"),
-      icon: DashboardIcon,
-      path: "/",
-      testId: "nav-dashboard",
+      title: "Core",
+      items: [
+        {
+          label: t("dashboard", "Dashboard"),
+          icon: DashboardIcon,
+          path: "/",
+          testId: "nav-dashboard",
+        },
+        {
+          label: t("search", "Buscar"),
+          icon: SearchIcon,
+          path: "/search",
+          testId: "nav-search",
+        },
+        {
+          label: t("products", "Produtos"),
+          icon: ProductsIcon,
+          path: "/products",
+          testId: "nav-products",
+        },
+        {
+          label: t("favorites", "Favoritos"),
+          icon: FavoritesIcon,
+          path: "/favorites",
+          testId: "nav-favorites",
+        },
+      ]
     },
     {
-      label: t("search", "Buscar"),
-      icon: SearchIcon,
-      path: "/search",
-      testId: "nav-search",
+      title: "Social Suite",
+      items: [
+        {
+          label: "Social Hub",
+          icon: Share2,
+          path: "/social",
+          testId: "nav-social",
+        },
+        {
+          label: "Instagram",
+          icon: Instagram,
+          path: "/social/instagram",
+          testId: "nav-instagram",
+        },
+        {
+          label: "TikTok",
+          icon: Video,
+          path: "/social/tiktok",
+          testId: "nav-tiktok",
+        },
+        {
+          label: "YouTube",
+          icon: Youtube,
+          path: "/social/youtube",
+          testId: "nav-youtube",
+        },
+      ]
     },
     {
-      label: t("products", "Produtos"),
-      icon: ProductsIcon,
-      path: "/products",
-      testId: "nav-products",
+      title: "Automação",
+      items: [
+        {
+          label: t("whatsapp", "WhatsApp"),
+          icon: MessageCircle,
+          path: "/whatsapp",
+          testId: "nav-whatsapp",
+        },
+        {
+          label: "Chatbot",
+          icon: Bot,
+          path: "/automation/chatbot",
+          testId: "nav-chatbot",
+        },
+        {
+          label: "Agendador",
+          icon: Calendar,
+          path: "/automation/scheduler",
+          testId: "nav-scheduler",
+        },
+        {
+          label: t("copy_ai", "Copy AI"),
+          icon: CopyIcon,
+          path: "/copy",
+          testId: "nav-copy",
+        },
+        {
+          label: t("seller_bot", "Seller Bot"),
+          icon: BotIcon,
+          path: "/seller-bot",
+          testId: "nav-seller-bot",
+          premium: true,
+        },
+      ]
     },
     {
-      label: t("favorites", "Favoritos"),
-      icon: FavoritesIcon,
-      path: "/favorites",
-      testId: "nav-favorites",
-    },
-    {
-      label: t("copy_ai", "Copy AI"),
-      icon: CopyIcon,
-      path: "/copy",
-      testId: "nav-copy",
-    },
+      title: "CRM & Vendas",
+      items: [
+        {
+          label: "Dashboard CRM",
+          icon: BarChart3,
+          path: "/crm",
+          testId: "nav-crm",
+        },
+        {
+          label: "Pipeline",
+          icon: Kanban,
+          path: "/crm/pipeline",
+          testId: "nav-pipeline",
+        },
+      ]
+    }
   ];
 
   const bottomItems = [
@@ -134,60 +229,95 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
 
           {/* Navigation - Melhoria #12: Indicador ativo melhorado */}
           <ScrollArea className="flex-1 py-4">
-            <nav className="space-y-1.5 px-3">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.path);
+            <nav className="space-y-6 px-3">
+              {menuSections.map((section, index) => (
+                <div key={index} className="space-y-1.5">
+                  {!collapsed && (
+                    <h4 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                      {section.title}
+                    </h4>
+                  )}
+                  {collapsed && index > 0 && <div className="h-px bg-border my-2 mx-2" />}
+                  
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const active = isActive(item.path);
 
-                return collapsed ? (
-                  <Tooltip key={item.path} delayDuration={0}>
-                    <TooltipTrigger asChild>
-                      <Link to={item.path} data-testid={item.testId}>
+                    return collapsed ? (
+                      <Tooltip key={item.path} delayDuration={0}>
+                        <TooltipTrigger asChild>
+                          <Link to={item.path} data-testid={item.testId}>
+                            <Button
+                              variant={active ? "default" : "ghost"}
+                              size="icon"
+                              className={cn(
+                                "w-full h-11 rounded-xl transition-all duration-200 relative",
+                                active && "bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary shadow-lg shadow-tiktrend-primary/25 hover:shadow-tiktrend-primary/40",
+                                item.premium && "border border-yellow-500/30"
+                              )}
+                            >
+                              <Icon size={20} />
+                              {item.premium && (
+                                <Crown className="absolute -top-1 -right-1 h-3 w-3 text-yellow-500" />
+                              )}
+                            </Button>
+                          </Link>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="font-medium">
+                          <div className="flex items-center gap-1.5">
+                            {item.label}
+                            {item.premium && (
+                              <Badge variant="outline" className="text-[10px] px-1 py-0 bg-yellow-500/10 text-yellow-600 border-yellow-500/30">
+                                Premium
+                              </Badge>
+                            )}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <Link key={item.path} to={item.path} data-testid={item.testId}>
                         <Button
                           variant={active ? "default" : "ghost"}
-                          size="icon"
                           className={cn(
-                            "w-full h-11 rounded-xl transition-all duration-200",
-                            active && "bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary shadow-lg shadow-tiktrend-primary/25 hover:shadow-tiktrend-primary/40"
+                            "w-full justify-start gap-3 h-11 rounded-xl transition-all duration-200",
+                            active && "bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary shadow-lg shadow-tiktrend-primary/25 hover:shadow-tiktrend-primary/40",
+                            !active && "hover:bg-accent hover:translate-x-1",
+                            item.premium && !active && "border border-yellow-500/30"
                           )}
                         >
                           <Icon size={20} />
+                          <span className="font-medium">{item.label}</span>
+                          {item.premium && (
+                            <Badge variant="outline" className="ml-auto text-[10px] px-1.5 py-0 bg-yellow-500/10 text-yellow-600 border-yellow-500/30">
+                              <Crown className="h-2.5 w-2.5 mr-0.5" />
+                              Premium
+                            </Badge>
+                          )}
+                          {active && !item.premium && (
+                            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                          )}
                         </Button>
                       </Link>
-                    </TooltipTrigger>
-                    <TooltipContent side="right" className="font-medium">
-                      {item.label}
-                    </TooltipContent>
-                  </Tooltip>
-                ) : (
-                  <Link key={item.path} to={item.path} data-testid={item.testId}>
-                    <Button
-                      variant={active ? "default" : "ghost"}
-                      className={cn(
-                        "w-full justify-start gap-3 h-11 rounded-xl transition-all duration-200",
-                        active && "bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary shadow-lg shadow-tiktrend-primary/25 hover:shadow-tiktrend-primary/40",
-                        !active && "hover:bg-accent hover:translate-x-1"
-                      )}
-                    >
-                      <Icon size={20} />
-                      <span className="font-medium">{item.label}</span>
-                      {active && (
-                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                      )}
-                    </Button>
-                  </Link>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              ))}
             </nav>
           </ScrollArea>
 
-          {/* Plan Badge - Melhoria visual */}
+          {/* License Badge - Licença Vitalícia + Créditos */}
           {!collapsed && license && (
             <div className="mx-3 mb-4 rounded-xl bg-gradient-to-br from-tiktrend-primary/10 via-transparent to-tiktrend-secondary/10 p-4 border border-tiktrend-primary/10">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground font-medium">Plano Atual</span>
-                <span className="text-xs font-bold uppercase px-2 py-0.5 rounded-full bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary text-white">
-                  {license.plan}
+                <span className="text-xs text-muted-foreground font-medium">
+                  {license.isLifetime ? 'Licença Vitalícia' : 'Versão Gratuita'}
+                </span>
+                <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${
+                  license.isLifetime
+                    ? 'bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary text-white'
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  {license.isLifetime ? '✓ Ativa' : 'Free'}
                 </span>
               </div>
               <div className="text-sm font-semibold truncate">

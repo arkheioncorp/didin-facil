@@ -1,7 +1,7 @@
 # 📋 PRD - TikTrend Finder
 
 ## Product Requirements Document
-**Versão:** 2.0  
+**Versão:** 1.0.0  
 **Última Atualização:** 26 de Novembro de 2025  
 **Autor:** Didin Facil Team
 
@@ -413,15 +413,40 @@ Exportar produtos e dados em múltiplos formatos.
 
 ---
 
-## 💰 Planos e Preços
+## 💰 Modelo de Monetização
 
-### Estrutura de Assinaturas
-| Plano | Preço (Mensal) | Produtos/Dia | Cópias/Mês | Favoritos | Exportação | Suporte |
-|-------|----------------|--------------|------------|-----------|------------|---------|
-| **Free** | R$ 0,00 | 10 | 5 | 10 | CSV | Comunitário |
-| **Starter** | R$ 29,90 | 100 | 50 | 100 | CSV, XLSX | Email |
-| **Pro** | R$ 79,90 | 500 | 200 | 500 | CSV, XLSX, JSON | Prioritário |
-| **Enterprise** | R$ 199,90 | Ilimitado | 1000 | Ilimitado | Todos + API | Dedicado |
+### Licença Vitalícia - R$ 49,90 (Pagamento Único)
+
+**Recursos Inclusos:**
+- Busca de produtos ilimitada (execução local)
+- Multi-fonte: TikTok Shop, AliExpress, e futuras integrações
+- Sistema de filtros avançados
+- Listas de favoritos ilimitadas
+- Exportação em todos os formatos (CSV, XLSX, JSON)
+- Atualizações de segurança e correções de bugs
+
+### Créditos IA (Pay-per-use)
+
+| Pacote | Créditos | Preço | Preço/Crédito |
+|--------|----------|-------|---------------|
+| **Starter** | 50 | R$ 19,90 | R$ 0,40 |
+| **Pro** | 200 | R$ 49,90 | R$ 0,25 |
+| **Ultra** | 500 | R$ 99,90 | R$ 0,20 |
+
+**Uso de Créditos:**
+- 1 crédito = 1 copy gerada com GPT-4
+- 2 créditos = Análise de tendência com IA
+- 5 créditos = Relatório completo de nicho
+
+### Expansões e Packs Futuros
+
+Novas funcionalidades serão lançadas como packs opcionais:
+- **Pack Analytics** - Dashboard avançado, histórico de preços
+- **Pack Automação** - Agendamento de buscas, alertas
+- **Pack Integrações** - Conectores com plataformas de e-commerce
+- **Pack Nichos Premium** - Categorias especializadas
+
+> 💡 **Filosofia:** Pague uma vez pelo core, compre apenas o que precisar.
 
 ---
 

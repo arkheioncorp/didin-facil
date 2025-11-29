@@ -1,6 +1,6 @@
 """
 AI Copy Generation Routes
-OpenAI proxy with quota management
+OpenAI proxy with credits management
 """
 
 from typing import Optional, List
@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from api.middleware.auth import get_current_user
-from api.middleware.quota import check_copy_quota, QuotaExceededError
+from api.middleware.quota import check_credits, deduct_credits, InsufficientCreditsError, CREDIT_COSTS
 from api.services.openai import OpenAIService
 from api.services.cache import CacheService
 
@@ -46,7 +46,8 @@ class CopyResponse(BaseModel):
     character_count: int
     created_at: datetime
     cached: bool = False
-    quota_remaining: int
+    credits_used: int
+    credits_remaining: int
 
 
 class CopyHistoryItem(BaseModel):
@@ -60,13 +61,12 @@ class CopyHistoryItem(BaseModel):
     created_at: datetime
 
 
-class QuotaStatus(BaseModel):
-    """User quota status"""
-    copies_used: int
-    copies_limit: int
-    copies_remaining: int
-    reset_date: datetime
-    plan: str
+class CreditsStatus(BaseModel):
+    """User credits status"""
+    balance: int
+    total_purchased: int
+    total_used: int
+    cost_per_copy: int
 
 
 @router.post("/generate", response_model=CopyResponse)
@@ -76,22 +76,23 @@ async def generate_copy(
 ):
     """
     Generate AI copy for a product.
-    Uses OpenAI GPT-4 with quota enforcement.
+    Uses OpenAI GPT-4 with credits system.
     Similar copies are cached to reduce API costs.
     """
     cache = CacheService()
     openai_service = OpenAIService()
     
-    # Check quota
+    # Check credits
     try:
-        quota_info = await check_copy_quota(user["id"])
-    except QuotaExceededError as e:
+        credits_info = await check_credits(user["id"], "copy")
+    except InsufficientCreditsError as e:
         raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail={
                 "message": str(e),
-                "upgrade_url": "/pricing",
-                "reset_date": e.reset_date.isoformat() if hasattr(e, 'reset_date') else None
+                "required": e.required,
+                "available": e.available,
+                "buy_credits_url": "/subscription"
             }
         )
     
@@ -108,7 +109,8 @@ async def generate_copy(
         return CopyResponse(
             **cached_copy,
             cached=True,
-            quota_remaining=quota_info["remaining"]
+            credits_used=0,
+            credits_remaining=credits_info["balance"]
         )
     
     # Generate copy with OpenAI
@@ -127,8 +129,8 @@ async def generate_copy(
         custom_instructions=request.custom_instructions
     )
     
-    # Increment quota usage
-    await openai_service.increment_quota(user["id"])
+    # Deduct credits
+    deduct_result = await deduct_credits(user["id"], "copy")
     
     # Cache the result
     await cache.set(cache_key, copy_result, ttl=86400)  # 24 hours
@@ -144,23 +146,39 @@ async def generate_copy(
     return CopyResponse(
         **copy_result,
         cached=False,
-        quota_remaining=quota_info["remaining"] - 1
+        credits_used=deduct_result["cost"],
+        credits_remaining=deduct_result["new_balance"]
     )
 
 
-@router.get("/quota", response_model=QuotaStatus)
-async def get_quota_status(user: dict = Depends(get_current_user)):
-    """Get current user's copy generation quota status"""
+@router.get("/credits", response_model=CreditsStatus)
+async def get_credits_status(user: dict = Depends(get_current_user)):
+    """Get current user's credits balance"""
     openai_service = OpenAIService()
-    quota = await openai_service.get_quota_status(user["id"])
+    credits = await openai_service.get_credits_status(user["id"])
     
-    return QuotaStatus(
-        copies_used=quota["used"],
-        copies_limit=quota["limit"],
-        copies_remaining=quota["remaining"],
-        reset_date=quota["reset_date"],
-        plan=user["plan"]
+    return CreditsStatus(
+        balance=credits["balance"],
+        total_purchased=credits["total_purchased"],
+        total_used=credits["total_used"],
+        cost_per_copy=CREDIT_COSTS["copy"]
     )
+
+
+# Legacy endpoint for backward compatibility
+@router.get("/quota")
+async def get_quota_status(user: dict = Depends(get_current_user)):
+    """Legacy: Get quota as credits info"""
+    openai_service = OpenAIService()
+    credits = await openai_service.get_credits_status(user["id"])
+    
+    return {
+        "copies_used": credits["total_used"],
+        "copies_limit": -1,  # Unlimited with credits
+        "copies_remaining": credits["balance"],
+        "reset_date": None,
+        "plan": "lifetime"
+    }
 
 
 @router.get("/history", response_model=List[CopyHistoryItem])

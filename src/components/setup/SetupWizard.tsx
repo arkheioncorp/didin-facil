@@ -46,8 +46,9 @@ export const SetupWizard: React.FC = () => {
         license: {
           ...currentSettings.license,
           key: licenseKey || null,
-          plan: licenseKey ? "starter" : "trial",
-          isActive: true
+          plan: licenseKey ? "lifetime" : "trial",
+          isActive: true,
+          credits: 0
         }
       };
 

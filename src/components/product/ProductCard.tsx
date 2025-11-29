@@ -12,6 +12,10 @@ interface ProductCardProps {
   isFavorite?: boolean;
   onSelect?: (product: Product) => void;
   action?: React.ReactNode;
+  // Bulk selection props
+  showCheckbox?: boolean;
+  isSelected?: boolean;
+  onCheckboxChange?: (product: Product, checked: boolean) => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -20,6 +24,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   isFavorite = false,
   onSelect,
   action,
+  showCheckbox = false,
+  isSelected = false,
+  onCheckboxChange,
 }) => {
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -44,8 +51,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Gradient Overlay on Hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        {/* Badges - Top Left */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+        {/* Checkbox for Bulk Selection */}
+        {showCheckbox && (
+          <div
+            className="absolute top-3 left-3 z-20"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={(e) => onCheckboxChange?.(product, e.target.checked)}
+              data-testid="product-checkbox"
+              className="h-5 w-5 rounded bg-white/90 dark:bg-black/50 backdrop-blur-sm border-2 cursor-pointer accent-tiktrend-primary"
+            />
+          </div>
+        )}
+
+        {/* Badges - Top Left (shifted when checkbox is shown) */}
+        <div className={`absolute top-3 ${showCheckbox ? 'left-10' : 'left-3'} flex flex-col gap-1.5`}>
           {product.isTrending && (
             <Badge variant="tiktrend" className="gap-1 text-xs shadow-lg">
               <TrendingIcon size={10} />

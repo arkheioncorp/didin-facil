@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SearchIcon, MenuIcon } from "@/components/icons";
+import { NotificationBell } from "@/components/NotificationBell";
 
 
 interface HeaderProps {
@@ -73,7 +74,8 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Actions */}
       <div className="flex items-center gap-2">
-        {/* Notifications, etc can go here */}
+        {/* Notification Bell */}
+        <NotificationBell />
       </div>
     </header>
   );

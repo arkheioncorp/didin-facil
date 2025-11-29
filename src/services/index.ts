@@ -7,3 +7,5 @@ export * from "./scraper";
 export * from "./history";
 export * from "./settings";
 export * from "./export";
+export * from "./social";
+export * from "./whatsapp";

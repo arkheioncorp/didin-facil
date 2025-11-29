@@ -45,3 +45,4 @@ stats.html
 
 *storybook.log
 storybook-static
+backend/data/youtube_credentials.json

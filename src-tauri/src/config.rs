@@ -23,10 +23,11 @@ pub struct ScraperConfig {
 #[serde(rename_all = "camelCase")]
 pub struct LicenseConfig {
     pub key: Option<String>,
-    pub plan: String,
-    pub expires_at: Option<String>,
+    pub plan: String,  // "lifetime" or "trial"
+    pub expires_at: Option<String>,  // None = lifetime (never expires)
     pub trial_started: Option<String>,
     pub is_active: bool,
+    pub credits: i32,  // Créditos IA disponíveis
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -90,10 +91,11 @@ impl Default for AppSettings {
             },
             license: LicenseConfig {
                 key: None,
-                plan: "trial".to_string(),
+                plan: "lifetime".to_string(),
                 expires_at: None,
                 trial_started: None,
                 is_active: true,
+                credits: 0,
             },
             system: SystemConfig {
                 auto_update: true,

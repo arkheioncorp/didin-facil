@@ -69,6 +69,10 @@ class RedisManager:
 _manager = RedisManager()
 
 
+# Alias for redis client (for backwards compatibility)
+redis_client = _manager
+
+
 async def init_redis():
     """Initialize Redis connection"""
     await _manager.init()

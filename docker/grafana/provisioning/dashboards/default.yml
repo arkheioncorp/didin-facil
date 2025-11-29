@@ -1,0 +1,17 @@
+# Grafana Dashboard Provisioning
+# Automatically loads dashboards from folder
+
+apiVersion: 1
+
+providers:
+  - name: 'Didin Fácil'
+    orgId: 1
+    folder: 'Didin Fácil'
+    folderUid: 'didin-facil'
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

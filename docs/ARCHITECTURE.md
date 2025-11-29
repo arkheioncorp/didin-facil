@@ -1,6 +1,6 @@
 # 🏗️ Arquitetura Técnica - TikTrend Finder
 
-**Versão:** 2.0 (Híbrida)  
+**Versão:** 1.0.0  
 **Última Atualização:** 26 de Novembro de 2025
 
 > [!IMPORTANT]

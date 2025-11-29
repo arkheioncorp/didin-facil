@@ -5,8 +5,6 @@
 # Uso: docker compose up -d
 # ============================================================================
 
-version: '3.8'
-
 services:
   # ============================================================================
   # API Gateway (FastAPI)
@@ -28,7 +26,12 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-secret-key-change-in-production}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - MERCADO_PAGO_ACCESS_TOKEN=${MERCADO_PAGO_ACCESS_TOKEN:-}
-      - CORS_ORIGINS=http://localhost:1420,http://localhost:5173,tauri://localhost
+      - EVOLUTION_API_URL=http://evolution-api:8080
+      - EVOLUTION_API_KEY=${EVOLUTION_API_KEY:-429683C4C977415CAAFCCE10F7D57E11}
+      - CHATWOOT_API_URL=http://chatwoot:3000
+      - CHATWOOT_ACCESS_TOKEN=${CHATWOOT_ACCESS_TOKEN:-}
+      - CHATWOOT_ACCOUNT_ID=1
+      - CORS_ORIGINS=http://localhost:1420,http://localhost:5173,http://localhost:3000,tauri://localhost
     volumes:
       - ../backend:/app
     depends_on:
@@ -75,10 +78,10 @@ services:
       - tiktrend-network
 
   # ============================================================================
-  # PostgreSQL Database
+  # PostgreSQL Database (with pgvector for AI features)
   # ============================================================================
   postgres:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     container_name: tiktrend-postgres
     restart: unless-stopped
     ports:
@@ -175,6 +178,131 @@ services:
     networks:
       - tiktrend-network
 
+  # ============================================================================
+  # Evolution API (WhatsApp Automation)
+  # ============================================================================
+  evolution-api:
+    image: atendai/evolution-api:v2.1.1
+    container_name: tiktrend-whatsapp
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    environment:
+      # Server Config
+      - SERVER_URL=http://localhost:8082
+      - SERVER_TYPE=http
+      - SERVER_PORT=8080
+      # Authentication
+      - AUTHENTICATION_TYPE=apikey
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY:-429683C4C977415CAAFCCE10F7D57E11}
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      # Database Provider (postgresql)
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://tiktrend:tiktrend_dev@postgres:5432/evolution_db
+      - DATABASE_CONNECTION_CLIENT_NAME=evolution_v2
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=true
+      - DATABASE_SAVE_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_DATA_CONTACTS=true
+      - DATABASE_SAVE_DATA_CHATS=true
+      - DATABASE_SAVE_DATA_LABELS=true
+      - DATABASE_SAVE_DATA_HISTORIC=true
+      # Redis Cache
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://redis:6379/1
+      - CACHE_REDIS_PREFIX_KEY=evolution
+      - CACHE_REDIS_SAVE_INSTANCES=true
+      - CACHE_LOCAL_ENABLED=false
+      # Chatwoot Integration
+      - CHATWOOT_ENABLED=true
+      - CHATWOOT_MESSAGE_DELETE=true
+      - CHATWOOT_MESSAGE_READ=true
+      - CHATWOOT_IMPORT_DATABASE_CONNECTION_URI=postgresql://tiktrend:tiktrend_dev@postgres:5432/chatwoot_dev
+      - CHATWOOT_IMPORT_PLACEHOLDER_MEDIA_MESSAGE=false
+      # Instance Config
+      - DEL_INSTANCE=false
+      - DEL_TEMP_INSTANCES=true
+      # QR Code Config
+      - QRCODE_LIMIT=30
+      - QRCODE_COLOR=#000000
+      # Webhook Config
+      - WEBHOOK_GLOBAL_URL=
+      - WEBHOOK_GLOBAL_ENABLED=false
+      # Log
+      - LOG_LEVEL=DEBUG
+      - LOG_COLOR=true
+      - LOG_BAILEYS=verbose
+      # Baileys Config
+      - WA_BROWSER_CLIENT=Chrome (Linux)
+      - WA_BROWSER_NAME=chrome
+    volumes:
+      - evolution_instances:/evolution/instances
+      - evolution_store:/evolution/store
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - tiktrend-network
+
+  # ============================================================================
+  # Chatwoot (Customer Support Platform)
+  # ============================================================================
+  chatwoot:
+    image: chatwoot/chatwoot:latest
+    container_name: tiktrend-chatwoot
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
+      - SECRET_KEY_BASE=${CHATWOOT_SECRET_KEY:-replace_with_your_secret_key_base}
+      - FRONTEND_URL=http://localhost:3000
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=chatwoot_dev
+      - POSTGRES_USERNAME=tiktrend
+      - POSTGRES_PASSWORD=tiktrend_dev
+      - REDIS_URL=redis://redis:6379/2
+      - MAILER_SENDER_EMAIL=noreply@didin.local
+      - RAILS_LOG_TO_STDOUT=true
+      - INSTALLATION_ENV=docker
+      - RAILS_SERVE_STATIC_FILES=true
+    volumes:
+      - chatwoot_storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: 
+      - "bundle exec rails db:chatwoot_prepare && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    networks:
+      - tiktrend-network
+
+  chatwoot-worker:
+    image: chatwoot/chatwoot:latest
+    container_name: tiktrend-chatwoot-worker
+    restart: unless-stopped
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
+      - SECRET_KEY_BASE=${CHATWOOT_SECRET_KEY:-replace_with_your_secret_key_base}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=chatwoot_dev
+      - POSTGRES_USERNAME=tiktrend
+      - POSTGRES_PASSWORD=tiktrend_dev
+      - REDIS_URL=redis://redis:6379/2
+    depends_on:
+      - chatwoot
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    networks:
+      - tiktrend-network
+
 # ============================================================================
 # Volumes
 # ============================================================================
@@ -186,6 +314,12 @@ volumes:
   minio-data:
     driver: local
   scraper-cache:
+    driver: local
+  evolution_instances:
+    driver: local
+  evolution_store:
+    driver: local
+  chatwoot_storage:
     driver: local
 
 # ============================================================================

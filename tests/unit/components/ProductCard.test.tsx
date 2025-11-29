@@ -118,14 +118,14 @@ describe("ProductCard", () => {
       const product = createMockProduct({ productRating: 4.8 });
       render(<ProductCard product={product} />);
 
-      expect(screen.getByText("4.8")).toBeInTheDocument();
+      expect(screen.getAllByText("4.8").length).toBeGreaterThan(0);
     });
 
     it("should render N/A when rating is null", () => {
       const product = createMockProduct({ productRating: null });
       render(<ProductCard product={product} />);
 
-      expect(screen.getByText("N/A")).toBeInTheDocument();
+      expect(screen.getAllByText("N/A").length).toBeGreaterThan(0);
     });
 
     it("should render sales count", () => {

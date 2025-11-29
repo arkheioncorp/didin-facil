@@ -33,8 +33,8 @@ setup("authenticate", async ({ page }) => {
     await page.waitForURL("**/", { timeout: 10000 });
   }
 
-  // Verify we're logged in
-  await expect(page.locator('[data-testid="user-menu"]')).toBeVisible({ timeout: 10000 });
+  // Verify we're logged in by checking for dashboard content
+  await expect(page.locator('[data-testid="welcome-message"]')).toBeVisible({ timeout: 10000 });
 
   // Mark tutorial as completed to prevent it from blocking tests
   await page.evaluate(() => {

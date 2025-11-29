@@ -4,8 +4,8 @@
 
 **Buscador Inteligente de Produtos em Alta do TikTok Shop**
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/didinfacil/tiktrend-finder/build.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/didinfacil/tiktrend-finder/actions)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue?style=for-the-badge)](https://github.com/didinfacil/tiktrend-finder/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/jhonslife/didin-facil/build.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/jhonslife/didin-facil/actions)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)](https://github.com/jhonslife/didin-facil/releases)
 [![License](https://img.shields.io/badge/license-Proprietary-red?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20|%20Linux-lightgrey?style=for-the-badge&logo=windows)](https://github.com/didinfacil/tiktrend-finder/releases)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
@@ -50,8 +50,8 @@
 
 ```powershell
 # Opção 1: Instalador (Recomendado)
-# Baixe em: https://github.com/didinfacil/tiktrend-finder/releases/latest
-# Execute: TikTrend-Finder_2.0.0_x64-setup.exe
+# Baixe em: https://github.com/jhonslife/didin-facil/releases/latest
+# Execute: TikTrend-Finder_1.0.0_x64-setup.exe
 
 # Opção 2: Winget (em breve)
 winget install DidinFacil.TikTrendFinder
@@ -61,13 +61,13 @@ winget install DidinFacil.TikTrendFinder
 
 ```bash
 # Debian/Ubuntu (.deb)
-wget https://github.com/didinfacil/tiktrend-finder/releases/latest/download/tiktrend-finder_2.0.0_amd64.deb
-sudo dpkg -i tiktrend-finder_2.0.0_amd64.deb
+wget https://github.com/jhonslife/didin-facil/releases/latest/download/tiktrend-finder_1.0.0_amd64.deb
+sudo dpkg -i tiktrend-finder_1.0.0_amd64.deb
 
 # AppImage (Universal)
-wget https://github.com/didinfacil/tiktrend-finder/releases/latest/download/TikTrend-Finder_2.0.0_amd64.AppImage
-chmod +x TikTrend-Finder_2.0.0_amd64.AppImage
-./TikTrend-Finder_2.0.0_amd64.AppImage
+wget https://github.com/jhonslife/didin-facil/releases/latest/download/TikTrend-Finder_1.0.0_amd64.AppImage
+chmod +x TikTrend-Finder_1.0.0_amd64.AppImage
+./TikTrend-Finder_1.0.0_amd64.AppImage
 ```
 
 ### Requisitos de Sistema
@@ -81,13 +81,35 @@ chmod +x TikTrend-Finder_2.0.0_amd64.AppImage
 
 ---
 
-## 💰 Planos e Preços
+## 💰 Preços
 
-| Plano | Preço | Buscas/mês | Copies IA | Listas | Exportações |
-|-------|-------|------------|-----------|--------|-------------|
-| **Trial** | Grátis (7 dias) | 20 | 10 | 2 | ❌ |
-| **Básico** | R$ 10/mês | 100 | 50 | 5 | ✅ CSV |
-| **Pro** | R$ 25/mês | Ilimitado | 200 | Ilimitado | ✅ Todos |
+### Licença Vitalícia - R$ 49,90
+
+Pagamento único, acesso completo para sempre:
+
+| Recurso | Incluso |
+|---------|----------|
+| 🔍 **Busca Ilimitada** | Sem limites de produtos |
+| 🌐 **Multi-fonte** | TikTok Shop, AliExpress e mais |
+| 🎯 **Filtros Avançados** | Categoria, preço, vendas, avaliação |
+| ⭐ **Favoritos** | Listas ilimitadas com notas e tags |
+| 📤 **Exportação** | CSV, Excel, JSON |
+| 🔄 **Atualizações** | Correções e melhorias grátis |
+
+### Créditos IA (Opcional)
+
+Para geração de copies e funções avançadas com IA:
+
+| Pacote | Créditos | Preço |
+|--------|----------|-------|
+| **Starter** | 50 créditos | R$ 19,90 |
+| **Pro** | 200 créditos | R$ 49,90 |
+| **Ultra** | 500 créditos | R$ 99,90 |
+
+### Expansões Futuras
+
+Novas funções e integrações serão lançadas como packs opcionais.
+Quem já tem a licença pode comprar apenas o que precisar.
 
 > 💳 Pagamento via **Pix**, **Cartão de Crédito** ou **Boleto** (Mercado Pago)
 
@@ -106,8 +128,8 @@ chmod +x TikTrend-Finder_2.0.0_amd64.AppImage
 
 ```bash
 # 1. Clonar repositório
-git clone https://github.com/didinfacil/tiktrend-finder.git
-cd tiktrend-finder
+git clone https://github.com/jhonslife/didin-facil.git
+cd didin-facil
 
 # 2. Instalar dependências do frontend
 npm install
@@ -185,7 +207,7 @@ make build
 ## 📁 Estrutura do Projeto
 
 ```
-tiktrend-finder/
+didin-facil/
 ├── 📂 src/                     # Frontend React + TypeScript
 │   ├── components/             # Componentes UI (shadcn/ui)
 │   ├── pages/                  # Páginas da aplicação
@@ -195,22 +217,20 @@ tiktrend-finder/
 │   ├── lib/                    # Utilitários
 │   └── types/                  # Definições TypeScript
 │
-├── 📂 src-tauri/               # Backend Desktop (Rust)
+├── 📂 src-tauri/               # Backend Desktop (Rust + Tauri 2.0)
 │   └── src/
 │       ├── main.rs             # Entry point Tauri
-│       ├── commands/           # Comandos IPC
-│       ├── database/           # SQLCipher local
-│       └── services/           # Lógica de negócio
+│       ├── lib.rs              # Comandos IPC
+│       └── ...                 # Módulos Rust
 │
 ├── 📂 backend/                 # API Cloud (FastAPI)
 │   ├── api/
-│   │   ├── routes/             # Endpoints REST
-│   │   ├── services/           # Serviços de negócio
-│   │   ├── middleware/         # Auth, Rate Limit
+│   │   ├── routes/             # 5 rotas (auth, products, copy, license, webhooks)
+│   │   ├── services/           # 10 services (openai, auth, scraper, etc.)
+│   │   ├── middleware/         # Auth, Rate Limit, Quota
 │   │   └── models/             # Modelos Pydantic
-│   ├── scraper/                # Workers de scraping
-│   │   ├── tiktok/             # Scraper TikTok Shop
-│   │   └── aliexpress/         # Fallback AliExpress
+│   ├── scraper/                # Workers de scraping (Playwright)
+│   ├── workers/                # Job processors
 │   └── shared/                 # Código compartilhado
 │
 ├── 📂 docker/                  # Configuração Docker
@@ -309,7 +329,7 @@ Este software é **proprietário** e confidencial. Nenhuma parte deste código p
 | 📧 **Email** | suporte@tiktrend.app |
 | 💬 **WhatsApp** | [+55 11 99999-9999](https://wa.me/5511999999999) |
 | 📖 **FAQ** | [docs/FAQ.md](docs/FAQ.md) |
-| 🐛 **Bugs** | [GitHub Issues](https://github.com/didinfacil/tiktrend-finder/issues) |
+| 🐛 **Bugs** | [GitHub Issues](https://github.com/jhonslife/didin-facil/issues) |
 
 ---
 
@@ -319,6 +339,6 @@ Este software é **proprietário** e confidencial. Nenhuma parte deste código p
 
 <br/>
 
-[![GitHub Stars](https://img.shields.io/github/stars/didinfacil/tiktrend-finder?style=social)](https://github.com/didinfacil/tiktrend-finder)
+[![GitHub Stars](https://img.shields.io/github/stars/jhonslife/didin-facil?style=social)](https://github.com/jhonslife/didin-facil)
 
 </div>
