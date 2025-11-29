@@ -1,23 +1,17 @@
 """
 Cache Service
 Redis caching layer for products and copies
+
+Note: Uses connection pool pattern - connections are managed by the pool,
+not created/closed per operation. This avoids connection leaks and improves
+performance.
 """
 
-import os
 import json
 import hashlib
 from typing import Any, Optional
 
-import redis.asyncio as aioredis
-
-
-# Redis settings
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-
-
-async def get_redis():
-    """Get Redis connection"""
-    return await aioredis.from_url(REDIS_URL, decode_responses=True)
+from api.services.redis import get_redis_pool
 
 
 class CacheService:
@@ -28,92 +22,71 @@ class CacheService:
     
     async def get(self, key: str) -> Optional[Any]:
         """Get value from cache"""
-        redis_client = await get_redis()
+        redis_client = await get_redis_pool()
         full_key = f"{self.prefix}{key}"
         
-        try:
-            value = await redis_client.get(full_key)
-            if value:
-                return json.loads(value)
-            return None
-        finally:
-            await redis_client.close()
+        value = await redis_client.get(full_key)
+        if value:
+            return json.loads(value)
+        return None
     
     async def set(self, key: str, value: Any, ttl: int = 3600) -> bool:
         """Set value in cache with TTL (default 1 hour)"""
-        redis_client = await get_redis()
+        redis_client = await get_redis_pool()
         full_key = f"{self.prefix}{key}"
         
-        try:
-            serialized = json.dumps(value, default=str)
-            await redis_client.setex(full_key, ttl, serialized)
-            return True
-        finally:
-            await redis_client.close()
+        serialized = json.dumps(value, default=str)
+        await redis_client.setex(full_key, ttl, serialized)
+        return True
     
     async def delete(self, key: str) -> bool:
         """Delete key from cache"""
-        redis_client = await get_redis()
+        redis_client = await get_redis_pool()
         full_key = f"{self.prefix}{key}"
         
-        try:
-            await redis_client.delete(full_key)
-            return True
-        finally:
-            await redis_client.close()
+        await redis_client.delete(full_key)
+        return True
     
     async def delete_pattern(self, pattern: str) -> int:
         """Delete all keys matching pattern"""
-        redis_client = await get_redis()
+        redis_client = await get_redis_pool()
         full_pattern = f"{self.prefix}{pattern}"
         
-        try:
-            cursor = 0
-            deleted = 0
-            
-            while True:
-                cursor, keys = await redis_client.scan(
-                    cursor, match=full_pattern, count=100
-                )
-                if keys:
-                    await redis_client.delete(*keys)
-                    deleted += len(keys)
-                if cursor == 0:
-                    break
-            
-            return deleted
-        finally:
-            await redis_client.close()
+        cursor = 0
+        deleted = 0
+        
+        while True:
+            cursor, keys = await redis_client.scan(
+                cursor, match=full_pattern, count=100
+            )
+            if keys:
+                await redis_client.delete(*keys)
+                deleted += len(keys)
+            if cursor == 0:
+                break
+        
+        return deleted
     
     async def exists(self, key: str) -> bool:
         """Check if key exists in cache"""
-        redis_client = await get_redis()
+        redis_client = await get_redis_pool()
         full_key = f"{self.prefix}{key}"
         
-        try:
-            return await redis_client.exists(full_key) > 0
-        finally:
-            await redis_client.close()
+        return await redis_client.exists(full_key) > 0
     
     async def ttl(self, key: str) -> int:
         """Get remaining TTL for key"""
-        redis_client = await get_redis()
+        redis_client = await get_redis_pool()
         full_key = f"{self.prefix}{key}"
         
-        try:
-            return await redis_client.ttl(full_key)
-        finally:
-            await redis_client.close()
+        return await redis_client.ttl(full_key)
     
     async def incr(self, key: str, amount: int = 1) -> int:
         """Increment counter"""
-        redis_client = await get_redis()
+        redis_client = await get_redis_pool()
         full_key = f"{self.prefix}{key}"
         
-        try:
-            return await redis_client.incrby(full_key, amount)
-        finally:
-            await redis_client.close()
+        return await redis_client.incrby(full_key, amount)
     
     async def get_or_set(self, key: str, factory, ttl: int = 3600) -> Any:
         """Get value from cache or compute and cache it"""
@@ -197,7 +170,7 @@ class RateLimitService:
         Check if rate limit is exceeded.
         Returns (is_allowed, remaining_requests)
         """
-        redis = await get_redis()
+        redis = await get_redis_pool()
         full_key = f"{self.prefix}{key}"
         
         current = await redis.get(full_key)
@@ -218,7 +191,7 @@ class RateLimitService:
     
     async def get_remaining(self, key: str, limit: int) -> int:
         """Get remaining requests for key"""
-        redis = await get_redis()
+        redis = await get_redis_pool()
         full_key = f"{self.prefix}{key}"
         
         current = await redis.get(full_key)
@@ -237,38 +210,26 @@ class CreditsService:
 
     async def get_cached_credits(self, user_id: str) -> Optional[int]:
         """Get cached credits balance for user"""
-        redis = await get_redis()
+        redis = await get_redis_pool()
         key = f"{self.prefix}{user_id}"
-
-        try:
-            value = await redis.get(key)
-            return int(value) if value else None
-        finally:
-            await redis.aclose()
+        value = await redis.get(key)
+        return int(value) if value else None
 
     async def set_cached_credits(
         self, user_id: str, credits: int, ttl: int = 300
     ) -> bool:
         """Cache credits balance (5 min default TTL)"""
-        redis = await get_redis()
+        redis = await get_redis_pool()
         key = f"{self.prefix}{user_id}"
-
-        try:
-            await redis.setex(key, ttl, credits)
-            return True
-        finally:
-            await redis.aclose()
+        await redis.setex(key, ttl, credits)
+        return True
 
     async def invalidate_credits(self, user_id: str) -> bool:
         """Invalidate cached credits after transaction"""
-        redis = await get_redis()
+        redis = await get_redis_pool()
         key = f"{self.prefix}{user_id}"
-
-        try:
-            await redis.delete(key)
-            return True
-        finally:
-            await redis.aclose()
+        await redis.delete(key)
+        return True
 
 
 # Keep QuotaService for backwards compatibility (deprecated)

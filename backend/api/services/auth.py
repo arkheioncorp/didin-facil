@@ -4,7 +4,7 @@ User authentication and JWT token management
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 import secrets
 
@@ -181,7 +181,7 @@ class AuthService:
             "sub": user_id,
             "hwid": hwid,
             "exp": expires_at,
-            "iat": datetime.utcnow(),
+            "iat": datetime.now(timezone.utc),
             "iss": "tiktrend-api"
         }
         

@@ -1,5 +1,16 @@
 // Custom React hooks for TikTrend Finder
-import { useQuery, useMutation, useQueryClient } from \"@tanstack/react-query\";\nimport * as api from \"@/lib/tauri\";\nimport type { SearchFilters, License, CopyTone, CopyType } from \"@/types\";\n\n// Re-export notification hooks\nexport {\n  useNotifications,\n  NotificationsProvider,\n  getNotificationIcon,\n  getNotificationColor,\n} from \"./use-notifications\";\nexport type { Notification, NotificationType } from \"./use-notifications\";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import * as api from "@/lib/tauri";
+import type { SearchFilters, License, CopyTone, CopyType } from "@/types";
+
+// Re-export notification hooks
+export {
+  useNotifications,
+  NotificationsProvider,
+  getNotificationIcon,
+  getNotificationColor,
+} from "./use-notifications";
+export type { Notification, NotificationType } from "./use-notifications";
 
 
 // Query keys

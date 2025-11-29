@@ -6,7 +6,7 @@ Endpoints para agendamento de posts em redes sociais
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import shutil
 
@@ -64,7 +64,7 @@ async def schedule_post(
             detail=f"Plataforma inválida: {data.platform}"
         )
     
-    if data.scheduled_time <= datetime.utcnow():
+    if data.scheduled_time <= datetime.now(timezone.utc):
         raise HTTPException(
             status_code=400,
             detail="A data de agendamento deve ser futura"
@@ -121,7 +121,7 @@ async def schedule_post_with_file(
             detail="Formato de data inválido"
         )
     
-    if scheduled_dt <= datetime.utcnow():
+    if scheduled_dt <= datetime.now(timezone.utc):
         raise HTTPException(
             status_code=400,
             detail="A data de agendamento deve ser futura"

@@ -45,7 +45,7 @@ os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-testing-only-12345"
 os.environ["JWT_ALGORITHM"] = "HS256"
 os.environ["OPENAI_API_KEY"] = "test-api-key"
 
-from api.main import app
+from api.main import app  # noqa: E402
 
 
 # ============================================

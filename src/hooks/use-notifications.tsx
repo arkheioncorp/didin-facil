@@ -6,6 +6,7 @@
  * - Quota YouTube baixa
  * - WhatsApp desconectado
  */
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from "react";
 import { api } from "@/lib/api";
 

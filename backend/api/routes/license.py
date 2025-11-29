@@ -4,7 +4,7 @@ Hardware-bound license validation
 """
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -82,7 +82,7 @@ async def validate_license(request: ValidateLicenseRequest):
         )
     
     # Check expiration
-    if license_info["expires_at"] and license_info["expires_at"] < datetime.utcnow():
+    if license_info["expires_at"] and license_info["expires_at"] < datetime.now(timezone.utc):
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail="License has expired"
@@ -106,7 +106,7 @@ async def validate_license(request: ValidateLicenseRequest):
         )
     
     # Generate JWT
-    jwt_expires = datetime.utcnow() + timedelta(hours=12)
+    jwt_expires = datetime.now(timezone.utc) + timedelta(hours=12)
     jwt_token = license_service.create_license_jwt(
         user_id=license_info["user_id"],
         hwid=request.hwid,

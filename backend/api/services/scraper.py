@@ -3,24 +3,13 @@ Scraper Orchestration Service
 Manages scraping jobs and product data
 """
 
-import os
 import uuid
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
-import redis.asyncio as redis
-
 from api.database.connection import database
-
-
-# Redis settings
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-
-
-async def get_redis_client():
-    """Get Redis client"""
-    return await redis.from_url(REDIS_URL, decode_responses=True)
+from api.services.redis import get_redis_pool
 
 
 def format_product(row) -> dict:
@@ -266,11 +255,11 @@ class ScraperOrchestrator:
             "type": "refresh_products",
             "category": category,
             "user_id": user_id,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
             "status": "pending"
         }
         
-        redis_client = await get_redis_client()
+        redis_client = await get_redis_pool()
         
         # Add to job queue
         await redis_client.lpush(self.job_queue, json.dumps(job_data))
@@ -281,16 +270,13 @@ class ScraperOrchestrator:
             "created_at": job_data["created_at"]
         })
         
-        await redis_client.close()
-        
         return job_id
     
     async def get_job_status(self, job_id: str) -> Optional[dict]:
         """Get status of a scraping job"""
         
-        redis_client = await get_redis_client()
+        redis_client = await get_redis_pool()
         data = await redis_client.hgetall(f"job:{job_id}")
-        await redis_client.close()
         
         if not data:
             return None

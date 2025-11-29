@@ -3,7 +3,7 @@ Authentication Routes
 JWT-based authentication for desktop app
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -73,7 +73,7 @@ async def login(request: LoginRequest):
         )
     
     # Generate token
-    expires_at = datetime.utcnow() + timedelta(hours=12)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=12)
     token = auth_service.create_token(user["id"], request.hwid, expires_at)
     
     return LoginResponse(
@@ -142,7 +142,7 @@ async def refresh_token(
             )
         
         # Generate new token
-        expires_at = datetime.utcnow() + timedelta(hours=12)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=12)
         token = auth_service.create_token(user_id, request.hwid, expires_at)
         
         return LoginResponse(

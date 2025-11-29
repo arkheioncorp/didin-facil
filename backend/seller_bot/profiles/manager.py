@@ -239,4 +239,4 @@ class ProfileManager:
 
 
 # Importação necessária para verify_login_status
-import asyncio
+import asyncio  # noqa: E402

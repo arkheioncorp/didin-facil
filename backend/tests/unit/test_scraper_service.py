@@ -1,6 +1,6 @@
 """
 Testes unitários para api/services/scraper.py
-Cobertura: ScraperOrchestrator, format_product, get_redis_client
+Cobertura: ScraperOrchestrator, format_product, get_redis_pool
 """
 
 import pytest
@@ -82,10 +82,10 @@ class TestFormatProduct:
 
 
 class TestGetRedisClient:
-    """Testes para get_redis_client"""
+    """Testes para get_redis_pool"""
     
     @pytest.mark.asyncio
-    async def test_get_redis_client_success(self):
+    async def test_get_redis_pool_success(self):
         """Deve retornar cliente Redis"""
         mock_client = AsyncMock()
         
@@ -93,9 +93,9 @@ class TestGetRedisClient:
             return mock_client
         
         with patch('api.services.scraper.redis.from_url', side_effect=mock_from_url) as mock_from_url_fn:
-            from api.services.scraper import get_redis_client
+            from api.services.scraper import get_redis_pool
             
-            client = await get_redis_client()
+            client = await get_redis_pool()
             
             assert client == mock_client
             mock_from_url_fn.assert_called_once()
@@ -288,7 +288,7 @@ class TestScraperOrchestratorEnqueueJob:
     @pytest.mark.asyncio
     async def test_enqueue_refresh_job_success(self):
         """Deve enfileirar job de refresh"""
-        with patch('api.services.scraper.get_redis_client') as mock_get_redis:
+        with patch('api.services.scraper.get_redis_pool') as mock_get_redis:
             mock_redis = AsyncMock()
             mock_redis.lpush = AsyncMock()
             mock_redis.hset = AsyncMock()
@@ -311,7 +311,7 @@ class TestScraperOrchestratorGetJobStatus:
     @pytest.mark.asyncio
     async def test_get_job_status_found(self):
         """Deve retornar status do job"""
-        with patch('api.services.scraper.get_redis_client') as mock_get_redis:
+        with patch('api.services.scraper.get_redis_pool') as mock_get_redis:
             mock_redis = AsyncMock()
             mock_redis.hgetall = AsyncMock(return_value={
                 "status": "completed",
@@ -331,7 +331,7 @@ class TestScraperOrchestratorGetJobStatus:
     @pytest.mark.asyncio
     async def test_get_job_status_not_found(self):
         """Deve retornar None para job inexistente"""
-        with patch('api.services.scraper.get_redis_client') as mock_get_redis:
+        with patch('api.services.scraper.get_redis_pool') as mock_get_redis:
             mock_redis = AsyncMock()
             mock_redis.hgetall = AsyncMock(return_value={})
             mock_redis.close = AsyncMock()

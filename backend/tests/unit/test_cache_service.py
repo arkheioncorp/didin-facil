@@ -58,7 +58,7 @@ class TestCacheService:
         mock_redis.get.return_value = None
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             result = await cache_service.get("test_key")
@@ -71,7 +71,7 @@ class TestCacheService:
         mock_redis.get.return_value = '{"name": "test", "value": 123}'
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             result = await cache_service.get("test_key")
@@ -81,7 +81,7 @@ class TestCacheService:
     @pytest.mark.asyncio
     async def test_set_stores_json(self, cache_service, mock_redis):
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             result = await cache_service.set(
@@ -99,7 +99,7 @@ class TestCacheService:
     @pytest.mark.asyncio
     async def test_delete_key(self, cache_service, mock_redis):
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             result = await cache_service.delete("test_key")
@@ -112,7 +112,7 @@ class TestCacheService:
         mock_redis.exists.return_value = 1
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             result = await cache_service.exists("test_key")
@@ -124,7 +124,7 @@ class TestCacheService:
         mock_redis.exists.return_value = 0
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             result = await cache_service.exists("test_key")
@@ -136,7 +136,7 @@ class TestCacheService:
         mock_redis.ttl.return_value = 1800
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             result = await cache_service.ttl("test_key")
@@ -148,7 +148,7 @@ class TestCacheService:
         mock_redis.incrby.return_value = 5
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             result = await cache_service.incr("counter", 2)
@@ -163,7 +163,7 @@ class TestCacheService:
         mock_redis.scan.return_value = (0, ["key1", "key2"])
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             result = await cache_service.delete_pattern("products:*")
@@ -175,7 +175,7 @@ class TestCacheService:
         mock_redis.get.return_value = '{"cached": true}'
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             factory = MagicMock(return_value={"new": True})
@@ -191,7 +191,7 @@ class TestCacheService:
         mock_redis.get.return_value = None
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             factory = MagicMock(return_value={"new": True})
@@ -280,7 +280,7 @@ class TestRateLimitService:
         mock_redis.get.return_value = None
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             allowed, remaining = await rate_limit_service.check_rate_limit(
@@ -298,7 +298,7 @@ class TestRateLimitService:
         mock_redis.get.return_value = "5"
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             allowed, remaining = await rate_limit_service.check_rate_limit(
@@ -315,7 +315,7 @@ class TestRateLimitService:
         mock_redis.get.return_value = "10"
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             allowed, remaining = await rate_limit_service.check_rate_limit(
@@ -332,7 +332,7 @@ class TestRateLimitService:
         mock_redis.get.return_value = None
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             remaining = await rate_limit_service.get_remaining(
@@ -348,7 +348,7 @@ class TestRateLimitService:
         mock_redis.get.return_value = "7"
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             remaining = await rate_limit_service.get_remaining(
@@ -369,7 +369,7 @@ class TestCreditsService:
         mock_redis.get.return_value = None
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             result = await credits_service.get_cached_credits("user123")
@@ -383,7 +383,7 @@ class TestCreditsService:
         mock_redis.get.return_value = "100"
         
         with patch(
-            "api.services.cache.get_redis",
+            "api.services.cache.get_redis_pool",
             return_value=mock_redis
         ):
             result = await credits_service.get_cached_credits("user123")

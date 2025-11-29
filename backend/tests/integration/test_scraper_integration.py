@@ -380,7 +380,7 @@ class TestScraperOrchestratorIntegration:
         mock_redis.hset = AsyncMock()
         mock_redis.close = AsyncMock()
         
-        with patch('api.services.scraper.get_redis_client', return_value=mock_redis):
+        with patch('api.services.scraper.get_redis_pool', return_value=mock_redis):
             job_id = await scraper.enqueue_refresh_job(
                 category="electronics",
                 user_id="user-123"
@@ -400,7 +400,7 @@ class TestScraperOrchestratorIntegration:
         })
         mock_redis.close = AsyncMock()
         
-        with patch('api.services.scraper.get_redis_client', return_value=mock_redis):
+        with patch('api.services.scraper.get_redis_pool', return_value=mock_redis):
             result = await scraper.get_job_status("job-123")
         
         assert result is not None
@@ -413,7 +413,7 @@ class TestScraperOrchestratorIntegration:
         mock_redis.hgetall = AsyncMock(return_value={})
         mock_redis.close = AsyncMock()
         
-        with patch('api.services.scraper.get_redis_client', return_value=mock_redis):
+        with patch('api.services.scraper.get_redis_pool', return_value=mock_redis):
             result = await scraper.get_job_status("nonexistent-job")
         
         assert result is None

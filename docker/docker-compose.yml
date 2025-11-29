@@ -231,10 +231,7 @@ services:
       # Log
       - LOG_LEVEL=DEBUG
       - LOG_COLOR=true
-      - LOG_BAILEYS=verbose
-      # Baileys Config
-      - WA_BROWSER_CLIENT=Chrome (Linux)
-      - WA_BROWSER_NAME=chrome
+      - LOG_BAILEYS=error
     volumes:
       - evolution_instances:/evolution/instances
       - evolution_store:/evolution/store

@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
+import { NotificationsProvider } from '@/hooks/use-notifications';
 
 // Mock icons
 vi.mock('@/components/icons', () => ({
@@ -32,10 +33,17 @@ vi.mock('@/components/ui/input', () => ({
   ),
 }));
 
+// Mock NotificationBell to avoid complex dependencies
+vi.mock('@/components/NotificationBell', () => ({
+  NotificationBell: () => <button data-testid="notification-bell">Notifications</button>,
+}));
+
 const renderHeader = (props = {}) => {
   return render(
     <BrowserRouter>
-      <Header {...props} />
+      <NotificationsProvider>
+        <Header {...props} />
+      </NotificationsProvider>
     </BrowserRouter>
   );
 };

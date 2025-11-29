@@ -48,7 +48,7 @@ interface SystemMetrics {
 async function fetchMetrics(): Promise<SystemMetrics> {
   // Parse Prometheus format and convert to object
   const response = await api.get("/metrics");
-  const text = response.data;
+  const text = response.data as string;
   
   // Helper to extract metric value
   const extractMetric = (name: string, labels?: string): number => {
