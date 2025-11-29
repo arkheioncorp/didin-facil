@@ -82,11 +82,17 @@ async def validate_license(request: ValidateLicenseRequest):
         )
     
     # Check expiration
-    if license_info["expires_at"] and license_info["expires_at"] < datetime.now(timezone.utc):
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail="License has expired"
-        )
+    # Handle both timezone-aware and naive datetimes from database
+    expires_at = license_info["expires_at"]
+    if expires_at:
+        # If naive datetime, assume UTC
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at < datetime.now(timezone.utc):
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail="License has expired"
+            )
     
     # Validate HWID
     hwid_valid = await license_service.validate_hwid(

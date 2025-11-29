@@ -5,7 +5,7 @@ Tests for Scheduler Routes
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import HTTPException
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 class MockUser:
@@ -16,11 +16,11 @@ class MockUser:
 class MockScheduledPost:
     id = "post_123"
     platform = MagicMock(value="instagram")
-    scheduled_time = datetime.utcnow() + timedelta(hours=1)
+    scheduled_time = datetime.now(timezone.utc) + timedelta(hours=1)
     status = MagicMock(value="scheduled")
     content_type = "photo"
     caption = "Test caption"
-    created_at = datetime.utcnow()
+    created_at = datetime.now(timezone.utc)
     published_at = None
 
 
@@ -44,7 +44,7 @@ async def test_schedule_post_invalid_platform(mock_current_user):
     
     data = SchedulePostRequest(
         platform="invalid_platform",
-        scheduled_time=datetime.utcnow() + timedelta(hours=1),
+        scheduled_time=datetime.now(timezone.utc) + timedelta(hours=1),
         content_type="photo",
         caption="Test"
     )
@@ -65,7 +65,7 @@ async def test_schedule_post_past_date(mock_current_user):
         
         data = SchedulePostRequest(
             platform="instagram",
-            scheduled_time=datetime.utcnow() - timedelta(hours=1),
+            scheduled_time=datetime.now(timezone.utc) - timedelta(hours=1),
             content_type="photo",
             caption="Test"
         )
@@ -89,7 +89,7 @@ async def test_schedule_post_success(mock_current_user, mock_scheduler):
         
         data = SchedulePostRequest(
             platform="instagram",
-            scheduled_time=datetime.utcnow() + timedelta(hours=1),
+            scheduled_time=datetime.now(timezone.utc) + timedelta(hours=1),
             content_type="photo",
             caption="Test caption"
         )
@@ -209,7 +209,7 @@ async def test_get_dlq_stats(mock_current_user, mock_scheduler):
     mock_post.platform.value = "instagram"
     mock_post.user_id = "user_123"
     mock_post.error_message = "RateLimitError: Too many requests"
-    mock_post.scheduled_time = datetime.utcnow() - timedelta(hours=1)
+    mock_post.scheduled_time = datetime.now(timezone.utc) - timedelta(hours=1)
     
     mock_scheduler.get_dlq_posts.return_value = [mock_post]
     

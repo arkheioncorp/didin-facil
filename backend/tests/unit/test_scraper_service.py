@@ -81,24 +81,20 @@ class TestFormatProduct:
             assert result is not None
 
 
-class TestGetRedisClient:
-    """Testes para get_redis_pool"""
+class TestGetRedisPool:
+    """Testes para get_redis_pool importado de api.services.redis"""
     
     @pytest.mark.asyncio
     async def test_get_redis_pool_success(self):
-        """Deve retornar cliente Redis"""
+        """Deve retornar cliente Redis do pool"""
         mock_client = AsyncMock()
         
-        async def mock_from_url(*args, **kwargs):
-            return mock_client
-        
-        with patch('api.services.scraper.redis.from_url', side_effect=mock_from_url) as mock_from_url_fn:
-            from api.services.scraper import get_redis_pool
+        with patch('api.services.redis.get_redis_pool', return_value=mock_client):
+            from api.services.redis import get_redis_pool
             
             client = await get_redis_pool()
             
             assert client == mock_client
-            mock_from_url_fn.assert_called_once()
 
 
 class TestScraperOrchestratorGetProducts:

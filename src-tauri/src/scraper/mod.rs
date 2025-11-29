@@ -20,7 +20,6 @@ use anyhow::{Context, Result};
 use rand::Rng;
 use std::sync::Arc;
 use sysinfo::System;
-use tauri::AppHandle;
 // Ensure SystemExt is available if needed, or just System
 use tokio::sync::Mutex;
 

@@ -5,7 +5,7 @@ Cobertura: JWT validation, get_current_user, token creation
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
@@ -20,7 +20,7 @@ class TestCreateAccessToken:
             
             from api.middleware.auth import create_access_token
             
-            expires_at = datetime.utcnow() + timedelta(hours=24)
+            expires_at = datetime.now(timezone.utc) + timedelta(hours=24)
             token = create_access_token("user123", "hwid123", expires_at)
             
             assert token == "test_token_123"
@@ -33,7 +33,7 @@ class TestCreateAccessToken:
             
             from api.middleware.auth import create_access_token
             
-            expires_at = datetime.utcnow() + timedelta(hours=1)
+            expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
             create_access_token("user123", "hwid456", expires_at)
             
             call_args = mock_encode.call_args[0][0]
@@ -55,7 +55,7 @@ class TestGetUserById:
             ("email", "test@example.com"),
             ("name", "Test User"),
             ("plan", "premium"),
-            ("created_at", datetime.utcnow())
+            ("created_at", datetime.now(timezone.utc))
         ])
         mock_row.keys = lambda: ["id", "email", "name", "plan", "created_at"]
         
@@ -66,7 +66,7 @@ class TestGetUserById:
                 "email": "test@example.com",
                 "name": "Test User",
                 "plan": "premium",
-                "created_at": datetime.utcnow()
+                "created_at": datetime.now(timezone.utc)
             }
         
         with patch('api.middleware.auth.database') as mock_db:
@@ -76,7 +76,7 @@ class TestGetUserById:
                     ("email", "test@example.com"),
                     ("name", "Test User"),
                     ("plan", "premium"),
-                    ("created_at", datetime.utcnow())
+                    ("created_at", datetime.now(timezone.utc))
                 ]),
                 keys=lambda: ["id", "email", "name", "plan", "created_at"]
             ))
@@ -119,7 +119,7 @@ class TestGetCurrentUser:
             mock_decode.return_value = {
                 "sub": "user123",
                 "hwid": "hwid123",
-                "exp": (datetime.utcnow() + timedelta(hours=1)).timestamp()
+                "exp": (datetime.now(timezone.utc) + timedelta(hours=1)).timestamp()
             }
             
             with patch('api.middleware.auth.get_user_by_id') as mock_get_user:
@@ -167,7 +167,7 @@ class TestGetCurrentUser:
         
         with patch('api.middleware.auth.jwt.decode') as mock_decode:
             mock_decode.return_value = {
-                "exp": (datetime.utcnow() + timedelta(hours=1)).timestamp()
+                "exp": (datetime.now(timezone.utc) + timedelta(hours=1)).timestamp()
             }  # Sem "sub"
             
             with pytest.raises(HTTPException) as exc_info:
@@ -189,7 +189,7 @@ class TestGetCurrentUser:
         with patch('api.middleware.auth.jwt.decode') as mock_decode:
             mock_decode.return_value = {
                 "sub": "user123",
-                "exp": (datetime.utcnow() - timedelta(hours=1)).timestamp()  # Expirado
+                "exp": (datetime.now(timezone.utc) - timedelta(hours=1)).timestamp()  # Expirado
             }
             
             with pytest.raises(HTTPException) as exc_info:
@@ -211,7 +211,7 @@ class TestGetCurrentUser:
         with patch('api.middleware.auth.jwt.decode') as mock_decode:
             mock_decode.return_value = {
                 "sub": "deleted_user",
-                "exp": (datetime.utcnow() + timedelta(hours=1)).timestamp()
+                "exp": (datetime.now(timezone.utc) + timedelta(hours=1)).timestamp()
             }
             
             with patch('api.middleware.auth.get_user_by_id') as mock_get_user:

@@ -102,6 +102,6 @@ def create_access_token(user_id: str, hwid: str, expires_at: datetime) -> str:
         "sub": user_id,
         "hwid": hwid,
         "exp": expires_at.timestamp(),
-        "iat": datetime.utcnow().timestamp()
+        "iat": datetime.now(timezone.utc).timestamp()
     }
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)

@@ -49,6 +49,13 @@
         "depends": ["python3", "python3-pip"]
       }
     },
+    "macOS": {
+      "minimumSystemVersion": "10.13",
+      "exceptionDomain": null,
+      "signingIdentity": null,
+      "providerShortName": null,
+      "entitlements": null
+    },
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",

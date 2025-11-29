@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routes import (
     auth, products, copy, license, webhooks, bot,
     whatsapp, chatwoot, instagram, tiktok, youtube, content, scheduler,
-    integrations, social_auth, metrics
+    integrations, social_auth, metrics, status_webhooks
 )
 from .middleware.ratelimit import RateLimitMiddleware
 from .middleware.security import SecurityHeadersMiddleware
@@ -103,6 +103,11 @@ app.include_router(
 app.include_router(
     metrics.router,
     tags=["Observability"]
+)
+app.include_router(
+    status_webhooks.router,
+    prefix="/status",
+    tags=["Status Webhooks"]
 )
 
 

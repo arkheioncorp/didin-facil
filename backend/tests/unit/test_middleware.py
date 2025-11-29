@@ -334,10 +334,10 @@ class TestAuthMiddleware:
     def test_create_access_token(self):
         """Test create_access_token generates valid JWT"""
         from api.middleware.auth import create_access_token
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
         from jose import jwt
         
-        expires_at = datetime.utcnow() + timedelta(hours=12)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=12)
         token = create_access_token(
             user_id="user_123",
             hwid="hwid_abc",
@@ -362,7 +362,7 @@ class TestAuthMiddleware:
             get_current_user,
             create_access_token
         )
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
         
         mock_database.fetch_one.return_value = {
             "id": "user_123",
@@ -372,7 +372,7 @@ class TestAuthMiddleware:
             "created_at": "2024-01-01T00:00:00"
         }
         
-        expires_at = datetime.utcnow() + timedelta(hours=12)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=12)
         token = create_access_token(
             user_id="user_123",
             hwid="hwid_abc",
@@ -409,11 +409,11 @@ class TestAuthMiddleware:
             get_current_user,
             create_access_token
         )
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
         from fastapi import HTTPException
         
         # Create expired token
-        expires_at = datetime.utcnow() - timedelta(hours=1)
+        expires_at = datetime.now(timezone.utc) - timedelta(hours=1)
         token = create_access_token(
             user_id="user_123",
             hwid="hwid_abc",
@@ -436,12 +436,12 @@ class TestAuthMiddleware:
             get_current_user,
             create_access_token
         )
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
         from fastapi import HTTPException
         
         mock_database.fetch_one.return_value = None
         
-        expires_at = datetime.utcnow() + timedelta(hours=12)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=12)
         token = create_access_token(
             user_id="deleted_user",
             hwid="hwid_abc",
