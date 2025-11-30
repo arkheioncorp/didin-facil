@@ -15,3 +15,5 @@ export const Pipeline = () => {
     </div>
   );
 };
+
+export default Pipeline;

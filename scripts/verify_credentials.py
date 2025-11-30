@@ -356,16 +356,19 @@ class CredentialVerifier:
     
     def check_mercadopago(self):
         """Verifica credenciais do Mercado Pago"""
-        access_token = settings.MERCADOPAGO_ACCESS_TOKEN or settings.MERCADO_PAGO_ACCESS_TOKEN
+        access_token = (
+            settings.MERCADOPAGO_ACCESS_TOKEN or 
+            settings.MERCADO_PAGO_ACCESS_TOKEN
+        )
         public_key = settings.MERCADOPAGO_PUBLIC_KEY
         
-        if not access_token:
+        if not access_token or self._is_placeholder(access_token):
             self.add_result(CredentialCheck(
                 name="Mercado Pago",
                 category="Pagamentos",
                 status=CredentialStatus.NOT_CONFIGURED,
                 message="MERCADOPAGO_ACCESS_TOKEN não configurado",
-                recommendation="Configure as credenciais em https://www.mercadopago.com.br/developers"
+                recommendation="Configure em mercadopago.com.br/developers"
             ))
             return
         
@@ -381,7 +384,7 @@ class CredentialVerifier:
                 "has_public_key": bool(public_key),
                 "has_webhook_secret": bool(settings.MERCADOPAGO_WEBHOOK_SECRET)
             },
-            recommendation="Para produção, use credenciais reais (APP_USR-)" if is_test else None
+            recommendation="Use credenciais APP_USR- para produção" if is_test else None
         ))
     
     async def check_evolution_api(self):
@@ -578,18 +581,37 @@ class CredentialVerifier:
     # VERIFICAÇÕES DE STORAGE
     # ========================
     
+    def _is_placeholder(self, value: Optional[str]) -> bool:
+        """Verifica se valor é um placeholder"""
+        if not value:
+            return True
+        placeholders = [
+            "INSERIR_", "INSERT_", "YOUR_", "CHANGE_", "TODO",
+            "xxxxx", "XXXXX", "example", "placeholder"
+        ]
+        return any(p in value.upper() for p in [p.upper() for p in placeholders])
+    
     def check_cloudflare_r2(self):
         """Verifica Cloudflare R2"""
         access_key = settings.R2_ACCESS_KEY_ID
         secret_key = settings.R2_SECRET_ACCESS_KEY
+        endpoint = settings.R2_ENDPOINT
         
-        if not access_key or not secret_key:
+        if not access_key or not secret_key or self._is_placeholder(access_key) or self._is_placeholder(secret_key):
             self.add_result(CredentialCheck(
                 name="Cloudflare R2",
                 category="Storage",
                 status=CredentialStatus.NOT_CONFIGURED,
                 message="R2_ACCESS_KEY_ID ou R2_SECRET_ACCESS_KEY não configurado",
                 recommendation="Configure para armazenamento de imagens em produção"
+            ))
+        elif self._is_placeholder(endpoint) or "ACCOUNT_ID" in endpoint:
+            self.add_result(CredentialCheck(
+                name="Cloudflare R2",
+                category="Storage",
+                status=CredentialStatus.NOT_CONFIGURED,
+                message="R2_ENDPOINT não configurado corretamente",
+                recommendation="Substitua ACCOUNT_ID pelo seu ID da Cloudflare"
             ))
         else:
             self.add_result(CredentialCheck(
@@ -608,13 +630,13 @@ class CredentialVerifier:
         """Verifica Sentry"""
         dsn = settings.SENTRY_DSN
         
-        if not dsn:
+        if not dsn or self._is_placeholder(dsn):
             self.add_result(CredentialCheck(
                 name="Sentry",
                 category="Monitoring",
                 status=CredentialStatus.NOT_CONFIGURED,
                 message="SENTRY_DSN não configurado",
-                recommendation="Configure para monitoramento de erros em produção"
+                recommendation="Configure para monitoramento de erros"
             ))
         else:
             self.add_result(CredentialCheck(

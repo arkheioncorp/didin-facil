@@ -15,3 +15,5 @@ export const CRMDashboard = () => {
     </div>
   );
 };
+
+export default CRMDashboard;

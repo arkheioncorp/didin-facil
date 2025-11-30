@@ -581,11 +581,39 @@
     "buy_now": "Comprar Ahora",
     "upgrade_now": "Mejorar Ahora",
     "compare_plans": "Comparar Planes",
-    "buy_credits": "Comprar Créditos",
-    "use_credits": "¡Usa créditos para generar copys con IA, analizar productos y más!",
+    "get_license": "Obtén tu Licencia",
+    "buy_credits": "Comprar Créditos IA",
     "pay_once": "Paga una vez, usa para siempre",
-    "current_status": "Estado Actual",
-    "active_license": "Licencia Activa"
+    "credits_description": "Usa créditos para generar copies con Inteligencia Artificial",
+    "combos": {
+      "badge": "🎁 Oferta Especial para Nuevos Usuarios",
+      "title": "Combos con Descuento",
+      "subtitle": "Licencia Vitalicia + Créditos IA con hasta 20% de descuento",
+      "or_just_license": "o compra solo la licencia:",
+      "buy_combo": "Comprar Combo",
+      "essential": {
+        "name": "Esencial",
+        "description": "Ideal para empezar"
+      },
+      "professional": {
+        "name": "Profesional",
+        "description": "Más popular entre vendedores",
+        "badge": "Más Popular"
+      },
+      "enterprise": {
+        "name": "Empresarial",
+        "description": "Para operaciones a gran escala",
+        "badge": "Mejor Valor"
+      },
+      "features": {
+        "lifetime_license": "Licencia Vitalicia",
+        "credits": "{credits} créditos IA",
+        "devices": "Hasta 2 dispositivos",
+        "updates": "Actualizaciones gratuitas",
+        "best_value": "Mejor costo-beneficio",
+        "priority_support": "Soporte prioritario"
+      }
+    }
   },
 
   "setup": {

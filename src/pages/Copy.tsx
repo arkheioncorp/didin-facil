@@ -401,3 +401,5 @@ export const Copy: React.FC = () => {
     </div>
   );
 };
+
+export default Copy;

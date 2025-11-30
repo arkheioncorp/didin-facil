@@ -40,6 +40,63 @@ export const CREDIT_PACKS = {
   },
 } as const;
 
+// Combos para novos usuários (Licença + Créditos com desconto)
+export const COMBO_PACKS = {
+  essential: {
+    id: "essential",
+    name: "Essencial",
+    description: "Ideal para começar",
+    license: true,
+    credits: 50,
+    originalPrice: 69.80, // 49.90 + 19.90
+    price: 59.90,
+    discount: 14, // %
+    badge: null,
+    features: [
+      "Licença Vitalícia",
+      "50 créditos IA",
+      "Até 2 dispositivos",
+      "Atualizações gratuitas",
+    ],
+  },
+  professional: {
+    id: "professional",
+    name: "Profissional",
+    description: "Mais popular entre vendedores",
+    license: true,
+    credits: 200,
+    originalPrice: 99.80, // 49.90 + 49.90
+    price: 79.90,
+    discount: 20, // %
+    badge: "Mais Popular",
+    features: [
+      "Licença Vitalícia",
+      "200 créditos IA",
+      "Até 2 dispositivos",
+      "Atualizações gratuitas",
+      "Melhor custo-benefício",
+    ],
+  },
+  enterprise: {
+    id: "enterprise",
+    name: "Empresarial",
+    description: "Para operações de grande escala",
+    license: true,
+    credits: 500,
+    originalPrice: 149.80, // 49.90 + 99.90
+    price: 119.90,
+    discount: 20, // %
+    badge: "Melhor Valor",
+    features: [
+      "Licença Vitalícia",
+      "500 créditos IA",
+      "Até 2 dispositivos",
+      "Atualizações gratuitas",
+      "Suporte prioritário",
+    ],
+  },
+} as const;
+
 // Credit costs per action
 export const CREDIT_COSTS = {
   copy: 1,           // 1 crédito por copy gerada

@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { TikTrendIcon, StarIcon } from "@/components/icons";
 import { useUserStore } from "@/stores";
 import { useNavigate } from "react-router-dom";
-import { LICENSE_PRICE, CREDIT_PACKS, CREDIT_COSTS } from "@/lib/constants";
+import { LICENSE_PRICE, CREDIT_PACKS, CREDIT_COSTS, COMBO_PACKS } from "@/lib/constants";
 
 export const Subscription: React.FC = () => {
   const { t } = useTranslation();
@@ -45,6 +45,28 @@ export const Subscription: React.FC = () => {
       // Update credits balance
       setIsProcessing(false);
       alert(`Pacote ${CREDIT_PACKS[packId as keyof typeof CREDIT_PACKS].name} comprado com sucesso!`);
+    }, 2000);
+  };
+
+  const handlePurchaseCombo = async (comboId: string) => {
+    setSelectedItem(comboId);
+    setIsProcessing(true);
+
+    // TODO: Integrate with Mercado Pago
+    setTimeout(() => {
+      const combo = COMBO_PACKS[comboId as keyof typeof COMBO_PACKS];
+      const newLicense = {
+        isValid: true,
+        isLifetime: true,
+        activatedAt: new Date().toISOString(),
+        maxDevices: 2,
+        activeDevices: 1,
+      };
+      setLicense(newLicense);
+      // TODO: Add credits to user
+      setIsProcessing(false);
+      alert(`Combo ${combo.name} comprado com sucesso! Licença ativada + ${combo.credits} créditos adicionados.`);
+      navigate("/");
     }, 2000);
   };
 
@@ -103,25 +125,103 @@ export const Subscription: React.FC = () => {
           </Card>
         )}
 
+        {/* Combo Packs - For New Users */}
+        {!hasLicense && (
+          <div className="mb-12">
+            <div className="text-center mb-8">
+              <Badge variant="outline" className="mb-4 px-4 py-1 text-tiktrend-primary border-tiktrend-primary">
+                🎁 Oferta Especial para Novos Usuários
+              </Badge>
+              <h2 className="text-2xl font-bold mb-2">Combos com Desconto</h2>
+              <p className="text-muted-foreground">
+                Licença Vitalícia + Créditos IA com até 20% de desconto
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              {Object.entries(COMBO_PACKS).map(([id, combo]) => (
+                <Card 
+                  key={id} 
+                  className={`relative transition-all hover:scale-[1.02] ${
+                    id === "professional" 
+                      ? "border-tiktrend-primary shadow-lg shadow-tiktrend-primary/20" 
+                      : ""
+                  }`}
+                >
+                  {combo.badge && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <Badge variant="tiktrend" className="px-3">
+                        <StarIcon size={12} className="mr-1" />
+                        {combo.badge}
+                      </Badge>
+                    </div>
+                  )}
+                  <CardHeader className="text-center pb-2">
+                    <CardTitle className="text-xl">{combo.name}</CardTitle>
+                    <CardDescription>{combo.description}</CardDescription>
+                    <div className="mt-4 space-y-1">
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-lg text-muted-foreground line-through">
+                          R$ {combo.originalPrice.toFixed(2).replace(".", ",")}
+                        </span>
+                        <Badge variant="destructive" className="text-xs">
+                          -{combo.discount}%
+                        </Badge>
+                      </div>
+                      <span className="text-4xl font-bold text-tiktrend-primary">
+                        R$ {combo.price.toFixed(2).replace(".", ",")}
+                      </span>
+                      <p className="text-xs text-muted-foreground">pagamento único</p>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <Separator className="my-4" />
+                    <ul className="space-y-2 mb-6">
+                      {combo.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-center gap-2 text-sm">
+                          <span className="text-green-500">✓</span>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      variant={id === "professional" ? "tiktrend" : "outline"}
+                      className="w-full"
+                      disabled={isProcessing}
+                      onClick={() => handlePurchaseCombo(id)}
+                    >
+                      {isProcessing && selectedItem === id ? (
+                        <LoadingSpinner text="Processando..." />
+                      ) : (
+                        `Comprar Combo`
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-4">
+                ou compre apenas a licença:
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Lifetime License Card */}
         {!hasLicense && (
-          <Card className="mb-12 border-tiktrend-primary shadow-lg shadow-tiktrend-primary/20 relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <Badge variant="tiktrend" className="px-3">
-                <StarIcon size={12} className="mr-1" />
-                Pagamento Único
-              </Badge>
-            </div>
+          <Card className="mb-12 border-muted relative">
             <CardHeader className="text-center pb-2">
-              <CardTitle className="text-2xl">Licença Vitalícia</CardTitle>
-              <CardDescription>Pague uma vez, use para sempre</CardDescription>
+              <CardTitle className="text-xl">Apenas Licença Vitalícia</CardTitle>
+              <CardDescription>Sem créditos inclusos</CardDescription>
               <div className="mt-4">
-                <span className="text-5xl font-bold">R$ {LICENSE_PRICE.toFixed(2).replace(".", ",")}</span>
+                <span className="text-3xl font-bold">R$ {LICENSE_PRICE.toFixed(2).replace(".", ",")}</span>
                 <span className="text-muted-foreground ml-2">pagamento único</span>
               </div>
             </CardHeader>
             <CardContent>
-              <Separator className="my-6" />
+              <Separator className="my-4" />
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <div className="space-y-3">
                   <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
@@ -147,7 +247,7 @@ export const Subscription: React.FC = () => {
                 </div>
               </div>
               <Button
-                variant="tiktrend"
+                variant="outline"
                 size="lg"
                 className="w-full"
                 disabled={isProcessing}
@@ -365,3 +465,5 @@ const LoadingSpinner: React.FC<{ text: string }> = ({ text }) => (
     {text}
   </span>
 );
+
+export default Subscription;

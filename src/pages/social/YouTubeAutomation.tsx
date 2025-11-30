@@ -512,3 +512,5 @@ export const YouTubeAutomation = () => {
     </div>
   );
 };
+
+export default YouTubeAutomation;

@@ -590,7 +590,36 @@
     "get_license": "Get Your License",
     "buy_credits": "Buy AI Credits",
     "pay_once": "Pay once, use forever",
-    "credits_description": "Use credits to generate copies with Artificial Intelligence"
+    "credits_description": "Use credits to generate copies with Artificial Intelligence",
+    "combos": {
+      "badge": "🎁 Special Offer for New Users",
+      "title": "Discounted Bundles",
+      "subtitle": "Lifetime License + AI Credits with up to 20% off",
+      "or_just_license": "or buy just the license:",
+      "buy_combo": "Buy Bundle",
+      "essential": {
+        "name": "Essential",
+        "description": "Ideal to get started"
+      },
+      "professional": {
+        "name": "Professional",
+        "description": "Most popular among sellers",
+        "badge": "Most Popular"
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "description": "For large-scale operations",
+        "badge": "Best Value"
+      },
+      "features": {
+        "lifetime_license": "Lifetime License",
+        "credits": "{credits} AI credits",
+        "devices": "Up to 2 devices",
+        "updates": "Free updates",
+        "best_value": "Best value for money",
+        "priority_support": "Priority support"
+      }
+    }
   },
 
   "setup": {

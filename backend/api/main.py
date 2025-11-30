@@ -21,12 +21,21 @@ from .database.connection import init_database, close_database
 from .utils.security import security_monitor
 from .utils.integrity import IntegrityChecker
 from shared.config import settings
+from shared.sentry import sentry
+from shared.storage import storage
 import os
 import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Initialize Sentry (before app creation)
+if sentry.init():
+    logger.info("🔍 Sentry monitoring enabled")
+else:
+    logger.info("⚠️ Sentry monitoring disabled (not configured)")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,16 +47,32 @@ async def lifespan(app: FastAPI):
     base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     integrity = IntegrityChecker(base_path)
     if not integrity.verify_integrity():
-        logger.warning("Integrity check failed! Critical files may have been modified.")
+        logger.warning(
+            "Integrity check failed! Critical files may have been modified."
+        )
         # In strict mode, we might want to exit:
         # os._exit(1)
 
     # Startup
+    logger.info(f"🚀 Starting TikTrend API (env: {settings.ENVIRONMENT})")
     await init_database()
+    
+    # Log storage status
+    if storage.is_configured:
+        logger.info("📦 Cloudflare R2 storage enabled")
+    else:
+        logger.info("⚠️ Cloudflare R2 storage disabled (not configured)")
+    
     yield
+    
     # Shutdown
+    logger.info("🛑 Shutting down TikTrend API")
     await close_database()
     security_monitor.stop()
+    
+    # Flush Sentry before exit
+    if sentry.is_initialized:
+        sentry.flush(timeout=2.0)
 
 
 app = FastAPI(

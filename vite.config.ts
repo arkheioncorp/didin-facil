@@ -38,6 +38,20 @@ export default defineConfig({
     minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG,
+    // Increase chunk size warning limit (pages are lazy loaded now)
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks - split large dependencies
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs', '@radix-ui/react-toast', '@radix-ui/react-tooltip'],
+          'vendor-charts': ['recharts'],
+          'vendor-i18n': ['i18next', 'react-i18next'],
+          'vendor-utils': ['date-fns', 'clsx', 'tailwind-merge', 'zod'],
+        },
+      },
+    },
   },
   // Vitest configuration
   test: {

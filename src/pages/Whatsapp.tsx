@@ -336,3 +336,5 @@ export const WhatsappPage: React.FC = () => {
     </div>
   );
 };
+
+export default WhatsappPage;

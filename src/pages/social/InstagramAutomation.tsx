@@ -319,3 +319,5 @@ export const InstagramAutomation = () => {
     </div>
   );
 };
+
+export default InstagramAutomation;

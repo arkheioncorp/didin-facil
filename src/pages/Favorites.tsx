@@ -283,3 +283,5 @@ export const Favorites: React.FC = () => {
     </div>
   );
 };
+
+export default Favorites;

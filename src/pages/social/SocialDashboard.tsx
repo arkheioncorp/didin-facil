@@ -302,3 +302,5 @@ export const SocialDashboard = () => {
     </div>
   );
 };
+
+export default SocialDashboard;

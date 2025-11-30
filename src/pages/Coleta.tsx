@@ -928,3 +928,5 @@ export const Coleta: React.FC = () => {
     </div>
   );
 };
+
+export default Coleta;

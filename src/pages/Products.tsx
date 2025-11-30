@@ -1007,3 +1007,5 @@ export const Products: React.FC = () => {
     </div>
   );
 };
+
+export default Products;

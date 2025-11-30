@@ -15,3 +15,5 @@ export const ChatbotBuilder = () => {
     </div>
   );
 };
+
+export default ChatbotBuilder;

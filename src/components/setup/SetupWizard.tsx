@@ -6,9 +6,39 @@ import { Input } from "@/components/ui/input";
 import { TikTrendLogo } from "@/components/icons";
 import { useUserStore } from "@/stores";
 import { useNavigate } from "react-router-dom";
-import { invoke } from "@tauri-apps/api/core";
 import type { AppSettings } from "@/types";
 import { SUPPORTED_LANGUAGES, changeLanguage, type SupportedLanguage } from "@/lib/i18n";
+
+// Check if running in Tauri
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
+
+// Safe invoke wrapper that works in browser too
+const safeInvoke = async <T,>(cmd: string, args?: Record<string, unknown>): Promise<T> => {
+  if (isTauri) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<T>(cmd, args);
+  }
+  // Browser fallback - use localStorage
+  if (cmd === "get_settings") {
+    const stored = localStorage.getItem("app_settings");
+    return (stored ? JSON.parse(stored) : {
+      setupComplete: false,
+      theme: "dark",
+      language: "pt-BR",
+      notificationsEnabled: true,
+      autoUpdate: true,
+      termsAccepted: false,
+      termsAcceptedAt: null,
+      license: { key: null, plan: "trial", isActive: true, credits: 0 },
+      system: { autoUpdate: true, logsEnabled: true, analyticsEnabled: false }
+    }) as T;
+  }
+  if (cmd === "save_settings" && args?.settings) {
+    localStorage.setItem("app_settings", JSON.stringify(args.settings));
+    return {} as T;
+  }
+  throw new Error(`Unknown command: ${cmd}`);
+};
 
 const steps = [
   { id: "welcome", title: "Bem-vindo" },
@@ -38,7 +68,7 @@ export const SetupWizard: React.FC = () => {
   React.useEffect(() => {
     const checkSetupStatus = async () => {
       try {
-        const settings = await invoke<AppSettings>("get_settings");
+        const settings = await safeInvoke<AppSettings>("get_settings");
         if (settings.setupComplete) {
           // Setup already done, redirect to home
           navigate("/", { replace: true });
@@ -67,7 +97,7 @@ export const SetupWizard: React.FC = () => {
   const handleFinish = async () => {
     try {
       // Get current defaults
-      const currentSettings = await invoke<AppSettings>("get_settings");
+      const currentSettings = await safeInvoke<AppSettings>("get_settings");
 
       // Get current timestamp for terms acceptance
       const now = new Date().toISOString();
@@ -103,7 +133,7 @@ export const SetupWizard: React.FC = () => {
         },
       };
 
-      await invoke("save_settings", { settings: newSettings });
+      await safeInvoke("save_settings", { settings: newSettings });
       
       // Limpar flag do tutorial para exibir na primeira visita
       localStorage.removeItem('tutorial_completed');

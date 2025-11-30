@@ -418,3 +418,5 @@ export const TikTokAutomation = () => {
     </div>
   );
 };
+
+export default TikTokAutomation;

@@ -379,6 +379,30 @@ export const Settings: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Instagram */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <span className="text-pink-500">📸</span> Instagram
+          </CardTitle>
+          <CardDescription>
+            Conecte sua conta para upload de fotos e reels
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground italic">Configure via WhatsApp &gt; Instagram</p>
+          </div>
+          <Button 
+            variant="outline" 
+            className="w-full border-pink-200 text-pink-600 hover:bg-pink-50"
+            onClick={() => window.location.href = '/social/instagram'}
+          >
+            Gerenciar Instagram
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* TikTok */}
       <Card>
         <CardHeader>
@@ -402,8 +426,50 @@ export const Settings: React.FC = () => {
               ))
             )}
           </div>
-          <Button variant="outline" className="w-full border-black text-black hover:bg-gray-50">
+          <Button 
+            variant="outline" 
+            className="w-full border-black text-black hover:bg-gray-50"
+            onClick={() => window.location.href = '/social/tiktok'}
+          >
             + Adicionar Conta TikTok (Cookies)
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* API Configuration */}
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <span>⚙️</span> Configurações de API
+          </CardTitle>
+          <CardDescription>
+            Configure as chaves de API para integrações externas
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Evolution API URL</label>
+              <Input 
+                placeholder="http://localhost:8082" 
+                value={systemConfig.evolutionApiUrl || ''}
+                onChange={(e) => setSystemConfig({...systemConfig, evolutionApiUrl: e.target.value})}
+              />
+              <p className="text-xs text-muted-foreground">URL da API Evolution para WhatsApp</p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Evolution API Key</label>
+              <Input 
+                type="password"
+                placeholder="Sua chave de API" 
+                value={systemConfig.evolutionApiKey || ''}
+                onChange={(e) => setSystemConfig({...systemConfig, evolutionApiKey: e.target.value})}
+              />
+              <p className="text-xs text-muted-foreground">Chave de autenticação da Evolution API</p>
+            </div>
+          </div>
+          <Button onClick={handleSaveSettings} disabled={isSaving} className="mt-4">
+            {isSaving ? "Salvando..." : "Salvar Configurações"}
           </Button>
         </CardContent>
       </Card>
@@ -1339,3 +1405,5 @@ export const Settings: React.FC = () => {
     </div>
   );
 };
+
+export default Settings;

@@ -590,7 +590,36 @@
     "get_license": "Adquira sua Licença",
     "buy_credits": "Comprar Créditos IA",
     "pay_once": "Pague uma vez, use para sempre",
-    "credits_description": "Use créditos para gerar copies com Inteligência Artificial"
+    "credits_description": "Use créditos para gerar copies com Inteligência Artificial",
+    "combos": {
+      "badge": "🎁 Oferta Especial para Novos Usuários",
+      "title": "Combos com Desconto",
+      "subtitle": "Licença Vitalícia + Créditos IA com até 20% de desconto",
+      "or_just_license": "ou compre apenas a licença:",
+      "buy_combo": "Comprar Combo",
+      "essential": {
+        "name": "Essencial",
+        "description": "Ideal para começar"
+      },
+      "professional": {
+        "name": "Profissional",
+        "description": "Mais popular entre vendedores",
+        "badge": "Mais Popular"
+      },
+      "enterprise": {
+        "name": "Empresarial",
+        "description": "Para operações de grande escala",
+        "badge": "Melhor Valor"
+      },
+      "features": {
+        "lifetime_license": "Licença Vitalícia",
+        "credits": "{credits} créditos IA",
+        "devices": "Até 2 dispositivos",
+        "updates": "Atualizações gratuitas",
+        "best_value": "Melhor custo-benefício",
+        "priority_support": "Suporte prioritário"
+      }
+    }
   },
 
   "setup": {
