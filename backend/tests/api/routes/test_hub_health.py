@@ -15,8 +15,11 @@ Versão: 1.0.0
 """
 
 import pytest
+import pytest_asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
-from fastapi.testclient import TestClient
+from typing import AsyncGenerator
+
+from httpx import AsyncClient, ASGITransport
 
 
 # ============================================
@@ -128,12 +131,17 @@ def mock_prometheus_export():
         yield mock
 
 
-@pytest.fixture
-def client(mock_hubs, mock_health_checker, mock_metrics_registry,
-           mock_prometheus_export):
-    """Cliente de teste com mocks."""
+@pytest_asyncio.fixture
+async def async_client_with_mocks(
+    mock_hubs, mock_health_checker, mock_metrics_registry, mock_prometheus_export
+) -> AsyncGenerator[AsyncClient, None]:
+    """Cliente async de teste com mocks."""
     from api.main import app
-    return TestClient(app)
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test"
+    ) as client:
+        yield client
 
 
 # ============================================
@@ -143,9 +151,10 @@ def client(mock_hubs, mock_health_checker, mock_metrics_registry,
 class TestHealthEndpoints:
     """Testes para endpoints de health check."""
 
-    def test_get_overall_health(self, client, mock_health_checker):
+    @pytest.mark.asyncio
+    async def test_get_overall_health(self, async_client_with_mocks, mock_health_checker):
         """Testa GET /hub/health."""
-        response = client.get("/hub/health")
+        response = await async_client_with_mocks.get("/hub/health")
 
         assert response.status_code == 200
         data = response.json()
@@ -153,9 +162,10 @@ class TestHealthEndpoints:
         assert "hubs" in data
         assert "timestamp" in data
 
-    def test_get_hub_health_whatsapp(self, client, mock_health_checker):
+    @pytest.mark.asyncio
+    async def test_get_hub_health_whatsapp(self, async_client_with_mocks, mock_health_checker):
         """Testa GET /hub/health/whatsapp."""
-        response = client.get("/hub/health/whatsapp")
+        response = await async_client_with_mocks.get("/hub/health/whatsapp")
 
         assert response.status_code == 200
         data = response.json()
@@ -163,7 +173,8 @@ class TestHealthEndpoints:
         assert data["status"] == "healthy"
         assert "success_rate" in data
 
-    def test_get_hub_health_instagram(self, client, mock_health_checker):
+    @pytest.mark.asyncio
+    async def test_get_hub_health_instagram(self, async_client_with_mocks, mock_health_checker):
         """Testa GET /hub/health/instagram."""
         mock_health_checker.check_hub_health.return_value = MagicMock(
             name="instagram",
@@ -176,13 +187,14 @@ class TestHealthEndpoints:
             details={}
         )
 
-        response = client.get("/hub/health/instagram")
+        response = await async_client_with_mocks.get("/hub/health/instagram")
 
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "instagram"
 
-    def test_get_hub_health_tiktok(self, client, mock_health_checker):
+    @pytest.mark.asyncio
+    async def test_get_hub_health_tiktok(self, async_client_with_mocks, mock_health_checker):
         """Testa GET /hub/health/tiktok."""
         mock_health_checker.check_hub_health.return_value = MagicMock(
             name="tiktok",
@@ -195,7 +207,7 @@ class TestHealthEndpoints:
             details={"reason": "High latency"}
         )
 
-        response = client.get("/hub/health/tiktok")
+        response = await async_client_with_mocks.get("/hub/health/tiktok")
 
         assert response.status_code == 200
         data = response.json()
@@ -210,9 +222,10 @@ class TestHealthEndpoints:
 class TestMetricsEndpoints:
     """Testes para endpoints de métricas."""
 
-    def test_get_metrics_json(self, client, mock_metrics_registry):
+    @pytest.mark.asyncio
+    async def test_get_metrics_json(self, async_client_with_mocks, mock_metrics_registry):
         """Testa GET /hub/metrics."""
-        response = client.get("/hub/metrics")
+        response = await async_client_with_mocks.get("/hub/metrics")
 
         assert response.status_code == 200
         data = response.json()
@@ -220,9 +233,10 @@ class TestMetricsEndpoints:
         assert "instagram" in data
         assert data["whatsapp"]["success_count"] == 100
 
-    def test_get_metrics_prometheus(self, client, mock_prometheus_export):
+    @pytest.mark.asyncio
+    async def test_get_metrics_prometheus(self, async_client_with_mocks, mock_prometheus_export):
         """Testa GET /hub/metrics/prometheus."""
-        response = client.get("/hub/metrics/prometheus")
+        response = await async_client_with_mocks.get("/hub/metrics/prometheus")
 
         assert response.status_code == 200
         assert "text/plain" in response.headers["content-type"]
@@ -238,9 +252,10 @@ class TestMetricsEndpoints:
 class TestCircuitBreakerEndpoints:
     """Testes para endpoints de circuit breaker."""
 
-    def test_get_all_circuit_breaker_status(self, client, mock_hubs):
+    @pytest.mark.asyncio
+    async def test_get_all_circuit_breaker_status(self, async_client_with_mocks, mock_hubs):
         """Testa GET /hub/circuit-breaker/status."""
-        response = client.get("/hub/circuit-breaker/status")
+        response = await async_client_with_mocks.get("/hub/circuit-breaker/status")
 
         assert response.status_code == 200
         data = response.json()
@@ -250,32 +265,35 @@ class TestCircuitBreakerEndpoints:
         assert data["whatsapp"]["state"] == "closed"
         assert data["tiktok"]["state"] == "half_open"
 
-    def test_reset_circuit_breaker_whatsapp(self, client, mock_hubs):
+    @pytest.mark.asyncio
+    async def test_reset_circuit_breaker_whatsapp(self, async_client_with_mocks, mock_hubs):
         """Testa POST /hub/circuit-breaker/whatsapp/reset."""
         mock_hubs["whatsapp"]._circuit_breaker.reset = AsyncMock()
         mock_hubs["whatsapp"]._circuit_breaker.state.value = "closed"
 
-        response = client.post("/hub/circuit-breaker/whatsapp/reset")
+        response = await async_client_with_mocks.post("/hub/circuit-breaker/whatsapp/reset")
 
         assert response.status_code == 200
         data = response.json()
         assert data["hub"] == "whatsapp"
         assert "message" in data
 
-    def test_reset_circuit_breaker_invalid_hub(self, client):
+    @pytest.mark.asyncio
+    async def test_reset_circuit_breaker_invalid_hub(self, async_client_with_mocks):
         """Testa reset de hub inexistente."""
-        response = client.post("/hub/circuit-breaker/invalid/reset")
+        response = await async_client_with_mocks.post("/hub/circuit-breaker/invalid/reset")
 
         assert response.status_code == 200
         data = response.json()
         assert "error" in data
 
-    def test_circuit_breaker_status_with_errors(self, client):
+    @pytest.mark.asyncio
+    async def test_circuit_breaker_status_with_errors(self, async_client_with_mocks):
         """Testa status quando hub falha ao inicializar."""
         with patch('api.routes.hub_health.get_whatsapp_hub') as mock:
             mock.side_effect = Exception("Hub não configurado")
 
-            response = client.get("/hub/circuit-breaker/status")
+            response = await async_client_with_mocks.get("/hub/circuit-breaker/status")
 
             assert response.status_code == 200
             data = response.json()
@@ -289,7 +307,8 @@ class TestCircuitBreakerEndpoints:
 class TestHealthRouteIntegration:
     """Testes de integração das rotas."""
 
-    def test_health_endpoints_all_available(self, client):
+    @pytest.mark.asyncio
+    async def test_health_endpoints_all_available(self, async_client_with_mocks):
         """Verifica que todos os endpoints respondem."""
         endpoints = [
             "/hub/health",
@@ -300,15 +319,16 @@ class TestHealthRouteIntegration:
         ]
 
         for endpoint in endpoints:
-            response = client.get(endpoint)
+            response = await async_client_with_mocks.get(endpoint)
             # Aceita 200 ou 500 (se hub não configurado)
             assert response.status_code in (200, 500), (
                 f"Endpoint {endpoint} retornou {response.status_code}"
             )
 
-    def test_prometheus_format_valid(self, client, mock_prometheus_export):
+    @pytest.mark.asyncio
+    async def test_prometheus_format_valid(self, async_client_with_mocks, mock_prometheus_export):
         """Verifica formato Prometheus válido."""
-        response = client.get("/hub/metrics/prometheus")
+        response = await async_client_with_mocks.get("/hub/metrics/prometheus")
 
         lines = response.text.strip().split("\n")
         for line in lines:
