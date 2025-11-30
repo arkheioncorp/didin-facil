@@ -1,0 +1,257 @@
+{
+  "name": "05 - Busca de Produtos e Preços",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot-products",
+        "options": {}
+      },
+      "id": "webhook-products",
+      "name": "Webhook Produtos",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-search",
+              "leftValue": "={{ $json.content.toLowerCase() }}",
+              "rightValue": "buscar|procurar|preço|quanto custa|encontrar|achar",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "detect-search",
+      "name": "Detectar Busca",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrair termo de busca da mensagem\nconst message = $input.first().json.content;\n\n// Remover palavras-chave de comando\nconst cleanMessage = message\n  .toLowerCase()\n  .replace(/buscar|procurar|preço|quanto custa|encontrar|achar|de|do|da|um|uma|o|a/gi, '')\n  .trim();\n\nreturn [{ searchTerm: cleanMessage }];"
+      },
+      "id": "extract-search",
+      "name": "Extrair Termo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://tiktrend-api:8000/api/v1/products/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.searchTerm }}"
+            },
+            {
+              "name": "limit",
+              "value": "5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "search-products",
+      "name": "Buscar Produtos API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-has-products",
+              "leftValue": "={{ $json.products?.length || 0 }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-products",
+      "name": "Encontrou Produtos?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Formatar produtos para exibição no WhatsApp\nconst products = $input.first().json.products;\n\nconst formatted = products.map((p, i) => {\n  const priceFormatted = p.price.toLocaleString('pt-BR', {\n    style: 'currency',\n    currency: 'BRL'\n  });\n  \n  const originalPrice = p.original_price ? p.original_price.toLocaleString('pt-BR', {\n    style: 'currency', \n    currency: 'BRL'\n  }) : null;\n  \n  const discount = originalPrice ? \n    `~${originalPrice}~ ` : '';\n  \n  const savings = p.original_price ? \n    `💰 Economia: ${(p.original_price - p.price).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}` : '';\n  \n  return `${i+1}️⃣ *${p.name}*\\n   ${discount}${priceFormatted}\\n   🏪 ${p.store}\\n   ${savings}`;\n}).join('\\n\\n');\n\nreturn [{\n  formattedProducts: formatted,\n  productCount: products.length\n}];"
+      },
+      "id": "format-products",
+      "name": "Formatar Produtos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1350, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $('Webhook Produtos').item.json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"🔍 *Encontrei {{ $json.productCount }} produtos:*\\n\\n{{ $json.formattedProducts }}\\n\\n---\\n✍️ Digite o número para mais detalhes\\n🔗 Ou acesse: didin.com.br/busca\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-products",
+      "name": "Enviar Produtos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1570, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $('Webhook Produtos').item.json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"😕 *Nenhum produto encontrado*\\n\\nNão encontrei resultados para sua busca.\\n\\nDicas:\\n• Tente termos mais genéricos\\n• Verifique a ortografia\\n• Use o nome do produto\\n\\n🔄 Tente novamente ou digite *menu* para outras opções\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-no-products",
+      "name": "Sem Produtos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1350, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Produtos": {
+      "main": [
+        [
+          {
+            "node": "Detectar Busca",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detectar Busca": {
+      "main": [
+        [
+          {
+            "node": "Extrair Termo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Termo": {
+      "main": [
+        [
+          {
+            "node": "Buscar Produtos API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Produtos API": {
+      "main": [
+        [
+          {
+            "node": "Encontrou Produtos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encontrou Produtos?": {
+      "main": [
+        [
+          {
+            "node": "Formatar Produtos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sem Produtos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Produtos": {
+      "main": [
+        [
+          {
+            "node": "Enviar Produtos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "WhatsApp"
+    },
+    {
+      "name": "Produtos"
+    },
+    {
+      "name": "Busca"
+    }
+  ]
+}

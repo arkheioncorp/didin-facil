@@ -6,7 +6,7 @@ Product search and retrieval endpoints
 from typing import List, Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Query, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, Query, HTTPException, BackgroundTasks, Response
 from pydantic import BaseModel, Field
 
 from api.middleware.auth import get_current_user
@@ -19,6 +19,7 @@ router = APIRouter()
 
 class ProductFilters(BaseModel):
     """Product search filters"""
+
     query: Optional[str] = None
     category: Optional[str] = None
     min_price: Optional[float] = Field(None, ge=0)
@@ -33,6 +34,7 @@ class ProductFilters(BaseModel):
 
 class Product(BaseModel):
     """Product response model"""
+
     id: str
     external_id: Optional[str] = None
     title: str
@@ -62,6 +64,7 @@ class Product(BaseModel):
 
 class ProductsResponse(BaseModel):
     """Paginated products response"""
+
     products: List[Product]
     total: int
     page: int
@@ -69,6 +72,13 @@ class ProductsResponse(BaseModel):
     has_more: bool
     cached: bool = False
     cache_expires_at: Optional[datetime] = None
+
+
+class ExportRequest(BaseModel):
+    """Export products request"""
+
+    product_ids: List[str]
+    format: str = "csv"
 
 
 @router.get("", response_model=ProductsResponse)
@@ -89,7 +99,7 @@ async def get_products(
     Results are cached for 1 hour.
     """
     cache = CacheService()
-    
+
     # Build cache key from filters
     cache_key = cache.build_products_cache_key(
         category=category,
@@ -98,15 +108,15 @@ async def get_products(
         min_sales=min_sales,
         sort_by=sort_by,
         page=page,
-        per_page=per_page
+        per_page=per_page,
     )
-    
+
     # Check cache
     cached_result = await cache.get(cache_key)
     if cached_result:
         cached_result["cached"] = True
         return ProductsResponse(**cached_result)
-    
+
     # Fetch from database/scraper
     orchestrator = ScraperOrchestrator()
     result = await orchestrator.get_products(
@@ -117,12 +127,12 @@ async def get_products(
         max_price=max_price,
         min_sales=min_sales,
         sort_by=sort_by,
-        sort_order=sort_order
+        sort_order=sort_order,
     )
-    
+
     # Cache result
     await cache.set(cache_key, result, ttl=3600)  # 1 hour
-    
+
     return ProductsResponse(**result, cached=False)
 
 
@@ -139,24 +149,20 @@ async def search_products(
     """
     cache = CacheService()
     orchestrator = ScraperOrchestrator()
-    
+
     # Check cache
     cache_key = f"search:{q}:{page}:{per_page}"
     cached = await cache.get(cache_key)
     if cached:
         cached["cached"] = True
         return ProductsResponse(**cached)
-    
+
     # Search
-    result = await orchestrator.search_products(
-        query=q,
-        page=page,
-        per_page=per_page
-    )
-    
+    result = await orchestrator.search_products(query=q, page=page, per_page=per_page)
+
     # Cache for 30 minutes
     await cache.set(cache_key, result, ttl=1800)
-    
+
     return ProductsResponse(**result, cached=False)
 
 
@@ -173,22 +179,20 @@ async def get_trending_products(
     """
     cache = CacheService()
     orchestrator = ScraperOrchestrator()
-    
+
     cache_key = f"trending:{category or 'all'}:{page}:{per_page}"
     cached = await cache.get(cache_key)
     if cached:
         cached["cached"] = True
         return ProductsResponse(**cached)
-    
+
     result = await orchestrator.get_trending_products(
-        page=page,
-        per_page=per_page,
-        category=category
+        page=page, per_page=per_page, category=category
     )
-    
+
     # Cache for 30 minutes
     await cache.set(cache_key, result, ttl=1800)
-    
+
     return ProductsResponse(**result, cached=False)
 
 
@@ -196,17 +200,17 @@ async def get_trending_products(
 async def get_categories(user: dict = Depends(get_current_user)):
     """Get list of available product categories"""
     cache = CacheService()
-    
+
     cached = await cache.get("categories")
     if cached:
         return cached
-    
+
     orchestrator = ScraperOrchestrator()
     categories = await orchestrator.get_categories()
-    
+
     # Cache for 24 hours
     await cache.set("categories", categories, ttl=86400)
-    
+
     return categories
 
 
@@ -217,21 +221,21 @@ async def get_product(
 ):
     """Get single product by ID"""
     cache = CacheService()
-    
+
     cache_key = f"product:{product_id}"
     cached = await cache.get(cache_key)
     if cached:
         return Product(**cached)
-    
+
     orchestrator = ScraperOrchestrator()
     product = await orchestrator.get_product_by_id(product_id)
-    
+
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    
+
     # Cache for 1 hour
     await cache.set(cache_key, product, ttl=3600)
-    
+
     return Product(**product)
 
 
@@ -248,13 +252,38 @@ async def refresh_products(
     if user.get("plan") not in ["pro", "enterprise"]:
         raise HTTPException(
             status_code=403,
-            detail="Product refresh is only available for Pro and Enterprise plans"
+            detail="Product refresh is only available for Pro and Enterprise plans",
         )
-    
+
     orchestrator = ScraperOrchestrator()
     job_id = await orchestrator.enqueue_refresh_job(
-        category=category,
-        user_id=user["id"]
+        category=category, user_id=user["id"]
     )
-    
+
     return {"message": "Refresh job enqueued", "job_id": job_id}
+
+
+@router.post("/export")
+async def export_products(
+    request: ExportRequest, user: dict = Depends(get_current_user)
+):
+    """Export products to CSV/Excel"""
+    # Stub implementation - returning a dummy file content
+    return Response(
+        content="id,title,price\n1,Test Product,10.00",
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=products.csv"},
+    )
+
+
+@router.get("/stats")
+async def get_product_stats(user: dict = Depends(get_current_user)):
+    """Get product statistics"""
+    # Stub implementation
+    return {
+        "total": 100,
+        "trending": 10,
+        "categories": {"electronics": 50, "fashion": 50},
+        "avgPrice": 49.90,
+        "totalSales": 5000,
+    }

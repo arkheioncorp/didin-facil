@@ -1,0 +1,674 @@
+{
+    "name": "07 - Workflow Master v2 (Improved)",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "chatwoot",
+                "options": {}
+            },
+            "id": "webhook-master",
+            "name": "Webhook Principal",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [
+                250,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true
+                    },
+                    "conditions": [
+                        {
+                            "leftValue": "={{ $json.event }}",
+                            "rightValue": "message_created",
+                            "operator": {
+                                "type": "string",
+                                "operation": "equals"
+                            }
+                        },
+                        {
+                            "leftValue": "={{ $json.message_type }}",
+                            "rightValue": "incoming",
+                            "operator": {
+                                "type": "string",
+                                "operation": "equals"
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                }
+            },
+            "id": "filter-incoming",
+            "name": "Filtrar Mensagens Entrada",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                470,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{$env.N8N_WEBHOOK_URL}}/rate-limit-check",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\"conversation_id\": \"{{$json.conversation.id}}\"}",
+                "options": {}
+            },
+            "id": "check-rate-limit",
+            "name": "Check Rate Limit",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                690,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.allowed }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "is-allowed",
+            "name": "Is Allowed?",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                910,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{$env.CHATWOOT_URL}}/api/v1/accounts/{{$env.CHATWOOT_ACCOUNT_ID}}/conversations/{{$('Webhook Principal').item.json.conversation.id}}/messages",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "httpHeaderAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\"content\": \"{{$('Check Rate Limit').item.json.message}}\", \"message_type\": \"outgoing\", \"private\": false}",
+                "options": {}
+            },
+            "id": "send-rate-limit-warning",
+            "name": "Send Rate Limit Warning",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1130,
+                550
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "chatwoot-api",
+                    "name": "Chatwoot API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{$env.N8N_WEBHOOK_URL}}/context-get",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\"conversation_id\": \"{{$('Webhook Principal').item.json.conversation.id}}\"}",
+                "options": {}
+            },
+            "id": "get-context",
+            "name": "Get Conversation Context",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1130,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "rules": {
+                    "values": [
+                        {
+                            "conditions": {
+                                "options": {
+                                    "caseSensitive": false
+                                },
+                                "conditions": [
+                                    {
+                                        "leftValue": "={{$('Webhook Principal').item.json.content.toLowerCase()}}",
+                                        "rightValue": "^(oi|olá|ola|bom dia|boa tarde|boa noite|hello|hi|hey|início|inicio|começar|comecar)$",
+                                        "operator": {
+                                            "type": "string",
+                                            "operation": "regex"
+                                        }
+                                    }
+                                ]
+                            },
+                            "renameOutput": true,
+                            "outputKey": "saudacao"
+                        },
+                        {
+                            "conditions": {
+                                "options": {
+                                    "caseSensitive": false
+                                },
+                                "conditions": [
+                                    {
+                                        "leftValue": "={{$('Webhook Principal').item.json.content.toLowerCase()}}",
+                                        "rightValue": "^(menu|opções|opcoes|ajuda|help)$",
+                                        "operator": {
+                                            "type": "string",
+                                            "operation": "regex"
+                                        }
+                                    }
+                                ]
+                            },
+                            "renameOutput": true,
+                            "outputKey": "menu"
+                        },
+                        {
+                            "conditions": {
+                                "options": {
+                                    "caseSensitive": false
+                                },
+                                "conditions": [
+                                    {
+                                        "leftValue": "={{$('Webhook Principal').item.json.content.toLowerCase()}}",
+                                        "rightValue": "buscar|procurar|preço|encontrar|produto",
+                                        "operator": {
+                                            "type": "string",
+                                            "operation": "regex"
+                                        }
+                                    }
+                                ]
+                            },
+                            "renameOutput": true,
+                            "outputKey": "busca"
+                        },
+                        {
+                            "conditions": {
+                                "options": {
+                                    "caseSensitive": false
+                                },
+                                "conditions": [
+                                    {
+                                        "leftValue": "={{$('Webhook Principal').item.json.content.toLowerCase()}}",
+                                        "rightValue": "atendente|humano|pessoa|falar com alguém|suporte",
+                                        "operator": {
+                                            "type": "string",
+                                            "operation": "regex"
+                                        }
+                                    }
+                                ]
+                            },
+                            "renameOutput": true,
+                            "outputKey": "humano"
+                        },
+                        {
+                            "conditions": {
+                                "options": {
+                                    "caseSensitive": false
+                                },
+                                "conditions": [
+                                    {
+                                        "leftValue": "={{$('Webhook Principal').item.json.content.toLowerCase()}}",
+                                        "rightValue": "agendar|agendamento|marcar|horário",
+                                        "operator": {
+                                            "type": "string",
+                                            "operation": "regex"
+                                        }
+                                    }
+                                ]
+                            },
+                            "renameOutput": true,
+                            "outputKey": "agendamento"
+                        }
+                    ]
+                },
+                "options": {
+                    "fallbackOutput": "extra"
+                }
+            },
+            "id": "router",
+            "name": "Roteador de Intenções",
+            "type": "n8n-nodes-base.switch",
+            "typeVersion": 3.2,
+            "position": [
+                1350,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{$env.CHATWOOT_URL}}/api/v1/accounts/{{$env.CHATWOOT_ACCOUNT_ID}}/conversations/{{$('Webhook Principal').item.json.conversation.id}}/messages",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "httpHeaderAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "{\"content\": \"👋 Olá! Bem-vindo ao *Didin Fácil*!\\n\\nSou seu assistente virtual de comparação de preços.\\n\\n📋 *Menu Principal:*\\n\\n1️⃣ 🔍 Buscar produtos\\n2️⃣ 🏷️ Ver ofertas do dia\\n3️⃣ 🔔 Criar alerta de preço\\n4️⃣ 📅 Agendar atendimento\\n5️⃣ 👤 Falar com atendente\\n6️⃣ ❓ Perguntas frequentes\\n\\n✍️ Digite o número da opção desejada!\", \"message_type\": \"outgoing\", \"private\": false}",
+                "options": {}
+            },
+            "id": "send-greeting",
+            "name": "Enviar Boas-vindas",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1600,
+                100
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "chatwoot-api",
+                    "name": "Chatwoot API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{$env.CHATWOOT_URL}}/api/v1/accounts/{{$env.CHATWOOT_ACCOUNT_ID}}/conversations/{{$('Webhook Principal').item.json.conversation.id}}/messages",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "httpHeaderAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "{\"content\": \"📋 *Menu Principal:*\\n\\n1️⃣ 🔍 Buscar produtos\\n2️⃣ 🏷️ Ver ofertas do dia\\n3️⃣ 🔔 Criar alerta de preço\\n4️⃣ 📅 Agendar atendimento\\n5️⃣ 👤 Falar com atendente\\n6️⃣ ❓ Perguntas frequentes\\n\\n✍️ Digite o número da opção!\", \"message_type\": \"outgoing\", \"private\": false}",
+                "options": {}
+            },
+            "id": "send-menu",
+            "name": "Enviar Menu",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1600,
+                250
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "chatwoot-api",
+                    "name": "Chatwoot API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{$env.CHATWOOT_URL}}/api/v1/accounts/{{$env.CHATWOOT_ACCOUNT_ID}}/conversations/{{$('Webhook Principal').item.json.conversation.id}}/messages",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "httpHeaderAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "{\"content\": \"🔍 *Busca de Produtos*\\n\\nDigite o nome do produto que você está procurando.\\n\\n💡 *Exemplos:*\\n• iPhone 15\\n• Smart TV 55 polegadas\\n• Geladeira frost free\\n• Notebook Dell\", \"message_type\": \"outgoing\", \"private\": false}",
+                "options": {}
+            },
+            "id": "send-search-prompt",
+            "name": "Prompt de Busca",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1600,
+                400
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "chatwoot-api",
+                    "name": "Chatwoot API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{$env.CHATWOOT_URL}}/api/v1/accounts/{{$env.CHATWOOT_ACCOUNT_ID}}/conversations/{{$('Webhook Principal').item.json.conversation.id}}/messages",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "httpHeaderAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "{\"content\": \"👤 *Atendimento Humano*\\n\\nVou transferir você para um de nossos atendentes.\\n\\n⏱️ Tempo médio de espera: 2 minutos\\n\\n📝 Enquanto aguarda, pode nos contar o motivo do contato?\", \"message_type\": \"outgoing\", \"private\": false}",
+                "options": {}
+            },
+            "id": "send-human-request",
+            "name": "Solicitar Humano",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1600,
+                550
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "chatwoot-api",
+                    "name": "Chatwoot API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{$env.CHATWOOT_URL}}/api/v1/accounts/{{$env.CHATWOOT_ACCOUNT_ID}}/conversations/{{$('Webhook Principal').item.json.conversation.id}}/messages",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "httpHeaderAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "{\"content\": \"📅 *Agendamento*\\n\\nPara agendar um horário de atendimento, escolha uma opção:\\n\\n1️⃣ Suporte técnico\\n2️⃣ Consultoria de compras\\n3️⃣ Dúvidas financeiras\\n\\nDigite o número da opção!\", \"message_type\": \"outgoing\", \"private\": false}",
+                "options": {}
+            },
+            "id": "send-schedule-options",
+            "name": "Opções Agendamento",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1600,
+                700
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "chatwoot-api",
+                    "name": "Chatwoot API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "model": "gpt-4o-mini",
+                "messages": {
+                    "values": [
+                        {
+                            "role": "system",
+                            "content": "Você é o assistente virtual do Didin Fácil, uma plataforma de comparação de preços. Responda de forma curta, amigável e útil. Use emojis moderadamente. Se não entender a pergunta, sugira o menu principal digitando 'menu'."
+                        },
+                        {
+                            "role": "user",
+                            "content": "={{$('Webhook Principal').item.json.content}}"
+                        }
+                    ]
+                },
+                "options": {
+                    "temperature": 0.7,
+                    "maxTokens": 300
+                }
+            },
+            "id": "fallback-ai",
+            "name": "IA Fallback",
+            "type": "@n8n/n8n-nodes-langchain.openAi",
+            "typeVersion": 1.4,
+            "position": [
+                1600,
+                850
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "openai-didin",
+                    "name": "OpenAI Didin"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{$env.CHATWOOT_URL}}/api/v1/accounts/{{$env.CHATWOOT_ACCOUNT_ID}}/conversations/{{$('Webhook Principal').item.json.conversation.id}}/messages",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "httpHeaderAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\"content\": \"{{$json.message.content}}\", \"message_type\": \"outgoing\", \"private\": false}",
+                "options": {}
+            },
+            "id": "send-ai-response",
+            "name": "Enviar Resposta IA",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1850,
+                850
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "chatwoot-api",
+                    "name": "Chatwoot API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{$env.N8N_WEBHOOK_URL}}/workflow-log",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\"workflow_name\": \"07-master-workflow\", \"execution_id\": \"{{$execution.id}}\", \"conversation_id\": \"{{$('Webhook Principal').item.json.conversation.id}}\", \"intent\": \"{{$workflow.lastNode}}\", \"message_content\": \"{{$('Webhook Principal').item.json.content}}\", \"success\": true, \"execution_time_ms\": {{$execution.duration}}}",
+                "options": {}
+            },
+            "id": "log-execution",
+            "name": "Log Execution",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                2070,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{$env.N8N_WEBHOOK_URL}}/context-save",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\"conversation_id\": \"{{$('Webhook Principal').item.json.conversation.id}}\", \"message_type\": \"incoming\", \"content\": \"{{$('Webhook Principal').item.json.content}}\", \"sender_id\": \"{{$('Webhook Principal').item.json.sender.id}}\"}",
+                "options": {}
+            },
+            "id": "save-context",
+            "name": "Save Message Context",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                2070,
+                550
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook Principal": {
+            "main": [
+                [
+                    {
+                        "node": "Filtrar Mensagens Entrada"
+                    }
+                ]
+            ]
+        },
+        "Filtrar Mensagens Entrada": {
+            "main": [
+                [
+                    {
+                        "node": "Check Rate Limit"
+                    }
+                ]
+            ]
+        },
+        "Check Rate Limit": {
+            "main": [
+                [
+                    {
+                        "node": "Is Allowed?"
+                    }
+                ]
+            ]
+        },
+        "Is Allowed?": {
+            "main": [
+                [
+                    {
+                        "node": "Get Conversation Context"
+                    }
+                ],
+                [
+                    {
+                        "node": "Send Rate Limit Warning"
+                    }
+                ]
+            ]
+        },
+        "Get Conversation Context": {
+            "main": [
+                [
+                    {
+                        "node": "Roteador de Intenções"
+                    }
+                ]
+            ]
+        },
+        "Roteador de Intenções": {
+            "main": [
+                [
+                    {
+                        "node": "Enviar Boas-vindas"
+                    }
+                ],
+                [
+                    {
+                        "node": "Enviar Menu"
+                    }
+                ],
+                [
+                    {
+                        "node": "Prompt de Busca"
+                    }
+                ],
+                [
+                    {
+                        "node": "Solicitar Humano"
+                    }
+                ],
+                [
+                    {
+                        "node": "Opções Agendamento"
+                    }
+                ],
+                [
+                    {
+                        "node": "IA Fallback"
+                    }
+                ]
+            ]
+        },
+        "IA Fallback": {
+            "main": [
+                [
+                    {
+                        "node": "Enviar Resposta IA"
+                    }
+                ]
+            ]
+        },
+        "Enviar Boas-vindas": {
+            "main": [
+                [
+                    {
+                        "node": "Log Execution"
+                    },
+                    {
+                        "node": "Save Message Context"
+                    }
+                ]
+            ]
+        },
+        "Enviar Menu": {
+            "main": [
+                [
+                    {
+                        "node": "Log Execution"
+                    },
+                    {
+                        "node": "Save Message Context"
+                    }
+                ]
+            ]
+        },
+        "Prompt de Busca": {
+            "main": [
+                [
+                    {
+                        "node": "Log Execution"
+                    },
+                    {
+                        "node": "Save Message Context"
+                    }
+                ]
+            ]
+        },
+        "Solicitar Humano": {
+            "main": [
+                [
+                    {
+                        "node": "Log Execution"
+                    },
+                    {
+                        "node": "Save Message Context"
+                    }
+                ]
+            ]
+        },
+        "Opções Agendamento": {
+            "main": [
+                [
+                    {
+                        "node": "Log Execution"
+                    },
+                    {
+                        "node": "Save Message Context"
+                    }
+                ]
+            ]
+        },
+        "Enviar Resposta IA": {
+            "main": [
+                [
+                    {
+                        "node": "Log Execution"
+                    },
+                    {
+                        "node": "Save Message Context"
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "tags": [
+        {
+            "name": "WhatsApp"
+        },
+        {
+            "name": "Master"
+        },
+        {
+            "name": "Avançado"
+        },
+        {
+            "name": "v2"
+        }
+    ],
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "version": "2.0.0",
+        "changelog": [
+            "Removed hardcoded tokens - using credentials",
+            "Added rate limiting integration",
+            "Added structured logging",
+            "Added conversation context tracking",
+            "Improved error handling"
+        ]
+    }
+}

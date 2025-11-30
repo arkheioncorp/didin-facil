@@ -27,8 +27,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useStartScraper, useSyncProducts } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
-import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
+import { getScraperStatus, stopScraper } from "@/services/scraper";
 import { toast } from "@/hooks/use-toast";
 import {
   Accordion,
@@ -91,7 +90,7 @@ const CookieSetup: React.FC<CookieSetupProps> = ({
   };
 
   const statusConfig = {
-    disconnected: { color: "bg-gray-500", text: "Desconectado", icon: Globe },
+    disconnected: { color: "bg-muted-foreground", text: "Desconectado", icon: Globe },
     testing: { color: "bg-yellow-500 animate-pulse", text: "Testando...", icon: Loader2 },
     connected: { color: "bg-green-500", text: "Conectado", icon: Check },
     error: { color: "bg-red-500", text: "Erro", icon: AlertTriangle },
@@ -590,19 +589,30 @@ export const Coleta: React.FC = () => {
     status?: string;
   }>({});
 
-  // Listen to browser events
+  // Check if running in Tauri
+  const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+
+  // Listen to browser events (only in Tauri)
   React.useEffect(() => {
-    const unlisten = listen<{url: string; screenshot?: string; status: string}>(
-      'browser-update',
-      (event) => {
-        setBrowserState(event.payload);
-      }
-    );
+    if (!isTauri) return;
+    
+    let cleanup: (() => void) | undefined;
+    
+    import("@tauri-apps/api/event").then(({ listen }) => {
+      listen<{url: string; screenshot?: string; status: string}>(
+        'browser-update',
+        (event) => {
+          setBrowserState(event.payload);
+        }
+      ).then(unlisten => {
+        cleanup = unlisten;
+      });
+    }).catch(console.error);
     
     return () => {
-      unlisten.then(fn => fn());
+      cleanup?.();
     };
-  }, []);
+  }, [isTauri]);
 
   // Persist settings
   React.useEffect(() => {
@@ -622,7 +632,7 @@ export const Coleta: React.FC = () => {
     queryKey: ["scraperStatus"],
     queryFn: async () => {
       try {
-        return await invoke<ScraperStatus>("get_scraper_status");
+        return await getScraperStatus();
       } catch {
         return {
           isRunning: false,
@@ -704,7 +714,7 @@ export const Coleta: React.FC = () => {
 
   const handleStopScraping = async () => {
     try {
-      await invoke("stop_scraper");
+      await stopScraper();
       toast({
         title: "⏹️ Coleta Parada",
         description: "A coleta foi interrompida.",

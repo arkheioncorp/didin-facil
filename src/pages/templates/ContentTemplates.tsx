@@ -110,7 +110,7 @@ function TemplateCard({
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <div className={`p-2 rounded-lg text-white ${platformColors[template.platform] || 'bg-gray-500'}`}>
+            <div className={`p-2 rounded-lg text-white ${platformColors[template.platform] || 'bg-muted-foreground'}`}>
               {platformIcons[template.platform] || <FileText className="h-4 w-4" />}
             </div>
             <div>
@@ -180,7 +180,7 @@ function DefaultTemplateCard({
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <div className={`p-2 rounded-lg text-white ${platformColors[template.platform] || 'bg-gray-500'}`}>
+            <div className={`p-2 rounded-lg text-white ${platformColors[template.platform] || 'bg-muted-foreground'}`}>
               {platformIcons[template.platform] || <FileText className="h-4 w-4" />}
             </div>
             <div>

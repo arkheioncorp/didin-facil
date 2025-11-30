@@ -29,6 +29,11 @@ async def close_database():
     print("Database disconnected")
 
 
+async def get_db_pool() -> Database:
+    """Get the database connection pool (for CRM and other modules)."""
+    return database
+
+
 @asynccontextmanager
 async def get_db() -> AsyncGenerator[Database, None]:
     """Get database connection from pool"""

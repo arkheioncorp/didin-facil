@@ -1,0 +1,27 @@
+============================================================
+DIAGNÓSTICO DAS INTEGRAÇÕES - SELLER BOT
+============================================================
+
+[1/6] Testando imports dos módulos...
+  ✅ Módulo chatbot importado com sucesso
+  ✅ Router seller_bot importado
+  ✅ CRMService importado
+
+[2/6] Testando Redis...
+  ✅ Redis conectado
+
+[3/6] Testando PostgreSQL...
+  ❌ PostgreSQL: No module named 'psycopg2'
+
+[4/6] Testando n8n...
+  ✅ n8n: {"status":"ok"}
+
+[5/6] Testando Chatwoot...
+  ✅ Chatwoot: OK (versão encontrada)
+
+[6/6] Testando Evolution API...
+  ✅ Evolution API: responde na porta 8082
+
+============================================================
+DIAGNÓSTICO COMPLETO
+============================================================

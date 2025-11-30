@@ -1,0 +1,686 @@
+{
+  "name": "Seller Bot Profissional - Didin Fácil",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "seller-bot",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-main",
+      "name": "Webhook Principal",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 400],
+      "webhookId": "seller-bot-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "id": "valid-message",
+              "leftValue": "={{ $json.body.content }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isNotEmpty"
+              }
+            }
+          ]
+        }
+      },
+      "id": "filter-valid",
+      "name": "Filtrar Mensagens Válidas",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [400, 400]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.DIDIN_API_URL }}/seller-bot/message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.DIDIN_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"{{ $json.body.channel || 'whatsapp' }}\",\n  \"sender_id\": \"{{ $json.body.sender_id }}\",\n  \"sender_name\": \"{{ $json.body.sender_name }}\",\n  \"content\": \"{{ $json.body.content }}\",\n  \"media_url\": \"{{ $json.body.media_url }}\"\n}",
+        "options": {}
+      },
+      "id": "call-seller-bot",
+      "name": "Processar com Seller Bot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [600, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "id": "needs-handoff",
+              "leftValue": "={{ $json.responses[0].should_handoff }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        }
+      },
+      "id": "check-handoff",
+      "name": "Verificar Handoff",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [800, 400]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "response-content",
+              "name": "response_content",
+              "type": "string",
+              "value": "={{ $json.responses.map(r => r.content).join('\\n\\n') }}"
+            },
+            {
+              "id": "quick-replies",
+              "name": "quick_replies",
+              "type": "array",
+              "value": "={{ $json.responses[0].quick_replies || [] }}"
+            },
+            {
+              "id": "intent",
+              "name": "intent",
+              "type": "string",
+              "value": "={{ $json.responses[0].intent || 'unknown' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-response",
+      "name": "Formatar Resposta",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.CHATWOOT_URL }}/api/v1/accounts/{{ $env.CHATWOOT_ACCOUNT_ID }}/conversations/{{ $('Webhook Principal').item.json.body.conversation_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $env.CHATWOOT_API_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"{{ $json.response_content }}\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-chatwoot",
+      "name": "Enviar via Chatwoot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1200, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/{{ $env.EVOLUTION_INSTANCE }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('Webhook Principal').item.json.body.sender_id }}@s.whatsapp.net\",\n  \"text\": \"{{ $json.response_content }}\"\n}",
+        "options": {}
+      },
+      "id": "send-evolution",
+      "name": "Enviar via Evolution",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1200, 450]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "handoff-message",
+              "name": "handoff_message",
+              "type": "string",
+              "value": "🔔 *Novo Escalonamento*\n\nCliente: {{ $('Webhook Principal').item.json.body.sender_name }}\nCanal: {{ $('Webhook Principal').item.json.body.channel }}\nMotivo: {{ $('Processar com Seller Bot').item.json.responses[0].handoff_reason || 'user_request' }}\n\nÚltima mensagem: {{ $('Webhook Principal').item.json.body.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "prepare-handoff",
+      "name": "Preparar Handoff",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [1000, 500]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.CHATWOOT_URL }}/api/v1/accounts/{{ $env.CHATWOOT_ACCOUNT_ID }}/conversations/{{ $('Webhook Principal').item.json.body.conversation_id }}/labels",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $env.CHATWOOT_API_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"labels\": [\"bot-handoff\", \"priority\"]\n}",
+        "options": {}
+      },
+      "id": "label-handoff",
+      "name": "Adicionar Label Handoff",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1200, 550]
+    },
+    {
+      "parameters": {
+        "channel": "#suporte-vendas",
+        "text": "={{ $json.handoff_message }}",
+        "otherOptions": {}
+      },
+      "id": "notify-slack",
+      "name": "Notificar Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [1400, 500],
+      "credentials": {
+        "slackApi": {
+          "id": "slack-credentials",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.DIDIN_API_URL }}/crm/leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.DIDIN_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"{{ $('Webhook Principal').item.json.body.sender_name }}\",\n  \"phone\": \"{{ $('Webhook Principal').item.json.body.sender_id }}\",\n  \"source\": \"chatbot\",\n  \"channel\": \"{{ $('Webhook Principal').item.json.body.channel }}\",\n  \"tags\": [\"bot-lead\"],\n  \"custom_fields\": {\n    \"last_intent\": \"{{ $('Processar com Seller Bot').item.json.responses[0].intent }}\",\n    \"first_message\": \"{{ $('Webhook Principal').item.json.body.content }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "create-lead",
+      "name": "Criar/Atualizar Lead CRM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1400, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.DIDIN_API_URL }}/analytics/event",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.DIDIN_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"event\": \"chatbot_conversation\",\n  \"user_id\": \"{{ $('Webhook Principal').item.json.body.sender_id }}\",\n  \"properties\": {\n    \"channel\": \"{{ $('Webhook Principal').item.json.body.channel }}\",\n    \"intent\": \"{{ $('Processar com Seller Bot').item.json.responses[0].intent }}\",\n    \"had_handoff\": {{ $('Verificar Handoff').item.json.output === 'true' }},\n    \"message_length\": {{ $('Webhook Principal').item.json.body.content.length }}\n  }\n}",
+        "options": {}
+      },
+      "id": "track-analytics",
+      "name": "Trackear Analytics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1600, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"processed\",\n  \"intent\": \"{{ $('Processar com Seller Bot').item.json.responses[0].intent }}\",\n  \"response_sent\": true\n}"
+      },
+      "id": "response-ok",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1800, 400]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "seller-bot/product-alert",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-product-alert",
+      "name": "Webhook Alerta de Produto",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 700],
+      "webhookId": "product-alert-webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "alert-message",
+              "name": "message",
+              "type": "string",
+              "value": "🔔 *Alerta de Preço!*\n\n📦 *{{ $json.body.product_name }}*\n\n💰 Preço anterior: R$ {{ $json.body.old_price }}\n✅ Novo preço: *R$ {{ $json.body.new_price }}*\n📉 Economia: {{ $json.body.discount_percent }}%\n\n🛒 {{ $json.body.store }}\n🔗 {{ $json.body.url }}\n\nCorra antes que acabe!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-alert",
+      "name": "Formatar Alerta",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [400, 700]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/{{ $env.EVOLUTION_INSTANCE }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('Webhook Alerta de Produto').item.json.body.phone }}@s.whatsapp.net\",\n  \"text\": \"{{ $json.message }}\"\n}",
+        "options": {}
+      },
+      "id": "send-alert",
+      "name": "Enviar Alerta WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [600, 700]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "seller-bot/daily-report",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-daily-report",
+      "name": "Webhook Relatório Diário",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 900],
+      "webhookId": "daily-report-webhook"
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.DIDIN_API_URL }}/seller-bot/stats",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.DIDIN_API_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-stats",
+      "name": "Buscar Estatísticas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [400, 900]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "report-message",
+              "name": "report",
+              "type": "string",
+              "value": "📊 *Relatório Diário - Seller Bot*\n\n👥 Total conversas: {{ $json.total_conversations }}\n✅ Ativas: {{ $json.active_conversations }}\n💬 Mensagens hoje: {{ $json.messages_today }}\n🔄 Handoffs: {{ $json.handoffs_today }}\n⚡ Tempo médio: {{ $json.avg_response_time_ms }}ms\n\n📈 *Top Intenções:*\n{{ $json.top_intents.slice(0,5).map((i, idx) => `${idx+1}. ${i.intent}: ${i.count}`).join('\\n') }}\n\n🎯 *Leads:*\n🔥 Hot: {{ $json.lead_distribution.hot }}\n🌡️ Warm: {{ $json.lead_distribution.warm }}\n❄️ Cold: {{ $json.lead_distribution.cold }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-report",
+      "name": "Formatar Relatório",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [600, 900]
+    },
+    {
+      "parameters": {
+        "channel": "#metricas-bot",
+        "text": "={{ $json.report }}",
+        "otherOptions": {}
+      },
+      "id": "send-report-slack",
+      "name": "Enviar Relatório Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [800, 900],
+      "credentials": {
+        "slackApi": {
+          "id": "slack-credentials",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "id": "schedule-report",
+      "name": "Agendar Relatório (18h)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [200, 1100]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.N8N_WEBHOOK_URL }}/webhook/seller-bot/daily-report",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"trigger\": \"scheduled\" }",
+        "options": {}
+      },
+      "id": "trigger-daily-report",
+      "name": "Disparar Relatório",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [400, 1100]
+    }
+  ],
+  "connections": {
+    "Webhook Principal": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Mensagens Válidas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Mensagens Válidas": {
+      "main": [
+        [
+          {
+            "node": "Processar com Seller Bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar com Seller Bot": {
+      "main": [
+        [
+          {
+            "node": "Verificar Handoff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Handoff": {
+      "main": [
+        [
+          {
+            "node": "Formatar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Handoff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Resposta": {
+      "main": [
+        [
+          {
+            "node": "Enviar via Chatwoot",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enviar via Evolution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar via Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Criar/Atualizar Lead CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar via Evolution": {
+      "main": [
+        [
+          {
+            "node": "Criar/Atualizar Lead CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar/Atualizar Lead CRM": {
+      "main": [
+        [
+          {
+            "node": "Trackear Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trackear Analytics": {
+      "main": [
+        [
+          {
+            "node": "Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Handoff": {
+      "main": [
+        [
+          {
+            "node": "Adicionar Label Handoff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adicionar Label Handoff": {
+      "main": [
+        [
+          {
+            "node": "Notificar Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Slack": {
+      "main": [
+        [
+          {
+            "node": "Trackear Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Alerta de Produto": {
+      "main": [
+        [
+          {
+            "node": "Formatar Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Alerta": {
+      "main": [
+        [
+          {
+            "node": "Enviar Alerta WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Relatório Diário": {
+      "main": [
+        [
+          {
+            "node": "Buscar Estatísticas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Estatísticas": {
+      "main": [
+        [
+          {
+            "node": "Formatar Relatório",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Relatório": {
+      "main": [
+        [
+          {
+            "node": "Enviar Relatório Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendar Relatório (18h)": {
+      "main": [
+        [
+          {
+            "node": "Disparar Relatório",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "any",
+    "errorWorkflow": ""
+  },
+  "tags": [
+    {
+      "id": "professional",
+      "name": "Professional"
+    },
+    {
+      "id": "seller-bot",
+      "name": "Seller Bot"
+    },
+    {
+      "id": "multi-channel",
+      "name": "Multi-Channel"
+    }
+  ],
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "didin-facil"
+  }
+}

@@ -1,0 +1,508 @@
+# Licença de Software Proprietário - TikTrend Finder
+
+**CONTRATO DE LICENÇA DE USO DE SOFTWARE**
+
+**LEIA COM ATENÇÃO ANTES DE INSTALAR OU UTILIZAR O SOFTWARE**
+
+---
+
+## PREÂMBULO
+
+Este Contrato de Licença de Uso de Software ("Licença") é um acordo legal entre você ("Licenciado", "Usuário") e **Arkheioncorp** ("Licenciante", "Empresa"), inscrita no CNPJ sob nº [NÚMERO], com sede em [ENDEREÇO], para uso do software **TikTrend Finder** ("Software"), incluindo atualizações, documentação e materiais relacionados.
+
+**AO INSTALAR, COPIAR OU UTILIZAR O SOFTWARE, VOCÊ CONCORDA COM TODOS OS TERMOS DESTA LICENÇA. SE NÃO CONCORDAR, NÃO INSTALE OU USE O SOFTWARE.**
+
+---
+
+## 1. DEFINIÇÕES
+
+1.1. **"Software"**: O aplicativo TikTrend Finder em formato binário, incluindo código executável, bibliotecas, assets, documentação e materiais associados.
+
+1.2. **"Licença Vitalícia"**: Direito de uso perpétuo do Software mediante pagamento único, sujeito aos termos desta Licença.
+
+1.3. **"Créditos"**: Unidades consumíveis que habilitam funcionalidades de inteligência artificial.
+
+1.4. **"Dispositivo Autorizado"**: Computador pessoal do Licenciado onde o Software está instalado e ativado.
+
+1.5. **"Uso Comercial"**: Utilização do Software para atividades que gerem receita direta ou indiretamente.
+
+1.6. **"Código-fonte"**: Instruções de programação legíveis por humanos que compõem o Software.
+
+---
+
+## 2. CONCESSÃO DE LICENÇA
+
+### 2.1 Licença Concedida
+
+Mediante pagamento integral do valor estabelecido, o Licenciante concede ao Licenciado uma licença:
+
+- **Limitada**: Apenas para uso conforme descrito nesta Licença
+- **Não-exclusiva**: Outros usuários podem obter licenças similares
+- **Intransferível**: Não pode ser vendida, doada ou cedida
+- **Revogável**: Por violação desta Licença
+- **Pessoal**: Para uso individual do Licenciado ou sua empresa
+
+### 2.2 Direitos Concedidos
+
+O Licenciado pode:
+
+a) Instalar e usar o Software em até **3 (três)** Dispositivos Autorizados de sua propriedade ou uso pessoal;
+
+b) Fazer **1 (uma)** cópia de backup do Software exclusivamente para fins de arquivamento;
+
+c) Utilizar o Software para fins pessoais e comerciais legítimos;
+
+d) Receber atualizações de manutenção e segurança;
+
+e) Acessar suporte técnico conforme plano contratado.
+
+### 2.3 Ativação e Validação
+
+a) O Software requer ativação online para funcionar;
+
+b) A ativação vincula a licença ao Licenciado e seus dispositivos;
+
+c) Validações periódicas podem ser necessárias;
+
+d) Uso offline é limitado a 30 (trinta) dias consecutivos.
+
+---
+
+## 3. RESTRIÇÕES DE USO
+
+### 3.1 Proibições Expressas
+
+O Licenciado NÃO pode:
+
+**Quanto ao Software:**
+- Copiar, modificar, adaptar ou criar obras derivadas;
+- Fazer engenharia reversa, descompilar ou desmontar;
+- Remover ou alterar avisos de direitos autorais, marcas ou atribuições;
+- Traduzir, portar ou converter para outras plataformas;
+- Combinar com software de código aberto de forma que sujeite o Software a licenças copyleft;
+
+**Quanto à Distribuição:**
+- Sublicenciar, alugar, emprestar ou transferir;
+- Distribuir cópias, legais ou ilegais;
+- Disponibilizar em redes peer-to-peer ou repositórios públicos;
+- Oferecer como serviço (SaaS) a terceiros;
+
+**Quanto ao Uso:**
+- Compartilhar credenciais de acesso;
+- Exceder o número de dispositivos autorizados;
+- Usar para fins ilegais, fraudulentos ou antiéticos;
+- Contornar medidas de proteção técnica ou DRM;
+- Usar em violação a termos de plataformas de terceiros (TikTok, Instagram, etc.);
+
+**Quanto aos Dados:**
+- Extrair sistematicamente dados para criar banco de dados concorrente;
+- Usar web scraping ou automação não autorizada contra nossos servidores;
+- Revender ou comercializar dados obtidos através do Software;
+
+### 3.2 Uso Competitivo
+
+É expressamente proibido usar o Software ou qualquer informação obtida através dele para:
+
+a) Desenvolver, melhorar ou operar software ou serviço concorrente;
+
+b) Realizar benchmarking comparativo para publicação sem autorização;
+
+c) Treinar modelos de inteligência artificial concorrentes;
+
+d) Fornecer consultoria que utilize conhecimento do funcionamento interno do Software.
+
+---
+
+## 4. PROPRIEDADE INTELECTUAL
+
+### 4.1 Titularidade
+
+O Software é protegido por leis de direitos autorais e tratados internacionais. O Licenciante detém todos os direitos, títulos e interesses sobre:
+
+a) Código-fonte, código objeto e código executável;
+
+b) Algoritmos, estruturas de dados e arquitetura;
+
+c) Interface de usuário, design e experiência do usuário;
+
+d) Marcas registradas, logotipos e identidade visual;
+
+e) Documentação, tutoriais e materiais de marketing;
+
+f) Patentes, segredos comerciais e know-how.
+
+### 4.2 Nenhuma Transferência
+
+Esta Licença não transfere propriedade. Você recebe apenas o direito de usar o Software conforme esta Licença.
+
+### 4.3 Marcas Registradas
+
+"TikTrend Finder", "Arkheioncorp", logotipos e marcas relacionadas são marcas registradas ou de serviço do Licenciante. O uso não autorizado é proibido.
+
+### 4.4 Feedback
+
+Qualquer sugestão, ideia ou feedback fornecido:
+- Pode ser usado pelo Licenciante sem compensação;
+- Torna-se propriedade do Licenciante;
+- Não cria obrigação de confidencialidade;
+- Pode ser incorporado ao Software.
+
+---
+
+## 5. ATUALIZAÇÕES E SUPORTE
+
+### 5.1 Atualizações
+
+a) Atualizações de segurança e correções são fornecidas gratuitamente durante a vida útil do Software;
+
+b) Novas versões principais podem requerer pagamento adicional;
+
+c) Atualizações são sujeitas a esta Licença;
+
+d) O Licenciante pode descontinuar atualizações para versões antigas com 12 meses de aviso.
+
+### 5.2 Suporte Técnico
+
+a) Suporte básico por e-mail está incluído;
+
+b) Suporte prioritário pode requerer plano adicional;
+
+c) Suporte não inclui customização, treinamento ou consultoria;
+
+d) O Licenciante pode cobrar por suporte que exceda o escopo normal.
+
+---
+
+## 6. GARANTIAS E ISENÇÕES
+
+### 6.1 Garantia Limitada
+
+O Licenciante garante que:
+
+a) Por 90 (noventa) dias a partir da compra, o Software funcionará substancialmente conforme documentação;
+
+b) O Software não contém malware intencionalmente inserido;
+
+c) O Licenciante tem direito de licenciar o Software.
+
+### 6.2 Recurso Exclusivo
+
+Se o Software não cumprir a garantia acima:
+
+a) O Licenciante tentará corrigir ou substituir o Software; ou
+
+b) Se não for possível, reembolsará o valor pago.
+
+Este é seu único recurso sob esta garantia.
+
+### 6.3 Isenção de Garantias
+
+**EXCETO PELA GARANTIA LIMITADA ACIMA, O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIAS DE QUALQUER TIPO, EXPRESSAS OU IMPLÍCITAS, INCLUINDO:**
+
+- Garantias implícitas de comercialização;
+- Adequação a propósito específico;
+- Não-violação de direitos de terceiros;
+- Operação ininterrupta ou livre de erros;
+- Precisão ou completude dos dados;
+- Segurança contra todas as ameaças;
+- Compatibilidade com todos os sistemas;
+- Resultados específicos de negócio.
+
+### 6.4 Serviços de Terceiros
+
+O Software integra-se com serviços de terceiros (TikTok, Instagram, etc.). O Licenciante não garante:
+
+- Disponibilidade contínua dessas integrações;
+- Que terceiros não alterarão suas APIs;
+- Compatibilidade permanente;
+- Que sua conta em terceiros não será suspensa.
+
+---
+
+## 7. LIMITAÇÃO DE RESPONSABILIDADE
+
+### 7.1 Exclusão de Danos
+
+**EM NENHUMA CIRCUNSTÂNCIA O LICENCIANTE SERÁ RESPONSÁVEL POR:**
+
+a) Danos indiretos, incidentais, especiais, punitivos ou consequentes;
+
+b) Lucros cessantes, perda de receita ou economias esperadas;
+
+c) Perda de dados, interrupção de negócios ou tempo de inatividade;
+
+d) Custos de aquisição de produtos ou serviços substitutos;
+
+e) Danos resultantes de uso ou incapacidade de usar o Software;
+
+f) Danos resultantes de acesso não autorizado ou alteração de dados;
+
+g) Declarações ou conduta de terceiros relacionados ao Software.
+
+### 7.2 Limite Máximo
+
+**A RESPONSABILIDADE TOTAL DO LICENCIANTE, POR QUALQUER CAUSA, SERÁ LIMITADA AO MAIOR VALOR ENTRE:**
+
+a) R$ 100,00 (cem reais); ou
+
+b) O valor efetivamente pago pelo Licenciado nos últimos 12 meses.
+
+### 7.3 Aplicação
+
+As limitações acima se aplicam mesmo se:
+
+- O Licenciante foi avisado da possibilidade dos danos;
+- O recurso não cumprir seu propósito essencial;
+- A causa for negligência, responsabilidade objetiva ou outra.
+
+### 7.4 Exceções
+
+As limitações não se aplicam a:
+
+- Violação de direitos de propriedade intelectual pelo Licenciante;
+- Dolo ou má-fé comprovada;
+- Responsabilidades que não podem ser limitadas por lei.
+
+---
+
+## 8. INDENIZAÇÃO
+
+### 8.1 Pelo Licenciado
+
+O Licenciado concorda em defender, indenizar e isentar o Licenciante, seus diretores, funcionários, agentes e afiliados de qualquer reclamação, dano, custo ou despesa (incluindo honorários advocatícios) resultantes de:
+
+a) Violação desta Licença pelo Licenciado;
+
+b) Uso do Software pelo Licenciado;
+
+c) Violação de direitos de terceiros pelo Licenciado;
+
+d) Conteúdo criado ou distribuído usando o Software;
+
+e) Atividades comerciais do Licenciado usando o Software.
+
+### 8.2 Pelo Licenciante
+
+O Licenciante defenderá o Licenciado contra reclamações de que o Software viola direitos autorais ou patentes válidos no Brasil, desde que:
+
+a) O Licenciado notifique prontamente;
+
+b) O Licenciante tenha controle exclusivo da defesa;
+
+c) O Licenciado coopere razoavelmente.
+
+Se condenado, o Licenciante pode:
+
+- Obter direito de continuar usando o Software;
+- Modificar o Software para eliminar violação;
+- Substituir por software não infrator;
+- Reembolsar proporcionalmente e encerrar a licença.
+
+---
+
+## 9. CONFIDENCIALIDADE
+
+### 9.1 Informações Confidenciais
+
+O Licenciado reconhece que o Software contém informações confidenciais e segredos comerciais do Licenciante, incluindo:
+
+- Algoritmos e métodos de operação;
+- Estrutura interna e arquitetura;
+- Protocolos de comunicação;
+- Chaves e mecanismos de proteção.
+
+### 9.2 Obrigações
+
+O Licenciado concorda em:
+
+a) Manter sigilo sobre informações confidenciais;
+
+b) Não divulgar a terceiros sem autorização;
+
+c) Usar medidas razoáveis de proteção;
+
+d) Limitar acesso a pessoas com necessidade legítima.
+
+### 9.3 Exceções
+
+Não são confidenciais informações que:
+
+- São ou tornam-se públicas sem violação;
+- Eram conhecidas antes de receber do Licenciante;
+- São recebidas de terceiro sem restrição;
+- São desenvolvidas independentemente.
+
+---
+
+## 10. RESCISÃO
+
+### 10.1 Por Violação
+
+Esta Licença será automaticamente rescindida se:
+
+a) O Licenciado violar qualquer termo;
+
+b) O Licenciado declarar falência ou insolvência;
+
+c) O Licenciado usar o Software para fins ilegais;
+
+d) O Licenciado fornecer informações falsas.
+
+### 10.2 Pelo Licenciante
+
+O Licenciante pode rescindir esta Licença:
+
+a) Por violação material não curada em 30 dias após notificação;
+
+b) Por atividade fraudulenta ou ilegal;
+
+c) Por ordem judicial ou administrativa;
+
+d) Por descontinuação do Software (com 12 meses de aviso).
+
+### 10.3 Efeitos da Rescisão
+
+Após rescisão:
+
+a) Todos os direitos do Licenciado cessam imediatamente;
+
+b) O Licenciado deve cessar todo uso do Software;
+
+c) O Licenciado deve destruir todas as cópias em sua posse;
+
+d) Provisões sobre propriedade intelectual, confidencialidade, limitação de responsabilidade e indenização sobrevivem;
+
+e) Valores pagos não serão reembolsados, exceto conforme lei aplicável.
+
+### 10.4 Pelo Licenciado
+
+O Licenciado pode encerrar a qualquer momento destruindo todas as cópias do Software. Nenhum reembolso será devido.
+
+---
+
+## 11. EXPORTAÇÃO
+
+### 11.1 Conformidade
+
+O Licenciado concorda em cumprir todas as leis e regulamentos de exportação aplicáveis, incluindo:
+
+- Leis brasileiras de controle de exportação;
+- Regulamentos dos Estados Unidos (EAR);
+- Sanções internacionais aplicáveis.
+
+### 11.2 Declarações
+
+O Licenciado declara que:
+
+a) Não está em lista de partes restritas;
+
+b) Não exportará para países embargados;
+
+c) Não usará para fins proibidos (armas, etc.).
+
+---
+
+## 12. AUDITORIA
+
+### 12.1 Direito de Auditoria
+
+O Licenciante reserva-se o direito de:
+
+a) Verificar conformidade com esta Licença;
+
+b) Auditar uso do Software mediante aviso razoável;
+
+c) Usar medidas técnicas para verificar licenciamento.
+
+### 12.2 Cooperação
+
+O Licenciado concorda em:
+
+a) Manter registros de instalação por 3 anos;
+
+b) Cooperar razoavelmente com auditorias;
+
+c) Pagar custos de auditoria se violação for descoberta.
+
+---
+
+## 13. DISPOSIÇÕES GERAIS
+
+### 13.1 Lei Aplicável
+
+Esta Licença é regida pelas leis da República Federativa do Brasil, sem referência a conflitos de leis.
+
+### 13.2 Foro
+
+Fica eleito o foro da Comarca de São Paulo/SP para dirimir quaisquer controvérsias, renunciando as partes a qualquer outro por mais privilegiado que seja.
+
+### 13.3 Acordo Integral
+
+Esta Licença constitui o acordo integral entre as partes e substitui todos os acordos anteriores, orais ou escritos.
+
+### 13.4 Alterações
+
+Esta Licença só pode ser alterada por:
+
+a) Documento escrito assinado pelo Licenciante;
+
+b) Atualização publicada pelo Licenciante que você aceite.
+
+### 13.5 Divisibilidade
+
+Se qualquer disposição for inválida, as demais permanecem em vigor.
+
+### 13.6 Renúncia
+
+A não aplicação de qualquer direito não constitui renúncia.
+
+### 13.7 Cessão
+
+- O Licenciado não pode ceder esta Licença sem consentimento;
+- O Licenciante pode ceder a afiliadas ou em caso de fusão/aquisição;
+- Tentativas de cessão não autorizada são nulas.
+
+### 13.8 Força Maior
+
+Nenhuma parte será responsável por falhas causadas por eventos fora de seu controle razoável.
+
+### 13.9 Idioma
+
+Em caso de conflito entre versões, a versão em português prevalece.
+
+### 13.10 Notificações
+
+Notificações devem ser enviadas:
+
+- **Ao Licenciante:** legal@arkheioncorp.com
+- **Ao Licenciado:** E-mail cadastrado na conta
+
+---
+
+## 14. CONTATO
+
+Para questões sobre esta Licença:
+
+**Arkheioncorp**
+- **E-mail:** legal@arkheioncorp.com
+- **Suporte:** suporte@arkheioncorp.com
+- **Website:** https://arkheioncorp.com
+
+---
+
+## DECLARAÇÃO DE ACEITAÇÃO
+
+**AO CLICAR EM "ACEITO", INSTALAR OU USAR O SOFTWARE, VOCÊ DECLARA QUE:**
+
+1. Leu e compreendeu esta Licença;
+2. Concorda em ficar vinculado a todos os seus termos;
+3. Tem autoridade para celebrar este contrato;
+4. Este contrato é executável contra você.
+
+**SE VOCÊ NÃO CONCORDAR, CLIQUE EM "NÃO ACEITO" E NÃO INSTALE OU USE O SOFTWARE.**
+
+---
+
+*Copyright © 2025 Arkheioncorp. Todos os direitos reservados.*
+
+*TikTrend Finder é marca registrada de Arkheioncorp.*

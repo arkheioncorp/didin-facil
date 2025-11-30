@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, InfoTooltip, SettingLabel, HelpSection } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import {
   ChartIcon,
   StarIcon
 } from "@/components/icons";
+import { HelpCircle, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { useUserStore } from "@/stores";
 import type {
   AppSettings,
@@ -21,8 +22,26 @@ import type {
   CopyType,
   CopyTone
 } from "@/types";
-import { invoke } from "@tauri-apps/api/core";
 import { whatsappService, youtubeService, tiktokService } from "@/services";
+
+// Check if running in Tauri
+const isTauri = (): boolean => {
+  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+};
+
+// Safe invoke wrapper
+const safeInvoke = async <T,>(cmd: string, args?: Record<string, unknown>): Promise<T | null> => {
+  if (isTauri()) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<T>(cmd, args);
+  }
+  // Browser fallback - use localStorage
+  if (cmd === "save_settings" && args?.settings) {
+    localStorage.setItem("app_settings", JSON.stringify(args.settings));
+    return null;
+  }
+  return null;
+};
 import { SUPPORTED_LANGUAGES, changeLanguage, type SupportedLanguage } from "@/lib/i18n";
 
 // =============================================================================
@@ -226,7 +245,7 @@ export const Settings: React.FC = () => {
         system: systemConfig,
       };
 
-      await invoke("save_settings", { settings: fullSettings });
+      await safeInvoke("save_settings", { settings: fullSettings });
 
       // Simular delay
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -308,42 +327,61 @@ export const Settings: React.FC = () => {
   const renderIntegrationsSettings = () => (
     <div className="grid gap-6 lg:grid-cols-2">
       {/* WhatsApp */}
-      <Card>
+      <Card className={`border-l-4 ${whatsappStatus === "connected" ? "border-l-green-500" : "border-l-gray-300"}`}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <span className="text-green-500">📱</span> WhatsApp
-            {whatsappStatus === "connected" && <Badge variant="tiktrend" className="ml-2">Conectado</Badge>}
-            {whatsappStatus === "disconnected" && <Badge variant="outline" className="ml-2">Desconectado</Badge>}
+            <span className="text-green-500">📱</span> {tFunc("settings.integrations.whatsapp.title")}
+            {whatsappStatus === "connected" && (
+              <Badge variant="tiktrend" className="ml-2">
+                <CheckCircle2 className="h-3 w-3 mr-1" /> {tFunc("settings.integrations.whatsapp.status.connected")}
+              </Badge>
+            )}
+            {whatsappStatus === "disconnected" && (
+              <Badge variant="outline" className="ml-2">
+                <XCircle className="h-3 w-3 mr-1" /> {tFunc("settings.integrations.whatsapp.status.disconnected")}
+              </Badge>
+            )}
+            {whatsappStatus === "connecting" && (
+              <Badge variant="secondary" className="ml-2 animate-pulse">
+                {tFunc("settings.integrations.whatsapp.status.connecting")}
+              </Badge>
+            )}
           </CardTitle>
           <CardDescription>
-            Conecte seu WhatsApp para enviar notificações e mensagens
+            {tFunc("settings.integrations.whatsapp.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {whatsappStatus === "disconnected" && !whatsappQr && (
             <Button onClick={handleConnectWhatsapp} className="w-full bg-green-600 hover:bg-green-700">
-              Conectar WhatsApp
+              <CheckCircle2 className="h-4 w-4 mr-2" /> {tFunc("settings.integrations.whatsapp.connect")}
             </Button>
           )}
 
           {whatsappStatus === "connecting" && whatsappQr && (
-            <div className="flex flex-col items-center gap-4 p-4 border rounded-lg bg-white">
-              <div className="w-48 h-48 bg-white flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4 p-4 border-2 border-dashed border-green-200 rounded-lg bg-green-50/50 dark:bg-green-950/20">
+              <div className="w-48 h-48 bg-white rounded-lg shadow-lg flex items-center justify-center p-2">
                 <img src={`data:image/png;base64,${whatsappQr}`} alt="WhatsApp QR Code" className="w-full h-full object-contain" />
               </div>
-              <p className="text-sm text-center text-gray-600">
-                Abra o WhatsApp no seu celular &gt; Menu &gt; Aparelhos conectados &gt; Conectar aparelho
-              </p>
+              <div className="text-center">
+                <p className="text-sm font-medium text-foreground mb-1">📱 Escaneie o QR Code</p>
+                <p className="text-xs text-muted-foreground">
+                  {tFunc("settings.integrations.whatsapp.scan_qr")}
+                </p>
+              </div>
             </div>
           )}
 
           {whatsappStatus === "connected" && (
             <div className="space-y-4">
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
-                <p className="font-medium">✅ Conectado como: (11) 99999-9999</p>
+              <div className="p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-lg">
+                <p className="font-medium text-green-800 dark:text-green-200 flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5" />
+                  {tFunc("settings.integrations.whatsapp.connected_as")}: (11) 99999-9999
+                </p>
               </div>
               <Button variant="destructive" onClick={handleDisconnectWhatsapp} className="w-full">
-                Desconectar
+                <XCircle className="h-4 w-4 mr-2" /> {tFunc("settings.integrations.whatsapp.disconnect")}
               </Button>
             </div>
           )}
@@ -351,126 +389,165 @@ export const Settings: React.FC = () => {
       </Card>
 
       {/* YouTube */}
-      <Card>
+      <Card className={`border-l-4 ${youtubeAccounts.length > 0 ? "border-l-red-500" : "border-l-gray-300"}`}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <span className="text-red-500">▶️</span> YouTube
+            <span className="text-red-500">▶️</span> {tFunc("settings.integrations.youtube.title")}
+            {youtubeAccounts.length > 0 && (
+              <Badge variant="outline" className="ml-2 border-red-200 text-red-600">
+                {youtubeAccounts.length} conta(s)
+              </Badge>
+            )}
           </CardTitle>
           <CardDescription>
-            Gerencie suas contas do YouTube para upload de vídeos
+            {tFunc("settings.integrations.youtube.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             {youtubeAccounts.length === 0 ? (
-              <p className="text-sm text-muted-foreground italic">Nenhuma conta conectada</p>
+              <div className="p-4 text-center bg-muted/30 rounded-lg border border-dashed">
+                <p className="text-sm text-muted-foreground italic">{tFunc("settings.integrations.youtube.no_accounts")}</p>
+              </div>
             ) : (
               youtubeAccounts.map(acc => (
-                <div key={acc} className="flex items-center justify-between p-2 border rounded">
-                  <span className="font-medium">{acc}</span>
-                  <Button variant="ghost" size="sm" className="text-red-500">Remover</Button>
+                <div key={acc} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                      <span className="text-red-600 dark:text-red-400 text-sm">▶️</span>
+                    </div>
+                    <span className="font-medium">{acc}</span>
+                  </div>
+                  <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-100">
+                    {tFunc("settings.integrations.youtube.remove")}
+                  </Button>
                 </div>
               ))
             )}
           </div>
-          <Button variant="outline" className="w-full border-red-200 text-red-600 hover:bg-red-50">
-            + Adicionar Conta YouTube
+          <Button variant="outline" className="w-full border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30">
+            + {tFunc("settings.integrations.youtube.add_account")}
           </Button>
         </CardContent>
       </Card>
 
       {/* Instagram */}
-      <Card>
+      <Card className="border-l-4 border-l-pink-500/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <span className="text-pink-500">📸</span> Instagram
+            <span className="text-pink-500">📸</span> {tFunc("settings.integrations.instagram.title")}
           </CardTitle>
           <CardDescription>
-            Conecte sua conta para upload de fotos e reels
+            {tFunc("settings.integrations.instagram.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground italic">Configure via WhatsApp &gt; Instagram</p>
+          <div className="p-4 bg-muted/30 rounded-lg border border-dashed">
+            <p className="text-sm text-muted-foreground italic flex items-center gap-2">
+              <HelpCircle className="h-4 w-4" />
+              {tFunc("settings.integrations.instagram.via_whatsapp")}
+            </p>
           </div>
           <Button 
             variant="outline" 
-            className="w-full border-pink-200 text-pink-600 hover:bg-pink-50"
+            className="w-full border-pink-200 text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-950/30"
             onClick={() => window.location.href = '/social/instagram'}
           >
-            Gerenciar Instagram
+            📸 {tFunc("settings.integrations.instagram.manage")}
           </Button>
         </CardContent>
       </Card>
 
       {/* TikTok */}
-      <Card>
+      <Card className={`border-l-4 ${tiktokAccounts.length > 0 ? "border-l-black" : "border-l-gray-300"}`}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <span className="text-black">🎵</span> TikTok
+            <span>🎵</span> {tFunc("settings.integrations.tiktok.title")}
+            {tiktokAccounts.length > 0 && (
+              <Badge variant="outline" className="ml-2">
+                {tiktokAccounts.length} sessão(ões)
+              </Badge>
+            )}
           </CardTitle>
           <CardDescription>
-            Gerencie suas sessões do TikTok para upload
+            {tFunc("settings.integrations.tiktok.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             {tiktokAccounts.length === 0 ? (
-              <p className="text-sm text-muted-foreground italic">Nenhuma conta conectada</p>
+              <div className="p-4 text-center bg-muted/30 rounded-lg border border-dashed">
+                <p className="text-sm text-muted-foreground italic">{tFunc("settings.integrations.tiktok.no_accounts")}</p>
+              </div>
             ) : (
               tiktokAccounts.map(acc => (
-                <div key={acc} className="flex items-center justify-between p-2 border rounded">
-                  <span className="font-medium">{acc}</span>
-                  <Button variant="ghost" size="sm" className="text-red-500">Remover</Button>
+                <div key={acc} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                      <span className="text-sm">🎵</span>
+                    </div>
+                    <span className="font-medium">{acc}</span>
+                  </div>
+                  <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-100">
+                    {tFunc("settings.integrations.tiktok.remove")}
+                  </Button>
                 </div>
               ))
             )}
           </div>
           <Button 
             variant="outline" 
-            className="w-full border-black text-black hover:bg-gray-50"
+            className="w-full"
             onClick={() => window.location.href = '/social/tiktok'}
           >
-            + Adicionar Conta TikTok (Cookies)
+            + {tFunc("settings.integrations.tiktok.add_account")}
           </Button>
         </CardContent>
       </Card>
 
       {/* API Configuration */}
-      <Card className="lg:col-span-2">
+      <Card className="lg:col-span-2 border-l-4 border-l-cyan-500/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <span>⚙️</span> Configurações de API
+            <span>⚙️</span> {tFunc("settings.integrations.api_config.title")}
           </CardTitle>
           <CardDescription>
-            Configure as chaves de API para integrações externas
+            {tFunc("settings.integrations.api_config.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Evolution API URL</label>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <SettingLabel
+                label={tFunc("settings.integrations.api_config.evolution_url.label")}
+                description={tFunc("settings.integrations.api_config.evolution_url.description")}
+              />
               <Input 
-                placeholder="http://localhost:8082" 
+                placeholder={tFunc("settings.integrations.api_config.evolution_url.placeholder")}
                 value={systemConfig.evolutionApiUrl || ''}
                 onChange={(e) => setSystemConfig({...systemConfig, evolutionApiUrl: e.target.value})}
+                className="font-mono"
               />
-              <p className="text-xs text-muted-foreground">URL da API Evolution para WhatsApp</p>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Evolution API Key</label>
+            <div className="space-y-3">
+              <SettingLabel
+                label={tFunc("settings.integrations.api_config.evolution_key.label")}
+                description={tFunc("settings.integrations.api_config.evolution_key.description")}
+              />
               <Input 
                 type="password"
-                placeholder="Sua chave de API" 
+                placeholder={tFunc("settings.integrations.api_config.evolution_key.placeholder")}
                 value={systemConfig.evolutionApiKey || ''}
                 onChange={(e) => setSystemConfig({...systemConfig, evolutionApiKey: e.target.value})}
+                className="font-mono"
               />
-              <p className="text-xs text-muted-foreground">Chave de autenticação da Evolution API</p>
             </div>
           </div>
-          <Button onClick={handleSave} disabled={isSaving} className="mt-4">
-            {isSaving ? "Salvando..." : "Salvar Configurações"}
-          </Button>
+          <div className="pt-4 border-t mt-4">
+            <Button onClick={handleSave} disabled={isSaving} className="bg-tiktrend-primary hover:bg-tiktrend-primary/90">
+              {isSaving ? tFunc("settings.saving") : tFunc("settings.save_button")}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -479,23 +556,28 @@ export const Settings: React.FC = () => {
   const renderGeneralSettings = () => (
     <div className="grid gap-6 lg:grid-cols-2">
       {/* Aparência */}
-      <Card>
+      <Card className="border-l-4 border-l-tiktrend-primary/50">
         <CardHeader>
-          <CardTitle>{tFunc("settings.appearance.title")}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            🎨 {tFunc("settings.appearance.title")}
+          </CardTitle>
           <CardDescription>
-            {tFunc("settings.appearance.theme")}
+            {tFunc("settings.appearance.description")}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{tFunc("settings.appearance.theme")}</label>
-            <div className="flex gap-2">
+        <CardContent className="space-y-5">
+          <div className="space-y-3">
+            <SettingLabel
+              label={tFunc("settings.appearance.theme")}
+              tooltip={tFunc("settings.appearance.theme_tooltip")}
+            />
+            <div className="flex gap-2 flex-wrap">
               {(["light", "dark", "system"] as const).map((themeOption) => (
                 <Button
                   key={themeOption}
                   variant={theme === themeOption ? "default" : "outline"}
                   onClick={() => handleThemeChange(themeOption)}
-                  className={theme === themeOption ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
+                  className={`transition-all ${theme === themeOption ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90 ring-2 ring-tiktrend-primary/30" : "hover:border-tiktrend-primary/50"}`}
                 >
                   {themeOption === "light" ? `☀️ ${tFunc("settings.appearance.themes.light")}` : themeOption === "dark" ? `🌙 ${tFunc("settings.appearance.themes.dark")}` : `💻 ${tFunc("settings.appearance.themes.system")}`}
                 </Button>
@@ -503,8 +585,11 @@ export const Settings: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{tFunc("settings.appearance.language")}</label>
+          <div className="space-y-3">
+            <SettingLabel
+              label={tFunc("settings.appearance.language")}
+              tooltip={tFunc("settings.appearance.language_tooltip")}
+            />
             <div className="flex gap-2 flex-wrap">
               {SUPPORTED_LANGUAGES.map((lang) => (
                 <Button
@@ -512,7 +597,7 @@ export const Settings: React.FC = () => {
                   variant={settings.language === lang.code ? "default" : "outline"}
                   size="sm"
                   onClick={() => handleLanguageChange(lang.code)}
-                  className={settings.language === lang.code ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
+                  className={`transition-all ${settings.language === lang.code ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90 ring-2 ring-tiktrend-primary/30" : "hover:border-tiktrend-primary/50"}`}
                 >
                   {lang.flag} {lang.name}
                 </Button>
@@ -523,19 +608,24 @@ export const Settings: React.FC = () => {
       </Card>
 
       {/* Notificações */}
-      <Card>
+      <Card className="border-l-4 border-l-blue-500/50">
         <CardHeader>
-          <CardTitle>Notificações</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            🔔 {tFunc("settings.notifications.title")}
+          </CardTitle>
           <CardDescription>
-            Configure alertas e notificações
+            {tFunc("settings.notifications.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Notificações Desktop</div>
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors">
+            <div className="flex-1">
+              <div className="font-medium flex items-center gap-2">
+                {tFunc("settings.notifications.desktop.title")}
+                <InfoTooltip content={tFunc("settings.notifications.desktop.tooltip")} />
+              </div>
               <div className="text-sm text-muted-foreground">
-                Receber alertas de novos produtos em tendência
+                {tFunc("settings.notifications.desktop.description")}
               </div>
             </div>
             <Button
@@ -544,16 +634,20 @@ export const Settings: React.FC = () => {
               onClick={() =>
                 setSettings((prev) => ({ ...prev, notificationsEnabled: !prev.notificationsEnabled }))
               }
+              className={settings.notificationsEnabled ? "bg-green-600 hover:bg-green-700" : ""}
             >
-              {settings.notificationsEnabled ? "Ativado" : "Desativado"}
+              {settings.notificationsEnabled ? <><CheckCircle2 className="h-4 w-4 mr-1" /> Ativado</> : <><XCircle className="h-4 w-4 mr-1" /> Desativado</>}
             </Button>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Cache de imagens</div>
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors">
+            <div className="flex-1">
+              <div className="font-medium flex items-center gap-2">
+                {tFunc("settings.notifications.cache_images.title")}
+                <InfoTooltip content={tFunc("settings.notifications.cache_images.tooltip")} />
+              </div>
               <div className="text-sm text-muted-foreground">
-                Salvar imagens localmente para carregamento rápido
+                {tFunc("settings.notifications.cache_images.description")}
               </div>
             </div>
             <Button
@@ -562,24 +656,31 @@ export const Settings: React.FC = () => {
               onClick={() =>
                 setSettings((prev) => ({ ...prev, cacheImages: !prev.cacheImages }))
               }
+              className={settings.cacheImages ? "bg-green-600 hover:bg-green-700" : ""}
             >
-              {settings.cacheImages ? "Ativado" : "Desativado"}
+              {settings.cacheImages ? <><CheckCircle2 className="h-4 w-4 mr-1" /> Ativado</> : <><XCircle className="h-4 w-4 mr-1" /> Desativado</>}
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Busca */}
-      <Card>
+      <Card className="border-l-4 border-l-purple-500/50">
         <CardHeader>
-          <CardTitle>Busca</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            🔍 {tFunc("settings.search.title")}
+          </CardTitle>
           <CardDescription>
-            Configure os parâmetros de busca padrão
+            {tFunc("settings.search.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Produtos por busca</label>
+            <SettingLabel
+              label={tFunc("settings.search.products_per_search.label")}
+              description={tFunc("settings.search.products_per_search.description")}
+              tooltip={tFunc("settings.search.products_per_search.tooltip")}
+            />
             <Input
               type="number"
               value={settings.maxProductsPerSearch}
@@ -591,101 +692,140 @@ export const Settings: React.FC = () => {
               }
               min={10}
               max={100}
+              className="max-w-[120px]"
             />
-            <p className="text-xs text-muted-foreground">
-              Máximo de produtos retornados por busca (10-100)
-            </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Tutorial */}
-      <Card>
+      <Card className="border-l-4 border-l-amber-500/50">
         <CardHeader>
-          <CardTitle>Tutorial & Setup</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            📚 {tFunc("settings.tutorial.title")}
+          </CardTitle>
           <CardDescription>
-            Reveja o tutorial interativo ou reconfigure a plataforma
+            {tFunc("settings.tutorial.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
+              className="border-tiktrend-primary/50 hover:bg-tiktrend-primary/10"
               onClick={() => {
                 localStorage.removeItem('tutorial_completed');
                 window.dispatchEvent(new Event('restart_tutorial'));
               }}
             >
-              🔄 Reiniciar Tutorial
+              🔄 {tFunc("settings.tutorial.restart_tutorial")}
             </Button>
             <Button
               variant="outline"
-              className="text-destructive hover:text-destructive"
+              className="text-destructive border-destructive/50 hover:bg-destructive/10"
               onClick={async () => {
-                if (confirm('Isso vai resetar todas as configurações iniciais e reabrir o assistente de configuração. Deseja continuar?')) {
+                if (confirm(tFunc("settings.tutorial.reset_setup_warning"))) {
                   const { resetSetup } = await import('@/services/settings');
                   await resetSetup();
                   window.location.href = '/setup';
                 }
               }}
             >
-              ⚙️ Refazer Setup Inicial
+              ⚙️ {tFunc("settings.tutorial.reset_setup")}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Use "Refazer Setup" apenas se precisar reconfigurar a licença ou termos.
-          </p>
+          <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg">
+            <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-amber-700 dark:text-amber-300">
+              {tFunc("settings.tutorial.reset_setup_description")}
+            </p>
+          </div>
         </CardContent>
       </Card>
 
       {/* Copy Settings */}
-      <Card>
+      <Card className="border-l-4 border-l-green-500/50 lg:col-span-2">
         <CardHeader>
-          <CardTitle>Geração de Copy</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            ✍️ {tFunc("settings.copy_generation.title")}
+          </CardTitle>
           <CardDescription>
-            Configure padrões para geração de copies
+            {tFunc("settings.copy_generation.description")}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Tipo padrão</label>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { value: "tiktok_hook", label: "🎬 TikTok Hook" },
-                { value: "product_description", label: "📝 Descrição" },
-                { value: "carousel", label: "📱 Carrossel" },
-              ].map((type) => (
-                <Button
-                  key={type.value}
-                  variant={settings.defaultCopyType === type.value ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSettings((prev) => ({ ...prev, defaultCopyType: type.value as CopyType }))}
-                >
-                  {type.label}
-                </Button>
-              ))}
+        <CardContent className="space-y-5">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <SettingLabel
+                label={tFunc("settings.copy_generation.default_type")}
+                tooltip={tFunc("settings.copy_generation.default_type_tooltip")}
+              />
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { value: "tiktok_hook", label: `🎬 ${tFunc("settings.copy_generation.types.tiktok_hook")}` },
+                  { value: "product_description", label: `📝 ${tFunc("settings.copy_generation.types.product_description")}` },
+                  { value: "carousel", label: `📱 ${tFunc("settings.copy_generation.types.carousel")}` },
+                ].map((type) => (
+                  <Button
+                    key={type.value}
+                    variant={settings.defaultCopyType === type.value ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSettings((prev) => ({ ...prev, defaultCopyType: type.value as CopyType }))}
+                    className={settings.defaultCopyType === type.value ? "ring-2 ring-tiktrend-primary/30" : ""}
+                  >
+                    {type.label}
+                  </Button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Tom padrão</label>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { value: "urgent", label: "🔥 Urgente" },
-                { value: "professional", label: "💼 Profissional" },
-                { value: "fun", label: "🎉 Divertido" },
-              ].map((tone) => (
-                <Button
-                  key={tone.value}
-                  variant={settings.defaultCopyTone === tone.value ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSettings((prev) => ({ ...prev, defaultCopyTone: tone.value as CopyTone }))}
-                >
-                  {tone.label}
-                </Button>
-              ))}
+            <div className="space-y-3">
+              <SettingLabel
+                label={tFunc("settings.copy_generation.default_tone")}
+                tooltip={tFunc("settings.copy_generation.default_tone_tooltip")}
+              />
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { value: "urgent", label: `🔥 ${tFunc("settings.copy_generation.tones.urgent")}` },
+                  { value: "professional", label: `💼 ${tFunc("settings.copy_generation.tones.professional")}` },
+                  { value: "fun", label: `🎉 ${tFunc("settings.copy_generation.tones.fun")}` },
+                ].map((tone) => (
+                  <Button
+                    key={tone.value}
+                    variant={settings.defaultCopyTone === tone.value ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSettings((prev) => ({ ...prev, defaultCopyTone: tone.value as CopyTone }))}
+                    className={settings.defaultCopyTone === tone.value ? "ring-2 ring-tiktrend-primary/30" : ""}
+                  >
+                    {tone.label}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Seção de Ajuda */}
+      <Card className="lg:col-span-2 bg-muted/30">
+        <CardContent className="pt-6">
+          <HelpSection
+            title={tFunc("settings.help.title")}
+            items={[
+              {
+                question: tFunc("settings.help.faq.proxy_q"),
+                answer: tFunc("settings.help.faq.proxy_a"),
+              },
+              {
+                question: tFunc("settings.help.faq.openai_q"),
+                answer: tFunc("settings.help.faq.openai_a"),
+              },
+              {
+                question: tFunc("settings.help.faq.license_q"),
+                answer: tFunc("settings.help.faq.license_a"),
+              },
+            ]}
+          />
         </CardContent>
       </Card>
     </div>
@@ -694,40 +834,44 @@ export const Settings: React.FC = () => {
   const renderCredentialsSettings = () => (
     <div className="grid gap-6 lg:grid-cols-2">
       {/* OpenAI API */}
-      <Card>
+      <Card className="border-l-4 border-l-emerald-500/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🤖 API OpenAI
-            <Badge variant="outline" className="ml-2">Opcional</Badge>
+            🤖 {tFunc("settings.credentials.openai.title")}
+            <Badge variant="outline" className="ml-2 text-xs">{tFunc("settings.credentials.openai.badge")}</Badge>
           </CardTitle>
           <CardDescription>
-            Configure a integração com OpenAI para geração de copies com IA
+            {tFunc("settings.credentials.openai.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Chave API</label>
+            <SettingLabel label={tFunc("settings.credentials.openai.api_key")} />
             <Input
               type="password"
-              placeholder="sk-..."
+              placeholder={tFunc("settings.credentials.openai.api_key_placeholder")}
               value={credentials.openaiKey}
               onChange={(e) => setCredentials(prev => ({ ...prev, openaiKey: e.target.value }))}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground">
-              Sua chave é armazenada localmente de forma criptografada
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              🔒 {tFunc("settings.credentials.openai.api_key_secure")}
             </p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Modelo</label>
-            <div className="flex gap-2">
+            <SettingLabel
+              label={tFunc("settings.credentials.openai.model")}
+              tooltip={tFunc("settings.credentials.openai.model_tooltip")}
+            />
+            <div className="flex gap-2 flex-wrap">
               {["gpt-4o", "gpt-4", "gpt-3.5-turbo"].map((model) => (
                 <Button
                   key={model}
                   variant={settings.openaiModel === model ? "default" : "outline"}
                   size="sm"
                   onClick={() => setSettings((prev) => ({ ...prev, openaiModel: model }))}
+                  className={`font-mono text-xs ${settings.openaiModel === model ? "ring-2 ring-tiktrend-primary/30" : ""}`}
                 >
                   {model}
                 </Button>
@@ -735,32 +879,35 @@ export const Settings: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-2 border-t">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>💡</span>
-              <span>A geração de copies por IA é um recurso adicional. O app funciona 100% sem ela.</span>
+          <div className="pt-3 border-t">
+            <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg">
+              <HelpCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <span className="text-xs text-blue-700 dark:text-blue-300">{tFunc("settings.credentials.openai.info")}</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Proxies */}
-      <Card>
+      <Card className="border-l-4 border-l-orange-500/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🌐 Proxies
-            <Badge variant="outline" className="ml-2">Avançado</Badge>
+            🌐 {tFunc("settings.credentials.proxy.title")}
+            <Badge variant="outline" className="ml-2 text-xs">{tFunc("settings.credentials.proxy.badge")}</Badge>
           </CardTitle>
           <CardDescription>
-            Configure proxies para coleta de dados (recomendado para uso intensivo)
+            {tFunc("settings.credentials.proxy.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Usar Proxies</div>
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="flex-1">
+              <div className="font-medium flex items-center gap-2">
+                {tFunc("settings.credentials.proxy.enable")}
+                <InfoTooltip content={tFunc("settings.credentials.proxy.enable_tooltip")} />
+              </div>
               <div className="text-sm text-muted-foreground">
-                Rotacionar IPs durante a coleta
+                {tFunc("settings.credentials.proxy.enable_description")}
               </div>
             </div>
             <Button
@@ -769,17 +916,18 @@ export const Settings: React.FC = () => {
               onClick={() =>
                 setSettings((prev) => ({ ...prev, proxyEnabled: !prev.proxyEnabled }))
               }
+              className={settings.proxyEnabled ? "bg-green-600 hover:bg-green-700" : ""}
             >
-              {settings.proxyEnabled ? "Ativado" : "Desativado"}
+              {settings.proxyEnabled ? <><CheckCircle2 className="h-4 w-4 mr-1" /> Ativado</> : "Desativado"}
             </Button>
           </div>
 
           {settings.proxyEnabled && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Lista de Proxies</label>
+            <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+              <label className="text-sm font-medium">{tFunc("settings.credentials.proxy.list")}</label>
               <textarea
                 className="w-full h-32 rounded-md border border-input bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                placeholder="Formato: ip:porta:usuario:senha (um por linha)&#10;&#10;Exemplo:&#10;192.168.1.1:8080:user:pass&#10;proxy.example.com:3128"
+                placeholder={tFunc("settings.credentials.proxy.list_placeholder")}
                 value={credentials.proxies.join("\n")}
                 onChange={(e) => setCredentials(prev => ({
                   ...prev,
@@ -787,7 +935,7 @@ export const Settings: React.FC = () => {
                 }))}
               />
               <p className="text-xs text-muted-foreground">
-                {credentials.proxies.length} proxy(ies) configurado(s)
+                {tFunc("settings.credentials.proxy.count", { count: credentials.proxies.length })}
               </p>
             </div>
           )}
@@ -799,16 +947,21 @@ export const Settings: React.FC = () => {
   const renderScraperSettings = () => (
     <div className="grid gap-6 lg:grid-cols-2">
       {/* Coleta */}
-      <Card>
+      <Card className="border-l-4 border-l-cyan-500/50">
         <CardHeader>
-          <CardTitle>⚙️ Configurações de Coleta</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            ⚙️ {tFunc("settings.scraper.collection.title")}
+          </CardTitle>
           <CardDescription>
-            Configure como o scraper coleta produtos do TikTok Shop
+            {tFunc("settings.scraper.collection.description")}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Máximo de produtos por coleta</label>
+            <SettingLabel
+              label={tFunc("settings.scraper.collection.max_products.label")}
+              tooltip={tFunc("settings.scraper.collection.max_products.tooltip")}
+            />
             <Input
               type="number"
               value={scraperConfig.maxProducts}
@@ -818,11 +971,16 @@ export const Settings: React.FC = () => {
               }))}
               min={10}
               max={200}
+              className="max-w-[120px]"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Intervalo entre coletas (minutos)</label>
+            <SettingLabel
+              label={tFunc("settings.scraper.collection.interval.label")}
+              description={tFunc("settings.scraper.collection.interval.description")}
+              tooltip={tFunc("settings.scraper.collection.interval.tooltip")}
+            />
             <Input
               type="number"
               value={scraperConfig.intervalMinutes}
@@ -832,14 +990,15 @@ export const Settings: React.FC = () => {
               }))}
               min={15}
               max={1440}
+              className="max-w-[120px]"
             />
-            <p className="text-xs text-muted-foreground">
-              Mínimo: 15 minutos. Recomendado: 60 minutos.
-            </p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Timeout (segundos)</label>
+            <SettingLabel
+              label={tFunc("settings.scraper.collection.timeout.label")}
+              tooltip={tFunc("settings.scraper.collection.timeout.tooltip")}
+            />
             <Input
               type="number"
               value={scraperConfig.timeout / 1000}
@@ -849,25 +1008,31 @@ export const Settings: React.FC = () => {
               }))}
               min={10}
               max={120}
+              className="max-w-[120px]"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Modo */}
-      <Card>
+      <Card className="border-l-4 border-l-indigo-500/50">
         <CardHeader>
-          <CardTitle>🖥️ Modo de Execução</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            🖥️ {tFunc("settings.scraper.execution.title")}
+          </CardTitle>
           <CardDescription>
-            Configure como o navegador é executado durante a coleta
+            {tFunc("settings.scraper.execution.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Modo Headless</div>
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="flex-1">
+              <div className="font-medium flex items-center gap-2">
+                {tFunc("settings.scraper.execution.headless.title")}
+                <InfoTooltip content={tFunc("settings.scraper.execution.headless.tooltip")} />
+              </div>
               <div className="text-sm text-muted-foreground">
-                Executar navegador sem interface gráfica
+                {tFunc("settings.scraper.execution.headless.description")}
               </div>
             </div>
             <Button
@@ -876,16 +1041,20 @@ export const Settings: React.FC = () => {
               onClick={() =>
                 setScraperConfig((prev) => ({ ...prev, headless: !prev.headless }))
               }
+              className={scraperConfig.headless ? "bg-green-600 hover:bg-green-700" : ""}
             >
-              {scraperConfig.headless ? "Ativado" : "Desativado"}
+              {scraperConfig.headless ? <><CheckCircle2 className="h-4 w-4 mr-1" /> Ativado</> : "Desativado"}
             </Button>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Usar Proxy no Scraper</div>
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="flex-1">
+              <div className="font-medium flex items-center gap-2">
+                {tFunc("settings.scraper.execution.use_proxy.title")}
+                <InfoTooltip content={tFunc("settings.scraper.execution.use_proxy.tooltip")} />
+              </div>
               <div className="text-sm text-muted-foreground">
-                Aplicar proxies configurados na coleta
+                {tFunc("settings.scraper.execution.use_proxy.description")}
               </div>
             </div>
             <Button
@@ -894,73 +1063,90 @@ export const Settings: React.FC = () => {
               onClick={() =>
                 setScraperConfig((prev) => ({ ...prev, useProxy: !prev.useProxy }))
               }
+              className={scraperConfig.useProxy ? "bg-green-600 hover:bg-green-700" : ""}
             >
-              {scraperConfig.useProxy ? "Ativado" : "Desativado"}
+              {scraperConfig.useProxy ? <><CheckCircle2 className="h-4 w-4 mr-1" /> Ativado</> : "Desativado"}
             </Button>
           </div>
 
           <div className="pt-4 border-t">
-            <Button variant="outline" className="w-full">
-              🧪 Testar Scraper
+            <Button variant="outline" className="w-full border-tiktrend-primary/50 hover:bg-tiktrend-primary/10">
+              🧪 {tFunc("settings.scraper.execution.test")}
             </Button>
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              Executa uma coleta teste com 5 produtos
+              {tFunc("settings.scraper.execution.test_description")}
             </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Categorias */}
-      <Card className="lg:col-span-2">
+      <Card className="lg:col-span-2 border-l-4 border-l-pink-500/50">
         <CardHeader>
-          <CardTitle>📂 Categorias Monitoradas</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            📂 {tFunc("settings.scraper.categories.title")}
+          </CardTitle>
           <CardDescription>
-            Selecione as categorias que deseja monitorar automaticamente
+            {tFunc("settings.scraper.categories.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
             {[
-              "electronics", "fashion", "beauty", "home", "sports",
-              "toys", "health", "automotive", "food", "pets"
+              { key: "electronics", icon: "📱" },
+              { key: "fashion", icon: "👗" },
+              { key: "beauty", icon: "💄" },
+              { key: "home", icon: "🏠" },
+              { key: "sports", icon: "⚽" },
+              { key: "toys", icon: "🧸" },
+              { key: "health", icon: "💊" },
+              { key: "automotive", icon: "🚗" },
+              { key: "food", icon: "🍔" },
+              { key: "pets", icon: "🐕" },
             ].map((category) => {
-              const isSelected = scraperConfig.categories.includes(category);
-              const labels: Record<string, string> = {
-                electronics: "📱 Eletrônicos",
-                fashion: "👗 Moda",
-                beauty: "💄 Beleza",
-                home: "🏠 Casa",
-                sports: "⚽ Esportes",
-                toys: "🧸 Brinquedos",
-                health: "💊 Saúde",
-                automotive: "🚗 Automotivo",
-                food: "🍔 Alimentos",
-                pets: "🐕 Pets",
-              };
-
+              const isSelected = scraperConfig.categories.includes(category.key);
               return (
                 <Button
-                  key={category}
+                  key={category.key}
                   variant={isSelected ? "default" : "outline"}
                   size="sm"
                   onClick={() => {
                     setScraperConfig(prev => ({
                       ...prev,
                       categories: isSelected
-                        ? prev.categories.filter(c => c !== category)
-                        : [...prev.categories, category]
+                        ? prev.categories.filter(c => c !== category.key)
+                        : [...prev.categories, category.key]
                     }));
                   }}
+                  className={`transition-all ${isSelected ? "ring-2 ring-tiktrend-primary/30" : "hover:border-tiktrend-primary/50"}`}
                 >
-                  {labels[category] || category}
+                  {category.icon} {tFunc(`settings.scraper.categories.${category.key}`)}
                 </Button>
               );
             })}
           </div>
           <p className="text-xs text-muted-foreground mt-3">
-            {scraperConfig.categories.length} categoria(s) selecionada(s).
-            Deixe vazio para monitorar todas.
+            {tFunc("settings.scraper.categories.count", { count: scraperConfig.categories.length })}
           </p>
+        </CardContent>
+      </Card>
+
+      {/* FAQ do Scraper */}
+      <Card className="lg:col-span-2 bg-muted/30">
+        <CardContent className="pt-6">
+          <HelpSection
+            title={tFunc("settings.help.title")}
+            items={[
+              {
+                question: tFunc("settings.help.faq.scraper_q"),
+                answer: tFunc("settings.help.faq.scraper_a"),
+              },
+              {
+                question: tFunc("settings.help.faq.proxy_q"),
+                answer: tFunc("settings.help.faq.proxy_a"),
+              },
+            ]}
+          />
         </CardContent>
       </Card>
     </div>
@@ -972,83 +1158,92 @@ export const Settings: React.FC = () => {
 
     const creditPacks = [
       {
-        name: "Starter",
+        name: tFunc("settings.license.credits.packs.starter.name"),
         credits: 50,
-        price: "R$ 19,90",
-        perCredit: "R$ 0,40",
+        price: tFunc("settings.license.credits.packs.starter.price"),
+        perCredit: tFunc("settings.license.credits.packs.starter.per_credit"),
       },
       {
-        name: "Pro",
+        name: tFunc("settings.license.credits.packs.pro.name"),
         credits: 200,
-        price: "R$ 49,90",
-        perCredit: "R$ 0,25",
+        price: tFunc("settings.license.credits.packs.pro.price"),
+        perCredit: tFunc("settings.license.credits.packs.pro.per_credit"),
         recommended: true,
+        badge: tFunc("settings.license.credits.packs.pro.badge"),
       },
       {
-        name: "Ultra",
+        name: tFunc("settings.license.credits.packs.ultra.name"),
         credits: 500,
-        price: "R$ 99,90",
-        perCredit: "R$ 0,20",
+        price: tFunc("settings.license.credits.packs.ultra.price"),
+        perCredit: tFunc("settings.license.credits.packs.ultra.per_credit"),
       },
     ];
 
     return (
       <div className="space-y-6">
         {/* Licença Vitalícia */}
-        <Card className={hasLicense ? "border-green-500/50" : "border-tiktrend-primary/50"}>
+        <Card className={`border-2 ${hasLicense ? "border-green-500/50 bg-green-50/30 dark:bg-green-950/20" : "border-tiktrend-primary/50"}`}>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>🎫 Licença Vitalícia</span>
+              <span className="flex items-center gap-2">
+                🎫 {tFunc("settings.license.lifetime.title")}
+              </span>
               {hasLicense ? (
-                <Badge variant="tiktrend">Ativa ✓</Badge>
+                <Badge variant="tiktrend" className="text-sm px-3 py-1">
+                  <CheckCircle2 className="h-4 w-4 mr-1" /> {tFunc("settings.license.lifetime.active")}
+                </Badge>
               ) : (
-                <Badge variant="secondary">R$ 49,90</Badge>
+                <Badge variant="secondary" className="text-sm px-3 py-1">
+                  {tFunc("settings.license.lifetime.price")}
+                </Badge>
               )}
             </CardTitle>
             <CardDescription>
-              Pague uma vez, use para sempre. Sem mensalidades!
+              {tFunc("settings.license.lifetime.description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {hasLicense ? (
-              <div className="text-sm text-muted-foreground">
-                <p>✅ Acesso ilimitado a todas as funcionalidades</p>
-                <p>✅ Buscas ilimitadas de produtos</p>
-                <p>✅ Favoritos e listas ilimitadas</p>
-                <p>✅ Exportação de dados</p>
-                <p className="mt-2 text-xs">Créditos IA são cobrados separadamente</p>
+              <div className="text-sm p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-900">
+                <div className="space-y-2">
+                  <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-600" /> {tFunc("settings.license.lifetime.features.unlimited_access")}</p>
+                  <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-600" /> {tFunc("settings.license.lifetime.features.unlimited_searches")}</p>
+                  <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-600" /> {tFunc("settings.license.lifetime.features.unlimited_favorites")}</p>
+                  <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-600" /> {tFunc("settings.license.lifetime.features.export")}</p>
+                </div>
+                <p className="mt-3 text-xs text-muted-foreground">{tFunc("settings.license.lifetime.features.credits_separate")}</p>
               </div>
             ) : (
               <>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-500">✓</span>
-                    Acesso ilimitado para sempre
+                <ul className="space-y-3 text-sm">
+                  <li className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg">
+                    <span className="text-green-500 text-lg">✓</span>
+                    <span>{tFunc("settings.license.lifetime.benefits.unlimited")}</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-500">✓</span>
-                    Buscas e favoritos ilimitados
+                  <li className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg">
+                    <span className="text-green-500 text-lg">✓</span>
+                    <span>{tFunc("settings.license.lifetime.benefits.searches")}</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-500">✓</span>
-                    Exportação de dados
+                  <li className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg">
+                    <span className="text-green-500 text-lg">✓</span>
+                    <span>{tFunc("settings.license.lifetime.benefits.export")}</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-500">✓</span>
-                    Atualizações gratuitas
+                  <li className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg">
+                    <span className="text-green-500 text-lg">✓</span>
+                    <span>{tFunc("settings.license.lifetime.benefits.updates")}</span>
                   </li>
                 </ul>
-                <Button variant="tiktrend" className="w-full">
-                  Comprar Licença - R$ 49,90
+                <Button variant="tiktrend" className="w-full text-lg py-6">
+                  🎫 {tFunc("settings.license.lifetime.buy")} - {tFunc("settings.license.lifetime.price")}
                 </Button>
               </>
             )}
 
-            <div className="pt-4 border-t space-y-2">
-              <label className="text-sm font-medium">Ativar Chave de Licença</label>
+            <div className="pt-4 border-t space-y-3">
+              <SettingLabel label={tFunc("settings.license.lifetime.activate")} />
               <div className="flex gap-2">
                 <Input
-                  placeholder="XXXX-XXXX-XXXX-XXXX"
+                  placeholder={tFunc("settings.license.lifetime.activate_placeholder")}
                   value={licenseConfig.key || ""}
                   onChange={(e) => setLicenseConfig(prev => ({ ...prev, key: e.target.value }))}
                   className="font-mono"
@@ -1058,7 +1253,7 @@ export const Settings: React.FC = () => {
                   onClick={handleActivateLicense}
                   disabled={!licenseConfig.key}
                 >
-                  Ativar
+                  {tFunc("settings.license.lifetime.activate_button")}
                 </Button>
               </div>
             </div>
@@ -1066,21 +1261,25 @@ export const Settings: React.FC = () => {
         </Card>
 
         {/* Pacotes de Créditos IA */}
-        <Card>
+        <Card className="border-l-4 border-l-purple-500/50">
           <CardHeader>
-            <CardTitle>🤖 Créditos IA</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              🤖 {tFunc("settings.license.credits.title")}
+            </CardTitle>
             <CardDescription>
-              Use créditos para gerar copies com inteligência artificial
+              {tFunc("settings.license.credits.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 p-3 bg-muted rounded-lg">
+            <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg border border-purple-200 dark:border-purple-900">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Seus créditos:</span>
-                <span className="text-2xl font-bold text-tiktrend-primary">{licenseConfig.credits}</span>
+                <span className="text-sm font-medium">{tFunc("settings.license.credits.your_credits")}:</span>
+                <span className="text-3xl font-bold text-tiktrend-primary">{licenseConfig.credits}</span>
               </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                Copy simples: 1 crédito | Análise: 2 créditos | Lote: 5 créditos
+              <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                <p>• {tFunc("settings.license.credits.usage.simple")}</p>
+                <p>• {tFunc("settings.license.credits.usage.analysis")}</p>
+                <p>• {tFunc("settings.license.credits.usage.batch")}</p>
               </div>
             </div>
 
@@ -1088,27 +1287,27 @@ export const Settings: React.FC = () => {
               {creditPacks.map((pack) => (
                 <Card
                   key={pack.name}
-                  className={pack.recommended ? "ring-2 ring-tiktrend-primary ring-offset-2" : ""}
+                  className={`relative overflow-hidden transition-all hover:shadow-lg ${pack.recommended ? "ring-2 ring-tiktrend-primary ring-offset-2" : ""}`}
                 >
-                  {pack.recommended && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-tiktrend-primary">
-                      Melhor Valor
+                  {pack.recommended && pack.badge && (
+                    <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-tiktrend-primary text-xs px-3">
+                      ⭐ {pack.badge}
                     </Badge>
                   )}
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">{pack.name}</CardTitle>
-                    <div className="flex items-baseline">
-                      <span className="text-2xl font-bold">{pack.credits}</span>
+                  <CardHeader className="pb-2 pt-6">
+                    <CardTitle className="text-lg text-center">{pack.name}</CardTitle>
+                    <div className="flex items-baseline justify-center">
+                      <span className="text-3xl font-bold">{pack.credits}</span>
                       <span className="text-muted-foreground text-sm ml-1">créditos</span>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="text-center mb-4">
-                      <span className="text-xl font-bold">{pack.price}</span>
-                      <p className="text-xs text-muted-foreground">{pack.perCredit}/crédito</p>
+                      <span className="text-2xl font-bold">{pack.price}</span>
+                      <p className="text-xs text-muted-foreground">{pack.perCredit}{tFunc("settings.license.credits.per_credit")}</p>
                     </div>
-                    <Button className="w-full" variant={pack.recommended ? "tiktrend" : "default"}>
-                      Comprar
+                    <Button className="w-full" variant={pack.recommended ? "tiktrend" : "outline"}>
+                      {tFunc("settings.license.credits.buy")}
                     </Button>
                   </CardContent>
                 </Card>
@@ -1117,9 +1316,9 @@ export const Settings: React.FC = () => {
           </CardContent>
         </Card>
 
-        <div className="text-center text-sm text-muted-foreground">
-          <p>Pagamentos processados com segurança via Mercado Pago 🔒</p>
-          <p className="mt-1">Dúvidas? Entre em contato: suporte@didinfacil.com</p>
+        <div className="text-center text-sm text-muted-foreground p-4 bg-muted/30 rounded-lg">
+          <p className="font-medium">{tFunc("settings.license.payment_info")}</p>
+          <p className="mt-1">{tFunc("settings.license.support")}</p>
         </div>
       </div>
     );
@@ -1128,19 +1327,24 @@ export const Settings: React.FC = () => {
   const renderSystemSettings = () => (
     <div className="grid gap-6 lg:grid-cols-2">
       {/* Atualizações */}
-      <Card>
+      <Card className="border-l-4 border-l-blue-500/50">
         <CardHeader>
-          <CardTitle>🔄 Atualizações</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            🔄 {tFunc("settings.system.updates.title")}
+          </CardTitle>
           <CardDescription>
-            Configure atualizações automáticas do aplicativo
+            {tFunc("settings.system.updates.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Atualização Automática</div>
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="flex-1">
+              <div className="font-medium flex items-center gap-2">
+                {tFunc("settings.system.updates.auto_update.title")}
+                <InfoTooltip content={tFunc("settings.system.updates.auto_update.tooltip")} />
+              </div>
               <div className="text-sm text-muted-foreground">
-                Baixar e instalar atualizações automaticamente
+                {tFunc("settings.system.updates.auto_update.description")}
               </div>
             </div>
             <Button
@@ -1149,13 +1353,17 @@ export const Settings: React.FC = () => {
               onClick={() =>
                 setSystemConfig((prev) => ({ ...prev, autoUpdate: !prev.autoUpdate }))
               }
+              className={systemConfig.autoUpdate ? "bg-green-600 hover:bg-green-700" : ""}
             >
-              {systemConfig.autoUpdate ? "Ativado" : "Desativado"}
+              {systemConfig.autoUpdate ? <><CheckCircle2 className="h-4 w-4 mr-1" /> Ativado</> : "Desativado"}
             </Button>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Verificar a cada (horas)</label>
+            <SettingLabel
+              label={tFunc("settings.system.updates.check_interval.label")}
+              tooltip={tFunc("settings.system.updates.check_interval.tooltip")}
+            />
             <Input
               type="number"
               value={systemConfig.checkInterval}
@@ -1165,35 +1373,41 @@ export const Settings: React.FC = () => {
               }))}
               min={1}
               max={168}
+              className="max-w-[120px]"
             />
           </div>
 
           <div className="pt-4 border-t">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Versão atual:</span>
-              <Badge variant="outline">v1.0.0</Badge>
+              <span className="text-muted-foreground">{tFunc("settings.system.updates.current_version")}:</span>
+              <Badge variant="outline" className="font-mono">v1.0.0</Badge>
             </div>
-            <Button variant="outline" className="w-full mt-3">
-              🔍 Verificar Atualizações
+            <Button variant="outline" className="w-full mt-3 border-tiktrend-primary/50 hover:bg-tiktrend-primary/10">
+              🔍 {tFunc("settings.system.updates.check_now")}
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Logs */}
-      <Card>
+      <Card className="border-l-4 border-l-gray-500/50">
         <CardHeader>
-          <CardTitle>📋 Logs e Diagnóstico</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            📋 {tFunc("settings.system.logs.title")}
+          </CardTitle>
           <CardDescription>
-            Configure logs para troubleshooting
+            {tFunc("settings.system.logs.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Logs Ativados</div>
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="flex-1">
+              <div className="font-medium flex items-center gap-2">
+                {tFunc("settings.system.logs.enable.title")}
+                <InfoTooltip content={tFunc("settings.system.logs.enable.tooltip")} />
+              </div>
               <div className="text-sm text-muted-foreground">
-                Salvar logs de operações do sistema
+                {tFunc("settings.system.logs.enable.description")}
               </div>
             </div>
             <Button
@@ -1202,13 +1416,17 @@ export const Settings: React.FC = () => {
               onClick={() =>
                 setSystemConfig((prev) => ({ ...prev, logsEnabled: !prev.logsEnabled }))
               }
+              className={systemConfig.logsEnabled ? "bg-green-600 hover:bg-green-700" : ""}
             >
-              {systemConfig.logsEnabled ? "Ativado" : "Desativado"}
+              {systemConfig.logsEnabled ? <><CheckCircle2 className="h-4 w-4 mr-1" /> Ativado</> : "Desativado"}
             </Button>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Tamanho máximo de log (MB)</label>
+            <SettingLabel
+              label={tFunc("settings.system.logs.max_size.label")}
+              tooltip={tFunc("settings.system.logs.max_size.tooltip")}
+            />
             <Input
               type="number"
               value={systemConfig.maxLogSize}
@@ -1218,34 +1436,37 @@ export const Settings: React.FC = () => {
               }))}
               min={1}
               max={100}
+              className="max-w-[120px]"
             />
           </div>
 
           <div className="flex gap-2 pt-2">
-            <Button variant="outline" className="flex-1">
-              📂 Abrir Pasta de Logs
+            <Button variant="outline" className="flex-1 hover:bg-muted">
+              📂 {tFunc("settings.system.logs.open_folder")}
             </Button>
-            <Button variant="outline" className="flex-1">
-              🗑️ Limpar Logs
+            <Button variant="outline" className="flex-1 hover:bg-muted">
+              🗑️ {tFunc("settings.system.logs.clear")}
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Analytics */}
-      <Card>
+      <Card className="border-l-4 border-l-purple-500/50">
         <CardHeader>
-          <CardTitle>📊 Analytics</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            📊 {tFunc("settings.system.analytics.title")}
+          </CardTitle>
           <CardDescription>
-            Ajude a melhorar o TikTrend Finder (opcional)
+            {tFunc("settings.system.analytics.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Analytics Anônimos</div>
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="flex-1">
+              <div className="font-medium">{tFunc("settings.system.analytics.enable.title")}</div>
               <div className="text-sm text-muted-foreground">
-                Enviar dados de uso anônimos para melhorias
+                {tFunc("settings.system.analytics.enable.description")}
               </div>
             </div>
             <Button
@@ -1254,58 +1475,71 @@ export const Settings: React.FC = () => {
               onClick={() =>
                 setSystemConfig((prev) => ({ ...prev, analyticsEnabled: !prev.analyticsEnabled }))
               }
+              className={systemConfig.analyticsEnabled ? "bg-green-600 hover:bg-green-700" : ""}
             >
-              {systemConfig.analyticsEnabled ? "Ativado" : "Desativado"}
+              {systemConfig.analyticsEnabled ? <><CheckCircle2 className="h-4 w-4 mr-1" /> Ativado</> : "Desativado"}
             </Button>
           </div>
 
-          <div className="text-xs text-muted-foreground bg-muted p-3 rounded-md">
-            <p className="font-medium mb-1">Dados coletados (se ativado):</p>
-            <ul className="space-y-1">
-              <li>• Versão do app e sistema operacional</li>
-              <li>• Funcionalidades mais usadas</li>
-              <li>• Erros encontrados</li>
+          <div className="text-xs text-muted-foreground bg-muted/50 p-4 rounded-lg border">
+            <p className="font-medium mb-2 flex items-center gap-2">
+              <HelpCircle className="h-4 w-4" />
+              {tFunc("settings.system.analytics.collected_data")}
+            </p>
+            <ul className="space-y-1 ml-6">
+              <li>• {tFunc("settings.system.analytics.data_items.version")}</li>
+              <li>• {tFunc("settings.system.analytics.data_items.features")}</li>
+              <li>• {tFunc("settings.system.analytics.data_items.errors")}</li>
             </ul>
-            <p className="mt-2">Nenhum dado pessoal ou de produtos é coletado.</p>
+            <p className="mt-3 text-green-600 dark:text-green-400 font-medium">
+              🔒 {tFunc("settings.system.analytics.privacy_note")}
+            </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Data */}
-      <Card>
+      <Card className="border-l-4 border-l-red-500/50">
         <CardHeader>
-          <CardTitle>💾 Dados e Armazenamento</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            💾 {tFunc("settings.system.data.title")}
+          </CardTitle>
           <CardDescription>
-            Gerencie os dados armazenados localmente
+            {tFunc("settings.system.data.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="p-3 bg-muted rounded-md">
-              <div className="text-muted-foreground">Banco de dados</div>
-              <div className="font-medium">12.4 MB</div>
+            <div className="p-4 bg-muted/50 rounded-lg border">
+              <div className="text-muted-foreground text-xs">{tFunc("settings.system.data.database")}</div>
+              <div className="font-bold text-lg mt-1">12.4 MB</div>
             </div>
-            <div className="p-3 bg-muted rounded-md">
-              <div className="text-muted-foreground">Cache de imagens</div>
-              <div className="font-medium">45.2 MB</div>
+            <div className="p-4 bg-muted/50 rounded-lg border">
+              <div className="text-muted-foreground text-xs">{tFunc("settings.system.data.image_cache")}</div>
+              <div className="font-bold text-lg mt-1">45.2 MB</div>
             </div>
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1">
-              📤 Exportar Dados
+            <Button variant="outline" className="flex-1 hover:bg-muted">
+              📤 {tFunc("settings.system.data.export")}
             </Button>
-            <Button variant="outline" className="flex-1">
-              📥 Importar Dados
+            <Button variant="outline" className="flex-1 hover:bg-muted">
+              📥 {tFunc("settings.system.data.import")}
             </Button>
           </div>
 
-          <Button variant="destructive" className="w-full">
-            🗑️ Limpar Todos os Dados
-          </Button>
-          <p className="text-xs text-muted-foreground text-center">
-            Esta ação não pode ser desfeita. Faça backup antes.
-          </p>
+          <div className="pt-4 border-t">
+            <Button variant="destructive" className="w-full">
+              🗑️ {tFunc("settings.system.data.clear_all")}
+            </Button>
+            <div className="flex items-start gap-2 mt-2 p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded">
+              <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-red-700 dark:text-red-300">
+                {tFunc("settings.system.data.clear_warning")}
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -1321,56 +1555,56 @@ export const Settings: React.FC = () => {
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
           <SettingsIcon size={32} className="text-tiktrend-primary" />
-          Configurações
+          {tFunc("settings.title")}
         </h1>
         <p className="text-muted-foreground">
-          Personalize o TikTrend Finder de acordo com suas preferências
+          {tFunc("settings.subtitle")}
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 border-b pb-4">
+      <div className="flex flex-wrap gap-2 border-b pb-4 overflow-x-auto">
         <TabButton
           tab="general"
           currentTab={activeTab}
           onClick={setActiveTab}
           icon={<SettingsIcon size={18} />}
-          label="Geral"
+          label={tFunc("settings.general")}
         />
         <TabButton
           tab="credentials"
           currentTab={activeTab}
           onClick={setActiveTab}
           icon={<CopyIcon size={18} />}
-          label="Credenciais"
+          label={tFunc("settings.credentials.title")}
         />
         <TabButton
           tab="scraper"
           currentTab={activeTab}
           onClick={setActiveTab}
           icon={<SearchIcon size={18} />}
-          label="Scraper"
+          label={tFunc("settings.scraper.title")}
         />
         <TabButton
           tab="license"
           currentTab={activeTab}
           onClick={setActiveTab}
           icon={<StarIcon size={18} />}
-          label="Licença"
+          label={tFunc("settings.license.title")}
         />
         <TabButton
           tab="system"
           currentTab={activeTab}
           onClick={setActiveTab}
           icon={<ChartIcon size={18} />}
-          label="Sistema"
+          label={tFunc("settings.system.title")}
         />
         <TabButton
           tab="integrations"
           currentTab={activeTab}
           onClick={setActiveTab}
           icon={<span className="text-lg">🔗</span>}
-          label="Integrações"
+          label={tFunc("settings.integrations.title")}
         />
       </div>
 

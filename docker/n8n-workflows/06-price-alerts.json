@@ -1,0 +1,194 @@
+{
+  "name": "06 - Notificação de Alertas de Preço",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Verificar a cada 6h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT pa.id, pa.product_id, pa.target_price, pa.user_phone, p.name, p.current_price, p.store FROM price_alerts pa JOIN products p ON pa.product_id = p.id WHERE p.current_price <= pa.target_price AND pa.notified = false AND pa.active = true",
+        "options": {}
+      },
+      "id": "get-alerts",
+      "name": "Buscar Alertas Ativos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [470, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-alerts",
+      "name": "Processar Individual",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8082/message/sendText/didin-whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "429683C4C977415CAAFCCE10F7D57E11"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.user_phone }}\",\n  \"textMessage\": {\n    \"text\": \"🔔 *ALERTA DE PREÇO!*\\n\\n🎯 O produto que você estava esperando baixou de preço!\\n\\n📦 *{{ $json.name }}*\\n💰 Preço atual: {{ $json.current_price.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}) }}\\n🎯 Seu alerta: {{ $json.target_price.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}) }}\\n🏪 Loja: {{ $json.store }}\\n\\n⚡ Corra! Preços podem mudar a qualquer momento.\\n\\n🔗 Compre agora: didin.com.br/produto/{{ $json.product_id }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "send-alert",
+      "name": "Enviar Alerta WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "table": "price_alerts",
+        "columns": "notified, notified_at",
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "mark-notified",
+      "name": "Marcar como Notificado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1130, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "notification_logs",
+        "columns": "alert_id, user_phone, product_name, price_at_notification, sent_at",
+        "options": {}
+      },
+      "id": "log-notification",
+      "name": "Registrar Notificação",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1350, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Verificar a cada 6h": {
+      "main": [
+        [
+          {
+            "node": "Buscar Alertas Ativos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Alertas Ativos": {
+      "main": [
+        [
+          {
+            "node": "Processar Individual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Individual": {
+      "main": [
+        [
+          {
+            "node": "Enviar Alerta WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Alerta WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Marcar como Notificado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar como Notificado": {
+      "main": [
+        [
+          {
+            "node": "Registrar Notificação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "WhatsApp"
+    },
+    {
+      "name": "Alertas"
+    },
+    {
+      "name": "Automático"
+    }
+  ]
+}

@@ -17,7 +17,8 @@ export const MAX_SEARCH_HISTORY = 100;
 export const MAX_COPY_HISTORY = 100;
 
 // License and Credits
-export const LICENSE_PRICE = 49.90;
+// Note: License is now included with any credit purchase
+export const LICENSE_PRICE = 0; 
 
 export const CREDIT_PACKS = {
   starter: {
@@ -25,77 +26,29 @@ export const CREDIT_PACKS = {
     credits: 50,
     price: 19.90,
     pricePerCredit: 0.40,
+    description: "Ideal para começar. Inclui licença vitalícia.",
+    badge: null,
   },
   pro: {
     name: "Pro",
     credits: 200,
     price: 49.90,
     pricePerCredit: 0.25,
+    description: "Para criadores ativos. Melhor custo-benefício.",
+    badge: "Mais Popular",
   },
   ultra: {
     name: "Ultra",
     credits: 500,
     price: 99.90,
     pricePerCredit: 0.20,
+    description: "Para agências e power users.",
+    badge: "Melhor Valor",
   },
 } as const;
 
-// Combos para novos usuários (Licença + Créditos com desconto)
-export const COMBO_PACKS = {
-  essential: {
-    id: "essential",
-    name: "Essencial",
-    description: "Ideal para começar",
-    license: true,
-    credits: 50,
-    originalPrice: 69.80, // 49.90 + 19.90
-    price: 59.90,
-    discount: 14, // %
-    badge: null,
-    features: [
-      "Licença Vitalícia",
-      "50 créditos IA",
-      "Até 2 dispositivos",
-      "Atualizações gratuitas",
-    ],
-  },
-  professional: {
-    id: "professional",
-    name: "Profissional",
-    description: "Mais popular entre vendedores",
-    license: true,
-    credits: 200,
-    originalPrice: 99.80, // 49.90 + 49.90
-    price: 79.90,
-    discount: 20, // %
-    badge: "Mais Popular",
-    features: [
-      "Licença Vitalícia",
-      "200 créditos IA",
-      "Até 2 dispositivos",
-      "Atualizações gratuitas",
-      "Melhor custo-benefício",
-    ],
-  },
-  enterprise: {
-    id: "enterprise",
-    name: "Empresarial",
-    description: "Para operações de grande escala",
-    license: true,
-    credits: 500,
-    originalPrice: 149.80, // 49.90 + 99.90
-    price: 119.90,
-    discount: 20, // %
-    badge: "Melhor Valor",
-    features: [
-      "Licença Vitalícia",
-      "500 créditos IA",
-      "Até 2 dispositivos",
-      "Atualizações gratuitas",
-      "Suporte prioritário",
-    ],
-  },
-} as const;
+// Legacy combos removed - all packs now include license
+export const COMBO_PACKS = {} as const;
 
 // Credit costs per action
 export const CREDIT_COSTS = {

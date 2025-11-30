@@ -27,7 +27,14 @@ from . import (
     subscription,
     analytics_social,
     chatbot,
-    automation
+    automation,
+    template_library,
+    email,
+    campaigns,
+    crm,
+    seller_bot,
+    accounting,
+    credits,
 )
 
 __all__ = [
@@ -57,5 +64,12 @@ __all__ = [
     "subscription",
     "analytics_social",
     "chatbot",
-    "automation"
+    "automation",
+    "template_library",
+    "email",
+    "campaigns",
+    "crm",
+    "seller_bot",
+    "accounting",
+    "credits",
 ]

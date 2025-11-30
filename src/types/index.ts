@@ -95,11 +95,10 @@ export interface FavoriteItem {
 export interface CopyHistory {
   id: string;
   productId: string | null;
+  productTitle?: string;
   copyType: CopyType;
   tone: CopyTone;
-  content: string;
-  tokensUsed: number;
-  isFavorite: boolean;
+  copyText: string;
   createdAt: string;
   product?: Product;
 }
@@ -108,28 +107,51 @@ export type CopyType =
   | "facebook_ad"
   | "tiktok_hook"
   | "product_description"
+  | "story_reels"
+  | "email"
+  | "whatsapp"
   | "email_sequence"
   | "landing_page";
 
 export type CopyTone =
-  | "persuasive"
   | "urgent"
-  | "friendly"
+  | "educational"
+  | "casual"
   | "professional"
+  | "emotional"
+  | "authority"
+  | "persuasive"
+  | "friendly"
   | "humorous";
 
 export interface CopyRequest {
   productId: string;
   productTitle: string;
-  productDescription: string;
+  productDescription?: string;
+  productPrice: number;
+  productBenefits?: string[];
   copyType: CopyType;
   tone: CopyTone;
+  platform: string;
   language: string;
+  maxLength?: number;
+  includeEmoji?: boolean;
+  includeHashtags?: boolean;
+  customInstructions?: string;
 }
 
 export interface CopyResponse {
-  content: string;
-  tokensUsed: number;
+  id: string;
+  copyText: string;
+  copyType: string;
+  tone: string;
+  platform: string;
+  wordCount: number;
+  characterCount: number;
+  createdAt: string;
+  cached: boolean;
+  creditsUsed: number;
+  creditsRemaining: number;
 }
 
 // User types

@@ -1,0 +1,192 @@
+{
+  "name": "01 - Auto Reply Simples (Sem Credenciais)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot",
+        "options": {
+          "rawBody": false
+        },
+        "responseMode": "responseNode"
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Chatwoot",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "chatwoot-webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\": \"received\"}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Responder Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [470, 180]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrair dados do webhook do Chatwoot\nconst data = $input.first().json;\n\nconsole.log('Webhook recebido:', JSON.stringify(data));\n\n// Verificar se é uma mensagem válida\nif (data.event !== 'message_created') {\n  return [{ json: { skip: true, reason: 'not_message_created' } }];\n}\n\n// Verificar se é mensagem recebida (não enviada pelo agente)\nif (data.message_type !== 'incoming') {\n  return [{ json: { skip: true, reason: 'not_incoming' } }];\n}\n\n// Extrair informações importantes\nconst message = data.content || '';\nconst conversationId = data.conversation?.id;\nconst accountId = data.account?.id || 3;\nconst senderId = data.sender?.id;\nconst senderName = data.sender?.name || 'Cliente';\n\nif (!conversationId) {\n  return [{ json: { skip: true, reason: 'no_conversation_id' } }];\n}\n\nconsole.log(`Mensagem de ${senderName}: \"${message}\" (conv: ${conversationId})`);\n\n// Detectar tipo de mensagem\nlet responseType = 'unknown';\nlet responseMessage = '';\n\nconst messageLower = message.toLowerCase().trim();\n\n// Saudações\nif (/^(oi|olá|ola|bom dia|boa tarde|boa noite|hello|hi|hey|e ai|eai)/.test(messageLower)) {\n  responseType = 'greeting';\n  responseMessage = `👋 Olá${senderName !== 'Cliente' ? `, ${senderName}` : ''}! Bem-vindo ao *Didin Fácil*!\\n\\n🤖 Sou o assistente virtual e estou aqui para ajudar.\\n\\nDigite uma opção:\\n\\n1️⃣ Comparar preços\\n2️⃣ Ver ofertas do dia\\n3️⃣ Falar com atendente\\n4️⃣ Horário de funcionamento`;\n}\n// Opção 1 - Comparar preços\nelse if (messageLower === '1' || messageLower.includes('comparar') || messageLower.includes('preço')) {\n  responseType = 'compare';\n  responseMessage = `🔍 *Comparação de Preços*\\n\\nPara comparar preços, me envie o nome do produto que você está procurando!\\n\\nExemplos:\\n• iPhone 15\\n• Geladeira Brastemp\\n• Tênis Nike\\n\\n💡 Dica: Seja específico para resultados melhores!`;\n}\n// Opção 2 - Ofertas\nelse if (messageLower === '2' || messageLower.includes('oferta')) {\n  responseType = 'offers';\n  responseMessage = `🏷️ *Ofertas do Dia*\\n\\n🔥 Confira as melhores ofertas:\\n\\n📱 iPhone 14 - R$ 4.299 (12% OFF)\\n💻 Notebook Dell - R$ 3.199 (8% OFF)\\n🎧 AirPods Pro - R$ 1.599 (15% OFF)\\n\\n💬 Quer detalhes de algum produto? Me envie o nome!`;\n}\n// Opção 3 - Atendente\nelse if (messageLower === '3' || messageLower.includes('atendente') || messageLower.includes('humano')) {\n  responseType = 'agent';\n  responseMessage = `👨‍💼 *Atendimento Humano*\\n\\nUm momento! Estou transferindo você para um de nossos atendentes.\\n\\n⏰ Tempo médio de espera: 2 minutos\\n\\nEnquanto isso, você pode continuar enviando suas dúvidas!`;\n}\n// Opção 4 - Horário\nelse if (messageLower === '4' || messageLower.includes('horário') || messageLower.includes('horario') || messageLower.includes('funcionamento')) {\n  responseType = 'schedule';\n  responseMessage = `🕐 *Horário de Funcionamento*\\n\\n📅 Segunda a Sexta: 8h às 18h\\n📅 Sábado: 8h às 12h\\n📅 Domingo: Fechado\\n\\n🤖 O assistente virtual funciona 24h!\\n\\nPosso ajudar em mais alguma coisa?`;\n}\n// Agradecimento\nelse if (/^(obrigad|valeu|thanks|vlw|brigad)/.test(messageLower)) {\n  responseType = 'thanks';\n  responseMessage = `😊 Por nada! Estamos aqui para ajudar!\\n\\nPrecisa de mais alguma coisa? É só me chamar!\\n\\n⭐ Não esqueça de avaliar nosso atendimento!`;\n}\n// Mensagem não reconhecida\nelse {\n  responseType = 'fallback';\n  responseMessage = `🤔 Desculpe, não entendi sua mensagem.\\n\\nDigite uma das opções abaixo:\\n\\n1️⃣ Comparar preços\\n2️⃣ Ver ofertas\\n3️⃣ Falar com atendente\\n4️⃣ Horário de funcionamento\\n\\nOu descreva o que você precisa!`;\n}\n\nreturn [{\n  json: {\n    skip: false,\n    conversationId,\n    accountId,\n    responseType,\n    responseMessage,\n    originalMessage: message,\n    senderName\n  }\n}];"
+      },
+      "id": "process-message",
+      "name": "Processar Mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-skip",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-should-respond",
+      "name": "Deve Responder?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/{{ $json.accountId }}/conversations/{{ $json.conversationId }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": {{ JSON.stringify($json.responseMessage) }},\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "send-response",
+      "name": "Enviar Resposta Chatwoot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [910, 300],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log do resultado\nconst input = $input.first().json;\nconsole.log('Resposta enviada com sucesso:', JSON.stringify(input));\nreturn [{ json: { success: true, ...input } }];"
+      },
+      "id": "log-success",
+      "name": "Log Sucesso",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1130, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Responder Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Processar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Deve Responder?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deve Responder?": {
+      "main": [
+        [
+          {
+            "node": "Enviar Resposta Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Enviar Resposta Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Log Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "v2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "didin-facil"
+  },
+  "tags": [
+    {
+      "name": "Didin Fácil",
+      "createdAt": "2025-11-30T00:00:00.000Z"
+    },
+    {
+      "name": "WhatsApp",
+      "createdAt": "2025-11-30T00:00:00.000Z"
+    },
+    {
+      "name": "Auto Reply",
+      "createdAt": "2025-11-30T00:00:00.000Z"
+    }
+  ]
+}

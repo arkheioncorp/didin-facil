@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import { TikTrendIcon, EyeIcon, EyeOffIcon } from "@/components/icons";
 import { useUserStore } from "@/stores";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 
 import { authService } from "@/services/auth";
 
@@ -16,6 +17,7 @@ export const Login: React.FC = () => {
   const { setUser, setLicense, setCredits } = useUserStore();
   const [isLoading, setIsLoading] = React.useState(false);
   const [isRegister, setIsRegister] = React.useState(location.pathname === "/register");
+  const [acceptedTerms, setAcceptedTerms] = React.useState(false);
   
   React.useEffect(() => {
     setIsRegister(location.pathname === "/register");
@@ -48,6 +50,9 @@ export const Login: React.FC = () => {
       if (!formData.name) newErrors.name = "Nome é obrigatório";
       if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = "As senhas não coincidem";
+      }
+      if (!acceptedTerms) {
+        newErrors.terms = "Você precisa aceitar os termos para continuar";
       }
     }
 
@@ -288,6 +293,52 @@ export const Login: React.FC = () => {
                 />
                 {errors.confirmPassword && (
                   <p className="text-sm text-destructive">{errors.confirmPassword}</p>
+                )}
+              </div>
+            )}
+
+            {/* Terms acceptance for registration */}
+            {isRegister && (
+              <div className="space-y-2">
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="terms"
+                    checked={acceptedTerms}
+                    onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                    className="mt-1"
+                  />
+                  <Label 
+                    htmlFor="terms" 
+                    className="text-sm leading-relaxed cursor-pointer"
+                  >
+                    Li e aceito os{" "}
+                    <Link 
+                      to="/terms" 
+                      target="_blank"
+                      className="text-tiktrend-primary hover:underline"
+                    >
+                      Termos de Uso
+                    </Link>
+                    ,{" "}
+                    <Link 
+                      to="/privacy" 
+                      target="_blank"
+                      className="text-tiktrend-primary hover:underline"
+                    >
+                      Política de Privacidade
+                    </Link>
+                    {" "}e{" "}
+                    <Link 
+                      to="/acceptable-use" 
+                      target="_blank"
+                      className="text-tiktrend-primary hover:underline"
+                    >
+                      Política de Uso Aceitável
+                    </Link>
+                  </Label>
+                </div>
+                {errors.terms && (
+                  <p className="text-sm text-destructive">{errors.terms}</p>
                 )}
               </div>
             )}

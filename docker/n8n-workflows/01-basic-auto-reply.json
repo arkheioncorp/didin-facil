@@ -1,0 +1,445 @@
+{
+  "name": "01 - Resposta Automática Básica",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Chatwoot",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-message-type",
+              "leftValue": "={{ $json.event }}",
+              "rightValue": "message_created",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "condition-incoming",
+              "leftValue": "={{ $json.message_type }}",
+              "rightValue": "incoming",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-incoming",
+      "name": "Filtrar Mensagens Recebidas",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "condition-greeting",
+              "leftValue": "={{ $json.content.toLowerCase() }}",
+              "rightValue": "oi|olá|ola|bom dia|boa tarde|boa noite|hello|hi|hey",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "check-greeting",
+      "name": "É Saudação?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [690, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $json.conversation.id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"👋 Olá! Bem-vindo ao Didin Fácil!\\n\\nSou o assistente virtual e estou aqui para ajudar.\\n\\nDigite uma opção:\\n\\n1️⃣ Comparar preços\\n2️⃣ Ver ofertas\\n3️⃣ Falar com atendente\\n4️⃣ Horário de funcionamento\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-greeting",
+      "name": "Enviar Saudação",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [910, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "condition-menu-1",
+              "leftValue": "={{ $json.content.trim() }}",
+              "rightValue": "1",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "check-option-1",
+      "name": "Opção 1?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"🔍 *Comparação de Preços*\\n\\nPara comparar preços, me envie o nome do produto que você está procurando!\\n\\nExemplo: \\\"iPhone 15\\\" ou \\\"Geladeira Brastemp\\\"\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-compare-info",
+      "name": "Info Comparação",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "condition-menu-2",
+              "leftValue": "={{ $json.content.trim() }}",
+              "rightValue": "2",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "check-option-2",
+      "name": "Opção 2?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1130, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"🏷️ *Ofertas do Dia*\\n\\n🔥 iPhone 15 - R$ 4.299 (economia de R$ 700!)\\n🔥 Smart TV 55\\\" - R$ 2.199\\n🔥 Fone Bluetooth - R$ 89,90\\n\\nAcesse: didin.com.br/ofertas\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-offers",
+      "name": "Enviar Ofertas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1350, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "condition-menu-3",
+              "leftValue": "={{ $json.content.trim() }}",
+              "rightValue": "3",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "check-option-3",
+      "name": "Opção 3?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1350, 500]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"👤 *Atendimento Humano*\\n\\nUm de nossos atendentes irá falar com você em breve!\\n\\n⏱️ Tempo médio de espera: 2 minutos\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-human-transfer",
+      "name": "Transferir Humano",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1570, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "condition-menu-4",
+              "leftValue": "={{ $json.content.trim() }}",
+              "rightValue": "4",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "check-option-4",
+      "name": "Opção 4?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1570, 600]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"🕐 *Horário de Funcionamento*\\n\\n📅 Segunda a Sexta: 8h às 18h\\n📅 Sábado: 8h às 12h\\n📅 Domingo: Fechado\\n\\n📍 Atendimento online 24h pelo app!\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-hours",
+      "name": "Enviar Horário",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1790, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Mensagens Recebidas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Mensagens Recebidas": {
+      "main": [
+        [
+          {
+            "node": "É Saudação?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É Saudação?": {
+      "main": [
+        [
+          {
+            "node": "Enviar Saudação",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Opção 1?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Opção 1?": {
+      "main": [
+        [
+          {
+            "node": "Info Comparação",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Opção 2?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Opção 2?": {
+      "main": [
+        [
+          {
+            "node": "Enviar Ofertas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Opção 3?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Opção 3?": {
+      "main": [
+        [
+          {
+            "node": "Transferir Humano",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Opção 4?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Opção 4?": {
+      "main": [
+        [
+          {
+            "node": "Enviar Horário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "WhatsApp",
+      "createdAt": "2025-11-30T00:00:00.000Z",
+      "updatedAt": "2025-11-30T00:00:00.000Z"
+    },
+    {
+      "name": "Básico",
+      "createdAt": "2025-11-30T00:00:00.000Z",
+      "updatedAt": "2025-11-30T00:00:00.000Z"
+    }
+  ]
+}

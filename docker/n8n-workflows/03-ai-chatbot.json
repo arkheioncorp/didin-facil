@@ -1,0 +1,222 @@
+{
+  "name": "03 - Chatbot com IA (OpenAI)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot-ai",
+        "options": {}
+      },
+      "id": "webhook-ai",
+      "name": "Webhook IA",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-event",
+              "leftValue": "={{ $json.event }}",
+              "rightValue": "message_created",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "condition-incoming",
+              "leftValue": "={{ $json.message_type }}",
+              "rightValue": "incoming",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-ai",
+      "name": "Filtrar Mensagens",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT content, message_type, created_at FROM messages WHERE conversation_id = $1 ORDER BY created_at DESC LIMIT 10",
+        "options": {
+          "queryParams": "={{ $json.conversation.id }}"
+        }
+      },
+      "id": "get-history",
+      "name": "Buscar Histórico",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [690, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Você é o assistente virtual do Didin Fácil, uma plataforma de comparação de preços.\n\nSua missão:\n- Ajudar clientes a encontrar os melhores preços\n- Responder dúvidas sobre produtos e ofertas\n- Ser amigável e profissional\n- Usar emojis de forma moderada\n- Respostas curtas e objetivas (máx 200 palavras)\n\nInformações da empresa:\n- Site: didin.com.br\n- Horário: Seg-Sex 8h-18h, Sáb 8h-12h\n- WhatsApp: (92) 98844-9768\n\nSe não souber responder algo específico, sugira falar com um atendente humano."
+            },
+            {
+              "role": "user", 
+              "content": "={{ $('Webhook IA').item.json.content }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 500
+        }
+      },
+      "id": "openai-chat",
+      "name": "OpenAI Chat",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [910, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-didin",
+          "name": "OpenAI Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $('Webhook IA').item.json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"{{ $json.message.content }}\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-ai-response",
+      "name": "Enviar Resposta IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "ai_conversations",
+        "columns": "conversation_id, user_message, ai_response, tokens_used, created_at",
+        "options": {}
+      },
+      "id": "log-ai-conversation",
+      "name": "Registrar Conversa IA",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1350, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook IA": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Mensagens": {
+      "main": [
+        [
+          {
+            "node": "Buscar Histórico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Histórico": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat": {
+      "main": [
+        [
+          {
+            "node": "Enviar Resposta IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Resposta IA": {
+      "main": [
+        [
+          {
+            "node": "Registrar Conversa IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "WhatsApp"
+    },
+    {
+      "name": "IA"
+    },
+    {
+      "name": "Avançado"
+    }
+  ]
+}

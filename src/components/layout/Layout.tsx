@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { Footer } from "./Footer";
 import { Tutorial } from "@/components/features/Tutorial";
 
 interface LayoutProps {
@@ -21,41 +22,59 @@ export const Layout: React.FC<LayoutProps> = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  // Close mobile menu on resize to desktop
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024 && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [mobileMenuOpen]);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col lg:flex-row">
       <Tutorial />
-      {/* Sidebar - Hidden on mobile, visible on desktop */}
-      <div className="hidden lg:block">
+      
+      {/* Desktop Sidebar - Sticky Position */}
+      {/* Using sticky ensures it takes up space in the flow (pushing content) while staying pinned */}
+      <aside
+        className={cn(
+          "hidden lg:block sticky top-0 h-screen z-40 shrink-0 transition-all duration-300 ease-in-out",
+          sidebarCollapsed ? "w-16" : "w-56"
+        )}
+      >
         <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
-      </div>
+      </aside>
 
       {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
         <>
           <div
-            className="fixed inset-0 z-30 bg-background/80 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
             onClick={toggleMobileMenu}
             data-testid="mobile-overlay"
           />
-          <div className="fixed left-0 top-0 z-40 lg:hidden" data-testid="mobile-sidebar-container">
+          <aside 
+            className="fixed left-0 top-0 z-50 h-screen w-56 lg:hidden"
+            data-testid="mobile-sidebar-container"
+          >
             <Sidebar collapsed={false} onToggle={toggleMobileMenu} />
-          </div>
+          </aside>
         </>
       )}
 
       {/* Main Content */}
-      <main
-        className={cn(
-          "min-h-screen transition-all duration-300",
-          sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
-        )}
-      >
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         <Header onMenuClick={toggleMobileMenu} />
         
-        <div className="p-6">
+        <main className="flex-1 p-4 md:p-5 lg:p-6">
           <Outlet />
-        </div>
-      </main>
+        </main>
+
+        <Footer className="mt-auto" />
+      </div>
     </div>
   );
 };

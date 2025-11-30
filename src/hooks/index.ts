@@ -85,16 +85,20 @@ export function useGenerateCopy() {
       productId: string;
       productTitle: string;
       productDescription: string;
+      productPrice: number;
       copyType: CopyType;
       tone: string;
+      platform: string;
       language: string;
     }) =>
       api.generateCopy({
         productId: request.productId,
         productTitle: request.productTitle,
         productDescription: request.productDescription,
+        productPrice: request.productPrice,
         copyType: request.copyType,
         tone: request.tone as CopyTone,
+        platform: request.platform,
         language: request.language,
       }),
   });

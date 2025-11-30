@@ -258,7 +258,10 @@
       "social_post": "Social Post",
       "whatsapp_message": "WhatsApp Message",
       "email": "Email Marketing",
-      "video_script": "Video Script"
+      "video_script": "Video Script",
+      "facebook_ad": "Facebook Ad",
+      "tiktok_hook": "TikTok Hook",
+      "story_reels": "Story/Reels"
     },
     "tone": "Tone",
     "tones": {
@@ -267,7 +270,10 @@
       "persuasive": "Persuasive",
       "urgent": "Urgent",
       "friendly": "Friendly",
-      "humorous": "Humorous"
+      "humorous": "Humorous",
+      "educational": "Educational",
+      "emotional": "Emotional",
+      "authority": "Authority"
     },
     "length": "Length",
     "lengths": {
@@ -285,7 +291,171 @@
       "batch": "5 credits"
     },
     "history": "Copy History",
-    "save_template": "Save as Template"
+    "save_template": "Save as Template",
+    "tabs": {
+      "generate": "Generate",
+      "templates": "Templates",
+      "batch": "Batch",
+      "history": "History",
+      "automations": "Automations"
+    },
+    "quick_actions": {
+      "title": "Quick Actions",
+      "tiktok_hook": {
+        "title": "TikTok Hook",
+        "description": "Generate viral hooks for your TikTok videos"
+      },
+      "product_desc": {
+        "title": "Product Description",
+        "description": "Persuasive descriptions for e-commerce"
+      },
+      "whatsapp_msg": {
+        "title": "WhatsApp",
+        "description": "Sales messages for WhatsApp"
+      },
+      "instagram_post": {
+        "title": "Instagram",
+        "description": "Optimized captions and stories"
+      }
+    },
+    "template_suggestions": {
+      "title": "Suggested Templates",
+      "description": "Based on your best-selling products",
+      "use_template": "Use Template",
+      "preview": "Preview",
+      "popular": "Popular",
+      "new": "New",
+      "trending": "Trending"
+    },
+    "batch": {
+      "title": "Batch Generation",
+      "description": "Generate copies for multiple products at once",
+      "select_products": "Select Products",
+      "selected_count": "{{count}} products selected",
+      "upload_csv": "Upload CSV",
+      "download_template": "Download CSV Template",
+      "generate_all": "Generate All",
+      "progress": "Progress",
+      "processing": "Processing {{current}} of {{total}}...",
+      "completed": "{{count}} copies generated successfully!",
+      "export_results": "Export Results",
+      "cost_estimate": "Estimated cost: {{credits}} credits"
+    },
+    "automations": {
+      "title": "Available Automations",
+      "description": "Integrate copy AI with your automation workflows",
+      "workflows": {
+        "title": "N8N Workflows",
+        "description": "Generate copies automatically based on triggers",
+        "welcome_sequence": "Welcome Sequence",
+        "price_alert": "Price Alert",
+        "cart_recovery": "Cart Recovery",
+        "review_request": "Review Request",
+        "restock_notification": "Restock Notification",
+        "flash_sale": "Flash Sale"
+      },
+      "chatbots": {
+        "title": "Typebot Chatbots",
+        "description": "Copies for automated conversations",
+        "customer_service": "Customer Service",
+        "sales_funnel": "Sales Funnel",
+        "lead_qualification": "Lead Qualification"
+      },
+      "content": {
+        "title": "Content Templates",
+        "description": "Ready formats for different channels",
+        "flash_sale": "Flash Sale",
+        "price_drop_alert": "Price Drop Alert",
+        "daily_deals": "Daily Deals",
+        "weekend_sale": "Weekend Sale",
+        "holiday_special": "Holiday Special"
+      },
+      "connect": "Connect",
+      "configure": "Configure",
+      "view_docs": "View Documentation"
+    },
+    "preview": {
+      "title": "Preview",
+      "platform_preview": "Platform Preview",
+      "platforms": {
+        "tiktok": "TikTok",
+        "instagram": "Instagram",
+        "whatsapp": "WhatsApp",
+        "facebook": "Facebook",
+        "email": "Email"
+      },
+      "copy_text": "Copy Text",
+      "save_to_favorites": "Save to Favorites",
+      "schedule": "Schedule Post",
+      "edit": "Edit",
+      "character_count": "{{count}} characters",
+      "optimal_length": "Optimal length for {{platform}}"
+    },
+    "history_section": {
+      "title": "Generation History",
+      "search_placeholder": "Search by product or text...",
+      "filter_by_type": "Filter by Type",
+      "filter_by_date": "Filter by Date",
+      "favorites_only": "Favorites Only",
+      "delete_selected": "Delete Selected",
+      "no_history": "No copies generated yet",
+      "load_more": "Load More",
+      "reuse": "Reuse",
+      "view_details": "View Details"
+    },
+    "advanced": {
+      "title": "Advanced Settings",
+      "custom_prompt": "Custom Prompt",
+      "custom_prompt_hint": "Add specific instructions for the AI",
+      "target_audience": "Target Audience",
+      "target_audience_hint": "Describe your ideal customer",
+      "keywords": "Keywords",
+      "keywords_hint": "Separate with comma",
+      "include_emojis": "Include Emojis",
+      "include_hashtags": "Include Hashtags",
+      "include_cta": "Include Call-to-Action",
+      "language": "Text Language",
+      "max_variations": "Number of Variations"
+    },
+    "errors": {
+      "no_product": "Select a product to generate the copy",
+      "product_not_found": "The selected product is no longer available in favorites",
+      "generation_failed": "Error generating copy. Please try again.",
+      "insufficient_credits": "Insufficient credits for this operation",
+      "rate_limit": "Rate limit reached. Please wait a moment.",
+      "connection_error": "Check your internet connection and try again",
+      "timeout": "Generation took too long. Try again in a few seconds",
+      "unauthorized": "Your session has expired. Please log in again",
+      "api_key_missing": "OpenAI key is not configured. Go to Settings > Credentials",
+      "unknown": "An unexpected error occurred. Try again or contact support"
+    },
+    "success": {
+      "generated": "Copy generated successfully!",
+      "saved": "Copy saved to favorites",
+      "copied": "Text copied to clipboard",
+      "scheduled": "Post scheduled successfully",
+      "template_loaded": "Template loaded! Edit the {{...}} variables with your data"
+    },
+    "onboarding": {
+      "title": "Welcome to Copy AI!",
+      "description": "Generate persuasive texts for your products in seconds. Follow these steps:",
+      "step1_title": "Add Favorites",
+      "step1_desc": "Go to Products and save items to favorites",
+      "step2_title": "Choose Format",
+      "step2_desc": "TikTok, Instagram, WhatsApp...",
+      "step3_title": "Generate and Copy!",
+      "step3_desc": "AI creates ready-to-use text",
+      "understood": "Got it, let's start!",
+      "dont_show_again": "Don't show again",
+      "show_tutorial": "Show tutorial"
+    },
+    "next_steps": {
+      "title": "Next steps",
+      "schedule_post": "Schedule post",
+      "create_automation": "Create automation",
+      "send_whatsapp": "Send WhatsApp",
+      "save_template": "Save template"
+    }
   },
 
   "social": {
@@ -458,16 +628,20 @@
 
   "settings": {
     "title": "Settings",
+    "subtitle": "Customize Didin Fácil according to your preferences",
     "general": "General",
     "appearance": {
       "title": "Appearance",
+      "description": "Customize the visual appearance of the application",
       "theme": "Theme",
+      "theme_tooltip": "Choose between light, dark, or automatic based on system",
       "themes": {
         "light": "Light",
         "dark": "Dark",
         "system": "System"
       },
       "language": "Language",
+      "language_tooltip": "Select the interface language",
       "languages": {
         "pt_BR": "Português (Brasil)",
         "en": "English",
@@ -476,10 +650,309 @@
     },
     "notifications": {
       "title": "Notifications",
+      "description": "Configure system alerts and notifications",
+      "desktop": {
+        "title": "Desktop Notifications",
+        "description": "Receive alerts for new trending products",
+        "tooltip": "Enable to receive push notifications on your computer when new viral products are found"
+      },
+      "cache_images": {
+        "title": "Image Cache",
+        "description": "Save images locally for fast loading",
+        "tooltip": "Product images are stored locally to speed up viewing"
+      },
       "enable": "Enable Notifications",
       "email": "Email Notifications",
       "push": "Push Notifications",
       "marketing": "Marketing Emails"
+    },
+    "search": {
+      "title": "Search",
+      "description": "Configure default search parameters",
+      "products_per_search": {
+        "label": "Products per search",
+        "description": "Maximum products returned per search (10-100)",
+        "tooltip": "The higher the number, the more results you'll see, but it may take longer to load"
+      }
+    },
+    "tutorial": {
+      "title": "Tutorial & Setup",
+      "description": "Review the interactive tutorial or reconfigure the platform",
+      "restart_tutorial": "Restart Tutorial",
+      "restart_tutorial_description": "See the guided tour of features again",
+      "reset_setup": "Redo Initial Setup",
+      "reset_setup_warning": "This will reset all initial settings and reopen the setup wizard. Do you want to continue?",
+      "reset_setup_description": "Use only if you need to reconfigure license or terms"
+    },
+    "copy_generation": {
+      "title": "Copy Generation",
+      "description": "Configure defaults for AI copy generation",
+      "default_type": "Default type",
+      "default_type_tooltip": "Type of text that will be generated by default when using Copy AI",
+      "default_tone": "Default tone",
+      "default_tone_tooltip": "Writing style that will be applied to generated texts",
+      "types": {
+        "tiktok_hook": "TikTok Hook",
+        "product_description": "Description",
+        "carousel": "Carousel"
+      },
+      "tones": {
+        "urgent": "Urgent",
+        "professional": "Professional",
+        "fun": "Fun"
+      }
+    },
+    "credentials": {
+      "title": "Credentials",
+      "description": "Manage API keys and service credentials",
+      "openai": {
+        "title": "OpenAI API",
+        "badge": "Optional",
+        "description": "Configure OpenAI integration for AI copy generation",
+        "api_key": "API Key",
+        "api_key_placeholder": "sk-...",
+        "api_key_secure": "Your key is stored locally in encrypted form",
+        "model": "Model",
+        "model_tooltip": "GPT-4o is faster and cheaper, GPT-4 is smarter",
+        "info": "AI copy generation is an additional feature. The app works 100% without it."
+      },
+      "proxy": {
+        "title": "Proxies",
+        "badge": "Advanced",
+        "description": "Configure proxies for data collection (recommended for intensive use)",
+        "enable": "Use Proxies",
+        "enable_description": "Rotate IPs during collection",
+        "enable_tooltip": "Recommended if you plan to do many collections. Prevents TikTok blocks.",
+        "list": "Proxy List",
+        "list_placeholder": "Format: ip:port:user:pass (one per line)\n\nExample:\n192.168.1.1:8080:user:pass\nproxy.example.com:3128",
+        "count": "{{count}} proxy(ies) configured"
+      }
+    },
+    "scraper": {
+      "title": "Scraper",
+      "description": "Configure the TikTok Shop product collector",
+      "collection": {
+        "title": "Collection Settings",
+        "description": "Configure how the scraper collects products from TikTok Shop",
+        "max_products": {
+          "label": "Maximum products per collection",
+          "tooltip": "More products means longer collection time. Recommended: 50-100"
+        },
+        "interval": {
+          "label": "Interval between collections (minutes)",
+          "description": "Minimum: 15 minutes. Recommended: 60 minutes.",
+          "tooltip": "Very short intervals may cause temporary blocks"
+        },
+        "timeout": {
+          "label": "Timeout (seconds)",
+          "tooltip": "Maximum wait time for response. Increase if your connection is slow."
+        }
+      },
+      "execution": {
+        "title": "Execution Mode",
+        "description": "Configure how the browser runs during collection",
+        "headless": {
+          "title": "Headless Mode",
+          "description": "Run browser without graphical interface",
+          "tooltip": "Headless mode is faster and uses fewer resources. Disable to debug issues."
+        },
+        "use_proxy": {
+          "title": "Use Proxy in Scraper",
+          "description": "Apply configured proxies during collection",
+          "tooltip": "Configure proxies in the Credentials tab first"
+        },
+        "test": "Test Scraper",
+        "test_description": "Run a test collection with 5 products"
+      },
+      "categories": {
+        "title": "Monitored Categories",
+        "description": "Select categories to monitor automatically",
+        "count": "{{count}} category(ies) selected. Leave empty to monitor all.",
+        "electronics": "Electronics",
+        "fashion": "Fashion",
+        "beauty": "Beauty",
+        "home": "Home",
+        "sports": "Sports",
+        "toys": "Toys",
+        "health": "Health",
+        "automotive": "Automotive",
+        "food": "Food",
+        "pets": "Pets"
+      }
+    },
+    "license": {
+      "title": "License",
+      "description": "Manage your license and AI credits",
+      "lifetime": {
+        "title": "Lifetime License",
+        "price": "R$ 49.90",
+        "description": "Pay once, use forever. No monthly fees!",
+        "active": "Active",
+        "features": {
+          "unlimited_access": "Unlimited access to all features",
+          "unlimited_searches": "Unlimited product searches",
+          "unlimited_favorites": "Unlimited favorites and lists",
+          "export": "Data export",
+          "credits_separate": "AI credits are charged separately"
+        },
+        "benefits": {
+          "unlimited": "Unlimited access forever",
+          "searches": "Unlimited searches and favorites",
+          "export": "Data export",
+          "updates": "Free updates"
+        },
+        "activate": "Activate License Key",
+        "activate_placeholder": "XXXX-XXXX-XXXX-XXXX",
+        "activate_button": "Activate",
+        "buy": "Buy License"
+      },
+      "credits": {
+        "title": "AI Credits",
+        "description": "Use credits to generate copies with artificial intelligence",
+        "your_credits": "Your credits",
+        "usage": {
+          "simple": "Simple copy: 1 credit",
+          "analysis": "Analysis: 2 credits",
+          "batch": "Batch: 5 credits"
+        },
+        "packs": {
+          "starter": {
+            "name": "Starter",
+            "credits": "50",
+            "price": "R$ 19.90",
+            "per_credit": "R$ 0.40"
+          },
+          "pro": {
+            "name": "Pro",
+            "credits": "200",
+            "price": "R$ 49.90",
+            "per_credit": "R$ 0.25",
+            "badge": "Best Value"
+          },
+          "ultra": {
+            "name": "Ultra",
+            "credits": "500",
+            "price": "R$ 99.90",
+            "per_credit": "R$ 0.20"
+          }
+        },
+        "per_credit": "/credit",
+        "buy": "Buy"
+      },
+      "payment_info": "Payments processed securely via Mercado Pago 🔒",
+      "support": "Questions? Contact us: suporte@didinfacil.com"
+    },
+    "system": {
+      "title": "System",
+      "description": "Advanced system settings",
+      "updates": {
+        "title": "Updates",
+        "description": "Configure automatic application updates",
+        "auto_update": {
+          "title": "Automatic Update",
+          "description": "Download and install updates automatically",
+          "tooltip": "Recommended to keep active to receive fixes and new features"
+        },
+        "check_interval": {
+          "label": "Check every (hours)",
+          "tooltip": "How often the app checks for new versions"
+        },
+        "current_version": "Current version",
+        "check_now": "Check for Updates"
+      },
+      "logs": {
+        "title": "Logs & Diagnostics",
+        "description": "Configure logs for troubleshooting",
+        "enable": {
+          "title": "Logs Enabled",
+          "description": "Save system operation logs",
+          "tooltip": "Useful for identifying issues. Uses disk space."
+        },
+        "max_size": {
+          "label": "Maximum log size (MB)",
+          "tooltip": "Old logs are automatically removed when reaching this limit"
+        },
+        "open_folder": "Open Logs Folder",
+        "clear": "Clear Logs"
+      },
+      "analytics": {
+        "title": "Analytics",
+        "description": "Help improve Didin Fácil (optional)",
+        "enable": {
+          "title": "Anonymous Analytics",
+          "description": "Send anonymous usage data for improvements"
+        },
+        "collected_data": "Collected data (if enabled):",
+        "data_items": {
+          "version": "App version and operating system",
+          "features": "Most used features",
+          "errors": "Errors encountered"
+        },
+        "privacy_note": "No personal or product data is collected."
+      },
+      "data": {
+        "title": "Data & Storage",
+        "description": "Manage locally stored data",
+        "database": "Database",
+        "image_cache": "Image cache",
+        "export": "Export Data",
+        "import": "Import Data",
+        "clear_all": "Clear All Data",
+        "clear_warning": "This action cannot be undone. Backup first."
+      }
+    },
+    "integrations": {
+      "title": "Integrations",
+      "description": "Connect your social networks and external services",
+      "connected": "Connected",
+      "available": "Available",
+      "whatsapp": {
+        "title": "WhatsApp",
+        "description": "Connect your WhatsApp to send notifications and messages",
+        "connect": "Connect WhatsApp",
+        "disconnect": "Disconnect",
+        "connected_as": "Connected as",
+        "scan_qr": "Open WhatsApp on your phone > Menu > Connected devices > Connect device",
+        "status": {
+          "connected": "Connected",
+          "disconnected": "Disconnected",
+          "connecting": "Connecting..."
+        }
+      },
+      "youtube": {
+        "title": "YouTube",
+        "description": "Manage your YouTube accounts for video uploads",
+        "add_account": "Add YouTube Account",
+        "no_accounts": "No accounts connected",
+        "remove": "Remove"
+      },
+      "tiktok": {
+        "title": "TikTok",
+        "description": "Manage your TikTok sessions for uploads",
+        "add_account": "Add TikTok Account (Cookies)",
+        "no_accounts": "No accounts connected",
+        "remove": "Remove"
+      },
+      "instagram": {
+        "title": "Instagram",
+        "description": "Connect your account for photo and reel uploads",
+        "manage": "Manage Instagram",
+        "via_whatsapp": "Configure via WhatsApp > Instagram"
+      },
+      "api_config": {
+        "title": "API Configuration",
+        "description": "Configure API keys for external integrations",
+        "evolution_url": {
+          "label": "Evolution API URL",
+          "placeholder": "http://localhost:8082",
+          "description": "Evolution API URL for WhatsApp"
+        },
+        "evolution_key": {
+          "label": "Evolution API Key",
+          "placeholder": "Your API key",
+          "description": "Evolution API authentication key"
+        }
+      }
     },
     "privacy": {
       "title": "Privacy",
@@ -503,44 +976,6 @@
       "upgrade": "Upgrade",
       "billing_history": "Billing History"
     },
-    "integrations": {
-      "title": "Integrations",
-      "connected": "Connected",
-      "available": "Available",
-      "whatsapp": {
-        "title": "WhatsApp",
-        "description": "Connect your WhatsApp to send notifications and messages",
-        "connect": "Connect WhatsApp",
-        "disconnect": "Disconnect",
-        "connected_as": "Connected as",
-        "scan_qr": "Open WhatsApp on your phone > Menu > Connected devices > Connect device"
-      },
-      "youtube": {
-        "title": "YouTube",
-        "description": "Manage your YouTube accounts for video uploads",
-        "add_account": "Add YouTube Account",
-        "no_accounts": "No accounts connected"
-      },
-      "tiktok": {
-        "title": "TikTok",
-        "description": "Manage your TikTok sessions for uploads",
-        "add_account": "Add TikTok Account (Cookies)",
-        "no_accounts": "No accounts connected"
-      },
-      "instagram": {
-        "title": "Instagram",
-        "description": "Connect your account for photo and reel uploads",
-        "manage": "Manage Instagram"
-      },
-      "api_config": {
-        "title": "API Configuration",
-        "description": "Configure API keys for external integrations",
-        "evolution_url": "Evolution API URL",
-        "evolution_url_hint": "Evolution API URL for WhatsApp",
-        "evolution_key": "Evolution API Key",
-        "evolution_key_hint": "Evolution API authentication key"
-      }
-    },
     "advanced": {
       "title": "Advanced",
       "reset_setup": "Reset Initial Setup",
@@ -549,7 +984,23 @@
       "export_data": "Export Data",
       "developer_mode": "Developer Mode"
     },
-    "saved": "Settings saved successfully!"
+    "saved": "Settings saved successfully!",
+    "save_error": "Error saving settings",
+    "save_button": "Save Settings",
+    "saving": "Saving...",
+    "help": {
+      "title": "Need help?",
+      "faq": {
+        "proxy_q": "Do I need to use a proxy?",
+        "proxy_a": "Proxies are only recommended if you do many collections (more than 100/day). For normal use, it's not necessary.",
+        "openai_q": "Is the OpenAI key required?",
+        "openai_a": "No! The app works 100% without AI. The OpenAI integration is only for those who want to generate copies automatically.",
+        "license_q": "Can I use it on more than one computer?",
+        "license_a": "Yes! The lifetime license allows use on up to 2 devices simultaneously.",
+        "scraper_q": "How long does a collection take?",
+        "scraper_a": "Depends on the number of products. On average, 50 products take about 2-3 minutes."
+      }
+    }
   },
 
   "profile": {

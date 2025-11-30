@@ -26,6 +26,11 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 CREATE DATABASE evolution_db;
 
 -- ===========================================
+-- n8n Database (Workflow Automation)
+-- ===========================================
+CREATE DATABASE n8n;
+
+-- ===========================================
 -- Users Table
 -- ===========================================
 CREATE TABLE IF NOT EXISTS users (

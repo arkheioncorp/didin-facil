@@ -135,7 +135,7 @@ function PlatformCard({ platform }: { platform: PlatformMetrics }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-3 pb-2">
-        <div className={`p-2 rounded-lg text-white ${platformColors[platform.platform] || 'bg-gray-500'}`}>
+        <div className={`p-2 rounded-lg text-white ${platformColors[platform.platform] || 'bg-muted-foreground'}`}>
           {platformIcons[platform.platform] || <BarChart3 className="h-4 w-4" />}
         </div>
         <div>

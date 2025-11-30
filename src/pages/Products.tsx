@@ -17,31 +17,39 @@ import { useFavoritesStore } from "@/stores";
 import { VirtualizedGrid } from "@/components/product/VirtualizedGrid";
 import { analytics } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
-import { Grid3X3, List, X, Heart, Download, Check } from "lucide-react";
+import { Grid3X3, List, X, Heart, Download, Check, RefreshCw } from "lucide-react";
 
-import { exportProducts, getProducts, addFavorite, removeFavorite } from "@/lib/tauri";
+import { getProducts } from "@/services/products";
+import { 
+  addProductToFavorites, 
+  removeProductFromFavorites,
+  exportProductsToFile,
+  fetchCategories,
+  type CategoryInfo 
+} from "@/services/api/products";
 import type { Product } from "@/types";
-
-// Categories for filtering
-const CATEGORIES = [
-  { value: "all", label: "Todas" },
-  { value: "electronics", label: "Eletrônicos" },
-  { value: "fashion", label: "Moda" },
-  { value: "home", label: "Casa" },
-  { value: "beauty", label: "Beleza" },
-  { value: "sports", label: "Esportes" },
-];
 
 // Sort options
 const SORT_OPTIONS = [
+  { value: "sales_30d", label: "Mais Vendidos" },
   { value: "newest", label: "Mais Recentes" },
   { value: "price_asc", label: "Menor Preço" },
   { value: "price_desc", label: "Maior Preço" },
-  { value: "sales", label: "Mais Vendidos" },
+  { value: "rating", label: "Melhor Avaliação" },
 ];
 
 // View modes
 type ViewMode = "grid" | "list";
+
+// Default categories (fallback)
+const DEFAULT_CATEGORIES: CategoryInfo[] = [
+  { name: "Todas", slug: "all", count: 0 },
+  { name: "Eletrônicos", slug: "electronics", count: 0 },
+  { name: "Moda", slug: "fashion", count: 0 },
+  { name: "Casa", slug: "home", count: 0 },
+  { name: "Beleza", slug: "beauty", count: 0 },
+  { name: "Esportes", slug: "sports", count: 0 },
+];
 
 export const Products: React.FC = () => {
   const { t } = useTranslation();
@@ -52,29 +60,52 @@ export const Products: React.FC = () => {
   
   // State
   const [products, setProducts] = React.useState<Product[]>([]);
+  const [categories, setCategories] = React.useState<CategoryInfo[]>(DEFAULT_CATEGORIES);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isLoadingMore, setIsLoadingMore] = React.useState(false);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [isExporting, setIsExporting] = React.useState(false);
   const [total, setTotal] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(1);
   const [hasMore, setHasMore] = React.useState(true);
   const [currentPage, setCurrentPage] = React.useState(1);
-  const pageSize = 20;
+  const pageSize = 24; // Better for 3-column grid
 
   // URL-synced state
   const page = parseInt(searchParams.get("page") || "1", 10);
   const sortFromUrl = searchParams.get("sort");
-  const sort = sortFromUrl || "newest"; // Default to newest but keep URL clean
+  const sort = sortFromUrl || "sales_30d"; // Default to best sellers
   const category = searchParams.get("category") || "all";
   const minPrice = searchParams.get("min_price") || "";
   const maxPrice = searchParams.get("max_price") || "";
   const minSales = searchParams.get("min_sales") || "";
+  const searchQuery = searchParams.get("q") || "";
+  
+  // Quick filter toggles from URL
+  const showTrending = searchParams.get("trending") === "true";
+  const showOnSale = searchParams.get("on_sale") === "true";
+  const showFreeShipping = searchParams.get("free_shipping") === "true";
 
   // Local filter state (for form before apply)
   const [filterMinPrice, setFilterMinPrice] = React.useState(minPrice);
   const [filterMaxPrice, setFilterMaxPrice] = React.useState(maxPrice);
   const [filterMinSales, setFilterMinSales] = React.useState(minSales);
+  // Future use: advanced filter states
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_filterSearch, _setFilterSearch] = React.useState(searchQuery);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_filterTrending, _setFilterTrending] = React.useState(showTrending);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_filterOnSale, _setFilterOnSale] = React.useState(showOnSale);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_filterFreeShipping, _setFilterFreeShipping] = React.useState(showFreeShipping);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_priceRange, _setPriceRange] = React.useState<[number, number]>([0, 1000]);
+
+  // Mobile filter sheet state (future use)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_showMobileFilters, _setShowMobileFilters] = React.useState(false);
 
   // View mode with localStorage persistence
   const [viewMode, setViewMode] = React.useState<ViewMode>(() => {
@@ -97,47 +128,63 @@ export const Products: React.FC = () => {
     setFilterMinPrice(minPrice);
     setFilterMaxPrice(maxPrice);
     setFilterMinSales(minSales);
-  }, [minPrice, maxPrice, minSales]);
+    // Advanced filter sync (future use)
+    // _setFilterSearch(searchQuery);
+    // _setFilterTrending(showTrending);
+    // _setFilterOnSale(showOnSale);
+    // _setFilterFreeShipping(showFreeShipping);
+  }, [minPrice, maxPrice, minSales, searchQuery, showTrending, showOnSale, showFreeShipping]);
+
+  // Load categories on mount
+  React.useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const cats = await fetchCategories();
+        if (cats.length > 0) {
+          setCategories(cats);
+        }
+      } catch (err) {
+        console.warn("Error loading categories, using defaults:", err);
+      }
+    };
+    loadCategories();
+  }, []);
 
   // Persist view mode
   React.useEffect(() => {
     localStorage.setItem("products-view-mode", viewMode);
   }, [viewMode]);
 
-  // Apply client-side filters and sorting
-  const applyFiltersAndSort = (data: Product[]): Product[] => {
+  // Build API sort params
+  const getSortParams = () => {
+    switch (sort) {
+      case "price_asc":
+        return { sortBy: "price", sortOrder: "asc" };
+      case "price_desc":
+        return { sortBy: "price", sortOrder: "desc" };
+      case "rating":
+        return { sortBy: "rating", sortOrder: "desc" };
+      case "newest":
+        return { sortBy: "newest", sortOrder: "desc" };
+      case "sales_30d":
+      default:
+        return { sortBy: "sales_30d", sortOrder: "desc" };
+    }
+  };
+
+  // Apply client-side filters for additional filtering
+  const applyClientFilters = (data: Product[]): Product[] => {
     let filtered = [...data];
     
-    // Category filter
-    if (category && category !== "all") {
-      filtered = filtered.filter(p => p.category === category);
+    // Quick filters (client-side since API may not support)
+    if (showTrending) {
+      filtered = filtered.filter(p => p.isTrending);
     }
-    
-    // Price filters
-    const minPriceValue = minPrice ? parseFloat(minPrice) : undefined;
-    const maxPriceValue = maxPrice ? parseFloat(maxPrice) : undefined;
-    if (minPriceValue !== undefined) {
-      filtered = filtered.filter(p => p.price >= minPriceValue);
+    if (showOnSale) {
+      filtered = filtered.filter(p => p.isOnSale);
     }
-    if (maxPriceValue !== undefined) {
-      filtered = filtered.filter(p => p.price <= maxPriceValue);
-    }
-    
-    // Min sales filter
-    const minSalesValue = minSales ? parseInt(minSales, 10) : undefined;
-    if (minSalesValue !== undefined) {
-      filtered = filtered.filter(p => (p.salesCount || 0) >= minSalesValue);
-    }
-    
-    // Apply sorting
-    if (sort === "price_asc") {
-      filtered.sort((a, b) => a.price - b.price);
-    } else if (sort === "price_desc") {
-      filtered.sort((a, b) => b.price - a.price);
-    } else if (sort === "sales") {
-      filtered.sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0));
-    } else if (sort === "newest") {
-      filtered.sort((a, b) => new Date(b.collectedAt || 0).getTime() - new Date(a.collectedAt || 0).getTime());
+    if (showFreeShipping) {
+      filtered = filtered.filter(p => p.hasFreeShipping);
     }
     
     return filtered;
@@ -149,9 +196,20 @@ export const Products: React.FC = () => {
       setIsLoading(true);
       setError(null);
       setCurrentPage(1);
+      
       try {
-        const response = await getProducts(1, pageSize);
-        const filteredProducts = applyFiltersAndSort(response.data);
+        const { sortBy, sortOrder } = getSortParams();
+        
+        const response = await getProducts(1, pageSize, {
+          category: category !== "all" ? category : undefined,
+          minPrice: minPrice ? parseFloat(minPrice) : undefined,
+          maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+          minSales: minSales ? parseInt(minSales, 10) : undefined,
+          sortBy,
+          sortOrder,
+        });
+        
+        const filteredProducts = applyClientFilters(response.data);
         setProducts(filteredProducts);
         setTotal(response.total);
         setTotalPages(Math.ceil(response.total / response.pageSize));
@@ -166,7 +224,7 @@ export const Products: React.FC = () => {
 
     loadProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort, category, minPrice, maxPrice, minSales]);
+  }, [sort, category, minPrice, maxPrice, minSales, showTrending, showOnSale, showFreeShipping]);
 
   // Load more products (infinite scroll)
   const loadMoreProducts = React.useCallback(async () => {
@@ -175,8 +233,18 @@ export const Products: React.FC = () => {
     setIsLoadingMore(true);
     try {
       const nextPage = currentPage + 1;
-      const response = await getProducts(nextPage, pageSize);
-      const filteredNewProducts = applyFiltersAndSort(response.data);
+      const { sortBy, sortOrder } = getSortParams();
+      
+      const response = await getProducts(nextPage, pageSize, {
+        category: category !== "all" ? category : undefined,
+        minPrice: minPrice ? parseFloat(minPrice) : undefined,
+        maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+        minSales: minSales ? parseInt(minSales, 10) : undefined,
+        sortBy,
+        sortOrder,
+      });
+      
+      const filteredNewProducts = applyClientFilters(response.data);
       
       setProducts(prev => [...prev, ...filteredNewProducts]);
       setCurrentPage(nextPage);
@@ -187,25 +255,71 @@ export const Products: React.FC = () => {
       setIsLoadingMore(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, hasMore, isLoadingMore, category, minPrice, maxPrice, minSales, sort]);
+  }, [currentPage, hasMore, isLoadingMore, category, minPrice, maxPrice, minSales, sort, showTrending, showOnSale, showFreeShipping]);
+
+  // Refresh products
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const { sortBy, sortOrder } = getSortParams();
+      
+      const response = await getProducts(1, pageSize, {
+        category: category !== "all" ? category : undefined,
+        minPrice: minPrice ? parseFloat(minPrice) : undefined,
+        maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+        minSales: minSales ? parseInt(minSales, 10) : undefined,
+        sortBy,
+        sortOrder,
+      });
+      
+      const filteredProducts = applyClientFilters(response.data);
+      setProducts(filteredProducts);
+      setTotal(response.total);
+      setCurrentPage(1);
+      setHasMore(response.hasMore);
+      
+      toast({
+        title: "Atualizado!",
+        description: `${response.total} produtos carregados.`,
+      });
+    } catch (err) {
+      console.error("Error refreshing products:", err);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar os produtos.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Handle favorite toggle
   const handleFavorite = async (product: Product) => {
     try {
       if (isFavorite(product.id)) {
-        await removeFavorite(product.id);
-        removeFromFavorites(product.id);
+        const success = await removeProductFromFavorites(product.id);
+        if (success) {
+          removeFromFavorites(product.id);
+        }
       } else {
-        await addFavorite(product.id);
-        addToFavorites(product);
+        const success = await addProductToFavorites(product.id);
+        if (success) {
+          addToFavorites(product);
+        }
       }
     } catch (err) {
       console.error("Error toggling favorite:", err);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar favoritos.",
+        variant: "destructive",
+      });
     }
   };
 
   // Handle export
-  const handleExport = async (format: "csv" | "json" | "xlsx") => {
+  const handleExport = async (format: "csv" | "xlsx") => {
     const productsToExport = selectedProducts.size > 0 
       ? products.filter(p => selectedProducts.has(p.id))
       : products;
@@ -220,13 +334,17 @@ export const Products: React.FC = () => {
       });
 
       const productIds = productsToExport.map(p => p.id);
-      const filePath = await exportProducts(productIds, format);
-      console.log("Exported to:", filePath);
+      await exportProductsToFile(productIds, format);
       toast({ title: "Exportado!", description: `${productsToExport.length} produtos exportados com sucesso!` });
       setShowExportModal(false);
       setSelectedProducts(new Set());
     } catch (err) {
       console.error("Error exporting:", err);
+      toast({
+        title: "Erro",
+        description: "Não foi possível exportar os produtos.",
+        variant: "destructive",
+      });
     } finally {
       setIsExporting(false);
     }
@@ -302,8 +420,10 @@ export const Products: React.FC = () => {
       for (const productId of selectedProducts) {
         const product = products.find(p => p.id === productId);
         if (product && !isFavorite(productId)) {
-          await addFavorite(productId);
-          addToFavorites(product);
+          const success = await addProductToFavorites(productId);
+          if (success) {
+            addToFavorites(product);
+          }
         }
       }
       toast({ title: "Adicionado!", description: `${selectedProducts.size} produtos adicionados aos favoritos!` });
@@ -390,6 +510,15 @@ export const Products: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={handleRefresh}
+            disabled={isRefreshing || isLoading}
+          >
+            <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
+            {isRefreshing ? t("common.refreshing") : t("common.refresh")}
+          </Button>
           <Button
             variant="outline"
             className="gap-2"
@@ -497,9 +626,9 @@ export const Products: React.FC = () => {
                   <SelectValue placeholder={t("products.all_categories")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.slug} value={cat.slug}>
+                      {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -983,15 +1112,6 @@ export const Products: React.FC = () => {
               >
                 <Download size={18} />
                 Exportar como Excel
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start gap-3"
-                onClick={() => handleExport("json")}
-                disabled={isExporting}
-              >
-                <Download size={18} />
-                Exportar como JSON
               </Button>
             </div>
             <Button 

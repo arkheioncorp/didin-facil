@@ -1,0 +1,244 @@
+{
+    "name": "08 - Rate Limiter (Utility)",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "rate-limit-check",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "id": "webhook-rate-check",
+            "name": "Webhook Rate Check",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [
+                250,
+                300
+            ],
+            "webhookId": "rate-limit-check"
+        },
+        {
+            "parameters": {
+                "operation": "get",
+                "key": "=ratelimit:{{ $json.conversation_id }}",
+                "options": {}
+            },
+            "id": "redis-get-count",
+            "name": "Get Rate Limit Count",
+            "type": "n8n-nodes-base.redis",
+            "typeVersion": 1,
+            "position": [
+                470,
+                300
+            ],
+            "credentials": {
+                "redis": {
+                    "id": "redis-didin",
+                    "name": "Redis Didin"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// Rate Limit Configuration\nconst LIMIT = parseInt($env.RATE_LIMIT_MESSAGES_PER_MINUTE) || 10;\nconst WINDOW_SECONDS = parseInt($env.RATE_LIMIT_WINDOW_SECONDS) || 60;\n\n// Get current count from Redis\nconst currentCount = parseInt($input.first().json.value) || 0;\nconst conversationId = $('Webhook Rate Check').first().json.conversation_id;\n\n// Check if limit exceeded\nif (currentCount >= LIMIT) {\n  return {\n    json: {\n      allowed: false,\n      limit_exceeded: true,\n      current_count: currentCount,\n      limit: LIMIT,\n      retry_after_seconds: WINDOW_SECONDS,\n      message: `⚠️ Você atingiu o limite de ${LIMIT} mensagens por minuto. Por favor, aguarde.`\n    }\n  };\n}\n\n// Allow the message\nreturn {\n  json: {\n    allowed: true,\n    limit_exceeded: false,\n    current_count: currentCount + 1,\n    limit: LIMIT,\n    remaining: LIMIT - (currentCount + 1)\n  }\n};"
+            },
+            "id": "check-limit",
+            "name": "Check Limit",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                690,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.allowed }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "is-allowed",
+            "name": "Is Allowed?",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                910,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "set",
+                "key": "=ratelimit:{{ $('Webhook Rate Check').item.json.conversation_id }}",
+                "value": "={{ $json.current_count }}",
+                "options": {
+                    "ttl": "={{ $env.RATE_LIMIT_WINDOW_SECONDS || 60 }}"
+                }
+            },
+            "id": "redis-increment",
+            "name": "Increment Counter",
+            "type": "n8n-nodes-base.redis",
+            "typeVersion": 1,
+            "position": [
+                1130,
+                200
+            ],
+            "credentials": {
+                "redis": {
+                    "id": "redis-didin",
+                    "name": "Redis Didin"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={{ $('Check Limit').item.json }}"
+            },
+            "id": "respond-allowed",
+            "name": "Respond Allowed",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                1350,
+                200
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "INSERT INTO rate_limits (conversation_id, message_count, window_start, window_end, blocked) VALUES ($1, $2, NOW(), NOW() + INTERVAL '{{ $env.RATE_LIMIT_WINDOW_SECONDS || 60 }} seconds', true)",
+                "options": {
+                    "queryParams": "={{ $('Webhook Rate Check').item.json.conversation_id }},{{ $('Check Limit').item.json.current_count }}"
+                }
+            },
+            "id": "log-blocked",
+            "name": "Log Blocked",
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 2.5,
+            "position": [
+                1130,
+                400
+            ],
+            "credentials": {
+                "postgres": {
+                    "id": "postgres-didin",
+                    "name": "PostgreSQL Didin"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseCode": 429,
+                "responseBody": "={{ $('Check Limit').item.json }}"
+            },
+            "id": "respond-blocked",
+            "name": "Respond Blocked",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                1350,
+                400
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook Rate Check": {
+            "main": [
+                [
+                    {
+                        "node": "Get Rate Limit Count",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get Rate Limit Count": {
+            "main": [
+                [
+                    {
+                        "node": "Check Limit",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Check Limit": {
+            "main": [
+                [
+                    {
+                        "node": "Is Allowed?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Is Allowed?": {
+            "main": [
+                [
+                    {
+                        "node": "Increment Counter",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Log Blocked",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Increment Counter": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Allowed",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Log Blocked": {
+            "main": [
+                [
+                    {
+                        "node": "Respond Blocked",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "tags": [
+        {
+            "name": "Utility"
+        },
+        {
+            "name": "Security"
+        },
+        {
+            "name": "Rate Limiting"
+        }
+    ],
+    "meta": {
+        "templateCredsSetupCompleted": true
+    }
+}

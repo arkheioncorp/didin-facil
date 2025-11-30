@@ -80,9 +80,9 @@ const channelIcons: Record<string, React.ReactNode> = {
 };
 
 const statusColors: Record<string, string> = {
-  active: 'bg-green-100 text-green-800',
-  paused: 'bg-yellow-100 text-yellow-800',
-  draft: 'bg-gray-100 text-gray-800',
+  active: 'bg-green-500/20 text-green-400',
+  paused: 'bg-yellow-500/20 text-yellow-400',
+  draft: 'bg-muted text-muted-foreground',
 };
 
 function ChatbotCard({ chatbot, onEdit, onDelete, onToggle }: {

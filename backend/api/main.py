@@ -11,10 +11,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routes import (
     auth, products, copy, license, webhooks, bot,
     whatsapp, chatwoot, instagram, tiktok, youtube, content, scheduler,
-    integrations, social_auth, metrics, status_webhooks, checkout,
+    integrations, social_auth, metrics, status_webhooks,
     analytics, templates, accounts, api_docs, marketplaces,
-    subscription, analytics_social, chatbot, automation
+    analytics_social, chatbot, automation, template_library,
+    email, campaigns, crm, seller_bot,
+    accounting, credits, checkout  # New financial routes
 )
+from .routers import crm_advanced  # CRM Advanced Services
 from .middleware.ratelimit import RateLimitMiddleware
 from .middleware.security import SecurityHeadersMiddleware
 from .middleware.metrics import MetricsMiddleware
@@ -139,7 +142,7 @@ app.include_router(
 app.include_router(
     checkout.router,
     prefix="/checkout",
-    tags=["Checkout & Payments"]
+    tags=["Checkout"]
 )
 app.include_router(
     analytics.router,
@@ -167,11 +170,7 @@ app.include_router(
 )
 
 # New routes for monetization, analytics, chatbot, and automation
-app.include_router(
-    subscription.router,
-    prefix="/subscription",
-    tags=["Subscription & Plans"]
-)
+# subscription.router removed - use credits.router instead
 app.include_router(
     analytics_social.router,
     prefix="/analytics/social",
@@ -186,6 +185,51 @@ app.include_router(
     automation.router,
     prefix="/automation",
     tags=["Automation (n8n)"]
+)
+app.include_router(
+    template_library.router,
+    prefix="/templates/library",
+    tags=["Template Library"]
+)
+
+# Email Marketing routes
+app.include_router(
+    email.router,
+    prefix="/email",
+    tags=["Email Marketing"]
+)
+app.include_router(
+    campaigns.router,
+    prefix="/campaigns",
+    tags=["Email Campaigns"]
+)
+
+# CRM routes
+app.include_router(
+    crm.router,
+    prefix="/crm",
+    tags=["CRM"]
+)
+
+# CRM Advanced Services (Risk Detection, Next Best Action, Workflows)
+app.include_router(crm_advanced.router)
+
+# Professional Seller Bot
+app.include_router(
+    seller_bot.router,
+    tags=["Professional Seller Bot"]
+)
+
+# Accounting & Credits (Financial)
+app.include_router(
+    accounting.router,
+    prefix="/admin/accounting",
+    tags=["Admin Accounting"]
+)
+app.include_router(
+    credits.router,
+    prefix="/credits",
+    tags=["Credits Purchase"]
 )
 
 

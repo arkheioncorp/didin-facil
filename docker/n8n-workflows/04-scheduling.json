@@ -1,0 +1,275 @@
+{
+  "name": "04 - Agendamento de Atendimento",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot-schedule",
+        "options": {}
+      },
+      "id": "webhook-schedule",
+      "name": "Webhook Agendamento",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-event",
+              "leftValue": "={{ $json.event }}",
+              "rightValue": "message_created",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "condition-schedule",
+              "leftValue": "={{ $json.content.toLowerCase() }}",
+              "rightValue": "agendar|agendamento|marcar|reservar|horário",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-schedule",
+      "name": "Detectar Agendamento",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 10,
+        "options": {
+          "timeMin": "={{ $now.toISO() }}",
+          "timeMax": "={{ $now.plus({days: 7}).toISO() }}"
+        }
+      },
+      "id": "get-calendar",
+      "name": "Buscar Agenda",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.2,
+      "position": [690, 300],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "google-calendar",
+          "name": "Google Calendar"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Processar horários disponíveis\nconst eventos = $input.all();\nconst horariosOcupados = eventos.map(e => ({\n  inicio: new Date(e.json.start.dateTime),\n  fim: new Date(e.json.end.dateTime)\n}));\n\n// Horários de trabalho: 9h-17h\nconst horariosDisponiveis = [];\nconst hoje = new Date();\n\nfor (let dia = 0; dia < 5; dia++) {\n  const data = new Date(hoje);\n  data.setDate(data.getDate() + dia);\n  \n  // Pular fim de semana\n  if (data.getDay() === 0 || data.getDay() === 6) continue;\n  \n  for (let hora = 9; hora < 17; hora++) {\n    const horario = new Date(data);\n    horario.setHours(hora, 0, 0, 0);\n    \n    // Verificar se está ocupado\n    const ocupado = horariosOcupados.some(h => \n      horario >= h.inicio && horario < h.fim\n    );\n    \n    if (!ocupado && horario > hoje) {\n      horariosDisponiveis.push({\n        data: horario.toLocaleDateString('pt-BR'),\n        hora: `${hora}:00`,\n        timestamp: horario.toISOString()\n      });\n    }\n  }\n}\n\nreturn horariosDisponiveis.slice(0, 6);"
+      },
+      "id": "process-availability",
+      "name": "Processar Disponibilidade",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $('Webhook Agendamento').item.json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"📅 *Horários Disponíveis*\\n\\n{{ $json.map((h, i) => `${i+1}️⃣ ${h.data} às ${h.hora}`).join('\\n') }}\\n\\n✍️ Digite o número do horário desejado\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-availability",
+      "name": "Enviar Horários",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-number",
+              "leftValue": "={{ $json.content }}",
+              "rightValue": "^[1-6]$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-selection",
+      "name": "Selecionou Horário?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1350, 300]
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendar": {
+          "__rl": true,
+          "value": "primary",
+          "mode": "list"
+        },
+        "start": "={{ $json.selectedSlot.timestamp }}",
+        "end": "={{ DateTime.fromISO($json.selectedSlot.timestamp).plus({hours: 1}).toISO() }}",
+        "additionalFields": {
+          "summary": "=Atendimento WhatsApp - {{ $('Webhook Agendamento').item.json.sender.name }}",
+          "description": "=Agendamento via WhatsApp\nContato: {{ $('Webhook Agendamento').item.json.sender.phone_number }}"
+        }
+      },
+      "id": "create-event",
+      "name": "Criar Evento",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.2,
+      "position": [1570, 200],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "google-calendar",
+          "name": "Google Calendar"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $('Webhook Agendamento').item.json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"✅ *Agendamento Confirmado!*\\n\\n📅 Data: {{ $json.selectedSlot.data }}\\n🕐 Horário: {{ $json.selectedSlot.hora }}\\n\\n📧 Você receberá um lembrete por email.\\n\\nObrigado por escolher o Didin Fácil! 🎉\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "confirm-booking",
+      "name": "Confirmar Agendamento",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1790, 200]
+    }
+  ],
+  "connections": {
+    "Webhook Agendamento": {
+      "main": [
+        [
+          {
+            "node": "Detectar Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detectar Agendamento": {
+      "main": [
+        [
+          {
+            "node": "Buscar Agenda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Agenda": {
+      "main": [
+        [
+          {
+            "node": "Processar Disponibilidade",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Disponibilidade": {
+      "main": [
+        [
+          {
+            "node": "Enviar Horários",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Selecionou Horário?": {
+      "main": [
+        [
+          {
+            "node": "Criar Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Evento": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "WhatsApp"
+    },
+    {
+      "name": "Agendamento"
+    },
+    {
+      "name": "Google Calendar"
+    }
+  ]
+}

@@ -19,6 +19,30 @@ export interface LoginResponse {
   credits?: Credits;
 }
 
+/**
+ * Get auth token from localStorage
+ */
+export function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("auth_token");
+}
+
+/**
+ * Set auth token in localStorage
+ */
+export function setAuthToken(token: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("auth_token", token);
+}
+
+/**
+ * Clear auth token from localStorage
+ */
+export function clearAuthToken(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("auth_token");
+}
+
 export const authService = {
   async login(email: string, password: string, hwid: string) {
     const response = await api.post<LoginResponse>("/auth/login", {

@@ -194,12 +194,12 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {error && (
-        <Card className="border-destructive/50 bg-destructive/5">
-          <CardContent className="pt-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+        <Card className="border-destructive/50 bg-destructive/5 overflow-visible">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
               <span className="text-destructive text-lg">!</span>
             </div>
-            <p className="text-destructive text-sm">{error}</p>
+            <p className="text-destructive text-sm break-words">{error}</p>
           </CardContent>
         </Card>
       )}
@@ -246,8 +246,8 @@ export const Dashboard: React.FC = () => {
 
       {/* Quick Actions - Melhoria visual */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="col-span-full lg:col-span-2 overflow-hidden" data-testid="quick-actions">
-          <div className="absolute inset-0 bg-gradient-to-br from-tiktrend-primary/5 via-transparent to-tiktrend-secondary/5" />
+        <Card className="col-span-full lg:col-span-2 overflow-hidden relative" data-testid="quick-actions">
+          <div className="absolute inset-0 bg-gradient-to-br from-tiktrend-primary/5 via-transparent to-tiktrend-secondary/5 pointer-events-none" />
           <CardHeader className="relative">
             <CardTitle className="flex items-center gap-2">
               <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-tiktrend-primary to-tiktrend-secondary flex items-center justify-center text-white text-sm">

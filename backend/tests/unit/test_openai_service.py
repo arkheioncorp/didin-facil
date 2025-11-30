@@ -16,7 +16,12 @@ class TestOpenAIService:
         """Create OpenAIService instance for testing."""
         with patch("api.services.openai.OPENAI_API_KEY", "test-api-key"), \
              patch("api.services.openai.OPENAI_MODEL", "gpt-4-turbo-preview"), \
-             patch("api.services.openai.AsyncOpenAI") as mock_client:
+             patch("api.services.openai.AsyncOpenAI") as mock_client, \
+             patch("api.services.openai.AccountingService") as mock_accounting:
+            
+            mock_accounting_instance = MagicMock()
+            mock_accounting_instance.track_openai_usage = AsyncMock()
+            mock_accounting.return_value = mock_accounting_instance
             
             service = OpenAIService()
             service.client = mock_client.return_value

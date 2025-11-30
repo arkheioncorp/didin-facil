@@ -5,6 +5,7 @@ Contém integrações com serviços externos:
 - marketplaces: Mercado Livre, Amazon, Shopee
 - typebot: Chatbot builder integration
 - n8n: Workflow automation
+- whatsapp_hub: Central WhatsApp integration via Evolution API
 """
 
 from .marketplaces import (
@@ -27,6 +28,16 @@ from .n8n import (
     TriggerType,
     get_n8n_client,
 )
+from .whatsapp_hub import (
+    WhatsAppHub,
+    WhatsAppHubConfig,
+    WhatsAppMessage,
+    InstanceInfo,
+    MessageType,
+    ConnectionState,
+    get_whatsapp_hub,
+    send_whatsapp_message,
+)
 
 __all__ = [
     # Marketplaces
@@ -46,4 +57,13 @@ __all__ = [
     "WorkflowStatus",
     "TriggerType",
     "get_n8n_client",
+    # WhatsApp Hub
+    "WhatsAppHub",
+    "WhatsAppHubConfig",
+    "WhatsAppMessage",
+    "InstanceInfo",
+    "MessageType",
+    "ConnectionState",
+    "get_whatsapp_hub",
+    "send_whatsapp_message",
 ]

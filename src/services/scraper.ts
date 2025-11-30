@@ -1,9 +1,55 @@
-import { invoke } from "@tauri-apps/api/core";
 import type { ScraperConfig, ScraperStatus } from "@/types";
+
+// Check if running in Tauri environment
+const isTauri = (): boolean => {
+  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+};
+
+// Safe invoke wrapper for Tauri commands
+async function safeInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
+  if (isTauri()) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<T>(cmd, args);
+  }
+  throw new Error(`Tauri command "${cmd}" not available in browser mode`);
+}
+
+// API base URL for browser mode
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+
+// Default scraper status for browser mode
+const defaultScraperStatus: ScraperStatus = {
+  isRunning: false,
+  productsFound: 0,
+  progress: 0,
+  currentProduct: null,
+  errors: [],
+  startedAt: null,
+  statusMessage: "Pronto para iniciar",
+  logs: []
+};
 
 export async function startScraper(config: ScraperConfig): Promise<ScraperStatus> {
   try {
-    return await invoke<ScraperStatus>("scrape_tiktok_shop", { config });
+    if (isTauri()) {
+      return await safeInvoke<ScraperStatus>("scrape_tiktok_shop", { config });
+    }
+    
+    // Browser mode: call backend API
+    const response = await fetch(`${API_BASE_URL}/api/v1/scraper/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+      },
+      body: JSON.stringify(config)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return await response.json();
   } catch (error) {
     console.error("Error starting scraper:", error);
     throw error;
@@ -12,16 +58,43 @@ export async function startScraper(config: ScraperConfig): Promise<ScraperStatus
 
 export async function getScraperStatus(): Promise<ScraperStatus> {
   try {
-    return await invoke<ScraperStatus>("get_scraper_status");
+    if (isTauri()) {
+      return await safeInvoke<ScraperStatus>("get_scraper_status");
+    }
+    
+    // Browser mode: call backend API
+    const response = await fetch(`${API_BASE_URL}/api/v1/scraper/status`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+      }
+    });
+    
+    if (!response.ok) {
+      return defaultScraperStatus;
+    }
+    
+    return await response.json();
   } catch (error) {
     console.error("Error getting scraper status:", error);
-    throw error;
+    return defaultScraperStatus;
   }
 }
 
 export async function stopScraper(): Promise<boolean> {
   try {
-    return await invoke<boolean>("stop_scraper");
+    if (isTauri()) {
+      return await safeInvoke<boolean>("stop_scraper");
+    }
+    
+    // Browser mode: call backend API
+    const response = await fetch(`${API_BASE_URL}/api/v1/scraper/stop`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+      }
+    });
+    
+    return response.ok;
   } catch (error) {
     console.error("Error stopping scraper:", error);
     throw error;
@@ -30,7 +103,21 @@ export async function stopScraper(): Promise<boolean> {
 
 export async function testProxy(proxy: string): Promise<boolean> {
   try {
-    return await invoke<boolean>("test_proxy", { proxy });
+    if (isTauri()) {
+      return await safeInvoke<boolean>("test_proxy", { proxy });
+    }
+    
+    // Browser mode: call backend API
+    const response = await fetch(`${API_BASE_URL}/api/v1/scraper/test-proxy`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+      },
+      body: JSON.stringify({ proxy })
+    });
+    
+    return response.ok;
   } catch (error) {
     console.error("Error testing proxy:", error);
     return false;
@@ -39,7 +126,24 @@ export async function testProxy(proxy: string): Promise<boolean> {
 
 export async function syncProducts(): Promise<number> {
   try {
-    return await invoke<number>("sync_products");
+    if (isTauri()) {
+      return await safeInvoke<number>("sync_products");
+    }
+    
+    // Browser mode: call backend API
+    const response = await fetch(`${API_BASE_URL}/api/v1/scraper/sync`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data.count || 0;
   } catch (error) {
     console.error("Error syncing products:", error);
     throw error;
@@ -48,7 +152,20 @@ export async function syncProducts(): Promise<number> {
 
 export async function updateSelectors(selectors: string[]): Promise<void> {
   try {
-    await invoke("update_selectors", { selectors });
+    if (isTauri()) {
+      await safeInvoke("update_selectors", { selectors });
+      return;
+    }
+    
+    // Browser mode: call backend API
+    await fetch(`${API_BASE_URL}/api/v1/scraper/selectors`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+      },
+      body: JSON.stringify({ selectors })
+    });
   } catch (error) {
     console.error("Error updating selectors:", error);
     throw error;
@@ -58,7 +175,22 @@ export async function updateSelectors(selectors: string[]): Promise<void> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function fetchJob(): Promise<any | null> {
   try {
-    return await invoke("fetch_job");
+    if (isTauri()) {
+      return await safeInvoke("fetch_job");
+    }
+    
+    // Browser mode: call backend API
+    const response = await fetch(`${API_BASE_URL}/api/v1/scraper/job`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+      }
+    });
+    
+    if (!response.ok) {
+      return null;
+    }
+    
+    return await response.json();
   } catch (error) {
     console.error("Error fetching job:", error);
     return null;

@@ -788,8 +788,8 @@
     
     <script>
         // Configuration
-        const API_URL = 'https://api.arkheion-tiktrend.com.br';
-        const MP_PUBLIC_KEY = 'APP_USR-XXXXXXXX'; // Substituir pela chave pública
+        const API_URL = 'https://api.akheionshop.com';
+        const MP_PUBLIC_KEY = 'APP_USR-ffb1cb79-a486-47fe-8a4e-37f16162109e';
         
         // Price configuration
         const PRICE = 49.90;
@@ -803,7 +803,7 @@
         // Initialize MercadoPago
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize MP SDK
-            // mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'pt-BR' });
+            mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'pt-BR' });
             
             // Update price display
             updatePrice();
@@ -874,25 +874,14 @@
         
         // Initialize card form (MercadoPago Brick)
         async function initCardForm() {
-            /* 
-            const bricksBuilder = mp.bricks();
-            cardPaymentBrick = await bricksBuilder.create('cardPayment', 'cardPaymentBrick_container', {
-                initialization: {
-                    amount: PRICE
-                },
-                callbacks: {
-                    onReady: () => console.log('Card form ready'),
-                    onSubmit: (cardFormData) => processCardPayment(cardFormData),
-                    onError: (error) => showError(error.message)
-                }
-            });
-            */
             document.getElementById('card-section').innerHTML = `
-                <div style="padding: 2rem; text-align: center; color: var(--gray);">
-                    <p>Formulário de cartão será carregado aqui</p>
-                    <p style="font-size: 0.8rem; margin-top: 0.5rem;">Integração MercadoPago</p>
+                <div style="padding: 2rem; text-align: center; color: var(--white);">
+                    <p>🔒 Ambiente Seguro</p>
+                    <p style="margin-top: 1rem;">Para sua segurança, o pagamento com cartão será processado diretamente na página do MercadoPago.</p>
+                    <p style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">Clique em "Finalizar Compra" para prosseguir.</p>
                 </div>
             `;
+            cardPaymentBrick = true; // Prevent re-init
         }
         
         // Form submission
@@ -909,33 +898,42 @@
                 cpf: document.getElementById('cpf').value.replace(/\D/g, ''),
                 phone: document.getElementById('phone').value.replace(/\D/g, ''),
                 payment_method: selectedMethod,
-                coupon: appliedCoupon
+                product_id: 'tiktrend_lifetime',
+                coupon: appliedCoupon ? appliedCoupon.code : null
             };
             
             try {
-                // Simulate API call (replace with real API)
-                // const response = await fetch(`${API_URL}/api/checkout`, {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify(formData)
-                // });
+                const response = await fetch(`${API_URL}/checkout/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
                 
-                // Simulate response
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Erro ao processar pagamento');
+                }
+
+                const data = await response.json();
                 
                 if (selectedMethod === 'pix') {
-                    showPixPayment({
-                        qr_code: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-                        qr_code_base64: 'https://via.placeholder.com/180',
-                        copy_paste: '00020126580014br.gov.bcb.pix0136example-pix-code-here'
-                    });
+                    showPixPayment(data);
                 } else if (selectedMethod === 'boleto') {
-                    window.location.href = '/pagamento/pendente.html?method=boleto';
+                    if (data.boleto_url) {
+                        window.location.href = data.boleto_url;
+                    } else {
+                        window.location.href = '/pagamento/pendente.html?method=boleto';
+                    }
                 } else {
-                    // Card payment handled by brick
+                    // Card payment - Redirect
+                    if (data.payment_url) {
+                        window.location.href = data.payment_url;
+                    } else {
+                        showError('Erro ao gerar link de pagamento.');
+                    }
                 }
             } catch (error) {
-                showError('Erro ao processar pagamento. Tente novamente.');
+                showError(error.message || 'Erro ao processar pagamento. Tente novamente.');
             } finally {
                 btn.classList.remove('loading');
                 btn.disabled = false;
@@ -994,14 +992,35 @@
         
         async function applyCoupon() {
             const code = document.getElementById('coupon-code').value.toUpperCase();
+            const btn = document.querySelector('.coupon-input button');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '...';
             
-            // Simulate coupon validation
-            if (code === 'LAUNCH10') {
-                appliedCoupon = { code, discount: 0.10 };
-                alert('Cupom aplicado! 10% de desconto');
-                updatePrice();
-            } else {
-                alert('Cupom inválido');
+            try {
+                const response = await fetch(`${API_URL}/checkout/validate-coupon`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, product_id: 'tiktrend_lifetime' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.valid) {
+                    appliedCoupon = { code, discount: data.discount };
+                    alert(data.message);
+                    updatePrice();
+                } else {
+                    alert(data.message || 'Cupom inválido');
+                    appliedCoupon = null;
+                    updatePrice();
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Erro ao validar cupom');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         }
         

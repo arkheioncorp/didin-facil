@@ -1,0 +1,365 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-7.4.3, pluggy-1.6.0
+rootdir: /home/jhonslife/Didin Facil/backend
+configfile: pytest.ini
+plugins: asyncio-0.21.1, anyio-3.7.1, cov-4.1.0
+asyncio: mode=Mode.AUTO
+collected 883 items
+
+backend/tests/unit/test_accounts_routes.py ..................            [  2%]
+backend/tests/unit/test_analytics_routes.py ............                 [  3%]
+backend/tests/unit/test_api_docs_routes.py ..................            [  5%]
+backend/tests/unit/test_api_redis_service.py .....                       [  6%]
+backend/tests/unit/test_auth_middleware.py ............                  [  7%]
+backend/tests/unit/test_auth_service.py ...................              [  9%]
+backend/tests/unit/test_blacklist_service.py .....                       [ 10%]
+backend/tests/unit/test_bot_routes.py .................................. [ 13%]
+....                                                                     [ 14%]
+backend/tests/unit/test_cache_service.py ........................        [ 17%]
+backend/tests/unit/test_chatwoot_routes.py .......                       [ 17%]
+backend/tests/unit/test_checkout_routes.py ................              [ 19%]
+backend/tests/unit/test_content_routes.py ......                         [ 20%]
+backend/tests/unit/test_database_connection.py ........                  [ 21%]
+backend/tests/unit/test_instagram_routes.py ............................ [ 24%]
+.....                                                                    [ 25%]
+backend/tests/unit/test_instagram_session.py ........................... [ 28%]
+.....                                                                    [ 28%]
+backend/tests/unit/test_license_service.py ............................. [ 31%]
+..                                                                       [ 32%]
+backend/tests/unit/test_marketplaces_routes.py ......................... [ 34%]
+............                                                             [ 36%]
+backend/tests/unit/test_mercadopago_service.py ...................       [ 38%]
+backend/tests/unit/test_metrics_routes.py ............                   [ 39%]
+backend/tests/unit/test_middleware.py .................................. [ 43%]
+.....                                                                    [ 44%]
+backend/tests/unit/test_models.py .....................................  [ 48%]
+backend/tests/unit/test_openai_service.py ....................           [ 50%]
+backend/tests/unit/test_postgres_shared.py .........................     [ 53%]
+backend/tests/unit/test_quota_middleware.py ......................       [ 56%]
+backend/tests/unit/test_redis_service.py ........                        [ 56%]
+backend/tests/unit/test_scheduler_routes.py ................             [ 58%]
+backend/tests/unit/test_scraper_service.py .....................         [ 61%]
+backend/tests/unit/test_status_webhooks.py ...............               [ 62%]
+backend/tests/unit/test_templates_routes.py ................             [ 64%]
+backend/tests/unit/test_tiktok_routes.py ...................             [ 66%]
+backend/tests/unit/test_tiktok_session.py .....................          [ 69%]
+backend/tests/unit/test_utils.py ................                        [ 71%]
+backend/tests/unit/test_webhooks.py ..............                       [ 72%]
+backend/tests/unit/test_whatsapp_routes.py ............................. [ 75%]
+.............                                                            [ 77%]
+backend/tests/unit/test_youtube_routes.py .............                  [ 78%]
+backend/tests/unit/shared/test_postgres.py ............                  [ 80%]
+backend/tests/unit/shared/test_redis.py ..............................   [ 83%]
+backend/tests/unit/shared/test_storage.py ........................       [ 86%]
+backend/tests/integration/test_auth_routes.py ............               [ 87%]
+backend/tests/integration/test_copy_routes.py ..............             [ 89%]
+backend/tests/integration/test_integrations_api.py .........             [ 90%]
+backend/tests/integration/test_integrations_routes.py ...........        [ 91%]
+backend/tests/integration/test_license_routes.py .............           [ 92%]
+backend/tests/integration/test_products_routes.py ........               [ 93%]
+backend/tests/integration/test_scraper_integration.py .................. [ 95%]
+.....                                                                    [ 96%]
+backend/tests/integration/test_social_auth_routes.py ..............      [ 98%]
+backend/tests/integration/test_tiktok_api_endpoints.py .......           [ 98%]
+backend/tests/integration/test_webhooks_routes.py ..........             [100%]
+
+=============================== warnings summary ===============================
+backend/venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1373
+  /home/jhonslife/Didin Facil/backend/venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1373: PytestConfigWarning: Unknown config option: env
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+backend/tests/unit/shared/test_postgres.py:138
+  /home/jhonslife/Didin Facil/backend/tests/unit/shared/test_postgres.py:138: PytestCollectionWarning: cannot collect test class 'TestRepo' because it has a __init__ constructor (from: tests/unit/shared/test_postgres.py)
+    class TestRepo(Repository):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform linux, python 3.12.3-final-0 -----------
+Name                                        Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------------
+backend/api/__init__.py                         0      0   100%
+backend/api/database/__init__.py                0      0   100%
+backend/api/database/connection.py             30      0   100%
+backend/api/database/models.py                151      0   100%
+backend/api/main.py                            76     19    75%   38, 45-76, 195, 201
+backend/api/middleware/__init__.py              0      0   100%
+backend/api/middleware/auth.py                 34      0   100%
+backend/api/middleware/metrics.py              52     27    48%   33, 51-52, 56-68, 83-96, 107-117
+backend/api/middleware/quota.py                45      0   100%
+backend/api/middleware/ratelimit.py            39      0   100%
+backend/api/middleware/request_id.py           11      0   100%
+backend/api/middleware/security.py             14      0   100%
+backend/api/models/__init__.py                  0      0   100%
+backend/api/routes/__init__.py                  2      0   100%
+backend/api/routes/accounts.py                253     49    81%   209, 216, 218, 222, 224-227, 238, 261, 298, 311, 355-357, 395, 411-415, 432-438, 447-450, 460-467, 476-479, 491-495, 504-511, 521-528
+backend/api/routes/analytics.py               182      0   100%
+backend/api/routes/analytics_social.py        101     64    37%   59-69, 105-117, 165-176, 188-200, 218-230, 244-258, 275-289, 300-310, 335-352
+backend/api/routes/api_docs.py                 58      0   100%
+backend/api/routes/auth.py                     68      0   100%
+backend/api/routes/automation.py               94     56    40%   46-63, 74-79, 97-102, 113-118, 134-149, 160-169, 186-213, 225, 246-251, 277-295, 309-325, 338-353
+backend/api/routes/bot.py                     157      1    99%   203
+backend/api/routes/chatbot.py                  87     46    47%   54-76, 87-107, 118-123, 138-155, 166-171, 184-194, 206-208, 226-233, 245-251, 261-263, 269-272
+backend/api/routes/chatwoot.py                 44      2    95%   32-37
+backend/api/routes/checkout.py                106      0   100%
+backend/api/routes/content.py                  99     20    80%   122-123, 180, 194-197, 255, 269-272, 281-292, 302
+backend/api/routes/copy.py                     94      0   100%
+backend/api/routes/instagram.py               226     37    84%   176, 484-547, 559-580
+backend/api/routes/integrations.py            133     24    82%   68-77, 98-99, 130-131, 155-156, 180-181, 188-197, 243-244, 288-289, 313-314, 381, 385
+backend/api/routes/license.py                  99      6    94%   90, 178, 186, 235, 248, 264
+backend/api/routes/marketplaces.py            124      7    94%   20-26, 106
+backend/api/routes/metrics.py                 173     51    71%   88-100, 108-115, 138, 150, 156-157, 173, 179-181, 184-185, 203, 207, 211, 216-220, 382-392, 410-420
+backend/api/routes/products.py                118      7    94%   147-148, 180-181, 202, 224, 249
+backend/api/routes/scheduler.py               204     54    74%   107-158, 243-246, 248, 250, 252, 307, 309, 311, 313, 417-418, 425-426, 432-435, 462-463, 470-471, 478-479, 494-510
+backend/api/routes/social_auth.py             199     69    65%   191-193, 234-316, 346-401, 429-441, 519, 523-532
+backend/api/routes/status_webhooks.py         134     38    72%   137-156, 162-168, 174-187, 198-202, 220-225, 251-254, 296-299, 307
+backend/api/routes/subscription.py             88     37    58%   75, 85-93, 120-122, 138-155, 166-171, 188-211, 229-231, 252-259
+backend/api/routes/templates.py               230     52    77%   145-147, 174-175, 179, 189-190, 208-221, 236, 243, 245, 247, 249, 251, 253, 283, 315, 462-463, 489-492, 502-509, 518-521, 535-544, 554-562
+backend/api/routes/tiktok.py                  226     82    64%   306-308, 388-408, 443-475, 507-542, 565-579, 605-634, 660-707
+backend/api/routes/webhooks.py                147     44    70%   87, 214-218, 228-251, 266-289, 298, 311-332, 338
+backend/api/routes/whatsapp.py                160      0   100%
+backend/api/routes/youtube.py                 150     33    78%   154-233
+backend/api/services/__init__.py                0      0   100%
+backend/api/services/auth.py                   66     14    79%   148-160, 164-176, 192-196, 209
+backend/api/services/blacklist.py              14      0   100%
+backend/api/services/cache.py                 120     14    88%   100, 104, 222-225, 229-232, 244, 248, 254, 260
+backend/api/services/instagram_session.py     244     30    88%   170, 264, 269-271, 301-303, 313, 322-324, 364-366, 379-381, 393, 411-413, 429, 442-444, 451, 465-467
+backend/api/services/license.py               107     20    81%   257, 268-270, 328-354, 364-373, 378-389, 423, 456
+backend/api/services/mercadopago.py            69     16    77%   107-137, 213-255, 298
+backend/api/services/openai.py                 61     13    79%   207-216, 223-233, 243-244, 269-281
+backend/api/services/redis.py                  19      0   100%
+backend/api/services/scraper.py               109      0   100%
+backend/api/services/tiktok_session.py        202     40    80%   96-98, 115-117, 132, 148, 162-164, 177, 192-194, 223-225, 248, 263-265, 287-289, 309-311, 381, 398-400, 414, 423, 426-429, 438-440
+backend/api/utils/integrity.py                 27      0   100%
+backend/api/utils/security.py                  35      5    86%   25-30
+backend/shared/__init__.py                      4      0   100%
+backend/shared/config.py                       95      1    99%   149
+backend/shared/postgres.py                    140     20    86%   82, 181-185, 229-240, 244-253, 300-305
+backend/shared/redis.py                       194     15    92%   70-71, 81-83, 87-88, 92-93, 97-98, 359-362
+backend/shared/sentry.py                      139     75    46%   37, 47, 52, 62-63, 66-67, 112-114, 127, 137, 150, 154-157, 177, 181, 200-210, 229-237, 253-263, 267-269, 273-275, 293-296, 318-323, 333-334, 346-367, 372-373
+backend/shared/storage.py                     105      1    99%   189
+-------------------------------------------------------------------------
+TOTAL                                        5958   1089    82%
+Coverage HTML written to dir htmlcov
+Coverage XML written to file coverage.xml
+Coverage JSON written to file coverage.json
+
+============================== slowest durations ===============================
+0.91s call     tests/unit/shared/test_redis.py::test_redis_lock_acquire_blocking_timeout
+0.38s call     tests/unit/test_auth_service.py::TestAuthService::test_verify_password_incorrect
+0.38s call     tests/unit/test_auth_service.py::TestAuthService::test_verify_password_correct
+0.37s call     tests/unit/test_auth_service.py::TestAuthService::test_hash_password_different_for_same_input
+0.36s call     tests/unit/test_auth_service.py::TestAuthService::test_verify_empty_password
+0.36s call     tests/unit/test_auth_service.py::TestAuthService::test_authenticate_valid_credentials
+0.36s call     tests/unit/test_auth_service.py::TestAuthService::test_hash_unicode_password
+0.36s call     tests/unit/test_auth_service.py::TestAuthService::test_authenticate_invalid_password
+0.36s call     tests/unit/test_auth_service.py::TestAuthService::test_hash_very_long_password
+0.21s call     tests/unit/test_auth_service.py::TestAuthService::test_hash_password_returns_hash
+0.19s call     tests/unit/test_auth_service.py::TestAuthService::test_create_user_password_is_hashed
+0.19s call     tests/unit/test_auth_service.py::TestAuthService::test_create_user_success
+0.15s call     tests/integration/test_license_routes.py::test_activate_license_max_devices_reached
+0.14s call     tests/unit/test_mercadopago_service.py::TestMercadoPagoService::test_get_payment_with_correct_url
+0.13s call     tests/unit/test_instagram_session.py::TestInstagramSessionManager::test_backup_session_failure
+0.11s setup    tests/unit/test_accounts_routes.py::TestMultiAccountService::test_get_summary
+0.09s call     tests/unit/test_utils.py::TestIntegrityChecker::test_verify_integrity_files_missing
+0.07s call     tests/unit/test_middleware.py::TestRateLimitMiddleware::test_health_endpoint_not_rate_limited
+0.04s call     tests/integration/test_social_auth_routes.py::TestOAuthInit::test_init_oauth_unconfigured
+0.03s call     tests/unit/test_marketplaces_routes.py::test_get_categories_error
+0.03s call     tests/unit/shared/test_storage.py::TestUploadFile::test_upload_file_client_error
+0.03s call     tests/unit/test_middleware.py::TestRateLimitMiddleware::test_rate_limit_exceeded
+0.03s call     tests/unit/test_marketplaces_routes.py::test_get_product_details_error
+0.03s call     tests/unit/shared/test_storage.py::TestDeleteFile::test_delete_file_client_error
+0.03s call     tests/unit/shared/test_storage.py::TestUploadFromUrl::test_upload_from_url_http_error
+0.03s call     tests/unit/shared/test_storage.py::TestListFiles::test_list_files_client_error
+0.03s call     tests/unit/shared/test_storage.py::TestGetPresignedUrl::test_presigned_url_client_error
+0.02s call     tests/unit/test_marketplaces_routes.py::test_search_marketplace_error
+0.02s call     tests/unit/test_marketplaces_routes.py::test_compare_marketplaces_error
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_search_marketplace_with_pagination
+0.02s call     tests/unit/test_marketplaces_routes.py::test_find_best_deal_error
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_get_categories_with_parent
+0.02s call     tests/integration/test_tiktok_api_endpoints.py::TestRefreshEndpoint::test_refresh_returns_response
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_get_product_details_error
+0.02s call     tests/integration/test_social_auth_routes.py::TestOAuthCallback::test_callback_invalid_state
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_search_marketplace_success
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_list_marketplaces_structure
+0.02s call     tests/unit/test_marketplaces_routes.py::test_search_with_sort_options
+0.02s call     tests/integration/test_social_auth_routes.py::TestGetAccessToken::test_get_token_success
+0.02s call     tests/unit/test_marketplaces_routes.py::test_list_marketplaces_returns_all_marketplaces
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_search_max_per_page
+0.02s call     tests/integration/test_webhooks_routes.py::TestWebhookValidation::test_webhook_unknown_event_type
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_get_categories_success
+0.02s call     tests/integration/test_social_auth_routes.py::TestOAuthCallback::test_callback_error_parameter
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_find_best_deal_not_found
+0.02s call     tests/integration/test_license_routes.py::test_validate_license_success
+0.02s call     tests/unit/test_marketplaces_routes.py::test_best_deal_rating_boundaries
+0.02s call     tests/integration/test_social_auth_routes.py::TestConnectedAccounts::test_disconnect_nonexistent
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_list_marketplaces_returns_all_marketplaces
+0.02s teardown tests/integration/test_webhooks_routes.py::TestWebhookValidation::test_webhook_unknown_event_type
+0.02s call     tests/unit/test_models.py::TestModelInstantiation::test_user_model_instantiation
+0.02s call     tests/integration/test_webhooks_routes.py::TestWebhookValidation::test_webhook_empty_payload
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_best_deal_rating_boundaries
+0.02s call     tests/integration/test_webhooks_routes.py::TestMercadoPagoWebhook::test_webhook_invalid_signature
+0.02s call     tests/integration/test_products_routes.py::test_refresh_products_success
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_search_marketplace_unavailable
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_get_product_details_not_found
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_get_categories_error
+0.02s setup    tests/unit/test_marketplaces_routes.py::test_find_best_deal_with_criteria
+0.01s call     tests/unit/test_marketplaces_routes.py::test_search_marketplace_with_pagination
+0.01s call     tests/integration/test_license_routes.py::test_get_license_status
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_search_exceeds_max_per_page
+0.01s call     tests/unit/test_marketplaces_routes.py::test_search_max_per_page
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_search_with_sort_options
+0.01s call     tests/integration/test_integrations_routes.py::TestTypebotIntegration::test_start_chat
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_get_categories_unavailable_marketplace
+0.01s call     tests/integration/test_products_routes.py::test_get_products_cached
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_get_product_details_unavailable_marketplace
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_get_categories_invalid_marketplace
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_search_marketplace_with_price_filters
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_compare_max_per_page
+0.01s call     tests/integration/test_products_routes.py::test_get_trending_products
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_comparison_without_best_values
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_find_best_deal_error
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_comparison_returns_errors_dict
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_search_marketplace_query_too_short
+0.01s call     tests/integration/test_license_routes.py::test_deactivate_device
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_get_product_details_invalid_marketplace
+0.01s call     tests/integration/test_social_auth_routes.py::TestGetAccessToken::test_get_token_not_found
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_find_best_deal_success
+0.01s call     tests/integration/test_auth_routes.py::TestMeEndpoint::test_me_success
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_get_product_details_success
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_compare_marketplaces_invalid_marketplace
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_compare_marketplaces_with_per_page
+0.01s call     tests/integration/test_auth_routes.py::TestRefreshEndpoint::test_refresh_user_not_found
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_search_marketplace_error
+0.01s call     tests/integration/test_products_routes.py::test_get_categories
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_compare_marketplaces_error
+0.01s call     tests/integration/test_social_auth_routes.py::TestOAuthInit::test_init_oauth_success
+0.01s call     tests/unit/test_marketplaces_routes.py::test_get_product_details_success
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_compare_marketplaces_success
+0.01s call     tests/integration/test_webhooks_routes.py::TestMercadoPagoWebhook::test_webhook_payment_created
+0.01s call     tests/integration/test_social_auth_routes.py::TestPlatformsList::test_list_platforms
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_search_marketplace_invalid_marketplace
+0.01s call     tests/integration/test_social_auth_routes.py::TestConnectedAccounts::test_disconnect_account
+0.01s call     tests/integration/test_auth_routes.py::TestRefreshEndpoint::test_refresh_hwid_mismatch
+0.01s call     tests/integration/test_copy_routes.py::TestHistoryEndpoints::test_get_history
+0.01s call     tests/integration/test_webhooks_routes.py::TestSubscriptionEvents::test_webhook_subscription_cancelled
+0.01s call     tests/integration/test_license_routes.py::test_activate_license_add_device
+0.01s setup    tests/unit/test_marketplaces_routes.py::test_compare_marketplaces_with_specific_list
+0.01s call     tests/unit/test_marketplaces_routes.py::test_get_categories_with_parent
+0.01s call     tests/unit/test_marketplaces_routes.py::test_find_best_deal_success
+0.01s call     tests/unit/test_marketplaces_routes.py::test_list_marketplaces_structure
+0.01s call     tests/unit/test_marketplaces_routes.py::test_find_best_deal_with_criteria
+0.01s call     tests/unit/test_marketplaces_routes.py::test_comparison_returns_errors_dict
+0.01s call     tests/integration/test_integrations_routes.py::TestTypebotIntegration::test_get_session
+0.01s call     tests/integration/test_social_auth_routes.py::TestConnectedAccounts::test_list_accounts_empty
+0.01s call     tests/integration/test_products_routes.py::test_get_product_by_id_found
+0.01s call     tests/integration/test_social_auth_routes.py::TestOAuthInit::test_init_oauth_invalid_platform
+0.01s call     tests/integration/test_tiktok_api_endpoints.py::TestAPIHealth::test_health_check_returns_response
+0.01s call     tests/integration/test_integrations_routes.py::TestN8nIntegration::test_trigger_workflow
+0.01s call     tests/unit/test_middleware.py::TestRateLimitMiddleware::test_rate_limit_remaining_decreases
+0.01s call     tests/unit/test_marketplaces_routes.py::test_search_marketplace_query_too_short
+0.01s call     tests/integration/test_social_auth_routes.py::TestTokenRefresh::test_refresh_not_found
+0.01s call     tests/unit/test_marketplaces_routes.py::test_find_best_deal_not_found
+0.01s call     tests/unit/test_marketplaces_routes.py::test_search_marketplace_success
+0.01s call     tests/unit/test_marketplaces_routes.py::test_get_product_details_not_found
+0.01s call     tests/unit/test_marketplaces_routes.py::test_comparison_without_best_values
+0.01s call     tests/unit/test_middleware.py::TestRequestIDMiddleware::test_unique_request_ids
+0.01s call     tests/integration/test_copy_routes.py::TestGenerateCopy::test_generate_copy_with_all_options
+0.01s call     tests/integration/test_products_routes.py::test_get_product_by_id_not_found
+0.01s call     tests/integration/test_integrations_routes.py::TestTypebotIntegration::test_send_message
+0.01s call     tests/integration/test_products_routes.py::test_search_products
+0.01s call     tests/unit/test_middleware.py::TestRequestIDMiddleware::test_request_id_added_to_response
+0.01s call     tests/unit/test_marketplaces_routes.py::test_compare_max_per_page
+0.01s call     tests/unit/test_marketplaces_routes.py::test_compare_marketplaces_invalid_marketplace
+0.01s call     tests/integration/test_integrations_routes.py::TestConfigEndpoints::test_update_config
+0.01s call     tests/integration/test_copy_routes.py::TestCreditsEndpoints::test_get_quota
+0.01s call     tests/integration/test_integrations_routes.py::TestN8nIntegration::test_get_execution
+0.01s call     tests/unit/test_marketplaces_routes.py::test_get_categories_success
+0.01s call     tests/integration/test_webhooks_routes.py::TestSubscriptionEvents::test_webhook_subscription_created
+0.01s call     tests/unit/test_marketplaces_routes.py::test_search_marketplace_with_price_filters
+0.01s call     tests/integration/test_webhooks_routes.py::TestMercadoPagoWebhook::test_webhook_payment_approved_new_license
+0.01s call     tests/integration/test_auth_routes.py::TestRegisterEndpoint::test_register_success
+0.01s call     tests/integration/test_webhooks_routes.py::TestWebhookValidation::test_webhook_missing_signature_header
+0.01s call     tests/integration/test_license_routes.py::test_validate_license_device_not_registered
+0.01s call     tests/integration/test_license_routes.py::TestLicenseEdgeCases::test_free_plan_max_one_device
+0.01s call     tests/integration/test_integrations_routes.py::TestN8nIntegration::test_list_workflows
+0.01s call     tests/unit/test_marketplaces_routes.py::test_search_exceeds_max_per_page
+0.01s call     tests/integration/test_products_routes.py::test_get_products_uncached
+0.01s call     tests/integration/test_copy_routes.py::TestTemplatesEndpoints::test_apply_template_missing_variable
+0.01s call     tests/unit/test_marketplaces_routes.py::test_get_categories_invalid_marketplace
+0.01s call     tests/unit/test_marketplaces_routes.py::test_get_product_details_invalid_marketplace
+0.01s call     tests/unit/test_marketplaces_routes.py::test_compare_marketplaces_with_specific_list
+0.01s call     tests/integration/test_webhooks_routes.py::TestMercadoPagoWebhook::test_webhook_payment_approved_existing_license
+0.01s call     tests/unit/test_marketplaces_routes.py::test_get_categories_unavailable_marketplace
+0.01s call     tests/integration/test_license_routes.py::TestLicenseEdgeCases::test_license_key_not_found
+0.01s call     tests/integration/test_integrations_routes.py::TestTypebotIntegration::test_set_variable
+0.01s call     tests/unit/test_middleware.py::TestRateLimitMiddleware::test_rate_limit_headers_present
+0.01s call     tests/integration/test_auth_routes.py::TestLoginEndpoint::test_login_success
+0.01s call     tests/integration/test_license_routes.py::test_validate_license_expired
+0.01s call     tests/unit/test_marketplaces_routes.py::test_compare_marketplaces_with_per_page
+0.01s call     tests/integration/test_copy_routes.py::TestCreditsEndpoints::test_get_credits
+0.01s call     tests/integration/test_integrations_routes.py::TestN8nIntegration::test_trigger_webhook
+0.01s call     tests/unit/test_webhooks.py::TestMercadoPagoWebhookEndpoint::test_webhook_valid_payment_event
+0.01s call     tests/integration/test_license_routes.py::test_validate_license_not_found
+0.01s call     tests/integration/test_auth_routes.py::TestRegisterEndpoint::test_register_email_exists
+0.01s call     tests/unit/test_marketplaces_routes.py::test_get_product_details_unavailable_marketplace
+0.01s call     tests/integration/test_license_routes.py::test_activate_license_first_time
+0.01s call     tests/unit/test_marketplaces_routes.py::test_search_marketplace_unavailable
+0.01s call     tests/unit/test_middleware.py::TestSecurityHeadersMiddleware::test_security_headers_added
+0.01s call     tests/integration/test_tiktok_api_endpoints.py::TestAPIHealth::test_health_without_auth
+0.01s call     tests/integration/test_integrations_routes.py::TestTypebotIntegration::test_get_session_not_found
+0.01s call     tests/unit/test_marketplaces_routes.py::test_compare_marketplaces_success
+0.01s call     tests/integration/test_license_routes.py::TestLicenseEdgeCases::test_invalid_license_key_format
+0.01s call     tests/integration/test_copy_routes.py::TestGenerateCopy::test_generate_copy_success
+0.01s call     tests/integration/test_copy_routes.py::TestTemplatesEndpoints::test_create_custom_template
+0.01s call     tests/integration/test_copy_routes.py::TestGenerateCopy::test_generate_copy_from_cache
+0.01s call     tests/integration/test_copy_routes.py::TestGenerateCopy::test_generate_copy_insufficient_credits
+0.01s call     tests/integration/test_tiktok_api_endpoints.py::TestTrendingEndpoint::test_trending_returns_response
+0.01s call     tests/integration/test_webhooks_routes.py::TestMercadoPagoWebhook::test_webhook_payment_credits
+0.01s call     tests/integration/test_auth_routes.py::TestMeEndpoint::test_me_unauthorized
+0.01s call     tests/unit/test_middleware.py::TestRateLimitMiddleware::test_request_within_limit
+0.01s call     tests/integration/test_copy_routes.py::TestHistoryEndpoints::test_get_history_with_pagination
+0.01s setup    tests/integration/test_webhooks_routes.py::TestWebhookValidation::test_webhook_empty_payload
+0.01s setup    tests/unit/test_checkout_routes.py::TestCheckoutCreate::test_create_checkout_pix_success
+0.01s call     tests/unit/test_marketplaces_routes.py::test_search_marketplace_invalid_marketplace
+0.01s call     tests/integration/test_copy_routes.py::TestTemplatesEndpoints::test_apply_template_not_found
+0.01s setup    tests/unit/shared/test_redis.py::test_redis_manager_close
+0.01s call     tests/integration/test_tiktok_api_endpoints.py::TestCacheStats::test_cache_stats_returns_response
+0.01s call     tests/integration/test_copy_routes.py::TestTemplatesEndpoints::test_get_templates
+0.01s call     tests/integration/test_auth_routes.py::TestLoginEndpoint::test_login_hwid_mismatch
+0.01s call     tests/integration/test_copy_routes.py::TestTemplatesEndpoints::test_apply_template
+0.01s call     tests/integration/test_auth_routes.py::TestLogoutEndpoint::test_logout_success
+0.01s call     tests/integration/test_auth_routes.py::TestRefreshEndpoint::test_refresh_success
+0.01s call     tests/integration/test_integrations_routes.py::TestConfigEndpoints::test_get_config
+0.01s call     tests/integration/test_license_routes.py::test_get_plans
+0.01s call     tests/integration/test_auth_routes.py::TestRefreshEndpoint::test_refresh_invalid_token
+0.01s call     tests/unit/test_webhooks.py::TestMercadoPagoWebhookEndpoint::test_webhook_invalid_signature
+0.01s call     tests/integration/test_auth_routes.py::TestLoginEndpoint::test_login_invalid_credentials
+0.01s call     tests/integration/test_tiktok_api_endpoints.py::TestCacheClear::test_cache_clear_returns_response
+0.01s setup    tests/unit/test_tiktok_session.py::TestTikTokSessionManager::test_backup_session_not_found
+0.01s call     tests/integration/test_tiktok_api_endpoints.py::TestAPISearch::test_search_returns_response
+0.01s setup    tests/integration/test_webhooks_routes.py::TestMercadoPagoWebhook::test_webhook_payment_approved_new_license
+0.01s call     tests/unit/test_license_service.py::TestLicenseServiceKeyGeneration::test_generate_license_key_uniqueness
+0.01s setup    tests/unit/test_postgres_shared.py::TestDBSession::test_context_manager_rollback_on_exception
+0.01s setup    tests/integration/test_webhooks_routes.py::TestSubscriptionEvents::test_webhook_subscription_created
+0.01s setup    tests/unit/test_templates_routes.py::TestTemplateService::test_create_template
+0.01s call     tests/unit/test_whatsapp_routes.py::TestWebhookConnectionUpdate::test_webhook_connection_update_connected
+0.01s call     tests/integration/test_copy_routes.py::TestTemplatesEndpoints::test_delete_template
+0.01s setup    tests/integration/test_copy_routes.py::TestTemplatesEndpoints::test_apply_template_not_found
+0.01s setup    tests/integration/test_copy_routes.py::TestGenerateCopy::test_generate_copy_insufficient_credits
+0.01s call     tests/unit/test_scheduler_routes.py::test_retry_dlq_post_failure
+0.01s call     tests/unit/test_whatsapp_routes.py::TestSendMessage::test_send_message_success
+0.01s setup    tests/unit/test_accounts_routes.py::TestMultiAccountService::test_create_account
+0.01s setup    tests/integration/test_webhooks_routes.py::TestMercadoPagoWebhook::test_webhook_invalid_signature
+0.01s setup    tests/integration/test_copy_routes.py::TestHistoryEndpoints::test_get_history
+0.01s setup    tests/unit/test_postgres_shared.py::TestDBSession::test_fetch_val
+0.01s setup    tests/integration/test_webhooks_routes.py::TestWebhookValidation::test_webhook_unknown_event_type
+0.01s setup    tests/unit/test_tiktok_routes.py::test_tiktok_upload_exception
+0.01s call     tests/unit/test_checkout_routes.py::TestCheckoutCreate::test_create_checkout_with_valid_coupon
+0.01s setup    tests/integration/test_webhooks_routes.py::TestMercadoPagoWebhook::test_webhook_payment_credits
+0.01s setup    tests/integration/test_webhooks_routes.py::TestMercadoPagoWebhook::test_webhook_payment_created
+0.01s call     tests/unit/shared/test_postgres.py::test_postgres_manager_close
+0.01s setup    tests/unit/test_templates_routes.py::TestTemplateService::test_render_without_hashtags
+
+(2434 durations < 0.005s hidden.  Use -vv to show these durations.)
+======================= 883 passed, 2 warnings in 14.31s =======================

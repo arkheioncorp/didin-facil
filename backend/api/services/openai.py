@@ -1,6 +1,6 @@
 """
 OpenAI Service
-AI copy generation with credits system
+AI copy generation with credits system and cost tracking
 """
 
 import os
@@ -12,6 +12,7 @@ from openai import AsyncOpenAI
 
 from api.database.connection import database, get_db
 from api.services.cache import CacheService
+from api.services.accounting import AccountingService
 
 
 # OpenAI settings from environment
@@ -20,13 +21,14 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4-turbo-preview")
 
 
 class OpenAIService:
-    """OpenAI API proxy with credits management"""
+    """OpenAI API proxy with credits management and cost tracking"""
 
     def __init__(self):
         self.client = AsyncOpenAI(api_key=OPENAI_API_KEY)
         self.cache_service = CacheService()
         self.model = OPENAI_MODEL
         self.db = database
+        self.accounting = AccountingService()
     
     async def generate_copy(
         self,
@@ -80,6 +82,17 @@ class OpenAIService:
         
         copy_text = response.choices[0].message.content.strip()
         
+        # Track token usage for accounting
+        usage = response.usage
+        if usage:
+            await self.accounting.track_openai_usage(
+                operation_type="copy_generation",
+                model=self.model,
+                prompt_tokens=usage.prompt_tokens,
+                completion_tokens=usage.completion_tokens,
+                user_id=None  # Will be set by route
+            )
+        
         return {
             "id": str(uuid.uuid4()),
             "copy_text": copy_text,
@@ -88,6 +101,7 @@ class OpenAIService:
             "platform": platform,
             "word_count": len(copy_text.split()),
             "character_count": len(copy_text),
+            "tokens_used": usage.total_tokens if usage else 0,
             "created_at": datetime.now(timezone.utc)
         }
     
@@ -158,7 +172,13 @@ Sempre responda APENAS com o texto da copy, sem explicações ou comentários ad
             "description": "Crie uma descrição de produto completa e atraente",
             "headline": "Crie 5 opções de títulos/headlines impactantes",
             "cta": "Crie 5 opções de call-to-action diferentes",
-            "story": "Crie um texto de storytelling vendedor"
+            "story": "Crie um texto de storytelling vendedor",
+            "facebook_ad": "Crie um anúncio para Facebook/Instagram focado em conversão",
+            "tiktok_hook": "Crie um roteiro de vídeo curto para TikTok com gancho viral",
+            "product_description": "Crie uma descrição de produto detalhada e persuasiva",
+            "story_reels": "Crie um roteiro para Stories ou Reels do Instagram",
+            "email": "Crie um email marketing de vendas",
+            "whatsapp": "Crie uma mensagem de vendas para WhatsApp"
         }
         
         tone_instructions = {
@@ -166,7 +186,10 @@ Sempre responda APENAS com o texto da copy, sem explicações ou comentários ad
             "casual": "Tom casual e descontraído",
             "urgent": "Tom de urgência e escassez",
             "friendly": "Tom amigável e próximo",
-            "luxury": "Tom premium e exclusivo"
+            "luxury": "Tom premium e exclusivo",
+            "educational": "Tom educativo e informativo",
+            "emotional": "Tom emocional que conecta com o leitor",
+            "authority": "Tom de autoridade e especialista"
         }
         
         prompt = f"""**Produto:** {product_title}

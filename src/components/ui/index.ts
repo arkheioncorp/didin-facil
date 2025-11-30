@@ -63,3 +63,20 @@ export {
 } from "./dropdown-menu";
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./accordion";
 export { Alert, AlertTitle, AlertDescription } from "./alert";
+export { 
+  InfoTooltip, 
+  SettingLabel, 
+  SettingCard, 
+  HelpSection, 
+  FeatureHighlight 
+} from "./info-tooltip";
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+} from "./table";

@@ -5,8 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useStartScraper, useTestProxy, useSyncProducts } from "@/hooks";
 import { useQuery } from "@tanstack/react-query";
-import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
+import { getScraperStatus, stopScraper } from "@/services/scraper";
 import { toast } from "@/hooks/use-toast";
 import {
     Dialog,
@@ -20,6 +19,11 @@ import { Input } from "@/components/ui/input";
 import { BrowserViewer } from "@/components/scraper/BrowserViewer";
 
 import { ScraperStatus } from "@/types";
+
+// Check if running in Tauri
+const isTauri = (): boolean => {
+    return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+};
 
 export function ScraperControl() {
     // Initialize from localStorage or default
@@ -51,17 +55,25 @@ export function ScraperControl() {
         status?: string;
     }>({});
 
-    // Listen to browser events
+    // Listen to browser events (only in Tauri)
     React.useEffect(() => {
-        const unlisten = listen<{url: string; screenshot?: string; status: string}>(
-            'browser-update',
-            (event) => {
-                setBrowserState(event.payload);
-            }
-        );
+        if (!isTauri()) return;
+        
+        let cleanup: (() => void) | undefined;
+        
+        import("@tauri-apps/api/event").then(({ listen }) => {
+            listen<{url: string; screenshot?: string; status: string}>(
+                'browser-update',
+                (event) => {
+                    setBrowserState(event.payload);
+                }
+            ).then(unlisten => {
+                cleanup = unlisten;
+            });
+        }).catch(console.error);
         
         return () => {
-            unlisten.then(fn => fn());
+            cleanup?.();
         };
     }, []);
 
@@ -83,7 +95,7 @@ export function ScraperControl() {
         queryKey: ["scraperStatus"],
         queryFn: async () => {
             try {
-                return await invoke<ScraperStatus>("get_scraper_status");
+                return await getScraperStatus();
             } catch {
                 return {
                     isRunning: false,
@@ -141,7 +153,7 @@ export function ScraperControl() {
 
     const handleStopScraping = async () => {
         try {
-            await invoke("stop_scraper");
+            await stopScraper();
             toast({
                 title: "⏹️ Scraping parado",
                 description: "Coleta foi interrompida",

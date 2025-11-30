@@ -253,7 +253,10 @@
       "social_post": "Post Social",
       "whatsapp_message": "Mensaje WhatsApp",
       "email": "Email Marketing",
-      "video_script": "Guión de Video"
+      "video_script": "Guión de Video",
+      "facebook_ad": "Anuncio Facebook",
+      "tiktok_hook": "Hook TikTok",
+      "story_reels": "Story/Reels"
     },
     "tone": "Tono",
     "tones": {
@@ -262,7 +265,10 @@
       "persuasive": "Persuasivo",
       "urgent": "Urgente",
       "friendly": "Amigable",
-      "humorous": "Humorístico"
+      "humorous": "Humorístico",
+      "educational": "Educativo",
+      "emotional": "Emocional",
+      "authority": "Autoridad"
     },
     "length": "Longitud",
     "lengths": {
@@ -280,7 +286,171 @@
       "batch": "5 créditos"
     },
     "history": "Historial de Copies",
-    "save_template": "Guardar como Plantilla"
+    "save_template": "Guardar como Plantilla",
+    "tabs": {
+      "generate": "Generar",
+      "templates": "Plantillas",
+      "batch": "En Lote",
+      "history": "Historial",
+      "automations": "Automatizaciones"
+    },
+    "quick_actions": {
+      "title": "Acciones Rápidas",
+      "tiktok_hook": {
+        "title": "Hook TikTok",
+        "description": "Genera ganchos virales para tus videos de TikTok"
+      },
+      "product_desc": {
+        "title": "Descripción Producto",
+        "description": "Descripciones persuasivas para e-commerce"
+      },
+      "whatsapp_msg": {
+        "title": "WhatsApp",
+        "description": "Mensajes de ventas para WhatsApp"
+      },
+      "instagram_post": {
+        "title": "Instagram",
+        "description": "Leyendas y stories optimizados"
+      }
+    },
+    "template_suggestions": {
+      "title": "Plantillas Sugeridas",
+      "description": "Basadas en tus productos más vendidos",
+      "use_template": "Usar Plantilla",
+      "preview": "Vista Previa",
+      "popular": "Popular",
+      "new": "Nuevo",
+      "trending": "Tendencia"
+    },
+    "batch": {
+      "title": "Generación en Lote",
+      "description": "Genera copies para múltiples productos a la vez",
+      "select_products": "Seleccionar Productos",
+      "selected_count": "{{count}} productos seleccionados",
+      "upload_csv": "Subir CSV",
+      "download_template": "Descargar Plantilla CSV",
+      "generate_all": "Generar Todos",
+      "progress": "Progreso",
+      "processing": "Procesando {{current}} de {{total}}...",
+      "completed": "¡{{count}} copies generadas con éxito!",
+      "export_results": "Exportar Resultados",
+      "cost_estimate": "Costo estimado: {{credits}} créditos"
+    },
+    "automations": {
+      "title": "Automatizaciones Disponibles",
+      "description": "Integra copy AI con tus flujos de automatización",
+      "workflows": {
+        "title": "Workflows N8N",
+        "description": "Genera copies automáticamente basadas en disparadores",
+        "welcome_sequence": "Secuencia de Bienvenida",
+        "price_alert": "Alerta de Precio",
+        "cart_recovery": "Recuperación de Carrito",
+        "review_request": "Solicitud de Reseña",
+        "restock_notification": "Notificación de Reposición",
+        "flash_sale": "Venta Flash"
+      },
+      "chatbots": {
+        "title": "Chatbots Typebot",
+        "description": "Copies para conversaciones automatizadas",
+        "customer_service": "Atención al Cliente",
+        "sales_funnel": "Embudo de Ventas",
+        "lead_qualification": "Calificación de Leads"
+      },
+      "content": {
+        "title": "Plantillas de Contenido",
+        "description": "Formatos listos para diferentes canales",
+        "flash_sale": "Venta Flash",
+        "price_drop_alert": "Alerta de Caída de Precio",
+        "daily_deals": "Ofertas del Día",
+        "weekend_sale": "Venta de Fin de Semana",
+        "holiday_special": "Especial de Feriado"
+      },
+      "connect": "Conectar",
+      "configure": "Configurar",
+      "view_docs": "Ver Documentación"
+    },
+    "preview": {
+      "title": "Vista Previa",
+      "platform_preview": "Vista Previa de Plataforma",
+      "platforms": {
+        "tiktok": "TikTok",
+        "instagram": "Instagram",
+        "whatsapp": "WhatsApp",
+        "facebook": "Facebook",
+        "email": "Email"
+      },
+      "copy_text": "Copiar Texto",
+      "save_to_favorites": "Guardar en Favoritos",
+      "schedule": "Programar Publicación",
+      "edit": "Editar",
+      "character_count": "{{count}} caracteres",
+      "optimal_length": "Longitud óptima para {{platform}}"
+    },
+    "history_section": {
+      "title": "Historial de Generaciones",
+      "search_placeholder": "Buscar por producto o texto...",
+      "filter_by_type": "Filtrar por Tipo",
+      "filter_by_date": "Filtrar por Fecha",
+      "favorites_only": "Solo Favoritos",
+      "delete_selected": "Eliminar Seleccionados",
+      "no_history": "No hay copies generadas aún",
+      "load_more": "Cargar Más",
+      "reuse": "Reutilizar",
+      "view_details": "Ver Detalles"
+    },
+    "advanced": {
+      "title": "Configuración Avanzada",
+      "custom_prompt": "Prompt Personalizado",
+      "custom_prompt_hint": "Agrega instrucciones específicas para la IA",
+      "target_audience": "Público Objetivo",
+      "target_audience_hint": "Describe tu cliente ideal",
+      "keywords": "Palabras Clave",
+      "keywords_hint": "Separa con coma",
+      "include_emojis": "Incluir Emojis",
+      "include_hashtags": "Incluir Hashtags",
+      "include_cta": "Incluir Call-to-Action",
+      "language": "Idioma del Texto",
+      "max_variations": "Número de Variaciones"
+    },
+    "errors": {
+      "no_product": "Selecciona un producto para generar la copy",
+      "product_not_found": "El producto seleccionado ya no está disponible en favoritos",
+      "generation_failed": "Error al generar copy. Intenta nuevamente.",
+      "insufficient_credits": "Créditos insuficientes para esta operación",
+      "rate_limit": "Límite de solicitudes alcanzado. Espera un momento.",
+      "connection_error": "Verifica tu conexión a internet e intenta nuevamente",
+      "timeout": "La generación tardó demasiado. Intenta de nuevo en unos segundos",
+      "unauthorized": "Tu sesión ha expirado. Por favor, inicia sesión nuevamente",
+      "api_key_missing": "La clave de OpenAI no está configurada. Ve a Configuración > Credenciales",
+      "unknown": "Ocurrió un error inesperado. Intenta nuevamente o contacta soporte"
+    },
+    "success": {
+      "generated": "¡Copy generada con éxito!",
+      "saved": "Copy guardada en favoritos",
+      "copied": "Texto copiado al portapapeles",
+      "scheduled": "Publicación programada con éxito",
+      "template_loaded": "¡Plantilla cargada! Edita las variables {{...}} con tus datos"
+    },
+    "onboarding": {
+      "title": "¡Bienvenido a Copy AI!",
+      "description": "Genera textos persuasivos para tus productos en segundos. Sigue estos pasos:",
+      "step1_title": "Agrega Favoritos",
+      "step1_desc": "Ve a Productos y guarda artículos en favoritos",
+      "step2_title": "Elige el Formato",
+      "step2_desc": "TikTok, Instagram, WhatsApp...",
+      "step3_title": "¡Genera y Copia!",
+      "step3_desc": "La IA crea el texto listo para usar",
+      "understood": "¡Entendido, empezar!",
+      "dont_show_again": "No mostrar de nuevo",
+      "show_tutorial": "Ver tutorial"
+    },
+    "next_steps": {
+      "title": "Próximos pasos",
+      "schedule_post": "Programar publicación",
+      "create_automation": "Crear automatización",
+      "send_whatsapp": "Enviar WhatsApp",
+      "save_template": "Guardar plantilla"
+    }
   },
 
   "social": {
@@ -452,16 +622,20 @@
 
   "settings": {
     "title": "Configuración",
+    "subtitle": "Personaliza Didin Fácil según tus preferencias",
     "general": "General",
     "appearance": {
       "title": "Apariencia",
+      "description": "Personaliza la apariencia visual de la aplicación",
       "theme": "Tema",
+      "theme_tooltip": "Elige entre claro, oscuro o automático basado en el sistema",
       "themes": {
         "light": "Claro",
         "dark": "Oscuro",
         "system": "Sistema"
       },
       "language": "Idioma",
+      "language_tooltip": "Selecciona el idioma de la interfaz",
       "languages": {
         "pt_BR": "Português (Brasil)",
         "en": "English",
@@ -470,10 +644,309 @@
     },
     "notifications": {
       "title": "Notificaciones",
+      "description": "Configura alertas y notificaciones del sistema",
+      "desktop": {
+        "title": "Notificaciones de Escritorio",
+        "description": "Recibir alertas de nuevos productos en tendencia",
+        "tooltip": "Activa para recibir notificaciones push en tu computadora cuando se encuentren nuevos productos virales"
+      },
+      "cache_images": {
+        "title": "Caché de Imágenes",
+        "description": "Guardar imágenes localmente para carga rápida",
+        "tooltip": "Las imágenes de productos se almacenan localmente para acelerar la visualización"
+      },
       "enable": "Activar Notificaciones",
       "email": "Notificaciones por Correo",
       "push": "Notificaciones Push",
       "marketing": "Correos de Marketing"
+    },
+    "search": {
+      "title": "Búsqueda",
+      "description": "Configura los parámetros de búsqueda predeterminados",
+      "products_per_search": {
+        "label": "Productos por búsqueda",
+        "description": "Máximo de productos devueltos por búsqueda (10-100)",
+        "tooltip": "Cuanto mayor sea el número, más resultados verás, pero puede tardar más en cargar"
+      }
+    },
+    "tutorial": {
+      "title": "Tutorial y Configuración",
+      "description": "Revisa el tutorial interactivo o reconfigura la plataforma",
+      "restart_tutorial": "Reiniciar Tutorial",
+      "restart_tutorial_description": "Ver nuevamente el tour guiado de funcionalidades",
+      "reset_setup": "Rehacer Configuración Inicial",
+      "reset_setup_warning": "Esto restablecerá todas las configuraciones iniciales y reabrirá el asistente. ¿Deseas continuar?",
+      "reset_setup_description": "Usar solo si necesitas reconfigurar la licencia o términos"
+    },
+    "copy_generation": {
+      "title": "Generación de Copy",
+      "description": "Configura valores predeterminados para generación de copies con IA",
+      "default_type": "Tipo predeterminado",
+      "default_type_tooltip": "Tipo de texto que se generará por defecto al usar Copy AI",
+      "default_tone": "Tono predeterminado",
+      "default_tone_tooltip": "Estilo de escritura que se aplicará a los textos generados",
+      "types": {
+        "tiktok_hook": "TikTok Hook",
+        "product_description": "Descripción",
+        "carousel": "Carrusel"
+      },
+      "tones": {
+        "urgent": "Urgente",
+        "professional": "Profesional",
+        "fun": "Divertido"
+      }
+    },
+    "credentials": {
+      "title": "Credenciales",
+      "description": "Gestiona claves de API y credenciales de servicios",
+      "openai": {
+        "title": "API OpenAI",
+        "badge": "Opcional",
+        "description": "Configura la integración con OpenAI para generación de copies con IA",
+        "api_key": "Clave API",
+        "api_key_placeholder": "sk-...",
+        "api_key_secure": "Tu clave se almacena localmente de forma encriptada",
+        "model": "Modelo",
+        "model_tooltip": "GPT-4o es más rápido y económico, GPT-4 es más inteligente",
+        "info": "La generación de copies por IA es una función adicional. La app funciona 100% sin ella."
+      },
+      "proxy": {
+        "title": "Proxies",
+        "badge": "Avanzado",
+        "description": "Configura proxies para recolección de datos (recomendado para uso intensivo)",
+        "enable": "Usar Proxies",
+        "enable_description": "Rotar IPs durante la recolección",
+        "enable_tooltip": "Recomendado si planeas hacer muchas recolecciones. Evita bloqueos de TikTok.",
+        "list": "Lista de Proxies",
+        "list_placeholder": "Formato: ip:puerto:usuario:contraseña (uno por línea)\n\nEjemplo:\n192.168.1.1:8080:user:pass\nproxy.example.com:3128",
+        "count": "{{count}} proxy(ies) configurado(s)"
+      }
+    },
+    "scraper": {
+      "title": "Scraper",
+      "description": "Configura el recolector de productos de TikTok Shop",
+      "collection": {
+        "title": "Configuración de Recolección",
+        "description": "Configura cómo el scraper recolecta productos de TikTok Shop",
+        "max_products": {
+          "label": "Máximo de productos por recolección",
+          "tooltip": "Más productos significa más tiempo de recolección. Recomendado: 50-100"
+        },
+        "interval": {
+          "label": "Intervalo entre recolecciones (minutos)",
+          "description": "Mínimo: 15 minutos. Recomendado: 60 minutos.",
+          "tooltip": "Intervalos muy cortos pueden causar bloqueos temporales"
+        },
+        "timeout": {
+          "label": "Timeout (segundos)",
+          "tooltip": "Tiempo máximo de espera por respuesta. Aumenta si tu conexión es lenta."
+        }
+      },
+      "execution": {
+        "title": "Modo de Ejecución",
+        "description": "Configura cómo se ejecuta el navegador durante la recolección",
+        "headless": {
+          "title": "Modo Headless",
+          "description": "Ejecutar navegador sin interfaz gráfica",
+          "tooltip": "El modo headless es más rápido y usa menos recursos. Desactiva para depurar problemas."
+        },
+        "use_proxy": {
+          "title": "Usar Proxy en Scraper",
+          "description": "Aplicar proxies configurados durante la recolección",
+          "tooltip": "Configura los proxies en la pestaña Credenciales primero"
+        },
+        "test": "Probar Scraper",
+        "test_description": "Ejecuta una recolección de prueba con 5 productos"
+      },
+      "categories": {
+        "title": "Categorías Monitoreadas",
+        "description": "Selecciona las categorías que deseas monitorear automáticamente",
+        "count": "{{count}} categoría(s) seleccionada(s). Deja vacío para monitorear todas.",
+        "electronics": "Electrónicos",
+        "fashion": "Moda",
+        "beauty": "Belleza",
+        "home": "Hogar",
+        "sports": "Deportes",
+        "toys": "Juguetes",
+        "health": "Salud",
+        "automotive": "Automotriz",
+        "food": "Alimentos",
+        "pets": "Mascotas"
+      }
+    },
+    "license": {
+      "title": "Licencia",
+      "description": "Gestiona tu licencia y créditos de IA",
+      "lifetime": {
+        "title": "Licencia Vitalicia",
+        "price": "R$ 49,90",
+        "description": "¡Paga una vez, usa para siempre. Sin mensualidades!",
+        "active": "Activa",
+        "features": {
+          "unlimited_access": "Acceso ilimitado a todas las funcionalidades",
+          "unlimited_searches": "Búsquedas ilimitadas de productos",
+          "unlimited_favorites": "Favoritos y listas ilimitadas",
+          "export": "Exportación de datos",
+          "credits_separate": "Los créditos de IA se cobran por separado"
+        },
+        "benefits": {
+          "unlimited": "Acceso ilimitado para siempre",
+          "searches": "Búsquedas y favoritos ilimitados",
+          "export": "Exportación de datos",
+          "updates": "Actualizaciones gratuitas"
+        },
+        "activate": "Activar Clave de Licencia",
+        "activate_placeholder": "XXXX-XXXX-XXXX-XXXX",
+        "activate_button": "Activar",
+        "buy": "Comprar Licencia"
+      },
+      "credits": {
+        "title": "Créditos IA",
+        "description": "Usa créditos para generar copies con inteligencia artificial",
+        "your_credits": "Tus créditos",
+        "usage": {
+          "simple": "Copy simple: 1 crédito",
+          "analysis": "Análisis: 2 créditos",
+          "batch": "Lote: 5 créditos"
+        },
+        "packs": {
+          "starter": {
+            "name": "Starter",
+            "credits": "50",
+            "price": "R$ 19,90",
+            "per_credit": "R$ 0,40"
+          },
+          "pro": {
+            "name": "Pro",
+            "credits": "200",
+            "price": "R$ 49,90",
+            "per_credit": "R$ 0,25",
+            "badge": "Mejor Valor"
+          },
+          "ultra": {
+            "name": "Ultra",
+            "credits": "500",
+            "price": "R$ 99,90",
+            "per_credit": "R$ 0,20"
+          }
+        },
+        "per_credit": "/crédito",
+        "buy": "Comprar"
+      },
+      "payment_info": "Pagos procesados de forma segura vía Mercado Pago 🔒",
+      "support": "¿Dudas? Contáctanos: suporte@didinfacil.com"
+    },
+    "system": {
+      "title": "Sistema",
+      "description": "Configuraciones avanzadas del sistema",
+      "updates": {
+        "title": "Actualizaciones",
+        "description": "Configura las actualizaciones automáticas de la aplicación",
+        "auto_update": {
+          "title": "Actualización Automática",
+          "description": "Descargar e instalar actualizaciones automáticamente",
+          "tooltip": "Recomendado mantener activo para recibir correcciones y nuevas funciones"
+        },
+        "check_interval": {
+          "label": "Verificar cada (horas)",
+          "tooltip": "Frecuencia con que la app verifica nuevas versiones"
+        },
+        "current_version": "Versión actual",
+        "check_now": "Verificar Actualizaciones"
+      },
+      "logs": {
+        "title": "Logs y Diagnóstico",
+        "description": "Configura logs para troubleshooting",
+        "enable": {
+          "title": "Logs Activados",
+          "description": "Guardar logs de operaciones del sistema",
+          "tooltip": "Útil para identificar problemas. Ocupa espacio en disco."
+        },
+        "max_size": {
+          "label": "Tamaño máximo de log (MB)",
+          "tooltip": "Logs antiguos se eliminan automáticamente al alcanzar este límite"
+        },
+        "open_folder": "Abrir Carpeta de Logs",
+        "clear": "Limpiar Logs"
+      },
+      "analytics": {
+        "title": "Analytics",
+        "description": "Ayuda a mejorar Didin Fácil (opcional)",
+        "enable": {
+          "title": "Analytics Anónimos",
+          "description": "Enviar datos de uso anónimos para mejoras"
+        },
+        "collected_data": "Datos recolectados (si está activado):",
+        "data_items": {
+          "version": "Versión de la app y sistema operativo",
+          "features": "Funcionalidades más usadas",
+          "errors": "Errores encontrados"
+        },
+        "privacy_note": "No se recolectan datos personales ni de productos."
+      },
+      "data": {
+        "title": "Datos y Almacenamiento",
+        "description": "Gestiona los datos almacenados localmente",
+        "database": "Base de datos",
+        "image_cache": "Caché de imágenes",
+        "export": "Exportar Datos",
+        "import": "Importar Datos",
+        "clear_all": "Limpiar Todos los Datos",
+        "clear_warning": "Esta acción no se puede deshacer. Haz backup primero."
+      }
+    },
+    "integrations": {
+      "title": "Integraciones",
+      "description": "Conecta tus redes sociales y servicios externos",
+      "connected": "Conectadas",
+      "available": "Disponibles",
+      "whatsapp": {
+        "title": "WhatsApp",
+        "description": "Conecta tu WhatsApp para enviar notificaciones y mensajes",
+        "connect": "Conectar WhatsApp",
+        "disconnect": "Desconectar",
+        "connected_as": "Conectado como",
+        "scan_qr": "Abre WhatsApp en tu celular > Menú > Dispositivos conectados > Conectar dispositivo",
+        "status": {
+          "connected": "Conectado",
+          "disconnected": "Desconectado",
+          "connecting": "Conectando..."
+        }
+      },
+      "youtube": {
+        "title": "YouTube",
+        "description": "Gestiona tus cuentas de YouTube para subir videos",
+        "add_account": "Agregar Cuenta YouTube",
+        "no_accounts": "Ninguna cuenta conectada",
+        "remove": "Eliminar"
+      },
+      "tiktok": {
+        "title": "TikTok",
+        "description": "Gestiona tus sesiones de TikTok para subir videos",
+        "add_account": "Agregar Cuenta TikTok (Cookies)",
+        "no_accounts": "Ninguna cuenta conectada",
+        "remove": "Eliminar"
+      },
+      "instagram": {
+        "title": "Instagram",
+        "description": "Conecta tu cuenta para subir fotos y reels",
+        "manage": "Gestionar Instagram",
+        "via_whatsapp": "Configura vía WhatsApp > Instagram"
+      },
+      "api_config": {
+        "title": "Configuración de API",
+        "description": "Configura las claves de API para integraciones externas",
+        "evolution_url": {
+          "label": "Evolution API URL",
+          "placeholder": "http://localhost:8082",
+          "description": "URL de la Evolution API para WhatsApp"
+        },
+        "evolution_key": {
+          "label": "Evolution API Key",
+          "placeholder": "Tu clave de API",
+          "description": "Clave de autenticación de la Evolution API"
+        }
+      }
     },
     "privacy": {
       "title": "Privacidad",
@@ -497,44 +970,6 @@
       "upgrade": "Mejorar Plan",
       "billing_history": "Historial de Facturación"
     },
-    "integrations": {
-      "title": "Integraciones",
-      "connected": "Conectadas",
-      "available": "Disponibles",
-      "whatsapp": {
-        "title": "WhatsApp",
-        "description": "Conecta tu WhatsApp para enviar notificaciones y mensajes",
-        "connect": "Conectar WhatsApp",
-        "disconnect": "Desconectar",
-        "connected_as": "Conectado como",
-        "scan_qr": "Abre WhatsApp en tu celular > Menú > Dispositivos conectados > Conectar dispositivo"
-      },
-      "youtube": {
-        "title": "YouTube",
-        "description": "Gestiona tus cuentas de YouTube para subir videos",
-        "add_account": "Agregar Cuenta YouTube",
-        "no_accounts": "Ninguna cuenta conectada"
-      },
-      "tiktok": {
-        "title": "TikTok",
-        "description": "Gestiona tus sesiones de TikTok para subir videos",
-        "add_account": "Agregar Cuenta TikTok (Cookies)",
-        "no_accounts": "Ninguna cuenta conectada"
-      },
-      "instagram": {
-        "title": "Instagram",
-        "description": "Conecta tu cuenta para subir fotos y reels",
-        "manage": "Gestionar Instagram"
-      },
-      "api_config": {
-        "title": "Configuración de API",
-        "description": "Configura las claves de API para integraciones externas",
-        "evolution_url": "Evolution API URL",
-        "evolution_url_hint": "URL de la API Evolution para WhatsApp",
-        "evolution_key": "Evolution API Key",
-        "evolution_key_hint": "Clave de autenticación de la Evolution API"
-      }
-    },
     "advanced": {
       "title": "Avanzado",
       "reset_setup": "Reiniciar Configuración Inicial",
@@ -543,7 +978,23 @@
       "export_data": "Exportar Datos",
       "developer_mode": "Modo Desarrollador"
     },
-    "saved": "¡Configuración guardada con éxito!"
+    "saved": "¡Configuración guardada con éxito!",
+    "save_error": "Error al guardar configuración",
+    "save_button": "Guardar Configuración",
+    "saving": "Guardando...",
+    "help": {
+      "title": "¿Necesitas ayuda?",
+      "faq": {
+        "proxy_q": "¿Necesito usar proxy?",
+        "proxy_a": "Los proxies solo son recomendados si haces muchas recolecciones (más de 100/día). Para uso normal, no es necesario.",
+        "openai_q": "¿La clave de OpenAI es obligatoria?",
+        "openai_a": "¡No! La app funciona 100% sin IA. La integración con OpenAI es solo para quienes desean generar copies automáticamente.",
+        "license_q": "¿Puedo usarla en más de una computadora?",
+        "license_a": "¡Sí! La licencia vitalicia permite uso en hasta 2 dispositivos simultáneamente.",
+        "scraper_q": "¿Cuánto tiempo toma una recolección?",
+        "scraper_a": "Depende de la cantidad de productos. En promedio, 50 productos toman cerca de 2-3 minutos."
+      }
+    }
   },
 
   "profile": {

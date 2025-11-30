@@ -78,7 +78,7 @@ const QuotaProgressBar: React.FC<{ percentage: number }> = ({ percentage }) => {
   };
 
   return (
-    <div className="relative w-full h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+    <div className="relative w-full h-4 bg-muted rounded-full overflow-hidden">
       <div
         className={`absolute left-0 top-0 h-full transition-all duration-500 ${getColor()}`}
         style={{ width: `${Math.min(percentage, 100)}%` }}
@@ -318,7 +318,7 @@ export const YouTubeQuotaWidget: React.FC<{
         </div>
 
         {/* Estimativa de uploads restantes */}
-        <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-md">
+        <div className="p-3 bg-muted/50 rounded-md">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
               Uploads disponíveis
@@ -367,7 +367,7 @@ export const YouTubeQuotaWidget: React.FC<{
           <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
             Ver custos de operação
           </summary>
-          <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-md">
+          <div className="mt-2 p-3 bg-muted/50 rounded-md">
             <div className="grid grid-cols-2 gap-2 text-xs">
               {Object.entries(OPERATION_COSTS).map(([op, config]) => (
                 <div key={op} className="flex justify-between">

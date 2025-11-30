@@ -1,0 +1,57 @@
+# CODEOWNERS - Didin Fácil / TikTrend Finder
+# Documentação: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Regras de Code Ownership
+# O último padrão correspondente tem prioridade
+
+# Proprietários padrão para tudo no repositório
+*                       @jhonslife
+
+# Frontend (Vue/React/TypeScript)
+/src/                   @jhonslife
+/src/components/        @jhonslife
+/src/pages/             @jhonslife
+
+# Backend (Python/FastAPI)
+/backend/               @jhonslife
+/backend/api/           @jhonslife
+/backend/modules/       @jhonslife
+/backend/vendor/        @jhonslife
+
+# Infraestrutura e DevOps
+/docker/                @jhonslife
+/.github/workflows/     @jhonslife
+/scripts/               @jhonslife
+
+# Testes
+/tests/                 @jhonslife
+/backend/tests/         @jhonslife
+
+# Documentação
+/docs/                  @jhonslife
+*.md                    @jhonslife
+
+# Configurações críticas (requerem revisão do owner)
+/.env*                  @jhonslife
+/package.json           @jhonslife
+/pyproject.toml         @jhonslife
+/docker-compose*.yml    @jhonslife
+
+# Segurança (sempre requer revisão)
+/SECURITY.md            @jhonslife
+/.github/ISSUE_TEMPLATE/security_report.md @jhonslife
+
+# Políticas e Legal
+/LICENSE                @jhonslife
+/TERMS_OF_SERVICE.md    @jhonslife
+/PRIVACY_POLICY.md      @jhonslife
+/CODE_OF_CONDUCT.md     @jhonslife
+
+# Tauri (Desktop App)
+/src-tauri/             @jhonslife
+
+# Scraper (sensível)
+/backend/scraper/       @jhonslife
+
+# Integrações (sensível - tokens e APIs)
+/backend/integrations/  @jhonslife

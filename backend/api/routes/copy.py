@@ -25,9 +25,9 @@ class CopyRequest(BaseModel):
     product_description: Optional[str] = None
     product_price: float
     product_benefits: Optional[List[str]] = None
-    copy_type: str = Field(..., pattern="^(ad|description|headline|cta|story)$")
-    tone: str = Field(..., pattern="^(professional|casual|urgent|friendly|luxury)$")
-    platform: str = Field(default="instagram", pattern="^(instagram|facebook|tiktok|whatsapp|general)$")
+    copy_type: str = Field(..., pattern="^(ad|description|headline|cta|story|facebook_ad|tiktok_hook|product_description|story_reels|email|whatsapp)$")
+    tone: str = Field(..., pattern="^(professional|casual|urgent|friendly|luxury|educational|emotional|authority)$")
+    platform: str = Field(default="instagram", pattern="^(instagram|facebook|tiktok|whatsapp|general|youtube|email)$")
     language: str = Field(default="pt-BR")
     max_length: Optional[int] = Field(None, ge=50, le=2000)
     include_emoji: bool = True

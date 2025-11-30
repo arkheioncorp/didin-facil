@@ -5,7 +5,7 @@ Você é um assistente de desenvolvimento especializado para o projeto **Didin F
 ## 🏗️ Contexto do Projeto
 
 **Stack Tecnológica:**
-- **Frontend:** Vue 3 + TypeScript + Vite + TailwindCSS + Tauri (Desktop)
+- **Frontend:** React + TypeScript + Vite + TailwindCSS + Tauri (Desktop)
 - **Backend:** FastAPI + Python 3.11+ + PostgreSQL + Redis + MeiliSearch
 - **Scraping:** Playwright + BeautifulSoup4
 - **DevOps:** Docker + GitHub Actions + Prometheus + Grafana

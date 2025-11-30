@@ -82,7 +82,7 @@ const platformBgColors: Record<string, string> = {
 
 const statusConfig: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
   active: { label: 'Ativo', icon: <CheckCircle className="h-4 w-4" />, color: 'text-green-500' },
-  inactive: { label: 'Inativo', icon: <XCircle className="h-4 w-4" />, color: 'text-gray-500' },
+  inactive: { label: 'Inativo', icon: <XCircle className="h-4 w-4" />, color: 'text-muted-foreground' },
   suspended: { label: 'Suspenso', icon: <XCircle className="h-4 w-4" />, color: 'text-red-500' },
   needs_reauth: { label: 'Reautenticar', icon: <AlertTriangle className="h-4 w-4" />, color: 'text-yellow-500' },
 };
@@ -122,7 +122,7 @@ function SummaryCard({ summary }: { summary: AccountSummary }) {
         <Card key={platform}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium capitalize">{platform}</CardTitle>
-            <div className={`p-1.5 rounded text-white ${platformBgColors[platform] || 'bg-gray-500'}`}>
+            <div className={`p-1.5 rounded text-white ${platformBgColors[platform] || 'bg-muted-foreground'}`}>
               {platformIcons[platform]}
             </div>
           </CardHeader>

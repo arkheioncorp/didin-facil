@@ -118,7 +118,7 @@ export function BrowserViewer({ isActive, currentUrl, screenshot, status }: Brow
                                         <div className="h-2 w-2 bg-yellow-500 rounded-full" />
                                         <div className="h-2 w-2 bg-green-500 rounded-full" />
                                     </div>
-                                    <span className="text-gray-300 truncate flex-1">
+                                    <span className="text-white/70 truncate flex-1">
                                         TikTok Shop - Buscando produtos...
                                     </span>
                                 </div>

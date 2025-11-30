@@ -1,0 +1,183 @@
+{
+    "name": "09 - Workflow Logger (Utility)",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "workflow-log",
+                "responseMode": "onReceived",
+                "options": {}
+            },
+            "id": "webhook-log",
+            "name": "Webhook Log Entry",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [
+                250,
+                300
+            ],
+            "webhookId": "workflow-log"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Prepare log entry\nconst logData = $input.first().json;\n\nconst logEntry = {\n  workflow_name: logData.workflow_name || 'unknown',\n  execution_id: logData.execution_id || $execution.id,\n  conversation_id: logData.conversation_id,\n  user_id: logData.user_id,\n  intent: logData.intent,\n  message_content: logData.message_content ? logData.message_content.substring(0, 1000) : null,\n  response_content: logData.response_content ? logData.response_content.substring(0, 1000) : null,\n  success: logData.success !== false, // default true\n  error_message: logData.error_message,\n  execution_time_ms: logData.execution_time_ms,\n  tokens_used: logData.tokens_used,\n  cost_usd: logData.cost_usd,\n  metadata: JSON.stringify(logData.metadata || {})\n};\n\nreturn { json: logEntry };"
+            },
+            "id": "prepare-log",
+            "name": "Prepare Log Entry",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                470,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "insert",
+                "schema": "public",
+                "table": "workflow_logs",
+                "columns": "workflow_name, execution_id, conversation_id, user_id, intent, message_content, response_content, success, error_message, execution_time_ms, tokens_used, cost_usd, metadata",
+                "options": {}
+            },
+            "id": "insert-log",
+            "name": "Insert Log",
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 2.5,
+            "position": [
+                690,
+                300
+            ],
+            "credentials": {
+                "postgres": {
+                    "id": "postgres-didin",
+                    "name": "PostgreSQL Didin"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $('Prepare Log Entry').item.json.success }}",
+                            "value2": false
+                        }
+                    ]
+                }
+            },
+            "id": "is-error",
+            "name": "Is Error?",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                910,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "UPDATE chatbot_metrics SET total_messages = total_messages + 1, outgoing_messages = outgoing_messages + 1 WHERE date = CURRENT_DATE",
+                "options": {}
+            },
+            "id": "update-metrics-success",
+            "name": "Update Metrics Success",
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 2.5,
+            "position": [
+                1130,
+                200
+            ],
+            "credentials": {
+                "postgres": {
+                    "id": "postgres-didin",
+                    "name": "PostgreSQL Didin"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// Send error notification (could integrate with Sentry, Slack, etc)\nconst errorData = $('Prepare Log Entry').item.json;\n\nconsole.error('Workflow Error:', {\n  workflow: errorData.workflow_name,\n  execution_id: errorData.execution_id,\n  error: errorData.error_message,\n  conversation_id: errorData.conversation_id\n});\n\nreturn $input.all();"
+            },
+            "id": "notify-error",
+            "name": "Notify Error",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1130,
+                400
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook Log Entry": {
+            "main": [
+                [
+                    {
+                        "node": "Prepare Log Entry",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Prepare Log Entry": {
+            "main": [
+                [
+                    {
+                        "node": "Insert Log",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Insert Log": {
+            "main": [
+                [
+                    {
+                        "node": "Is Error?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Is Error?": {
+            "main": [
+                [
+                    {
+                        "node": "Notify Error",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Update Metrics Success",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "tags": [
+        {
+            "name": "Utility"
+        },
+        {
+            "name": "Logging"
+        },
+        {
+            "name": "Monitoring"
+        }
+    ],
+    "meta": {
+        "description": "Workflow utilitário para logging estruturado. Pode ser chamado por outros workflows via HTTP Request.",
+        "templateCredsSetupCompleted": true
+    }
+}

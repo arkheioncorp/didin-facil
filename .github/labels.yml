@@ -1,0 +1,189 @@
+# Labels do Repositório - Didin Fácil
+# Use: gh label import .github/labels.yml
+
+# === Tipos ===
+- name: "bug"
+  color: "d73a4a"
+  description: "Algo não está funcionando corretamente"
+
+- name: "enhancement"
+  color: "a2eeef"
+  description: "Nova funcionalidade ou solicitação"
+
+- name: "documentation"
+  color: "0075ca"
+  description: "Melhorias ou adições à documentação"
+
+- name: "security"
+  color: "ee0701"
+  description: "Problema de segurança"
+
+- name: "performance"
+  color: "fbca04"
+  description: "Melhoria de performance"
+
+- name: "refactor"
+  color: "5319e7"
+  description: "Refatoração de código sem mudança de funcionalidade"
+
+- name: "test"
+  color: "bfd4f2"
+  description: "Adição ou melhoria de testes"
+
+- name: "chore"
+  color: "fef2c0"
+  description: "Tarefas de manutenção"
+
+- name: "dependencies"
+  color: "0366d6"
+  description: "Atualização de dependências"
+
+# === Prioridade ===
+- name: "priority: critical"
+  color: "b60205"
+  description: "Deve ser resolvido imediatamente"
+
+- name: "priority: high"
+  color: "d93f0b"
+  description: "Alta prioridade"
+
+- name: "priority: medium"
+  color: "fbca04"
+  description: "Prioridade média"
+
+- name: "priority: low"
+  color: "0e8a16"
+  description: "Baixa prioridade"
+
+# === Status ===
+- name: "triage"
+  color: "ededed"
+  description: "Precisa de análise inicial"
+
+- name: "confirmed"
+  color: "0e8a16"
+  description: "Confirmado e pronto para trabalho"
+
+- name: "in progress"
+  color: "1d76db"
+  description: "Ativamente sendo trabalhado"
+
+- name: "blocked"
+  color: "b60205"
+  description: "Bloqueado por outra issue ou fator externo"
+
+- name: "on hold"
+  color: "c5def5"
+  description: "Pausado temporariamente"
+
+- name: "needs info"
+  color: "d876e3"
+  description: "Precisa de mais informações"
+
+- name: "wontfix"
+  color: "ffffff"
+  description: "Não será resolvido"
+
+- name: "duplicate"
+  color: "cfd3d7"
+  description: "Esta issue ou PR já existe"
+
+- name: "invalid"
+  color: "e4e669"
+  description: "Não parece correto"
+
+# === Componentes ===
+- name: "frontend"
+  color: "61dafb"
+  description: "Relacionado ao frontend (Vue/React)"
+
+- name: "backend"
+  color: "3572A5"
+  description: "Relacionado ao backend (Python/FastAPI)"
+
+- name: "desktop"
+  color: "dea584"
+  description: "Relacionado ao app desktop (Tauri)"
+
+- name: "mobile"
+  color: "2ea44f"
+  description: "Relacionado a mobile"
+
+- name: "api"
+  color: "006b75"
+  description: "Relacionado à API"
+
+- name: "database"
+  color: "336791"
+  description: "Relacionado ao banco de dados"
+
+- name: "scraper"
+  color: "ff6b6b"
+  description: "Relacionado ao scraper"
+
+- name: "integrations"
+  color: "7057ff"
+  description: "Integrações com terceiros (TikTok, Instagram, etc)"
+
+- name: "payments"
+  color: "00a86b"
+  description: "Relacionado a pagamentos e billing"
+
+- name: "auth"
+  color: "ff9f00"
+  description: "Relacionado a autenticação/autorização"
+
+# === Esforço ===
+- name: "good first issue"
+  color: "7057ff"
+  description: "Bom para novos contribuidores"
+
+- name: "help wanted"
+  color: "008672"
+  description: "Ajuda extra é bem-vinda"
+
+- name: "easy"
+  color: "c2e0c6"
+  description: "Estimativa: menos de 1 hora"
+
+- name: "medium"
+  color: "fef2c0"
+  description: "Estimativa: 1-4 horas"
+
+- name: "hard"
+  color: "f9d0c4"
+  description: "Estimativa: mais de 4 horas"
+
+# === Releases ===
+- name: "breaking change"
+  color: "b60205"
+  description: "Mudança que quebra compatibilidade"
+
+- name: "release: patch"
+  color: "bfd4f2"
+  description: "Incluir em release patch (x.x.X)"
+
+- name: "release: minor"
+  color: "c5def5"
+  description: "Incluir em release minor (x.X.0)"
+
+- name: "release: major"
+  color: "5319e7"
+  description: "Incluir em release major (X.0.0)"
+
+# === Especiais ===
+- name: "stale"
+  color: "ffffff"
+  description: "Issue/PR sem atividade recente"
+
+- name: "sponsor"
+  color: "ea4aaa"
+  description: "Solicitado por patrocinador"
+
+- name: "needs review"
+  color: "fbca04"
+  description: "Precisa de code review"
+
+- name: "approved"
+  color: "0e8a16"
+  description: "Aprovado para merge"

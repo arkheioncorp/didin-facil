@@ -5,31 +5,31 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
+  "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-[13px] font-medium ring-offset-background transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0 active:scale-[0.98]",
   {
     variants: {
       variant: {
         default:
-          "bg-tiktrend-primary text-white shadow-md shadow-tiktrend-primary/25 hover:bg-tiktrend-primary/90 hover:shadow-lg hover:shadow-tiktrend-primary/30",
+          "bg-tiktrend-primary text-white shadow-sm shadow-tiktrend-primary/20 hover:bg-tiktrend-primary/90 hover:shadow-md hover:shadow-tiktrend-primary/25",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-md shadow-destructive/25 hover:bg-destructive/90",
+          "bg-destructive text-destructive-foreground shadow-sm shadow-destructive/20 hover:bg-destructive/90",
         outline:
-          "border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground/20",
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground/20",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        ghost: "hover:bg-accent/80 hover:text-accent-foreground",
         link: "text-tiktrend-primary underline-offset-4 hover:underline",
         tiktrend:
-          "bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary text-white shadow-lg shadow-tiktrend-primary/30 hover:opacity-90 hover:shadow-xl hover:shadow-tiktrend-primary/40",
+          "bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary text-white shadow-md shadow-tiktrend-primary/25 hover:opacity-90 hover:shadow-lg hover:shadow-tiktrend-primary/30",
         success:
-          "bg-green-500 text-white shadow-md shadow-green-500/25 hover:bg-green-600",
+          "bg-green-500 text-white shadow-sm shadow-green-500/20 hover:bg-green-600",
       },
       size: {
-        default: "h-10 px-5 py-2",
-        sm: "h-9 rounded-lg px-4 text-xs",
-        lg: "h-12 rounded-xl px-8 text-base",
-        xl: "h-14 rounded-xl px-10 text-lg",
-        icon: "h-10 w-10",
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-md px-3 text-xs",
+        lg: "h-10 rounded-lg px-6 text-sm",
+        xl: "h-11 rounded-lg px-8 text-base",
+        icon: "h-9 w-9",
       },
     },
     defaultVariants: {

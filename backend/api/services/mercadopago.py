@@ -4,6 +4,7 @@ Payment processing and subscription management
 """
 
 import uuid
+from typing import Optional
 
 import httpx
 
@@ -33,38 +34,20 @@ class MercadoPagoService:
             response.raise_for_status()
             return response.json()
     
-    async def get_subscription(self, preapproval_id: str) -> dict:
-        """Get subscription (preapproval) details"""
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{self.base_url}/preapproval/{preapproval_id}",
-                headers=self.headers
-            )
-            response.raise_for_status()
-            return response.json()
-    
-    async def get_authorized_payment(self, payment_id: str) -> dict:
-        """Get authorized payment details (for subscriptions)"""
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{self.base_url}/authorized_payments/{payment_id}",
-                headers=self.headers
-            )
-            response.raise_for_status()
-            return response.json()
-    
     async def create_payment(
         self,
         title: str,
         price: float,
         user_email: str,
-        external_reference: str
+        external_reference: str,
+        description: Optional[str] = None
     ) -> dict:
-        """Create a payment preference"""
+        """Create a payment preference (Card, Boleto, etc)"""
         preference_data = {
             "items": [
                 {
                     "title": title,
+                    "description": description or title,
                     "quantity": 1,
                     "unit_price": float(price),
                     "currency_id": "BRL"
@@ -99,6 +82,7 @@ class MercadoPagoService:
         cpf: str,
         name: str,
         external_reference: str,
+        description: str = "Didin Fácil - Créditos"
     ) -> dict:
         """
         Create a PIX payment with QR code.
@@ -118,7 +102,7 @@ class MercadoPagoService:
             },
             "external_reference": external_reference,
             "notification_url": f"{settings.API_URL}/webhooks/mercadopago",
-            "description": "TikTrend Finder - Licença Vitalícia"
+            "description": description
         }
         
         async with httpx.AsyncClient() as client:
@@ -144,126 +128,6 @@ class MercadoPagoService:
                 "ticket_url": transaction_data.get("ticket_url")
             }
 
-    async def create_subscription(
-        self,
-        plan: str,
-        user_email: str,
-        user_id: str,
-    ) -> dict:
-        """
-        Create recurring subscription.
-        Note: Deprecated - using lifetime license + credits model now.
-        Kept for legacy support.
-        """
-
-        # Legacy subscriptions not supported in new model
-        # All purchases are now one-time (lifetime license or credit packs)
-        raise NotImplementedError(
-            "Subscriptions are deprecated. Use lifetime license + credits."
-        )
-
-    async def create_license_payment(
-        self,
-        user_email: str,
-        user_id: str,
-    ) -> dict:
-        """Create payment for lifetime license (R$ 49,90)"""
-        preference_data = {
-            "items": [
-                {
-                    "title": "Didin Fácil - Licença Vitalícia",
-                    "quantity": 1,
-                    "unit_price": 49.90,
-                    "currency_id": "BRL"
-                }
-            ],
-            "payer": {
-                "email": user_email
-            },
-            "metadata": {
-                "product_type": "license",
-                "user_id": user_id
-            },
-            "back_urls": {
-                "success": f"{settings.FRONTEND_URL}/payment/success",
-                "failure": f"{settings.FRONTEND_URL}/payment/failure",
-                "pending": f"{settings.FRONTEND_URL}/payment/pending"
-            },
-            "auto_return": "approved",
-            "external_reference": f"{user_id}:lifetime",
-            "notification_url": f"{settings.API_URL}/webhooks/mercadopago"
-        }
-
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{self.base_url}/checkout/preferences",
-                headers=self.headers,
-                json=preference_data
-            )
-            response.raise_for_status()
-            return response.json()
-
-    async def create_credits_payment(
-        self,
-        user_email: str,
-        user_id: str,
-        pack: str,
-    ) -> dict:
-        """Create payment for credits pack"""
-        credit_packs = {
-            "starter": {"credits": 50, "price": 19.90},
-            "pro": {"credits": 200, "price": 49.90},
-            "ultra": {"credits": 500, "price": 99.90},
-        }
-
-        pack_info = credit_packs.get(pack, credit_packs["starter"])
-
-        preference_data = {
-            "items": [
-                {
-                    "title": f"Didin Fácil - {pack_info['credits']} Créditos IA",
-                    "quantity": 1,
-                    "unit_price": pack_info["price"],
-                    "currency_id": "BRL"
-                }
-            ],
-            "payer": {
-                "email": user_email
-            },
-            "metadata": {
-                "product_type": "credits",
-                "credits": pack_info["credits"],
-                "user_id": user_id
-            },
-            "back_urls": {
-                "success": f"{settings.FRONTEND_URL}/payment/success",
-                "failure": f"{settings.FRONTEND_URL}/payment/failure",
-                "pending": f"{settings.FRONTEND_URL}/payment/pending"
-            },
-            "auto_return": "approved",
-            "external_reference": f"{user_id}:credits:{pack}",
-            "notification_url": f"{settings.API_URL}/webhooks/mercadopago"
-        }
-
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{self.base_url}/checkout/preferences",
-                headers=self.headers,
-                json=preference_data
-            )
-            response.raise_for_status()
-            return response.json()
-
-    async def cancel_subscription(self, preapproval_id: str) -> bool:
-        """Cancel a subscription (legacy - deprecated)"""
-        async with httpx.AsyncClient() as client:
-            response = await client.put(
-                f"{self.base_url}/preapproval/{preapproval_id}",
-                headers=self.headers,
-                json={"status": "cancelled"}
-            )
-            return response.status_code == 200
-
     async def log_event(self, event_type: str, data: dict):
         """Log payment event to database"""
         await self.db.execute(
@@ -278,16 +142,6 @@ class MercadoPagoService:
             }
         )
 
-    async def send_license_email(
-        self,
-        email: str,
-        license_key: str,
-        plan: str
-    ):
-        """Send license key via email"""
-        # TODO: Implement email sending (SendGrid, AWS SES, etc.)
-        print(f"[EMAIL] Licença enviada para {email}: {license_key} ({plan})")
-
     async def send_credits_email(
         self,
         email: str,
@@ -296,16 +150,3 @@ class MercadoPagoService:
         """Send credits purchase confirmation via email"""
         # TODO: Implement email sending (SendGrid, AWS SES, etc.)
         print(f"[EMAIL] Créditos adicionados para {email}: {credits_amount}")
-
-    async def get_payment_history(self, user_id: str) -> list:
-        """Get user's payment history"""
-        results = await self.db.fetch_all(
-            """
-            SELECT id, amount, status, payment_method, created_at
-            FROM payments
-            WHERE user_id = :user_id
-            ORDER BY created_at DESC
-            """,
-            {"user_id": user_id}
-        )
-        return [dict(r) for r in results]

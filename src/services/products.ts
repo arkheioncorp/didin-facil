@@ -1,10 +1,19 @@
-import { invoke } from "@tauri-apps/api/core";
 import type { PaginatedResponse, Product, ProductHistory, SearchFilters } from "@/types";
 import { z } from "zod";
+import { fetchProducts as fetchProductsFromApi, fetchProductById as fetchProductByIdFromApi, type ProductFilters } from "./api/products";
 
 // Check if running in Tauri environment
 const isTauri = (): boolean => {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+};
+
+// Safe invoke wrapper
+const safeInvoke = async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> => {
+  if (!isTauri()) {
+    throw new Error(`Tauri command "${cmd}" not available in browser mode`);
+  }
+  const { invoke } = await import("@tauri-apps/api/core");
+  return invoke<T>(cmd, args);
 };
 
 // Generate mock products for E2E testing
@@ -49,8 +58,6 @@ const ProductSchema = z.object({
   id: z.string(),
   title: z.string(),
   price: z.number(),
-  // Add other fields as needed, keeping it loose for now to avoid breaking changes
-  // strict validation can be added incrementally
 }).passthrough();
 
 const PaginatedResponseSchema = z.object({
@@ -64,89 +71,141 @@ const PaginatedResponseSchema = z.object({
 export async function searchProducts(
   filters: Partial<SearchFilters>
 ): Promise<PaginatedResponse<Product>> {
-  // In non-Tauri environment (E2E tests), return mock data
-  if (!isTauri()) {
-    return {
-      data: mockProducts,
-      total: mockProducts.length,
-      page: 1,
-      pageSize: 20,
-      hasMore: false,
+  // Try backend API first
+  try {
+    const apiFilters: ProductFilters = {
+      page: filters.page || 1,
+      per_page: filters.pageSize || 20,
+      category: filters.categories?.[0],
+      min_price: filters.priceMin,
+      max_price: filters.priceMax,
+      min_sales: filters.salesMin,
+      search: filters.query,
+      sort_by: filters.sortBy as ProductFilters['sort_by'] || 'sales_30d',
+      sort_order: filters.sortOrder as ProductFilters['sort_order'] || 'desc',
     };
+    return await fetchProductsFromApi(apiFilters);
+  } catch (apiError) {
+    console.warn('API unavailable, trying Tauri or mock:', apiError);
+  }
+
+  // In Tauri environment, use invoke
+  if (isTauri()) {
+    try {
+      const response = await safeInvoke<PaginatedResponse<Product>>("search_products", { filters });
+      return PaginatedResponseSchema.parse(response) as unknown as PaginatedResponse<Product>;
+    } catch (error) {
+      console.error("Error searching products:", error);
+    }
   }
   
-  try {
-    const response = await invoke<PaginatedResponse<Product>>("search_products", { filters });
-    return PaginatedResponseSchema.parse(response) as unknown as PaginatedResponse<Product>;
-  } catch (error) {
-    console.error("Error searching products:", error);
-    throw error;
-  }
+  // Fallback to mock data
+  return {
+    data: mockProducts,
+    total: mockProducts.length,
+    page: 1,
+    pageSize: 20,
+    hasMore: false,
+  };
 }
 
 export async function getProducts(
   page?: number,
-  pageSize?: number
+  pageSize?: number,
+  filters?: {
+    category?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    minSales?: number;
+    sortBy?: string;
+    sortOrder?: string;
+  }
 ): Promise<PaginatedResponse<Product>> {
-  // In non-Tauri environment (E2E tests), return mock data with pagination
-  if (!isTauri()) {
-    const currentPage = page || 1;
-    const currentPageSize = pageSize || 20;
-    const startIndex = (currentPage - 1) * currentPageSize;
-    const endIndex = startIndex + currentPageSize;
-    const paginatedProducts = mockProducts.slice(startIndex, endIndex);
-    
-    return {
-      data: paginatedProducts,
-      total: mockProducts.length,
+  const currentPage = page || 1;
+  const currentPageSize = pageSize || 20;
+
+  // Try backend API first
+  try {
+    const apiFilters: ProductFilters = {
       page: currentPage,
-      pageSize: currentPageSize,
-      hasMore: endIndex < mockProducts.length,
+      per_page: currentPageSize,
+      category: filters?.category,
+      min_price: filters?.minPrice,
+      max_price: filters?.maxPrice,
+      min_sales: filters?.minSales,
+      sort_by: (filters?.sortBy as ProductFilters['sort_by']) || 'sales_30d',
+      sort_order: (filters?.sortOrder as ProductFilters['sort_order']) || 'desc',
     };
+    return await fetchProductsFromApi(apiFilters);
+  } catch (apiError) {
+    console.warn('API unavailable, trying Tauri or mock:', apiError);
+  }
+
+  // In Tauri environment, use invoke
+  if (isTauri()) {
+    try {
+      const response = await safeInvoke<PaginatedResponse<Product>>("get_products", { page, pageSize });
+      return PaginatedResponseSchema.parse(response) as unknown as PaginatedResponse<Product>;
+    } catch (error) {
+      console.error("Error getting products:", error);
+    }
   }
   
-  try {
-    const response = await invoke<PaginatedResponse<Product>>("get_products", { page, pageSize });
-    return PaginatedResponseSchema.parse(response) as unknown as PaginatedResponse<Product>;
-  } catch (error) {
-    console.error("Error getting products:", error);
-    throw error;
-  }
+  // Fallback to mock data with pagination
+  const startIndex = (currentPage - 1) * currentPageSize;
+  const endIndex = startIndex + currentPageSize;
+  const paginatedProducts = mockProducts.slice(startIndex, endIndex);
+  
+  return {
+    data: paginatedProducts,
+    total: mockProducts.length,
+    page: currentPage,
+    pageSize: currentPageSize,
+    hasMore: endIndex < mockProducts.length,
+  };
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  // In non-Tauri environment (E2E tests), return mock data
-  if (!isTauri()) {
-    return mockProducts.find(p => p.id === id) || null;
+  // Try backend API first
+  try {
+    return await fetchProductByIdFromApi(id);
+  } catch (apiError) {
+    console.warn('API unavailable:', apiError);
+  }
+
+  // In Tauri environment, use invoke
+  if (isTauri()) {
+    try {
+      return await safeInvoke<Product | null>("get_product_by_id", { id });
+    } catch (error) {
+      console.error("Error getting product:", error);
+    }
   }
   
-  try {
-    return await invoke<Product | null>("get_product_by_id", { id });
-  } catch (error) {
-    console.error("Error getting product:", error);
-    throw error;
-  }
+  // Fallback to mock data
+  return mockProducts.find(p => p.id === id) || null;
 }
 
 export async function getProductHistory(id: string): Promise<ProductHistory[]> {
-  // In non-Tauri environment (E2E tests), return mock data
-  if (!isTauri()) {
-    return [
-      {
-        id: "hist-1",
-        productId: id,
-        price: 99.90,
-        salesCount: 150,
-        stockLevel: 100,
-        collectedAt: new Date().toISOString(),
-      }
-    ];
+  // In Tauri environment, use invoke
+  if (isTauri()) {
+    try {
+      return await safeInvoke<ProductHistory[]>("get_product_history", { id });
+    } catch (error) {
+      console.error("Error getting product history:", error);
+    }
   }
   
-  try {
-    return await invoke<ProductHistory[]>("get_product_history", { id });
-  } catch (error) {
-    console.error("Error getting product history:", error);
-    throw error;
-  }
+  // Fallback to mock data
+  return [
+    {
+      id: "hist-1",
+      productId: id,
+      price: 99.90,
+      salesCount: 150,
+      stockLevel: 100,
+      collectedAt: new Date().toISOString(),
+    }
+  ];
 }
+

@@ -31,11 +31,18 @@ const DLQPage = lazy(() => import("@/pages/automation/DLQ"));
 const Workflows = lazy(() => import("@/pages/automation/Workflows"));
 const CRMDashboard = lazy(() => import("@/pages/crm/CRMDashboard"));
 const Pipeline = lazy(() => import("@/pages/crm/Pipeline"));
+const Contacts = lazy(() => import("@/pages/crm/Contacts"));
 const MetricsPage = lazy(() => import("@/pages/admin/Metrics"));
+const FinancialDashboard = lazy(() => import("@/pages/admin/Financial"));
 const AnalyticsDashboard = lazy(() => import("@/pages/analytics/AnalyticsDashboard"));
 const ContentTemplates = lazy(() => import("@/pages/templates/ContentTemplates"));
 const MultiAccountManager = lazy(() => import("@/pages/accounts/MultiAccountManager"));
 const APIDocumentation = lazy(() => import("@/pages/docs/APIDocumentation"));
+const Checkout = lazy(() => import("@/pages/Checkout"));
+const Terms = lazy(() => import("@/pages/legal/Terms"));
+const Privacy = lazy(() => import("@/pages/legal/Privacy"));
+const Cookies = lazy(() => import("@/pages/legal/Cookies"));
+const AcceptableUse = lazy(() => import("@/pages/legal/AcceptableUse"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -56,10 +63,17 @@ function App() {
           <BrowserRouter>
             <Suspense fallback={<PageLoader />}>
               <Routes>
+                {/* Public Legal Pages (no auth required) */}
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/cookies" element={<Cookies />} />
+                <Route path="/acceptable-use" element={<AcceptableUse />} />
+
                 {/* Auth routes (no layout) */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Login />} />
                 <Route path="/subscription" element={<Subscription />} />
+                <Route path="/checkout" element={<Checkout />} />
                 <Route path="/setup" element={<SetupWizard />} />
 
                 {/* App routes (with layout) */}
@@ -94,11 +108,13 @@ function App() {
                     <Route path="crm">
                       <Route index element={<CRMDashboard />} />
                       <Route path="pipeline" element={<Pipeline />} />
+                      <Route path="contacts" element={<Contacts />} />
                     </Route>
 
                     {/* Admin Routes */}
                     <Route path="admin">
                       <Route path="metrics" element={<MetricsPage />} />
+                      <Route path="financial" element={<FinancialDashboard />} />
                       <Route path="analytics" element={<AnalyticsDashboard />} />
                       <Route path="templates" element={<ContentTemplates />} />
                       <Route path="accounts" element={<MultiAccountManager />} />

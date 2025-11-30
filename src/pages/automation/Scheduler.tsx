@@ -118,7 +118,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
   processing: { label: "Processando", color: "bg-yellow-500", icon: Loader2 },
   published: { label: "Publicado", color: "bg-green-500", icon: CheckCircle2 },
   failed: { label: "Falhou", color: "bg-red-500", icon: XCircle },
-  cancelled: { label: "Cancelado", color: "bg-gray-500", icon: AlertCircle }
+  cancelled: { label: "Cancelado", color: "bg-muted-foreground", icon: AlertCircle }
 };
 
 export const Scheduler = () => {
@@ -462,7 +462,7 @@ export const Scheduler = () => {
                           <Card key={post.id} className="p-3">
                             <div className="flex items-start justify-between">
                               <div className="flex items-center gap-2">
-                                <div className={`p-1.5 rounded ${platformConfig?.color || "bg-gray-500"} text-white`}>
+                                <div className={`p-1.5 rounded ${platformConfig?.color || "bg-muted-foreground"} text-white`}>
                                   {getPlatformIcon(post.platform)}
                                 </div>
                                 <div>
@@ -814,7 +814,7 @@ export const Scheduler = () => {
                       <Card key={post.id} className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
-                            <div className={`p-2 rounded-lg ${platformConfig?.color || "bg-gray-500"} text-white`}>
+                            <div className={`p-2 rounded-lg ${platformConfig?.color || "bg-muted-foreground"} text-white`}>
                               {getPlatformIcon(post.platform)}
                             </div>
                             <div>

@@ -160,6 +160,28 @@ export const FavoritesIcon: React.FC<IconProps> = ({
   </svg>
 );
 
+// Check Icon
+export const CheckIcon: React.FC<IconProps> = ({
+  size = 24,
+  className,
+  ...props
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    {...props}
+  >
+    <path d="M20 6L9 17l-5-5" />
+  </svg>
+);
+
 // Copy Icon
 export const CopyIcon: React.FC<IconProps> = ({
   size = 24,

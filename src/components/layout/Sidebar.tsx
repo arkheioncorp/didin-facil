@@ -39,7 +39,9 @@ import {
   BarChart3, 
   Kanban,
   Calendar,
-  Download
+  Download,
+  DollarSign,
+  CreditCard,
 } from "lucide-react";
 import { useUserStore } from "@/stores";
 
@@ -198,6 +200,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
           path: "/admin/docs",
           testId: "nav-api-docs",
         },
+        {
+          label: t("navigation.financial", "Financeiro"),
+          icon: DollarSign,
+          path: "/admin/financial",
+          testId: "nav-financial",
+          adminOnly: true,
+        },
+      ]
+    },
+    {
+      title: t("navigation.sections.credits", "Créditos"),
+      items: [
+        {
+          label: t("navigation.buy_credits", "Comprar Créditos"),
+          icon: CreditCard,
+          path: "/checkout",
+          testId: "nav-checkout",
+        },
       ]
     }
   ];
@@ -229,20 +249,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
     <TooltipProvider>
       <aside
         data-testid="sidebar"
-        className={cn(
-          "fixed left-0 top-0 z-40 h-screen border-r bg-card/95 backdrop-blur-md transition-all duration-300 ease-out",
-          collapsed ? "w-[72px]" : "w-64"
-        )}
+        className="h-full w-full border-r border-border/50 bg-card backdrop-blur-xl"
       >
         <div className="flex h-full flex-col">
-          {/* Header - Melhoria #26: Micro-animações */}
-          <div className="flex h-16 items-center justify-between border-b px-4">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="transition-transform duration-300 group-hover:scale-110">
-                <TikTrendLogo size={36} />
+          {/* Header */}
+          <div className="flex h-14 items-center justify-between border-b border-border/50 px-3">
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <div className="transition-transform duration-300 group-hover:scale-105">
+                <TikTrendLogo size={28} />
               </div>
               {!collapsed && (
-                <span className="text-xl font-bold bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary bg-clip-text text-transparent animate-gradient">
+                <span className="text-lg font-semibold bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary bg-clip-text text-transparent">
                   TikTrend
                 </span>
               )}
@@ -252,29 +269,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
               size="icon"
               onClick={onToggle}
               className={cn(
-                "h-8 w-8 rounded-lg hover:bg-accent transition-all duration-200",
+                "h-7 w-7 rounded-md hover:bg-accent/80 transition-all duration-200",
                 collapsed && "ml-auto"
               )}
             >
               {collapsed ? (
-                <ChevronRightIcon size={16} />
+                <ChevronRightIcon size={14} />
               ) : (
-                <ChevronLeftIcon size={16} />
+                <ChevronLeftIcon size={14} />
               )}
             </Button>
           </div>
 
-          {/* Navigation - Melhoria #12: Indicador ativo melhorado */}
-          <ScrollArea className="flex-1 py-4">
-            <nav className="space-y-6 px-3">
+          {/* Navigation */}
+          <ScrollArea className="flex-1 py-3 scrollbar-thin">
+            <nav className="space-y-5 px-2">
               {menuSections.map((section, index) => (
-                <div key={index} className="space-y-1.5">
+                <div key={index} className="space-y-0.5">
                   {!collapsed && (
-                    <h4 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    <h4 className="px-2 text-[10px] font-medium text-muted-foreground/70 uppercase tracking-widest mb-1.5">
                       {section.title}
                     </h4>
                   )}
-                  {collapsed && index > 0 && <div className="h-px bg-border my-2 mx-2" />}
+                  {collapsed && index > 0 && <div className="h-px bg-border/50 my-2 mx-1" />}
                   
                   {section.items.map((item) => {
                     const Icon = item.icon;
@@ -288,24 +305,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                               variant={active ? "default" : "ghost"}
                               size="icon"
                               className={cn(
-                                "w-full h-11 rounded-xl transition-all duration-200 relative",
-                                active && "bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary shadow-lg shadow-tiktrend-primary/25 hover:shadow-tiktrend-primary/40",
-                                item.premium && "border border-yellow-500/30"
+                                "w-9 h-9 rounded-lg transition-all duration-200 relative",
+                                active && "bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary shadow-md shadow-tiktrend-primary/20 hover:shadow-tiktrend-primary/30",
+                                !active && "hover:bg-accent/80",
+                                'premium' in item && item.premium && "border border-yellow-500/20"
                               )}
                             >
-                              <Icon size={20} />
-                              {item.premium && (
-                                <Crown className="absolute -top-1 -right-1 h-3 w-3 text-yellow-500" />
+                              <Icon size={18} className={cn(active && "text-white")} />
+                              {'premium' in item && item.premium && (
+                                <Crown className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 text-yellow-500" />
                               )}
                             </Button>
                           </Link>
                         </TooltipTrigger>
-                        <TooltipContent side="right" className="font-medium">
-                          <div className="flex items-center gap-1.5">
+                        <TooltipContent side="right" className="text-xs font-medium">
+                          <div className="flex items-center gap-1">
                             {item.label}
-                            {item.premium && (
-                              <Badge variant="outline" className="text-[10px] px-1 py-0 bg-yellow-500/10 text-yellow-600 border-yellow-500/30">
-                                Premium
+                            {'premium' in item && item.premium && (
+                              <Badge variant="outline" className="text-[9px] px-1 py-0 bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+                                Pro
                               </Badge>
                             )}
                           </div>
@@ -316,22 +334,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                         <Button
                           variant={active ? "default" : "ghost"}
                           className={cn(
-                            "w-full justify-start gap-3 h-11 rounded-xl transition-all duration-200",
-                            active && "bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary shadow-lg shadow-tiktrend-primary/25 hover:shadow-tiktrend-primary/40",
-                            !active && "hover:bg-accent hover:translate-x-1",
-                            item.premium && !active && "border border-yellow-500/30"
+                            "w-full justify-start gap-2.5 h-9 rounded-lg text-[13px] transition-all duration-200",
+                            active && "bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary shadow-md shadow-tiktrend-primary/20 hover:shadow-tiktrend-primary/30",
+                            !active && "hover:bg-accent/80 hover:translate-x-0.5",
+                            'premium' in item && item.premium && !active && "border border-yellow-500/20"
                           )}
                         >
-                          <Icon size={20} />
+                          <Icon size={18} className={cn(!active && "text-muted-foreground")} />
                           <span className="font-medium">{item.label}</span>
-                          {item.premium && (
-                            <Badge variant="outline" className="ml-auto text-[10px] px-1.5 py-0 bg-yellow-500/10 text-yellow-600 border-yellow-500/30">
-                              <Crown className="h-2.5 w-2.5 mr-0.5" />
-                              Premium
+                          {'premium' in item && item.premium && (
+                            <Badge variant="outline" className="ml-auto text-[9px] px-1 py-0 bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+                              <Crown className="h-2 w-2 mr-0.5" />
+                              Pro
                             </Badge>
                           )}
-                          {active && !item.premium && (
-                            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                          {active && !('premium' in item && item.premium) && (
+                            <div className="ml-auto w-1 h-1 rounded-full bg-white/90 animate-pulse" />
                           )}
                         </Button>
                       </Link>

@@ -100,7 +100,7 @@ function CodeBlock({ code }: { code: string }) {
 
   return (
     <div className="relative group">
-      <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+      <pre className="bg-zinc-900 text-zinc-100 p-4 rounded-lg overflow-x-auto text-sm font-mono">
         <code>{code}</code>
       </pre>
       <Button

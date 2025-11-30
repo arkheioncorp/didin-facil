@@ -1,0 +1,509 @@
+{
+  "name": "07 - Workflow Master (Hub Central)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot",
+        "options": {}
+      },
+      "id": "webhook-master",
+      "name": "Webhook Principal",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-event",
+              "leftValue": "={{ $json.event }}",
+              "rightValue": "message_created",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "condition-incoming",
+              "leftValue": "={{ $json.message_type }}",
+              "rightValue": "incoming",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-incoming",
+      "name": "Filtrar Entrada",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [470, 400]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT value FROM conversation_state WHERE conversation_id = $1 ORDER BY updated_at DESC LIMIT 1",
+        "options": {
+          "queryParams": "={{ $json.conversation.id }}"
+        }
+      },
+      "id": "get-state",
+      "name": "Buscar Estado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [690, 400],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "greetings",
+                    "leftValue": "={{ $('Webhook Principal').item.json.content.toLowerCase() }}",
+                    "rightValue": "^(oi|olá|ola|bom dia|boa tarde|boa noite|hello|hi|hey|início|inicio|começar|comecar)$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "saudacao"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "menu",
+                    "leftValue": "={{ $('Webhook Principal').item.json.content.toLowerCase() }}",
+                    "rightValue": "^(menu|opções|opcoes|ajuda|help)$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "menu"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "search",
+                    "leftValue": "={{ $('Webhook Principal').item.json.content.toLowerCase() }}",
+                    "rightValue": "buscar|procurar|preço|encontrar|produto",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "busca"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "human",
+                    "leftValue": "={{ $('Webhook Principal').item.json.content.toLowerCase() }}",
+                    "rightValue": "atendente|humano|pessoa|falar com alguém|suporte",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "humano"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "schedule",
+                    "leftValue": "={{ $('Webhook Principal').item.json.content.toLowerCase() }}",
+                    "rightValue": "agendar|agendamento|marcar|horário",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "agendamento"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "router",
+      "name": "Roteador de Intenções",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [910, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $('Webhook Principal').item.json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"👋 Olá! Bem-vindo ao *Didin Fácil*!\\n\\nSou seu assistente virtual de comparação de preços.\\n\\n📋 *Menu Principal:*\\n\\n1️⃣ 🔍 Buscar produtos\\n2️⃣ 🏷️ Ver ofertas do dia\\n3️⃣ 🔔 Criar alerta de preço\\n4️⃣ 📅 Agendar atendimento\\n5️⃣ 👤 Falar com atendente\\n6️⃣ ❓ Perguntas frequentes\\n\\n✍️ Digite o número da opção desejada!\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-greeting",
+      "name": "Enviar Boas-vindas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $('Webhook Principal').item.json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"📋 *Menu Principal:*\\n\\n1️⃣ 🔍 Buscar produtos\\n2️⃣ 🏷️ Ver ofertas do dia\\n3️⃣ 🔔 Criar alerta de preço\\n4️⃣ 📅 Agendar atendimento\\n5️⃣ 👤 Falar com atendente\\n6️⃣ ❓ Perguntas frequentes\\n\\n✍️ Digite o número da opção!\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-menu",
+      "name": "Enviar Menu",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 250]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $('Webhook Principal').item.json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"🔍 *Busca de Produtos*\\n\\nDigite o nome do produto que você está procurando.\\n\\n💡 *Exemplos:*\\n• iPhone 15\\n• Smart TV 55 polegadas\\n• Geladeira frost free\\n• Notebook Dell\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-search-prompt",
+      "name": "Prompt de Busca",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $('Webhook Principal').item.json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"👤 *Atendimento Humano*\\n\\nVou transferir você para um de nossos atendentes.\\n\\n⏱️ Tempo médio de espera: 2 minutos\\n\\n📝 Enquanto aguarda, pode nos contar o motivo do contato?\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-human-request",
+      "name": "Solicitar Humano",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 550]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $('Webhook Principal').item.json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"content\": \"📅 *Agendamento*\\n\\nPara agendar um horário de atendimento, escolha uma opção:\\n\\n1️⃣ Suporte técnico\\n2️⃣ Consultoria de compras\\n3️⃣ Dúvidas financeiras\\n\\nDigite o número da opção!\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-schedule-options",
+      "name": "Opções Agendamento",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 700]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Você é o assistente virtual do Didin Fácil, uma plataforma de comparação de preços. Responda de forma curta, amigável e útil. Use emojis moderadamente. Se não entender a pergunta, sugira o menu principal digitando 'menu'."
+            },
+            {
+              "role": "user",
+              "content": "={{ $('Webhook Principal').item.json.content }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 300
+        }
+      },
+      "id": "fallback-ai",
+      "name": "IA Fallback",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [1200, 850],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-didin",
+          "name": "OpenAI Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $('Webhook Principal').item.json.conversation.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"{{ $json.message.content }}\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "send-ai-response",
+      "name": "Enviar Resposta IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1450, 850]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": "public",
+        "table": "conversation_state",
+        "columns": "conversation_id, state, updated_at",
+        "conflictColumns": "conversation_id",
+        "options": {}
+      },
+      "id": "save-state",
+      "name": "Salvar Estado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1450, 400],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Principal": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Entrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Entrada": {
+      "main": [
+        [
+          {
+            "node": "Buscar Estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Estado": {
+      "main": [
+        [
+          {
+            "node": "Roteador de Intenções",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Roteador de Intenções": {
+      "main": [
+        [
+          {
+            "node": "Enviar Boas-vindas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Menu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prompt de Busca",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Solicitar Humano",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Opções Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IA Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA Fallback": {
+      "main": [
+        [
+          {
+            "node": "Enviar Resposta IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "WhatsApp"
+    },
+    {
+      "name": "Master"
+    },
+    {
+      "name": "Avançado"
+    }
+  ]
+}

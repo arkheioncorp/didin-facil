@@ -47,6 +47,7 @@ export const Tutorial = () => {
         </div>
       ),
       placement: 'center',
+      disableBeacon: true,
     },
     {
       target: '[data-testid="user-menu"]',
@@ -61,7 +62,8 @@ export const Tutorial = () => {
           <p className="text-xs text-muted-foreground">Clique no seu perfil para ver saldo e comprar créditos.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
 
     // ═══════════════════════════════════════════════════════════════════
@@ -75,7 +77,8 @@ export const Tutorial = () => {
           <p>Visão geral das tendências, métricas de performance e insights do mercado.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
     {
       target: '[data-testid="nav-search"]',
@@ -86,7 +89,8 @@ export const Tutorial = () => {
           <p className="text-sm text-muted-foreground">Buscas ilimitadas com sua licença vitalícia.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
     {
       target: '[data-testid="nav-products"]',
@@ -96,7 +100,8 @@ export const Tutorial = () => {
           <p>Gerencie todos os produtos que você encontrou. Organize, compare e exporte para planilhas.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
     {
       target: '[data-testid="nav-favorites"]',
@@ -106,7 +111,8 @@ export const Tutorial = () => {
           <p>Salve os melhores produtos aqui para acessar rapidamente depois.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
     {
       target: '[data-testid="search-input"]',
@@ -116,7 +122,8 @@ export const Tutorial = () => {
           <p>Encontre qualquer produto instantaneamente de qualquer tela.</p>
         </div>
       ),
-      placement: 'bottom',
+      placement: 'auto',
+      disableBeacon: true,
     },
 
     // ═══════════════════════════════════════════════════════════════════
@@ -138,7 +145,8 @@ export const Tutorial = () => {
           </div>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
 
     // ═══════════════════════════════════════════════════════════════════
@@ -153,7 +161,8 @@ export const Tutorial = () => {
           <p className="text-sm text-muted-foreground">Conecte Instagram, TikTok e YouTube.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
     {
       target: '[data-testid="nav-instagram"]',
@@ -163,7 +172,8 @@ export const Tutorial = () => {
           <p>Gerencie posts, stories e analise métricas do seu perfil comercial.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
     {
       target: '[data-testid="nav-tiktok"]',
@@ -173,7 +183,8 @@ export const Tutorial = () => {
           <p>Acompanhe tendências, agende vídeos e monitore performance dos seus conteúdos.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
     {
       target: '[data-testid="nav-youtube"]',
@@ -183,7 +194,8 @@ export const Tutorial = () => {
           <p>Gerencie seu canal, agende uploads e acompanhe analytics detalhados.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
 
     // ═══════════════════════════════════════════════════════════════════
@@ -197,7 +209,8 @@ export const Tutorial = () => {
           <p>Automatize atendimento, envie mensagens em massa e gerencie conversas.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
     {
       target: '[data-testid="nav-chatbot"]',
@@ -207,7 +220,8 @@ export const Tutorial = () => {
           <p>Configure respostas automáticas inteligentes para atender clientes 24/7.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
     {
       target: '[data-testid="nav-scheduler"]',
@@ -217,7 +231,8 @@ export const Tutorial = () => {
           <p>Programe posts e ações automáticas para todas as suas redes sociais.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
     {
       target: '[data-testid="nav-seller-bot"]',
@@ -233,7 +248,8 @@ export const Tutorial = () => {
           <p className="text-xs text-muted-foreground mt-2">Disponível no plano Premium.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
 
     // ═══════════════════════════════════════════════════════════════════
@@ -247,7 +263,8 @@ export const Tutorial = () => {
           <p>Visão completa das suas vendas, leads e métricas de conversão.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
     {
       target: '[data-testid="nav-pipeline"]',
@@ -257,7 +274,8 @@ export const Tutorial = () => {
           <p>Gerencie leads em estilo Kanban. Arraste e solte para atualizar status.</p>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
 
     // ═══════════════════════════════════════════════════════════════════
@@ -276,7 +294,8 @@ export const Tutorial = () => {
           </ul>
         </div>
       ),
-      placement: 'right',
+      placement: 'auto',
+      disableBeacon: true,
     },
     {
       target: 'body',
@@ -292,6 +311,7 @@ export const Tutorial = () => {
         </div>
       ),
       placement: 'center',
+      disableBeacon: true,
     },
   ];
 
@@ -302,21 +322,57 @@ export const Tutorial = () => {
       continuous
       showProgress
       showSkipButton
+      scrollToFirstStep
+      scrollOffset={100}
+      disableScrolling={false}
       callback={handleJoyrideCallback}
+      floaterProps={{
+        disableAnimation: false,
+        hideArrow: false,
+        offset: 15,
+        styles: {
+          floater: {
+            filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3))',
+          },
+        },
+      }}
       styles={{
         options: {
           zIndex: 10000,
           primaryColor: '#000',
-          textColor: '#333',
-          backgroundColor: '#fff',
+          textColor: theme === 'dark' ? '#fff' : '#333',
+          backgroundColor: theme === 'dark' ? '#1f2937' : '#fff',
+          arrowColor: theme === 'dark' ? '#1f2937' : '#fff',
+          overlayColor: 'rgba(0, 0, 0, 0.6)',
+          width: 340,
+        },
+        tooltip: {
+          borderRadius: 12,
+          padding: 16,
+          maxWidth: '90vw',
+        },
+        tooltipContainer: {
+          textAlign: 'left',
+        },
+        tooltipContent: {
+          padding: '8px 0',
         },
         buttonNext: {
-            backgroundColor: theme === 'dark' ? '#fff' : '#000',
-            color: theme === 'dark' ? '#000' : '#fff',
+          backgroundColor: theme === 'dark' ? '#fff' : '#000',
+          color: theme === 'dark' ? '#000' : '#fff',
+          borderRadius: 8,
+          padding: '8px 16px',
         },
         buttonBack: {
-            color: theme === 'dark' ? '#fff' : '#000',
-        }
+          color: theme === 'dark' ? '#fff' : '#000',
+          marginRight: 8,
+        },
+        buttonSkip: {
+          color: theme === 'dark' ? '#9ca3af' : '#6b7280',
+        },
+        spotlight: {
+          borderRadius: 8,
+        },
       }}
       locale={{
         back: 'Voltar',

@@ -153,7 +153,7 @@ export const WhatsappPage: React.FC = () => {
                 </Button>
 
                 {qrCode && (
-                  <div className="mt-4 flex justify-center p-4 bg-white rounded-lg">
+                  <div className="mt-4 flex justify-center p-4 bg-white rounded-lg shadow-lg border border-border">
                     <img src={qrCode} alt="WhatsApp QR Code" className="max-w-[250px]" />
                   </div>
                 )}

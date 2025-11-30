@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🔍 TikTrend Finder
+# 🚀 Didin Fácil
 
-**Buscador Inteligente de Produtos em Alta do TikTok Shop**
+**Plataforma de Gestão e Inteligência para Dropshipping e Afiliados**
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/jhonslife/didin-facil/build.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/jhonslife/didin-facil/actions)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)](https://github.com/jhonslife/didin-facil/releases)
@@ -14,11 +14,11 @@
 
 <br/>
 
-[📦 Download](#-instalação) • [📖 Documentação](#-documentação) • [🛠️ Desenvolvimento](#️-desenvolvimento) • [📄 Licença](#-licença)
+[📦 Download](#-instalação) • [📖 Documentação Completa](docs/README.md) • [🛠️ Desenvolvimento](#️-desenvolvimento) • [📄 Licença](#-licença)
 
 <br/>
 
-<img src="docs/assets/screenshot.png" alt="TikTrend Finder Screenshot" width="800"/>
+<img src="docs/assets/screenshot.png" alt="Didin Fácil Screenshot" width="800"/>
 
 </div>
 
@@ -26,7 +26,7 @@
 
 ## 📋 Sobre
 
-**TikTrend Finder** é um aplicativo desktop de alta performance para **Windows** e **Linux** que automatiza a descoberta de produtos trending no TikTok Shop. Desenvolvido com arquitetura híbrida (desktop + cloud), oferece velocidade, segurança e escalabilidade para dropshippers, afiliados e empreendedores digitais.
+**Didin Fácil** (anteriormente TikTrend Finder) é uma plataforma completa de alta performance para **Windows** e **Linux** que automatiza a descoberta de produtos trending no TikTok Shop e oferece ferramentas de gestão financeira. Desenvolvido com arquitetura híbrida (desktop + cloud), oferece velocidade, segurança e escalabilidade para dropshippers, afiliados e empreendedores digitais.
 
 ### ✨ Principais Recursos
 

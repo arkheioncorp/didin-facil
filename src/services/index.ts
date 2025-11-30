@@ -9,3 +9,5 @@ export * from "./settings";
 export * from "./export";
 export * from "./social";
 export * from "./whatsapp";
+export * from "./credits";
+export * from "./accounting";
