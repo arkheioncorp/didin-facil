@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ import type {
 } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 import { whatsappService, youtubeService, tiktokService } from "@/services";
+import { SUPPORTED_LANGUAGES, changeLanguage, type SupportedLanguage } from "@/lib/i18n";
 
 // =============================================================================
 // Tipos
@@ -115,6 +117,7 @@ const TabButton: React.FC<TabButtonProps> = ({ tab, currentTab, onClick, icon, l
 // =============================================================================
 
 export const Settings: React.FC = () => {
+  const { t: tFunc } = useTranslation();
   const { theme, setTheme } = useUserStore();
   const [activeTab, setActiveTab] = React.useState<SettingsTab>("general");
   const [settings, setSettings] = React.useState<AppSettings>(defaultSettings);
@@ -197,6 +200,17 @@ export const Settings: React.FC = () => {
   const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
     setTheme(newTheme);
     setSettings((prev) => ({ ...prev, theme: newTheme }));
+  };
+
+  const handleLanguageChange = async (lang: SupportedLanguage) => {
+    try {
+      await changeLanguage(lang);
+      setSettings((prev) => ({ ...prev, language: lang }));
+      setSaveMessage(tFunc("settings.saved"));
+      setTimeout(() => setSaveMessage(null), 3000);
+    } catch (error) {
+      console.error("Error changing language:", error);
+    }
   };
 
   const handleSave = async () => {
@@ -401,37 +415,42 @@ export const Settings: React.FC = () => {
       {/* Aparência */}
       <Card>
         <CardHeader>
-          <CardTitle>Aparência</CardTitle>
+          <CardTitle>{tFunc("settings.appearance.title")}</CardTitle>
           <CardDescription>
-            Personalize a aparência do aplicativo
+            {tFunc("settings.appearance.theme")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Tema</label>
+            <label className="text-sm font-medium">{tFunc("settings.appearance.theme")}</label>
             <div className="flex gap-2">
-              {(["light", "dark", "system"] as const).map((t) => (
+              {(["light", "dark", "system"] as const).map((themeOption) => (
                 <Button
-                  key={t}
-                  variant={theme === t ? "default" : "outline"}
-                  onClick={() => handleThemeChange(t)}
-                  className={theme === t ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
+                  key={themeOption}
+                  variant={theme === themeOption ? "default" : "outline"}
+                  onClick={() => handleThemeChange(themeOption)}
+                  className={theme === themeOption ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
                 >
-                  {t === "light" ? "☀️ Claro" : t === "dark" ? "🌙 Escuro" : "💻 Sistema"}
+                  {themeOption === "light" ? `☀️ ${tFunc("settings.appearance.themes.light")}` : themeOption === "dark" ? `🌙 ${tFunc("settings.appearance.themes.dark")}` : `💻 ${tFunc("settings.appearance.themes.system")}`}
                 </Button>
               ))}
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Idioma</label>
-            <div className="flex gap-2">
-              <Badge variant="tiktrend" className="py-1.5 px-3">
-                🇧🇷 Português (BR)
-              </Badge>
-              <Badge variant="outline" className="py-1.5 px-3 cursor-pointer opacity-50">
-                🇺🇸 English (em breve)
-              </Badge>
+            <label className="text-sm font-medium">{tFunc("settings.appearance.language")}</label>
+            <div className="flex gap-2 flex-wrap">
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <Button
+                  key={lang.code}
+                  variant={settings.language === lang.code ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleLanguageChange(lang.code)}
+                  className={settings.language === lang.code ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
+                >
+                  {lang.flag} {lang.name}
+                </Button>
+              ))}
             </div>
           </div>
         </CardContent>
@@ -517,21 +536,39 @@ export const Settings: React.FC = () => {
       {/* Tutorial */}
       <Card>
         <CardHeader>
-          <CardTitle>Tutorial</CardTitle>
+          <CardTitle>Tutorial & Setup</CardTitle>
           <CardDescription>
-            Reveja o tutorial interativo da plataforma
+            Reveja o tutorial interativo ou reconfigure a plataforma
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button
-            variant="outline"
-            onClick={() => {
-              localStorage.removeItem('tutorial_completed');
-              window.dispatchEvent(new Event('restart_tutorial'));
-            }}
-          >
-            Reiniciar Tutorial
-          </Button>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                localStorage.removeItem('tutorial_completed');
+                window.dispatchEvent(new Event('restart_tutorial'));
+              }}
+            >
+              🔄 Reiniciar Tutorial
+            </Button>
+            <Button
+              variant="outline"
+              className="text-destructive hover:text-destructive"
+              onClick={async () => {
+                if (confirm('Isso vai resetar todas as configurações iniciais e reabrir o assistente de configuração. Deseja continuar?')) {
+                  const { resetSetup } = await import('@/services/settings');
+                  await resetSetup();
+                  window.location.href = '/setup';
+                }
+              }}
+            >
+              ⚙️ Refazer Setup Inicial
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Use "Refazer Setup" apenas se precisar reconfigurar a licença ou termos.
+          </p>
         </CardContent>
       </Card>
 

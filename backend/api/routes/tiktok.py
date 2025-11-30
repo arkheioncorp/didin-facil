@@ -10,7 +10,6 @@ from pydantic import BaseModel
 from typing import Optional, List
 import shutil
 import os
-import json
 from datetime import datetime
 
 from api.middleware.auth import get_current_user

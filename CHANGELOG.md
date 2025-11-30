@@ -7,9 +7,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+### Adicionado
+- **📊 Analytics Dashboard**: Dashboard completo com métricas de engajamento, crescimento de seguidores, performance de conteúdo e comparação entre plataformas (backend/api/routes/analytics.py)
+- **📝 Templates de Conteúdo**: Sistema de templates reutilizáveis para posts, hashtags e descrições com suporte a variáveis dinâmicas (backend/api/routes/templates.py)
+- **👥 Multi-Account Management**: Gerenciamento de múltiplas contas sociais (Instagram, TikTok, YouTube) com métricas individuais e troca rápida de conta ativa (backend/api/routes/accounts.py)
+- **📚 API Documentation**: Documentação interativa completa da API com exemplos de código, categorias organizadas e playground integrado (backend/api/routes/api_docs.py)
+- **Componentes Frontend**: AnalyticsDashboard.vue, ContentTemplates.vue, MultiAccountManager.vue, APIDocumentation.vue
+- **52 novos testes unitários** para as novas funcionalidades
+
 ### Planejado
 - Suporte a macOS
-- Dashboard de analytics
 - Histórico de preços
 - App mobile (React Native)
 - Packs de Expansão

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,6 +44,7 @@ const SORT_OPTIONS = [
 type ViewMode = "grid" | "list";
 
 export const Products: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { isFavorite, addFavorite: addToFavorites, removeFavorite: removeFromFavorites } = useFavoritesStore();
@@ -382,9 +384,9 @@ export const Products: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Produtos</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("products.title")}</h1>
           <p className="text-muted-foreground">
-            Explore os produtos coletados do TikTok Shop
+            {t("products.explore_collected")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -395,7 +397,7 @@ export const Products: React.FC = () => {
             disabled={isExporting || products.length === 0}
           >
             <ExportIcon size={16} />
-            {isExporting ? "Exportando..." : "Exportar"}
+            {isExporting ? t("common.exporting") : t("common.export")}
           </Button>
         </div>
       </div>
@@ -403,23 +405,23 @@ export const Products: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Total</div>
+          <div className="text-sm text-muted-foreground">{t("common.total")}</div>
           <div className="text-2xl font-bold">{stats.total}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Em Alta</div>
+          <div className="text-sm text-muted-foreground">{t("products.trending")}</div>
           <div className="text-2xl font-bold text-tiktrend-primary">
             {stats.trending}
           </div>
         </Card>
         <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Em Promoção</div>
+          <div className="text-sm text-muted-foreground">{t("products.on_sale")}</div>
           <div className="text-2xl font-bold text-green-500">
             {stats.onSale}
           </div>
         </Card>
         <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Frete Grátis</div>
+          <div className="text-sm text-muted-foreground">{t("products.free_shipping")}</div>
           <div className="text-2xl font-bold">
             {stats.freeShipping}
           </div>
@@ -430,9 +432,9 @@ export const Products: React.FC = () => {
       <div className="flex items-center justify-between">
         <div data-testid="results-count" className="text-sm text-muted-foreground">
           {hasActiveFilters ? (
-            <span>Mostrando {products.length} de {total} produtos (filtrado)</span>
+            <span>{t("products.showing_filtered", { count: products.length, total })}</span>
           ) : (
-            <span>Mostrando {products.length} de {total} produtos</span>
+            <span>{t("products.showing", { count: products.length, total })}</span>
           )}
         </div>
 
@@ -440,7 +442,7 @@ export const Products: React.FC = () => {
         {selectedProducts.size > 0 && (
           <div className="flex items-center gap-4" data-testid="bulk-actions">
             <span data-testid="selected-count" className="text-sm font-medium">
-              {selectedProducts.size} selecionado(s)
+              {t("products.selected", { count: selectedProducts.size })}
             </span>
             <Button
               variant="outline"
@@ -450,7 +452,7 @@ export const Products: React.FC = () => {
               data-testid="bulk-favorite"
             >
               <Heart size={14} />
-              Favoritar
+              {t("products.add_to_favorites")}
             </Button>
             <Button
               variant="outline"
@@ -460,7 +462,7 @@ export const Products: React.FC = () => {
               data-testid="bulk-export"
             >
               <Download size={14} />
-              Exportar
+              {t("common.export")}
             </Button>
           </div>
         )}
@@ -472,7 +474,7 @@ export const Products: React.FC = () => {
         <aside className="lg:w-64 shrink-0" data-testid="filter-sidebar">
           <Card className="p-4 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Filtros</h3>
+              <h3 className="font-semibold">{t("search.filters.title")}</h3>
               {hasActiveFilters && (
                 <Button
                   variant="ghost"
@@ -482,17 +484,17 @@ export const Products: React.FC = () => {
                   className="text-xs"
                 >
                   <X size={14} className="mr-1" />
-                  Limpar
+                  {t("common.clear")}
                 </Button>
               )}
             </div>
 
             {/* Category Filter */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Categoria</label>
+              <label className="text-sm font-medium">{t("search.filters.category")}</label>
               <Select value={category} onValueChange={handleCategoryChange}>
                 <SelectTrigger className="w-full" data-testid="category-filter">
-                  <SelectValue placeholder="Todas as categorias" />
+                  <SelectValue placeholder={t("products.all_categories")} />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map((cat) => (
@@ -506,11 +508,11 @@ export const Products: React.FC = () => {
 
             {/* Price Range */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Faixa de Preço (R$)</label>
+              <label className="text-sm font-medium">{t("search.filters.priceRange")}</label>
               <div className="flex gap-2">
                 <input
                   type="number"
-                  placeholder="Min"
+                  placeholder={t("search.filters.min")}
                   value={filterMinPrice}
                   onChange={(e) => setFilterMinPrice(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border bg-background text-sm"
@@ -518,7 +520,7 @@ export const Products: React.FC = () => {
                 />
                 <input
                   type="number"
-                  placeholder="Max"
+                  placeholder={t("search.filters.max")}
                   value={filterMaxPrice}
                   onChange={(e) => setFilterMaxPrice(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border bg-background text-sm"
@@ -529,10 +531,10 @@ export const Products: React.FC = () => {
 
             {/* Min Sales */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Vendas Mínimas</label>
+              <label className="text-sm font-medium">{t("search.filters.minSales")}</label>
               <input
                 type="number"
-                placeholder="Ex: 1000"
+                placeholder={t("search.filters.minSalesPlaceholder")}
                 value={filterMinSales}
                 onChange={(e) => setFilterMinSales(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border bg-background text-sm"
@@ -542,19 +544,19 @@ export const Products: React.FC = () => {
 
             {/* Quick Filters */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Filtros Rápidos</label>
+              <label className="text-sm font-medium">{t("products.quick_filters")}</label>
               <div className="space-y-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Em Alta</span>
+                  <span className="text-sm">{t("products.trending")}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Em Promoção</span>
+                  <span className="text-sm">{t("products.on_sale")}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Frete Grátis</span>
+                  <span className="text-sm">{t("products.free_shipping")}</span>
                 </label>
               </div>
             </div>
@@ -565,7 +567,7 @@ export const Products: React.FC = () => {
               className="w-full"
               data-testid="apply-filters"
             >
-              Aplicar Filtros
+              {t("search.filters.apply")}
             </Button>
           </Card>
         </aside>
@@ -583,7 +585,7 @@ export const Products: React.FC = () => {
                 onChange={(e) => handleSelectAll(e.target.checked)}
                 data-testid="select-all"
               />
-              <span className="text-sm">Selecionar todos</span>
+              <span className="text-sm">{t("products.select_all")}</span>
             </label>
 
             <div className="flex items-center gap-4">

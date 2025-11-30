@@ -1,0 +1,728 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "add": "Adicionar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "clear": "Limpar",
+    "close": "Fechar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "retry": "Tentar novamente",
+    "success": "Sucesso!",
+    "error": "Erro",
+    "warning": "Atenção",
+    "info": "Informação",
+    "yes": "Sim",
+    "no": "Não",
+    "all": "Todos",
+    "none": "Nenhum",
+    "select": "Selecionar",
+    "copy": "Copiar",
+    "copied": "Copiado!",
+    "export": "Exportar",
+    "exporting": "Exportando...",
+    "import": "Importar",
+    "download": "Download",
+    "upload": "Upload",
+    "refresh": "Atualizar",
+    "actions": "Ações",
+    "details": "Detalhes",
+    "view": "Visualizar",
+    "more": "Mais",
+    "less": "Menos",
+    "show_all": "Mostrar todos",
+    "hide": "Ocultar",
+    "total": "Total",
+    "of": "de",
+    "items": "itens",
+    "no_results": "Nenhum resultado encontrado",
+    "no_data": "Nenhum dado disponível"
+  },
+
+  "navigation": {
+    "dashboard": "Dashboard",
+    "search": "Buscar",
+    "products": "Produtos",
+    "coleta": "Coleta",
+    "favorites": "Favoritos",
+    "social_hub": "Social Hub",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "youtube": "YouTube",
+    "whatsapp": "WhatsApp",
+    "chatbot": "Chatbot",
+    "scheduler": "Agendador",
+    "copy_ai": "Copy AI",
+    "seller_bot": "Seller Bot",
+    "crm_dashboard": "Dashboard CRM",
+    "pipeline": "Pipeline",
+    "analytics": "Analytics",
+    "templates": "Templates",
+    "accounts": "Contas",
+    "api_docs": "API Docs",
+    "settings": "Configurações",
+    "profile": "Perfil",
+    "logout": "Sair",
+    "sections": {
+      "core": "Principal",
+      "social_suite": "Social Suite",
+      "automation": "Automação",
+      "crm_sales": "CRM & Vendas",
+      "admin": "Administração"
+    }
+  },
+
+  "auth": {
+    "login": "Entrar",
+    "logout": "Sair",
+    "register": "Cadastrar",
+    "forgot_password": "Esqueci minha senha",
+    "reset_password": "Redefinir senha",
+    "email": "E-mail",
+    "password": "Senha",
+    "confirm_password": "Confirmar senha",
+    "remember_me": "Lembrar-me",
+    "or_continue_with": "Ou continue com",
+    "login_success": "Login realizado com sucesso!",
+    "login_error": "Erro ao fazer login",
+    "logout_success": "Logout realizado com sucesso",
+    "session_expired": "Sua sessão expirou. Por favor, faça login novamente.",
+    "invalid_credentials": "E-mail ou senha inválidos",
+    "welcome_back": "Bem-vindo de volta!"
+  },
+
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bem-vindo ao Didin Fácil",
+    "subtitle": "Encontre os melhores produtos virais do TikTok Shop",
+    "quick_stats": "Estatísticas Rápidas",
+    "recent_activity": "Atividade Recente",
+    "trending_now": "Em Alta Agora",
+    "your_favorites": "Seus Favoritos",
+    "credits_remaining": "Créditos Restantes",
+    "products_found": "Produtos Encontrados",
+    "searches_today": "Buscas Hoje",
+    "favorites_count": "Total de Favoritos",
+    "view_all": "Ver Todos"
+  },
+
+  "search": {
+    "title": "Buscar Produtos",
+    "subtitle": "Encontre produtos em alta no TikTok Shop com filtros avançados",
+    "placeholder": "Digite palavras-chave, nome do produto ou categoria...",
+    "search_button": "Buscar",
+    "advanced_search": "Busca Avançada",
+    "popular": "Populares",
+    "filters": {
+      "title": "Filtros",
+      "categories": "Categorias",
+      "category": "Categoria",
+      "priceRange": "Faixa de Preço (R$)",
+      "price_range": "Faixa de Preço",
+      "min": "Mín",
+      "max": "Máx",
+      "min_price": "Preço Mínimo",
+      "max_price": "Preço Máximo",
+      "minSales": "Vendas Mínimas",
+      "minSalesPlaceholder": "Ex: 100",
+      "apply": "Aplicar Filtros",
+      "region": "Região",
+      "sort_by": "Ordenar por",
+      "popularity": "Popularidade",
+      "newest": "Mais Recentes",
+      "price_low": "Menor Preço",
+      "price_high": "Maior Preço",
+      "rating": "Avaliação",
+      "sales": "Vendas"
+    },
+    "categories": {
+      "beauty": "Beleza",
+      "home": "Casa",
+      "electronics": "Eletrônicos",
+      "fashion": "Moda",
+      "sports": "Esportes",
+      "pets": "Pets",
+      "toys": "Brinquedos",
+      "food": "Alimentos"
+    },
+    "results": "resultados encontrados",
+    "productsFound": "produtos encontrados",
+    "updatedNow": "Atualizado agora",
+    "noResults": "Nenhum produto encontrado",
+    "noResultsHint": "Tente outros termos de busca ou ajuste os filtros.",
+    "no_results": "Nenhum produto encontrado para sua busca",
+    "try_different": "Tente palavras-chave diferentes",
+    "searching": "Buscando produtos...",
+    "recentSearches": "Buscas Recentes",
+    "recent_searches": "Buscas Recentes",
+    "popular_searches": "Buscas Populares",
+    "startSearch": "Comece sua busca",
+    "startSearchHint": "Digite palavras-chave para encontrar os produtos mais vendidos do TikTok Shop.",
+    "searchFor": "Buscar",
+    "clearFilters": "Limpar Filtros"
+  },
+
+  "products": {
+    "title": "Produtos",
+    "all_products": "Todos os Produtos",
+    "all_categories": "Todas as categorias",
+    "explore_collected": "Explore os produtos coletados do TikTok Shop",
+    "product_details": "Detalhes do Produto",
+    "price": "Preço",
+    "original_price": "Preço Original",
+    "discount": "Desconto",
+    "sales": "Vendas",
+    "rating": "Avaliação",
+    "reviews": "Avaliações",
+    "category": "Categoria",
+    "seller": "Vendedor",
+    "shipping": "Frete",
+    "free_shipping": "Frete Grátis",
+    "stock": "Estoque",
+    "in_stock": "Em Estoque",
+    "out_of_stock": "Sem Estoque",
+    "low_stock": "Estoque Baixo",
+    "add_to_favorites": "Favoritar",
+    "remove_from_favorites": "Remover dos Favoritos",
+    "view_on_tiktok": "Ver no TikTok Shop",
+    "copy_link": "Copiar Link",
+    "share": "Compartilhar",
+    "generate_copy": "Gerar Copy",
+    "product_videos": "Vídeos do Produto",
+    "related_products": "Produtos Relacionados",
+    "price_history": "Histórico de Preços",
+    "specifications": "Especificações",
+    "trending": "Em Alta",
+    "on_sale": "Em Promoção",
+    "quick_filters": "Filtros Rápidos",
+    "select_all": "Selecionar todos",
+    "selected": "{{count}} selecionado(s)",
+    "showing": "Mostrando {{count}} de {{total}} produtos",
+    "showing_filtered": "Mostrando {{count}} de {{total}} produtos (filtrado)"
+  },
+
+  "favorites": {
+    "title": "Favoritos",
+    "subtitle": "Seus produtos salvos",
+    "empty": "Você ainda não tem favoritos",
+    "empty_description": "Adicione produtos aos favoritos para acompanhá-los",
+    "added": "Adicionado aos favoritos",
+    "removed": "Removido dos favoritos",
+    "organize": "Organizar",
+    "create_folder": "Criar Pasta",
+    "folder_name": "Nome da Pasta",
+    "move_to_folder": "Mover para Pasta",
+    "remove_all": "Remover Todos",
+    "export_list": "Exportar Lista"
+  },
+
+  "coleta": {
+    "title": "Coleta de Produtos",
+    "subtitle": "Configure sua conexão e colete produtos do TikTok Shop",
+    "start_collection": "Iniciar Coleta",
+    "stop_collection": "Parar Coleta",
+    "collection_active": "Coleta em andamento...",
+    "products_collected": "produtos coletados",
+    "collected": "coletados",
+    "sync": "Sincronizar",
+    "hashtag_to_monitor": "Hashtag para monitorar",
+    "collection_history": "Histórico de Coletas",
+    "configuration": "Configuração",
+    "collection": "Coleta",
+    "advanced": "Avançado"
+  },
+
+  "copy_ai": {
+    "title": "Copy AI",
+    "subtitle": "Gere textos persuasivos para seus produtos com inteligência artificial",
+    "generate": "Gerar Copy com IA",
+    "generating": "Gerando...",
+    "create_new": "Criar Nova Copy",
+    "select_product": "Selecione um produto",
+    "select_product_desc": "Selecione um produto e configure o estilo do texto",
+    "add_favorites_hint": "Adicione produtos aos favoritos para gerar copies",
+    "generated_copy": "Copy Gerada",
+    "copy_and_use": "Copie e use nas suas campanhas de marketing",
+    "copy_type": "Tipo de Copy",
+    "types": {
+      "product_description": "Descrição de Produto",
+      "ad_copy": "Anúncio",
+      "social_post": "Post Social",
+      "whatsapp_message": "Mensagem WhatsApp",
+      "email": "E-mail Marketing",
+      "video_script": "Roteiro de Vídeo"
+    },
+    "tone": "Tom de Voz",
+    "tones": {
+      "professional": "Profissional",
+      "casual": "Casual",
+      "persuasive": "Persuasivo",
+      "urgent": "Urgente",
+      "friendly": "Amigável",
+      "humorous": "Humorístico"
+    },
+    "length": "Tamanho",
+    "lengths": {
+      "short": "Curto",
+      "medium": "Médio",
+      "long": "Longo"
+    },
+    "result": "Resultado",
+    "copy_result": "Copiar Resultado",
+    "regenerate": "Regenerar",
+    "credit_cost": "Custo em créditos",
+    "credits": {
+      "simple": "1 crédito",
+      "analysis": "2 créditos",
+      "batch": "5 créditos"
+    },
+    "history": "Histórico de Copies",
+    "save_template": "Salvar como Template"
+  },
+
+  "social": {
+    "title": "Social Hub",
+    "subtitle": "Gerencie todas as suas redes sociais",
+    "connect_account": "Conectar Conta",
+    "disconnect": "Desconectar",
+    "connected": "Conectado",
+    "not_connected": "Não Conectado",
+    "last_sync": "Última Sincronização",
+    "sync_now": "Sincronizar Agora",
+    "posts_scheduled": "Posts Agendados",
+    "engagement_rate": "Taxa de Engajamento",
+    "followers": "Seguidores",
+    "following": "Seguindo",
+    "posts": "Posts",
+    "analytics": "Analytics",
+    "schedule_post": "Agendar Post",
+    "create_post": "Criar Post",
+    "instagram": {
+      "title": "Instagram",
+      "feed": "Feed",
+      "stories": "Stories",
+      "reels": "Reels",
+      "insights": "Insights"
+    },
+    "tiktok": {
+      "title": "TikTok",
+      "videos": "Vídeos",
+      "trending": "Em Alta",
+      "hashtags": "Hashtags"
+    },
+    "youtube": {
+      "title": "YouTube",
+      "videos": "Vídeos",
+      "shorts": "Shorts",
+      "playlists": "Playlists"
+    }
+  },
+
+  "whatsapp": {
+    "title": "WhatsApp Automação",
+    "subtitle": "Automatize suas mensagens do WhatsApp",
+    "connect": "Conectar WhatsApp",
+    "scan_qr": "Escaneie o QR Code com seu WhatsApp",
+    "connected": "WhatsApp Conectado",
+    "disconnected": "WhatsApp Desconectado",
+    "messages_sent": "Mensagens Enviadas",
+    "contacts": "Contatos",
+    "groups": "Grupos",
+    "templates": "Templates",
+    "create_template": "Criar Template",
+    "broadcast": "Disparo em Massa",
+    "schedule_message": "Agendar Mensagem",
+    "auto_reply": "Resposta Automática",
+    "chatbot_enabled": "Chatbot Ativado"
+  },
+
+  "automation": {
+    "title": "Automação",
+    "chatbot": {
+      "title": "Chatbot",
+      "subtitle": "Configure respostas automáticas inteligentes",
+      "enable": "Ativar Chatbot",
+      "disable": "Desativar Chatbot",
+      "responses": "Respostas",
+      "add_response": "Adicionar Resposta",
+      "trigger": "Gatilho",
+      "response": "Resposta",
+      "keywords": "Palavras-chave",
+      "test": "Testar Chatbot"
+    },
+    "scheduler": {
+      "title": "Agendador",
+      "subtitle": "Agende posts e mensagens",
+      "schedule": "Agendar",
+      "scheduled_items": "Itens Agendados",
+      "calendar_view": "Visualização de Calendário",
+      "list_view": "Visualização de Lista",
+      "add_schedule": "Novo Agendamento",
+      "date": "Data",
+      "time": "Horário",
+      "repeat": "Repetir",
+      "no_repeat": "Não Repetir",
+      "daily": "Diariamente",
+      "weekly": "Semanalmente",
+      "monthly": "Mensalmente"
+    }
+  },
+
+  "seller_bot": {
+    "title": "Seller Bot",
+    "subtitle": "Automação Premium para Central do Vendedor TikTok Shop",
+    "premium_price": "R$ 149,90/mês",
+    "premium_badge": "Premium R$149,90/mês",
+    "premium_feature": "Recurso Premium",
+    "requires_subscription": "Requer assinatura premium",
+    "enable": "Ativar Seller Bot",
+    "status": "Status",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "sales_today": "Vendas Hoje",
+    "total_sales": "Total de Vendas",
+    "conversion_rate": "Taxa de Conversão",
+    "configure": "Configurar",
+    "logs": "Logs de Atividade",
+    "stats": {
+      "queued": "Na Fila",
+      "running": "Executando",
+      "completed": "Concluídas",
+      "failed": "Falharam"
+    },
+    "quick_actions": {
+      "title": "Ações Rápidas",
+      "check_prices": "Checar Preços",
+      "check_prices_desc": "Compara com concorrentes",
+      "update_stock": "Atualizar Estoque",
+      "update_stock_desc": "Sincroniza quantidades",
+      "answer_reviews": "Responder Avaliações",
+      "answer_reviews_desc": "Respostas automáticas"
+    },
+    "tasks": {
+      "title": "Tarefas Recentes",
+      "empty": "Nenhuma tarefa ainda"
+    },
+    "profiles": {
+      "title": "Perfis de Automação",
+      "add": "Adicionar Perfil"
+    }
+  },
+
+  "crm": {
+    "title": "CRM",
+    "dashboard": {
+      "title": "Dashboard CRM",
+      "leads": "Leads",
+      "customers": "Clientes",
+      "deals": "Negócios",
+      "revenue": "Receita",
+      "conversion_rate": "Taxa de Conversão",
+      "average_deal_size": "Ticket Médio"
+    },
+    "pipeline": {
+      "title": "Pipeline de Vendas",
+      "stages": {
+        "lead": "Lead",
+        "qualified": "Qualificado",
+        "proposal": "Proposta",
+        "negotiation": "Negociação",
+        "closed_won": "Fechado (Ganho)",
+        "closed_lost": "Fechado (Perdido)"
+      },
+      "add_deal": "Novo Negócio",
+      "deal_value": "Valor do Negócio",
+      "expected_close": "Previsão de Fechamento",
+      "notes": "Notas",
+      "activities": "Atividades"
+    },
+    "contacts": {
+      "title": "Contatos",
+      "add_contact": "Novo Contato",
+      "name": "Nome",
+      "email": "E-mail",
+      "phone": "Telefone",
+      "company": "Empresa",
+      "source": "Origem",
+      "tags": "Tags"
+    }
+  },
+
+  "settings": {
+    "title": "Configurações",
+    "general": "Geral",
+    "appearance": {
+      "title": "Aparência",
+      "theme": "Tema",
+      "themes": {
+        "light": "Claro",
+        "dark": "Escuro",
+        "system": "Sistema"
+      },
+      "language": "Idioma",
+      "languages": {
+        "pt_BR": "Português (Brasil)",
+        "en": "English",
+        "es": "Español"
+      }
+    },
+    "notifications": {
+      "title": "Notificações",
+      "enable": "Ativar Notificações",
+      "email": "Notificações por E-mail",
+      "push": "Notificações Push",
+      "marketing": "E-mails de Marketing"
+    },
+    "privacy": {
+      "title": "Privacidade",
+      "data_collection": "Coleta de Dados",
+      "analytics": "Analytics",
+      "delete_data": "Excluir Meus Dados"
+    },
+    "account": {
+      "title": "Conta",
+      "email": "E-mail",
+      "change_password": "Alterar Senha",
+      "two_factor": "Autenticação de Dois Fatores",
+      "delete_account": "Excluir Conta"
+    },
+    "subscription": {
+      "title": "Assinatura",
+      "current_plan": "Plano Atual",
+      "free": "Gratuito",
+      "credits": "Créditos",
+      "buy_credits": "Comprar Créditos",
+      "upgrade": "Fazer Upgrade",
+      "billing_history": "Histórico de Cobranças"
+    },
+    "integrations": {
+      "title": "Integrações",
+      "connected": "Conectadas",
+      "available": "Disponíveis"
+    },
+    "advanced": {
+      "title": "Avançado",
+      "reset_setup": "Refazer Setup Inicial",
+      "reset_setup_description": "Isso abrirá o assistente de configuração novamente",
+      "clear_cache": "Limpar Cache",
+      "export_data": "Exportar Dados",
+      "developer_mode": "Modo Desenvolvedor"
+    },
+    "saved": "Configurações salvas com sucesso!"
+  },
+
+  "profile": {
+    "title": "Meu Perfil",
+    "subtitle": "Gerencie sua conta e licença",
+    "edit_profile": "Editar Perfil",
+    "avatar": "Foto de Perfil",
+    "change_avatar": "Alterar Foto",
+    "name": "Nome",
+    "email": "E-mail",
+    "phone": "Telefone",
+    "bio": "Bio",
+    "save_changes": "Salvar Alterações",
+    "account_created": "Conta criada em",
+    "member_since": "Membro desde",
+    "account_id": "ID da conta",
+    "last_login": "Último acesso"
+  },
+
+  "subscription": {
+    "title": "Planos e Assinaturas",
+    "subtitle": "Escolha o melhor plano para você",
+    "current_plan": "Seu Plano Atual",
+    "license": {
+      "title": "Licença Vitalícia",
+      "description": "Acesso completo para sempre",
+      "price": "R$ 49,90",
+      "once": "pagamento único",
+      "features": {
+        "unlimited_access": "Acesso ilimitado à plataforma",
+        "all_features": "Todas as funcionalidades",
+        "lifetime_updates": "Atualizações vitalícias",
+        "priority_support": "Suporte prioritário"
+      }
+    },
+    "credits": {
+      "title": "Créditos de IA",
+      "description": "Para usar recursos de IA",
+      "packs": {
+        "starter": {
+          "name": "Starter",
+          "credits": "50 créditos",
+          "price": "R$ 19,90"
+        },
+        "pro": {
+          "name": "Pro",
+          "credits": "200 créditos",
+          "price": "R$ 49,90"
+        },
+        "ultra": {
+          "name": "Ultra",
+          "credits": "500 créditos",
+          "price": "R$ 99,90"
+        }
+      },
+      "usage": {
+        "simple_copy": "Copy Simples: 1 crédito",
+        "analysis": "Análise: 2 créditos",
+        "batch": "Lote: 5 créditos"
+      }
+    },
+    "trial": {
+      "title": "Teste Grátis",
+      "description": "7 dias para experimentar",
+      "days_remaining": "dias restantes",
+      "expired": "Período de teste expirado"
+    },
+    "buy_now": "Comprar Agora",
+    "upgrade_now": "Fazer Upgrade",
+    "compare_plans": "Comparar Planos",
+    "get_license": "Adquira sua Licença",
+    "buy_credits": "Comprar Créditos IA",
+    "pay_once": "Pague uma vez, use para sempre",
+    "credits_description": "Use créditos para gerar copies com Inteligência Artificial"
+  },
+
+  "setup": {
+    "title": "Configuração Inicial",
+    "welcome": {
+      "title": "Bem-vindo ao Didin Fácil!",
+      "subtitle": "Vamos configurar sua conta em alguns passos"
+    },
+    "steps": {
+      "language": "Idioma",
+      "theme": "Tema",
+      "license": "Licença",
+      "notifications": "Notificações",
+      "finish": "Finalizar"
+    },
+    "language_step": {
+      "title": "Escolha seu idioma",
+      "description": "Selecione o idioma de sua preferência"
+    },
+    "theme_step": {
+      "title": "Escolha seu tema",
+      "description": "Como você prefere visualizar o app?"
+    },
+    "license_step": {
+      "title": "Ative sua licença",
+      "description": "Escolha como deseja começar"
+    },
+    "notifications_step": {
+      "title": "Notificações",
+      "description": "Configure suas preferências de notificação"
+    },
+    "finish_step": {
+      "title": "Tudo pronto!",
+      "description": "Sua conta está configurada",
+      "start_button": "Começar a Usar"
+    },
+    "skip": "Pular",
+    "continue": "Continuar",
+    "finish": "Finalizar"
+  },
+
+  "tutorial": {
+    "welcome": {
+      "title": "Bem-vindo ao Didin Fácil!",
+      "content": "Vamos fazer um tour rápido pelas principais funcionalidades."
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "content": "Seu painel central com estatísticas e atalhos rápidos."
+    },
+    "search": {
+      "title": "Buscar Produtos",
+      "content": "Encontre produtos virais do TikTok Shop com nossa busca inteligente."
+    },
+    "products": {
+      "title": "Produtos",
+      "content": "Veja todos os produtos coletados e analise suas métricas."
+    },
+    "favorites": {
+      "title": "Favoritos",
+      "content": "Salve seus produtos preferidos para acompanhar depois."
+    },
+    "copy_ai": {
+      "title": "Copy AI",
+      "content": "Gere textos persuasivos usando inteligência artificial. Custo: 1-5 créditos."
+    },
+    "social": {
+      "title": "Social Suite",
+      "content": "Gerencie todas as suas redes sociais em um só lugar."
+    },
+    "whatsapp": {
+      "title": "WhatsApp",
+      "content": "Automatize suas mensagens e crie chatbots."
+    },
+    "crm": {
+      "title": "CRM",
+      "content": "Gerencie seus leads e pipeline de vendas."
+    },
+    "settings": {
+      "title": "Configurações",
+      "content": "Personalize o app de acordo com suas preferências."
+    },
+    "finish": {
+      "title": "Tour Completo!",
+      "content": "Você está pronto para começar. Boas vendas!"
+    },
+    "next": "Próximo",
+    "previous": "Anterior",
+    "skip": "Pular Tour",
+    "finish_button": "Finalizar"
+  },
+
+  "errors": {
+    "generic": "Algo deu errado. Tente novamente.",
+    "network": "Erro de conexão. Verifique sua internet.",
+    "unauthorized": "Você não tem permissão para acessar isso.",
+    "not_found": "Página não encontrada.",
+    "server": "Erro no servidor. Tente novamente mais tarde.",
+    "validation": "Por favor, verifique os dados informados.",
+    "rate_limit": "Muitas tentativas. Aguarde um momento.",
+    "insufficient_credits": "Créditos insuficientes.",
+    "session_expired": "Sua sessão expirou. Faça login novamente."
+  },
+
+  "messages": {
+    "saved": "Salvo com sucesso!",
+    "deleted": "Excluído com sucesso!",
+    "updated": "Atualizado com sucesso!",
+    "copied": "Copiado para a área de transferência!",
+    "sent": "Enviado com sucesso!",
+    "created": "Criado com sucesso!",
+    "confirm_delete": "Tem certeza que deseja excluir?",
+    "action_cannot_undone": "Esta ação não pode ser desfeita."
+  },
+
+  "time": {
+    "just_now": "Agora mesmo",
+    "minutes_ago": "há {{count}} minuto(s)",
+    "hours_ago": "há {{count}} hora(s)",
+    "days_ago": "há {{count}} dia(s)",
+    "weeks_ago": "há {{count}} semana(s)",
+    "months_ago": "há {{count}} mês(es)",
+    "years_ago": "há {{count}} ano(s)",
+    "today": "Hoje",
+    "yesterday": "Ontem",
+    "tomorrow": "Amanhã"
+  },
+
+  "premium": {
+    "badge": "Premium",
+    "feature": "Recurso Premium",
+    "upgrade_required": "É necessário fazer upgrade para acessar este recurso",
+    "upgrade_now": "Fazer Upgrade"
+  }
+}

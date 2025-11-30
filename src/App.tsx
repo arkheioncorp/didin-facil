@@ -5,6 +5,7 @@ import {
   Dashboard,
   Search,
   Products,
+  Coleta,
   Favorites,
   Copy,
   Settings,
@@ -23,6 +24,10 @@ import {
   CRMDashboard,
   Pipeline,
   MetricsPage,
+  AnalyticsDashboard,
+  ContentTemplates,
+  MultiAccountManager,
+  APIDocumentation,
 } from "@/pages";
 import { ThemeProvider } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
@@ -54,6 +59,7 @@ function App() {
                 <Route index element={<Dashboard />} />
                 <Route path="search" element={<Search />} />
                 <Route path="products" element={<Products />} />
+                <Route path="coleta" element={<Coleta />} />
                 <Route path="favorites" element={<Favorites />} />
                 <Route path="copy" element={<Copy />} />
                 <Route path="whatsapp" element={<WhatsappPage />} />
@@ -83,6 +89,10 @@ function App() {
                 {/* Admin Routes */}
                 <Route path="admin">
                   <Route path="metrics" element={<MetricsPage />} />
+                  <Route path="analytics" element={<AnalyticsDashboard />} />
+                  <Route path="templates" element={<ContentTemplates />} />
+                  <Route path="accounts" element={<MultiAccountManager />} />
+                  <Route path="docs" element={<APIDocumentation />} />
                 </Route>
 
                 <Route path="settings" element={<Settings />} />

@@ -1,6 +1,6 @@
 """
 TikTok Shop Scraper
-Main scraper implementation using Playwright
+Main scraper implementation using Playwright with API fallback
 """
 
 import asyncio
@@ -16,6 +16,7 @@ from ..utils.proxy import ProxyPool
 from .parser import TikTokParser
 from .antibot import AntiDetection
 from .data_provider import get_data_provider
+from .api_scraper import TikTokAPIScraper
 
 # Import redis for state persistence
 import sys
@@ -27,7 +28,7 @@ from shared.redis import get_redis  # noqa: E402
 
 
 class TikTokScraper:
-    """TikTok Shop scraper with anti-detection"""
+    """TikTok Shop scraper with anti-detection and API fallback"""
     
     BASE_URL = "https://shop.tiktok.com"
     AFFILIATE_URL = "https://affiliate.tiktok.com"
@@ -41,6 +42,9 @@ class TikTokScraper:
         self.playwright = None
         self.browser: Optional[Browser] = None
         self.contexts: List[BrowserContext] = []
+        
+        # API Scraper (primary method - no browser needed)
+        self.api_scraper: Optional[TikTokAPIScraper] = None
         
         # Safety Switch State - Now using Redis
         self.redis_key_safety = "scraper:safety_mode"
@@ -242,13 +246,54 @@ class TikTokScraper:
         return await self.scrape_products(category=category, limit=limit)
     
     async def scrape_trending(self, limit: int = 50) -> List[dict]:
-        """Scrape trending products with intelligent fallback"""
+        """
+        Scrape trending products with intelligent multi-tier fallback.
+        
+        Priority order:
+        1. API Scraper (httpx with cookies - fastest, no CAPTCHA)
+        2. Playwright browser (if API fails)
+        3. Data Provider (curated fallback data)
+        """
         is_safe = await self.check_safety()
         if not is_safe:
             print("[TikTok Scraper] Safety mode active. Using data provider.")
             provider = get_data_provider(self.config)
             return await provider.get_trending_products(limit=limit)
 
+        # TIER 1: Try API Scraper first (fastest, bypasses CAPTCHA)
+        try:
+            print("[TikTok Scraper] Trying API scraper (httpx)...")
+            if not self.api_scraper:
+                self.api_scraper = TikTokAPIScraper(config=self.config)
+            
+            products = await self.api_scraper.get_trending_products(limit=limit)
+            
+            if products and len(products) >= 5:
+                print(f"[TikTok Scraper] API returned {len(products)} products")
+                await self.record_result(True)
+                return products
+            else:
+                print("[TikTok Scraper] API returned few products, trying browser...")
+                
+        except Exception as e:
+            print(f"[TikTok Scraper] API scraper failed: {e}")
+
+        # TIER 2: Fallback to Playwright browser
+        try:
+            products = await self._scrape_trending_browser(limit=limit)
+            if products:
+                return products
+        except Exception as e:
+            print(f"[TikTok Scraper] Browser scraping failed: {e}")
+        
+        # TIER 3: Use data provider as last resort
+        print("[TikTok Scraper] All methods failed. Using data provider.")
+        await self.record_result(False)
+        provider = get_data_provider(self.config)
+        return await provider.get_trending_products(limit=limit)
+
+    async def _scrape_trending_browser(self, limit: int = 50) -> List[dict]:
+        """Scrape trending using Playwright browser (legacy method)"""
         # Start browser if not already running
         if not self.browser:
             await self.start()
@@ -261,16 +306,14 @@ class TikTokScraper:
         try:
             # Try TikTok search
             url = "https://www.tiktok.com/search?q=tiktokmademebuyit"
-            print(f"[TikTok Scraper] Navigating to {url}")
+            print(f"[TikTok Scraper] Browser navigating to {url}")
             await self._navigate_with_delay(page, url)
 
             # Check for CAPTCHA or blocks
             content = await page.content()
             if self._is_blocked(content):
-                print("[TikTok Scraper] CAPTCHA/Block detected. Using fallback.")
-                await self.record_result(False)
-                provider = get_data_provider(self.config)
-                return await provider.get_trending_products(limit=limit)
+                print("[TikTok Scraper] CAPTCHA/Block detected in browser.")
+                return []  # Return empty to trigger next fallback
 
             # Wait for network idle to ensure dynamic content loads
             try:
@@ -294,25 +337,14 @@ class TikTokScraper:
             page_products = await self._extract_video_products(page)
             products.extend(page_products)
 
-            print(f"[TikTok Scraper] Found {len(products)} products")
-
-            # If no products found, use fallback
-            if not products:
-                print("[TikTok Scraper] No products found. Using fallback.")
-                provider = get_data_provider(self.config)
-                products = await provider.get_trending_products(limit=limit)
+            print(f"[TikTok Scraper] Browser found {len(products)} products")
 
             await self.record_result(len(products) > 0)
             return products[:limit]
 
         except Exception as e:
-            print(f"[TikTok Scraper] Error in trending: {e}")
-            await self.record_result(False)
-
-            # Use data provider fallback
-            print("[TikTok Scraper] Error occurred. Using fallback.")
-            provider = get_data_provider(self.config)
-            return await provider.get_trending_products(limit=limit)
+            print(f"[TikTok Scraper] Browser error: {e}")
+            return []
 
         finally:
             try:

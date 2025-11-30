@@ -46,6 +46,15 @@ pytest-asyncio>=0.21.1
 pytest-cov>=4.1.0
 
 # ===========================================
+# Marketplace Integrations
+# ===========================================
+# Amazon Product Advertising API
+python-amazon-paapi>=4.2.0
+
+# Shopee Partner API
+pyshopee>=1.4.0
+
+# ===========================================
 # Social Media Automation (Vendor Modules)
 # ===========================================
 instagrapi>=2.0.0

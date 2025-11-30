@@ -11,7 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routes import (
     auth, products, copy, license, webhooks, bot,
     whatsapp, chatwoot, instagram, tiktok, youtube, content, scheduler,
-    integrations, social_auth, metrics, status_webhooks, checkout
+    integrations, social_auth, metrics, status_webhooks, checkout,
+    analytics, templates, accounts, api_docs, marketplaces
 )
 from .middleware.ratelimit import RateLimitMiddleware
 from .middleware.security import SecurityHeadersMiddleware
@@ -113,6 +114,30 @@ app.include_router(
     checkout.router,
     prefix="/checkout",
     tags=["Checkout & Payments"]
+)
+app.include_router(
+    analytics.router,
+    prefix="/analytics",
+    tags=["Analytics & Metrics"]
+)
+app.include_router(
+    templates.router,
+    prefix="/templates",
+    tags=["Content Templates"]
+)
+app.include_router(
+    accounts.router,
+    prefix="/accounts",
+    tags=["Multi-Account Management"]
+)
+app.include_router(
+    api_docs.router,
+    prefix="/api-docs",
+    tags=["API Documentation"]
+)
+app.include_router(
+    marketplaces.router,
+    tags=["Marketplace Integrations"]
 )
 
 

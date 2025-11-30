@@ -1,6 +1,7 @@
 export { Dashboard } from "./Dashboard";
 export { Search } from "./Search";
 export { Products } from "./Products";
+export { Coleta } from "./Coleta";
 export { Favorites } from "./Favorites";
 export { Copy } from "./Copy";
 export { Settings } from "./Settings";
@@ -27,3 +28,15 @@ export { default as MetricsPage } from "./admin/Metrics";
 // CRM
 export { CRMDashboard } from "./crm/CRMDashboard";
 export { Pipeline } from "./crm/Pipeline";
+
+// Analytics
+export { default as AnalyticsDashboard } from "./analytics/AnalyticsDashboard";
+
+// Templates
+export { default as ContentTemplates } from "./templates/ContentTemplates";
+
+// Accounts
+export { default as MultiAccountManager } from "./accounts/MultiAccountManager";
+
+// API Docs
+export { default as APIDocumentation } from "./docs/APIDocumentation";

@@ -61,3 +61,5 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
 } from "./dropdown-menu";
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./accordion";
+export { Alert, AlertTitle, AlertDescription } from "./alert";

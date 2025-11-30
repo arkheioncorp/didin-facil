@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,7 @@ import { useUserStore } from "@/stores";
 import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
 import type { AppSettings } from "@/types";
+import { SUPPORTED_LANGUAGES, changeLanguage, type SupportedLanguage } from "@/lib/i18n";
 
 const steps = [
   { id: "welcome", title: "Bem-vindo" },
@@ -17,12 +19,20 @@ const steps = [
 ];
 
 export const SetupWizard: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [currentStep, setCurrentStep] = React.useState(0);
   const [licenseKey, setLicenseKey] = React.useState("");
   const [acceptedTerms, setAcceptedTerms] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [selectedLanguage, setSelectedLanguage] = React.useState<SupportedLanguage>(i18n.language as SupportedLanguage || "pt-BR");
   const { theme, setTheme } = useUserStore();
   const navigate = useNavigate();
+
+  // Handle language change
+  const handleLanguageSelect = async (lang: SupportedLanguage) => {
+    setSelectedLanguage(lang);
+    await changeLanguage(lang);
+  };
 
   // Check if setup is already complete - redirect if so
   React.useEffect(() => {
@@ -66,7 +76,7 @@ export const SetupWizard: React.FC = () => {
       const newSettings: AppSettings = {
         ...currentSettings,
         theme: theme,
-        language: "pt-BR", // Forçar idioma padrão
+        language: selectedLanguage, // Usar idioma selecionado
         notificationsEnabled: true, // Forçar notificações ativadas
         autoUpdate: true, // Forçar auto-update
         
@@ -225,12 +235,49 @@ export const SetupWizard: React.FC = () => {
       case "preferences":
         return (
           <div className="space-y-6">
+            {/* Idioma */}
             <div className="space-y-2">
-              <h3 className="text-lg font-medium">Aparência</h3>
+              <h3 className="text-lg font-medium">{t("settings.appearance.language")}</h3>
+              <div className="flex gap-2 flex-wrap">
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <Button
+                    key={lang.code}
+                    variant={selectedLanguage === lang.code ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleLanguageSelect(lang.code)}
+                    className={selectedLanguage === lang.code ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
+                  >
+                    {lang.flag} {lang.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Tema */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium">{t("settings.appearance.theme")}</h3>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setTheme("light")}>☀️ Claro</Button>
-                <Button variant="outline" onClick={() => setTheme("dark")}>🌙 Escuro</Button>
-                <Button variant="outline" onClick={() => setTheme("system")}>💻 Sistema</Button>
+                <Button 
+                  variant={theme === "light" ? "default" : "outline"} 
+                  onClick={() => setTheme("light")}
+                  className={theme === "light" ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
+                >
+                  ☀️ {t("settings.appearance.themes.light")}
+                </Button>
+                <Button 
+                  variant={theme === "dark" ? "default" : "outline"} 
+                  onClick={() => setTheme("dark")}
+                  className={theme === "dark" ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
+                >
+                  🌙 {t("settings.appearance.themes.dark")}
+                </Button>
+                <Button 
+                  variant={theme === "system" ? "default" : "outline"} 
+                  onClick={() => setTheme("system")}
+                  className={theme === "system" ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
+                >
+                  💻 {t("settings.appearance.themes.system")}
+                </Button>
               </div>
             </div>
           </div>

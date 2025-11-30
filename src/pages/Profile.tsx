@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +7,7 @@ import { UserIcon, StarIcon } from "@/components/icons";
 import { useUserStore } from "@/stores";
 
 export const Profile: React.FC = () => {
+  const { t } = useTranslation();
   const { user, license, credits, logout } = useUserStore();
 
   // Mock user for demo - novo modelo lifetime + credits
@@ -39,10 +41,10 @@ export const Profile: React.FC = () => {
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
           <UserIcon size={32} className="text-tiktrend-primary" />
-          Meu Perfil
+          {t("profile.title")}
         </h1>
         <p className="text-muted-foreground">
-          Gerencie sua conta e licença
+          {t("profile.subtitle")}
         </p>
       </div>
 
@@ -67,17 +69,17 @@ export const Profile: React.FC = () => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-muted/50">
               <div>
-                <span className="text-sm text-muted-foreground">Membro desde</span>
+                <span className="text-sm text-muted-foreground">{t("profile.member_since")}</span>
                 <p className="font-medium">{new Date(mockUser.createdAt).toLocaleDateString("pt-BR")}</p>
               </div>
               <div>
-                <span className="text-sm text-muted-foreground">ID da conta</span>
+                <span className="text-sm text-muted-foreground">{t("profile.account_id")}</span>
                 <p className="font-mono text-sm truncate">{mockUser.id}</p>
               </div>
             </div>
 
             <Button variant="outline" className="w-full gap-2" onClick={logout}>
-              Sair da Conta
+              {t("auth.logout")}
             </Button>
           </CardContent>
         </Card>

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Square,
@@ -237,6 +238,7 @@ const QuickActionCard: React.FC<{
 // ============================================
 
 export const SellerBot: React.FC = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [isNewProfileOpen, setIsNewProfileOpen] = React.useState(false);
   const [newProfileName, setNewProfileName] = React.useState("");
@@ -305,14 +307,14 @@ export const SellerBot: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Crown className="h-6 w-6 text-yellow-500" />
-            Seller Bot
+            {t("seller_bot.title")}
           </h1>
           <p className="text-muted-foreground">
-            Automação completa da Central do Vendedor TikTok Shop
+            {t("seller_bot.subtitle")}
           </p>
         </div>
         <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/50">
-          Premium R$149,90/mês
+          {t("seller_bot.premium_badge")}
         </Badge>
       </div>
 

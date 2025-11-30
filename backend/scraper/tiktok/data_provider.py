@@ -3,7 +3,6 @@ TikTok Data Provider
 Provides product data from multiple sources with fallback
 """
 
-import asyncio
 import hashlib
 import httpx
 import random

@@ -38,7 +38,8 @@ import {
   Bot, 
   BarChart3, 
   Kanban,
-  Calendar
+  Calendar,
+  Download
 } from "lucide-react";
 import { useUserStore } from "@/stores";
 
@@ -54,28 +55,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
 
   const menuSections = [
     {
-      title: "Core",
+      title: t("navigation.sections.core"),
       items: [
         {
-          label: t("dashboard", "Dashboard"),
+          label: t("navigation.dashboard"),
           icon: DashboardIcon,
           path: "/",
           testId: "nav-dashboard",
         },
         {
-          label: t("search", "Buscar"),
+          label: t("navigation.search"),
           icon: SearchIcon,
           path: "/search",
           testId: "nav-search",
         },
         {
-          label: t("products", "Produtos"),
+          label: t("navigation.products"),
           icon: ProductsIcon,
           path: "/products",
           testId: "nav-products",
         },
         {
-          label: t("favorites", "Favoritos"),
+          label: t("navigation.coleta"),
+          icon: Download,
+          path: "/coleta",
+          testId: "nav-coleta",
+        },
+        {
+          label: t("navigation.favorites"),
           icon: FavoritesIcon,
           path: "/favorites",
           testId: "nav-favorites",
@@ -83,28 +90,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
       ]
     },
     {
-      title: "Social Suite",
+      title: t("navigation.sections.social_suite"),
       items: [
         {
-          label: "Social Hub",
+          label: t("navigation.social_hub"),
           icon: Share2,
           path: "/social",
           testId: "nav-social",
         },
         {
-          label: "Instagram",
+          label: t("navigation.instagram"),
           icon: Instagram,
           path: "/social/instagram",
           testId: "nav-instagram",
         },
         {
-          label: "TikTok",
+          label: t("navigation.tiktok"),
           icon: Video,
           path: "/social/tiktok",
           testId: "nav-tiktok",
         },
         {
-          label: "YouTube",
+          label: t("navigation.youtube"),
           icon: Youtube,
           path: "/social/youtube",
           testId: "nav-youtube",
@@ -112,34 +119,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
       ]
     },
     {
-      title: "Automação",
+      title: t("navigation.sections.automation"),
       items: [
         {
-          label: t("whatsapp", "WhatsApp"),
+          label: t("navigation.whatsapp"),
           icon: MessageCircle,
           path: "/whatsapp",
           testId: "nav-whatsapp",
         },
         {
-          label: "Chatbot",
+          label: t("navigation.chatbot"),
           icon: Bot,
           path: "/automation/chatbot",
           testId: "nav-chatbot",
         },
         {
-          label: "Agendador",
+          label: t("navigation.scheduler"),
           icon: Calendar,
           path: "/automation/scheduler",
           testId: "nav-scheduler",
         },
         {
-          label: t("copy_ai", "Copy AI"),
+          label: t("navigation.copy_ai"),
           icon: CopyIcon,
           path: "/copy",
           testId: "nav-copy",
         },
         {
-          label: t("seller_bot", "Seller Bot"),
+          label: t("navigation.seller_bot"),
           icon: BotIcon,
           path: "/seller-bot",
           testId: "nav-seller-bot",
@@ -148,33 +155,63 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
       ]
     },
     {
-      title: "CRM & Vendas",
+      title: t("navigation.sections.crm_sales"),
       items: [
         {
-          label: "Dashboard CRM",
+          label: t("navigation.crm_dashboard"),
           icon: BarChart3,
           path: "/crm",
           testId: "nav-crm",
         },
         {
-          label: "Pipeline",
+          label: t("navigation.pipeline"),
           icon: Kanban,
           path: "/crm/pipeline",
           testId: "nav-pipeline",
         },
       ]
+    },
+    {
+      title: t("navigation.sections.admin", "Administração"),
+      items: [
+        {
+          label: t("navigation.analytics", "Analytics"),
+          icon: BarChart3,
+          path: "/admin/analytics",
+          testId: "nav-analytics",
+        },
+        {
+          label: t("navigation.templates", "Templates"),
+          icon: CopyIcon,
+          path: "/admin/templates",
+          testId: "nav-templates",
+        },
+        {
+          label: t("navigation.accounts", "Contas"),
+          icon: UserIcon,
+          path: "/admin/accounts",
+          testId: "nav-accounts",
+        },
+        {
+          label: t("navigation.api_docs", "API Docs"),
+          icon: SearchIcon,
+          path: "/admin/docs",
+          testId: "nav-api-docs",
+        },
+      ]
     }
   ];
 
+
   const bottomItems = [
     {
-      label: t("settings", "Configurações"),
+      label: t("navigation.settings"),
       icon: SettingsIcon,
       path: "/settings",
       testId: "nav-settings",
     },
     {
-      label: t("profile", "Perfil"),
+      label: t("navigation.profile"),
       icon: UserIcon,
       path: "/profile",
       testId: "user-menu",

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { LICENSE_PRICE, CREDIT_PACKS, CREDIT_COSTS } from "@/lib/constants";
 
 export const Subscription: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { license, setLicense } = useUserStore();
   const [isProcessing, setIsProcessing] = React.useState(false);
@@ -60,12 +62,12 @@ export const Subscription: React.FC = () => {
             </span>
           </div>
           <h1 className="text-3xl font-bold mb-2">
-            {hasLicense ? "Comprar Créditos IA" : "Adquira sua Licença"}
+            {hasLicense ? t("subscription.buy_credits") : t("subscription.get_license")}
           </h1>
           <p className="text-muted-foreground">
             {hasLicense 
-              ? "Use créditos para gerar copies com Inteligência Artificial"
-              : "Pague uma vez, use para sempre"
+              ? t("subscription.credits_description")
+              : t("subscription.pay_once")
             }
           </p>
         </div>

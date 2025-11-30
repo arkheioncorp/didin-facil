@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import { analytics } from "@/lib/analytics";
 import type { Product, SearchFilters } from "@/types";
 
 export const Search: React.FC = () => {
+  const { t } = useTranslation();
   const [query, setQuery] = React.useState("");
   const [isSearching, setIsSearching] = React.useState(false);
   const [searchResults, setSearchResults] = React.useState<Product[]>([]);
@@ -74,7 +76,7 @@ export const Search: React.FC = () => {
       
     } catch (err) {
       console.error("Search error:", err);
-      setError("Erro ao buscar produtos. Tente novamente.");
+      setError(t("errors.generic"));
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -111,9 +113,9 @@ export const Search: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Buscar Produtos</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("search.title")}</h1>
         <p className="text-muted-foreground">
-          Encontre produtos em alta no TikTok Shop com filtros avançados
+          {t("search.subtitle")}
         </p>
       </div>
 
@@ -123,7 +125,7 @@ export const Search: React.FC = () => {
           <div className="flex gap-3">
             <div className="flex-1">
               <Input
-                placeholder="Digite palavras-chave, nome do produto ou categoria..."
+                placeholder={t("search.placeholder")}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -138,14 +140,14 @@ export const Search: React.FC = () => {
               loading={isSearching}
               className="px-8"
             >
-              Buscar
+              {t("common.search")}
             </Button>
           </div>
 
           {/* Quick Search Tags */}
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="text-sm text-muted-foreground mr-2">Populares:</span>
-            {["Dropshipping", "Gadgets", "Beleza", "Fitness", "Casa Inteligente"].map((tag) => (
+            <span className="text-sm text-muted-foreground mr-2">{t("search.popular")}:</span>
+            {["Dropshipping", "Gadgets", t("search.categories.beauty"), "Fitness", t("search.categories.home")].map((tag) => (
               <Badge
                 key={tag}
                 variant="outline"
@@ -167,17 +169,17 @@ export const Search: React.FC = () => {
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
                 <FilterIcon size={18} />
-                Filtros
+                {t("search.filters.title")}
               </CardTitle>
               <Button variant="ghost" size="sm" onClick={clearFilters}>
-                Limpar
+                {t("common.clear")}
               </Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Categories */}
             <div>
-              <h4 className="text-sm font-medium mb-3">Categorias</h4>
+              <h4 className="text-sm font-medium mb-3">{t("search.filters.categories")}</h4>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {PRODUCT_CATEGORIES.map((category) => (
                   <div
@@ -199,11 +201,11 @@ export const Search: React.FC = () => {
             {/* Price Range */}
             {/* Melhoria #14: Price Range visual */}
             <div>
-              <h4 className="text-sm font-medium mb-3">Faixa de Preço (R$)</h4>
+              <h4 className="text-sm font-medium mb-3">{t("search.filters.priceRange")}</h4>
               <div className="flex gap-2">
                 <Input
                   type="number"
-                  placeholder="Mín"
+                  placeholder={t("search.filters.min")}
                   value={priceMin}
                   onChange={(e) => setPriceMin(e.target.value)}
                   className="w-full text-center"
@@ -211,7 +213,7 @@ export const Search: React.FC = () => {
                 <span className="text-muted-foreground self-center">—</span>
                 <Input
                   type="number"
-                  placeholder="Máx"
+                  placeholder={t("search.filters.max")}
                   value={priceMax}
                   onChange={(e) => setPriceMax(e.target.value)}
                   className="w-full text-center"
@@ -221,10 +223,10 @@ export const Search: React.FC = () => {
 
             {/* Minimum Sales */}
             <div>
-              <h4 className="text-sm font-medium mb-3">Vendas Mínimas</h4>
+              <h4 className="text-sm font-medium mb-3">{t("search.filters.minSales")}</h4>
               <Input
                 type="number"
-                placeholder="Ex: 100"
+                placeholder={t("search.filters.minSalesPlaceholder")}
                 value={minSales}
                 onChange={(e) => setMinSales(e.target.value)}
               />
@@ -232,7 +234,7 @@ export const Search: React.FC = () => {
 
             <Button variant="tiktrend" className="w-full gap-2" onClick={handleSearch}>
               <SearchIcon size={16} />
-              Aplicar Filtros
+              {t("search.filters.apply")}
             </Button>
           </CardContent>
         </Card>
@@ -245,7 +247,7 @@ export const Search: React.FC = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <span className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center text-sm">🕐</span>
-                  Buscas Recentes
+                  {t("search.recentSearches")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -299,9 +301,9 @@ export const Search: React.FC = () => {
               <div className="flex items-center justify-between bg-muted/50 rounded-xl px-4 py-3">
                 <p className="text-sm font-medium">
                   <span className="text-tiktrend-primary font-bold">{totalResults.toLocaleString("pt-BR")}</span>
-                  {" "}produtos encontrados
+                  {" "}{t("search.productsFound")}
                 </p>
-                <Badge variant="success" dot>Atualizado agora</Badge>
+                <Badge variant="success" dot>{t("search.updatedNow")}</Badge>
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {searchResults.map((product, index) => (
@@ -324,12 +326,12 @@ export const Search: React.FC = () => {
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-tiktrend-primary/10 to-tiktrend-secondary/10 flex items-center justify-center mb-6">
                   <SearchIcon size={32} className="text-tiktrend-primary/50" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Nenhum produto encontrado</h3>
+                <h3 className="text-xl font-semibold mb-2">{t("search.noResults")}</h3>
                 <p className="text-muted-foreground max-w-md">
-                  Tente outros termos de busca ou ajuste os filtros.
+                  {t("search.noResultsHint")}
                 </p>
                 <Button variant="outline" className="mt-4" onClick={clearFilters}>
-                  Limpar Filtros
+                  {t("search.clearFilters")}
                 </Button>
               </div>
             </Card>
@@ -344,19 +346,19 @@ export const Search: React.FC = () => {
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-tiktrend-primary/20 to-tiktrend-secondary/20 flex items-center justify-center mb-6 mx-auto animate-float">
                   <TrendingIcon size={40} className="text-tiktrend-primary" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3">Comece sua busca</h3>
+                <h3 className="text-2xl font-bold mb-3">{t("search.startSearch")}</h3>
                 <p className="text-muted-foreground max-w-md mb-6">
-                  Digite palavras-chave para encontrar os produtos mais vendidos do TikTok Shop.
+                  {t("search.startSearchHint")}
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  {["Gadgets", "Beleza", "Casa"].map((tag) => (
+                  {["Gadgets", t("search.categories.beauty"), t("search.categories.home")].map((tag) => (
                     <Badge
                       key={tag}
                       variant="outline"
                       className="cursor-pointer hover:bg-tiktrend-primary hover:text-white hover:border-tiktrend-primary transition-all px-4 py-2"
                       onClick={() => handleQuickSearch(tag)}
                     >
-                      Buscar "{tag}"
+                      {t("search.searchFor")} "{tag}"
                     </Badge>
                   ))}
                 </div>

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ import { ProductCard } from "@/components/product";
 import { useNavigate } from "react-router-dom";
 
 export const Favorites: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [favorites, setFavorites] = React.useState<FavoriteWithProduct[]>([]);
   const [lists, setLists] = React.useState<FavoriteList[]>([]);
@@ -38,13 +40,14 @@ export const Favorites: React.FC = () => {
         setLists(listsData);
       } catch (err) {
         console.error("Error fetching favorites:", err);
-        setError("Erro ao carregar favoritos");
+        setError(t("errors.generic"));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedListId]);
 
   const handleRemoveFavorite = async (productId: string) => {
@@ -100,15 +103,15 @@ export const Favorites: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Favoritos</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("favorites.title")}</h1>
           <p className="text-muted-foreground">
-            Seus produtos salvos para análise e criação de copies
+            {t("favorites.subtitle")}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2" disabled={favorites.length === 0} onClick={handleExport}>
             <ExportIcon size={16} />
-            Exportar
+            {t("common.export")}
           </Button>
           <Button
             variant="outline"
@@ -116,7 +119,7 @@ export const Favorites: React.FC = () => {
             onClick={() => setIsCreatingList(true)}
           >
             <PlusIcon size={16} />
-            Nova Lista
+            {t("favorites.create_folder")}
           </Button>
         </div>
       </div>
@@ -240,19 +243,19 @@ export const Favorites: React.FC = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
             <FavoritesIcon size={32} className="text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-medium mb-2">Nenhum favorito nesta lista</h3>
+          <h3 className="text-lg font-medium mb-2">{t("favorites.empty")}</h3>
           <p className="text-muted-foreground mb-6">
-            Adicione produtos aos favoritos para vê-los aqui.
+            {t("favorites.empty_description")}
           </p>
           <Button variant="tiktrend" onClick={() => navigate("/products")}>
-            Explorar Produtos
+            {t("products.all_products")}
           </Button>
         </div>
       )}
 
       {/* Lists Management (Bottom) */}
       <div className="mt-12 border-t pt-8">
-        <h3 className="text-lg font-medium mb-4">Gerenciar Listas</h3>
+        <h3 className="text-lg font-medium mb-4">{t("favorites.organize")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {lists.map((list) => (
             <Card key={list.id} className="flex items-center justify-between p-4">

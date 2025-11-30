@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,7 @@ interface CopyFormState {
 }
 
 export const Copy: React.FC = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [favorites, setFavorites] = React.useState<FavoriteWithProduct[]>([]);
   const [copyHistory, setCopyHistory] = React.useState<CopyHistory[]>([]);
@@ -137,10 +139,10 @@ export const Copy: React.FC = () => {
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
           <SparkleIcon size={32} className="text-tiktrend-primary" />
-          Copy AI
+          {t("copy_ai.title")}
         </h1>
         <p className="text-muted-foreground">
-          Gere textos persuasivos para seus produtos com inteligência artificial
+          {t("copy_ai.subtitle")}
         </p>
       </div>
 
@@ -148,15 +150,15 @@ export const Copy: React.FC = () => {
         {/* Form */}
         <Card>
           <CardHeader>
-            <CardTitle>Criar Nova Copy</CardTitle>
+            <CardTitle>{t("copy_ai.create_new")}</CardTitle>
             <CardDescription>
-              Selecione um produto e configure o estilo do texto
+              {t("copy_ai.select_product_desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Product Selection */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Selecione um produto</label>
+              <label className="text-sm font-medium">{t("copy_ai.select_product")}</label>
               {isLoadingFavorites ? (
                 <div className="space-y-2">
                   <Skeleton className="h-12 w-full" />
@@ -188,14 +190,14 @@ export const Copy: React.FC = () => {
                 </div>
               ) : (
                 <div className="text-sm text-muted-foreground p-4 text-center border rounded-lg">
-                  Adicione produtos aos favoritos para gerar copies
+                  {t("copy_ai.add_favorites_hint")}
                 </div>
               )}
             </div>
 
             {/* Copy Type */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Tipo de Copy</label>
+              <label className="text-sm font-medium">{t("copy_ai.copy_type")}</label>
               <div className="grid grid-cols-2 gap-2">
                 {COPY_TYPES.map((type) => (
                   <div
@@ -216,7 +218,7 @@ export const Copy: React.FC = () => {
 
             {/* Tone - Melhoria #14 */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Tom de Voz</label>
+              <label className="text-sm font-medium">{t("copy_ai.tone")}</label>
               <div className="flex flex-wrap gap-2">
                 {COPY_TONES.map((tone) => (
                   <Badge
@@ -240,7 +242,7 @@ export const Copy: React.FC = () => {
               disabled={!state.selectedProductId || state.isGenerating}
             >
               <SparkleIcon size={18} className={state.isGenerating ? "animate-spin" : ""} />
-              {state.isGenerating ? "Gerando..." : "Gerar Copy com IA"}
+              {state.isGenerating ? t("copy_ai.generating") : t("copy_ai.generate")}
             </Button>
           </CardContent>
         </Card>
@@ -252,10 +254,10 @@ export const Copy: React.FC = () => {
               <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-tiktrend-primary to-tiktrend-secondary flex items-center justify-center text-white text-sm">
                 ✨
               </span>
-              Copy Gerada
+              {t("copy_ai.generated_copy")}
             </CardTitle>
             <CardDescription>
-              Copie e use nas suas campanhas de marketing
+              {t("copy_ai.copy_and_use")}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">

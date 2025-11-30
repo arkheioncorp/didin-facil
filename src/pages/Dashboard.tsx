@@ -1,10 +1,10 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingIcon, ProductsIcon, FavoritesIcon, SearchIcon, SparkleIcon } from "@/components/icons";
-import { ScraperControl } from "@/components/scraper/ScraperControl";
 import { getUserStats, getSearchHistory } from "@/lib/tauri";
 import type { DashboardStats } from "@/types";
 import type { SearchHistoryItem } from "@/types";
@@ -127,6 +127,7 @@ const StatCard: React.FC<{
 );
 
 export const Dashboard: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [stats, setStats] = React.useState<DashboardStats | null>(null);
   const [searchHistory, setSearchHistory] = React.useState<SearchHistoryItem[]>([]);
@@ -148,7 +149,7 @@ export const Dashboard: React.FC = () => {
         setSearchHistory(historyData);
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
-        setError("Erro ao carregar dados do dashboard");
+        setError(t("errors.generic"));
         // Set default values on error
         setStats({
           totalProducts: 0,
@@ -164,7 +165,7 @@ export const Dashboard: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [t]);
 
   const handleSearch = () => navigate("/search");
   const handleTrending = () => navigate("/products?trending=true");
@@ -176,10 +177,10 @@ export const Dashboard: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" data-testid="welcome-message">
         <div>
           <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-            Dashboard
+            {t("dashboard.title")}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Bem-vindo ao TikTrend Finder! Encontre os produtos mais vendidos do TikTok Shop.
+            {t("dashboard.subtitle")}
           </p>
         </div>
         {/* Quick action pill - Melhoria #21 */}
@@ -188,7 +189,7 @@ export const Dashboard: React.FC = () => {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-tiktrend-primary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-tiktrend-primary"></span>
           </span>
-          <span className="text-sm font-medium text-tiktrend-primary">Pronto para buscar</span>
+          <span className="text-sm font-medium text-tiktrend-primary">{t("common.loading").replace("...", "")}</span>
         </div>
       </div>
 
@@ -275,9 +276,34 @@ export const Dashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* Scraper Control & Categories */}
+      {/* Quick Access to Collection & Categories */}
       <div className="grid gap-6 md:grid-cols-3">
-        <ScraperControl />
+        {/* Quick Access Card - Links to /coleta */}
+        <Card className="group hover:border-tiktrend-primary/50 transition-all cursor-pointer" onClick={() => navigate("/coleta")} data-testid="quick-collect">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 group-hover:text-tiktrend-primary transition-colors">
+              <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-tiktrend-primary to-tiktrend-secondary flex items-center justify-center text-white text-sm">
+                🕷️
+              </span>
+              Coletar Produtos
+            </CardTitle>
+            <CardDescription>
+              Acesse o painel de coleta do TikTok Shop
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Status:</span>
+                <Badge variant="secondary">Pronto</Badge>
+              </div>
+              <Button variant="tiktrend" className="w-full gap-2">
+                <ProductsIcon size={16} />
+                Ir para Coleta
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card data-testid="trending-products" className="md:col-span-2">
           <CardHeader>

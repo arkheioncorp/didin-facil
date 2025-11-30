@@ -63,6 +63,39 @@ class RedisManager:
         if self._client is None:
             raise RuntimeError("Redis not initialized. Call init() first.")
         return self._client
+    
+    # High-level methods for direct use
+    async def get(self, key: str) -> Optional[str]:
+        """Get value from Redis"""
+        client = self.client
+        return await client.get(key)
+    
+    async def set(
+        self,
+        key: str,
+        value: str,
+        ex: Optional[int] = None,
+        expire: Optional[int] = None,
+    ) -> bool:
+        """Set value in Redis with optional expiration"""
+        client = self.client
+        ttl = ex or expire or 3600
+        return await client.set(key, value, ex=ttl)
+    
+    async def delete(self, *keys: str) -> int:
+        """Delete one or more keys from Redis"""
+        client = self.client
+        return await client.delete(*keys)
+    
+    async def exists(self, key: str) -> bool:
+        """Check if key exists"""
+        client = self.client
+        return await client.exists(key) > 0
+    
+    async def keys(self, pattern: str) -> list:
+        """Get keys matching pattern"""
+        client = self.client
+        return await client.keys(pattern)
 
 
 # Global manager instance
