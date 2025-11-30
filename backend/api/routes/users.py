@@ -85,9 +85,10 @@ async def get_my_profile(current_user: dict = Depends(get_current_user)):
     """Get current user's profile"""
     query = """
         SELECT 
-            u.id, u.email, u.name, u.avatar_url, u.phone,
-            u.is_active, u.is_email_verified,
-            u.language, u.timezone,
+            u.id::text, u.email, u.name, u.avatar_url, u.phone,
+            u.is_active, COALESCE(u.is_email_verified, false) as is_email_verified,
+            COALESCE(u.language, 'pt-BR') as language, 
+            COALESCE(u.timezone, 'America/Sao_Paulo') as timezone,
             u.created_at, u.updated_at, u.last_login_at,
             CASE WHEN l.plan = 'lifetime' THEN true ELSE false END as has_lifetime_license,
             l.activated_at as license_activated_at
@@ -107,9 +108,10 @@ async def get_full_profile(current_user: dict = Depends(get_current_user)):
     # Get user
     user_query = """
         SELECT 
-            u.id, u.email, u.name, u.avatar_url, u.phone,
-            u.is_active, u.is_email_verified,
-            u.language, u.timezone,
+            u.id::text, u.email, u.name, u.avatar_url, u.phone,
+            u.is_active, COALESCE(u.is_email_verified, false) as is_email_verified,
+            COALESCE(u.language, 'pt-BR') as language,
+            COALESCE(u.timezone, 'America/Sao_Paulo') as timezone,
             u.created_at, u.updated_at, u.last_login_at,
             CASE WHEN l.plan = 'lifetime' THEN true ELSE false END as has_lifetime_license,
             l.activated_at as license_activated_at

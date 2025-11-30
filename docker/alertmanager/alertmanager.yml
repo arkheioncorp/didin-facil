@@ -1,0 +1,106 @@
+# ===========================================
+# Didin Fácil - Alertmanager Configuration
+# ===========================================
+# Configuração de roteamento e notificação de alertas
+#
+# Para configurar webhooks reais, defina as variáveis:
+#   - SLACK_WEBHOOK_URL
+#   - DISCORD_WEBHOOK_URL
+# ===========================================
+
+global:
+  # Tempo limite para resolver alertas automaticamente
+  resolve_timeout: 5m
+
+  # Configurações de Slack (opcional)
+  # slack_api_url: '${SLACK_WEBHOOK_URL}'
+
+# Templates personalizados
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Configuração de roteamento
+route:
+  # Receptor padrão
+  receiver: 'default-receiver'
+  
+  # Agrupamento de alertas
+  group_by: ['alertname', 'hub', 'severity']
+  
+  # Tempo de espera antes de enviar primeiro alerta do grupo
+  group_wait: 30s
+  
+  # Tempo de espera entre envios do mesmo grupo
+  group_interval: 5m
+  
+  # Tempo de espera antes de reenviar um alerta
+  repeat_interval: 4h
+  
+  # Rotas específicas por severidade
+  routes:
+    # Alertas críticos - notificação imediata
+    - match:
+        severity: critical
+      receiver: 'critical-receiver'
+      group_wait: 10s
+      repeat_interval: 1h
+
+    # Alertas de circuit breaker
+    - match:
+        alertname: HubCircuitBreakerOpen
+      receiver: 'circuit-breaker-receiver'
+      group_wait: 0s
+      repeat_interval: 30m
+
+    # Alertas de warning
+    - match:
+        severity: warning
+      receiver: 'warning-receiver'
+      repeat_interval: 6h
+
+# Inibição de alertas (evitar duplicatas)
+inhibit_rules:
+  # Se um hub está com circuit breaker aberto, não enviar outros alertas dele
+  - source_match:
+      alertname: HubCircuitBreakerOpen
+    target_match_re:
+      alertname: Hub.*
+    equal: ['hub']
+
+# Receptores de alertas
+receivers:
+  # Receptor padrão - apenas log
+  - name: 'default-receiver'
+    webhook_configs:
+      - url: 'http://api:8000/internal/alerts/webhook'
+        send_resolved: true
+
+  # Receptor para alertas críticos
+  - name: 'critical-receiver'
+    webhook_configs:
+      - url: 'http://api:8000/internal/alerts/webhook'
+        send_resolved: true
+    # Descomente para habilitar Slack
+    # slack_configs:
+    #   - channel: '#alerts-critical'
+    #     title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+    #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+    #     send_resolved: true
+
+  # Receptor para circuit breaker
+  - name: 'circuit-breaker-receiver'
+    webhook_configs:
+      - url: 'http://api:8000/internal/alerts/webhook'
+        send_resolved: true
+    # Descomente para habilitar Slack
+    # slack_configs:
+    #   - channel: '#alerts-hubs'
+    #     title: '⚡ Circuit Breaker: {{ .GroupLabels.hub }}'
+    #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+    #     send_resolved: true
+
+  # Receptor para warnings
+  - name: 'warning-receiver'
+    webhook_configs:
+      - url: 'http://api:8000/internal/alerts/webhook'
+        send_resolved: true

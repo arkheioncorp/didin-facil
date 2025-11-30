@@ -1,320 +1,65 @@
 version: "3.8"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        assert middleware._normalize_path("/health") == "/health"        # No IDs                ) == "/products/:id/reviews/:id"            "/products/123/reviews/456"        assert middleware._normalize_path(        # Multiple IDs                ) == "/users/:id"            "/users/550e8400-e29b-41d4-a716-446655440000"        assert middleware._normalize_path(        # UUID                assert middleware._normalize_path("/products/123") == "/products/:id"        # Numeric ID                middleware = MetricsMiddleware(MagicMock())                from api.middleware.metrics import MetricsMiddleware        """Should normalize paths with IDs"""    def test_path_normalization(self):        assert True  # Placeholder - logic verified in integration        # (actual test would require async context)        # Middleware should skip this endpoint                request.method = "GET"        request.url.path = "/metrics"        request = MagicMock()        # Create mock request for metrics endpoint                middleware = MetricsMiddleware(MagicMock())                from api.middleware.metrics import MetricsMiddleware        """Should not record metrics for /metrics endpoint"""    def test_middleware_skips_metrics_endpoint(self, mock_redis_middleware):            yield mock            mock.ltrim = AsyncMock(return_value=True)            mock.lpush = AsyncMock(return_value=1)            mock.incr = AsyncMock(return_value=1)        with patch("api.middleware.metrics.redis_client") as mock:        """Mock Redis for middleware tests"""    def mock_redis_middleware(self):    @pytest.fixture    """Test metrics collection middleware"""class TestMetricsMiddleware:        assert "metric_3 3" in output        assert "metric_2 2" in output        assert "metric_1 1" in output        output = collector.render()                collector.add_counter("metric_3", 3, "Third metric")        collector.add_gauge("metric_2", 2, "Second metric")        collector.add_gauge("metric_1", 1, "First metric")        collector = MetricsCollector()                from api.routes.metrics import MetricsCollector        """Should render multiple metrics"""    def test_multiple_metrics(self):        assert "test_counter 100" in output        assert "# TYPE test_counter counter" in output        output = collector.render()                collector.add_counter("test_counter", 100, "Test counter")        collector = MetricsCollector()                from api.routes.metrics import MetricsCollector        """Should format counter metric correctly"""    def test_add_counter(self):        assert 'test_gauge{platform="youtube",type="upload"} 10' in output        output = collector.render()                )            {"platform": "youtube", "type": "upload"}            "Test with labels",            10,            "test_gauge",        collector.add_gauge(        collector = MetricsCollector()                from api.routes.metrics import MetricsCollector        """Should format gauge with labels correctly"""    def test_add_gauge_with_labels(self):        assert "test_gauge 42.5" in output        assert "# TYPE test_gauge gauge" in output        assert "# HELP test_gauge Test gauge metric" in output        output = collector.render()                collector.add_gauge("test_gauge", 42.5, "Test gauge metric")        collector = MetricsCollector()                from api.routes.metrics import MetricsCollector        """Should format gauge metric correctly"""    def test_add_gauge(self):    """Test MetricsCollector class"""class TestMetricsCollector:        mock_redis.set.assert_called()        assert data["success"] is True        data = response.json()        assert response.status_code == 200                )            }                "metric_type": "gauge"                "value": 42.5,                "metric_name": "test_gauge",            params={            "/metrics/record",        response = client.post(        """Should record custom gauge metric"""    def test_record_metric_gauge(self, client, mock_redis):        mock_redis.incrbyfloat.assert_called()        assert data["success"] is True        data = response.json()        assert response.status_code == 200                )            }                "metric_type": "counter"                "value": 1.0,                "metric_name": "test_counter",            params={            "/metrics/record",        response = client.post(        """Should record custom counter metric"""    def test_record_metric_counter(self, client, mock_redis):        assert "error" in data        assert data["status"] == "unhealthy"        data = response.json()        assert response.status_code == 200                response = client.get("/metrics/health")                mock_redis.ping.side_effect = Exception("Redis connection failed")        """Health check should report unhealthy on Redis failure"""    def test_metrics_health_redis_failure(self, client, mock_redis):        assert "timestamp" in data        assert data["status"] == "healthy"        data = response.json()        assert response.status_code == 200                response = client.get("/metrics/health")        """Health check should return status"""    def test_metrics_health_endpoint(self, client, mock_redis):        assert "didin_dlq_size 2" in content        content = response.text        assert response.status_code == 200                response = client.get("/metrics")        mock_redis.lrange.return_value = ["10.5", "15.2", "8.3"]        ]            "20",  # 4xx errors            "5",  # 5xx errors            "1000",  # API requests total            "50",  # Rate limit blocked            "10",  # WhatsApp messages today            "2",  # TikTok posts today            "3",  # Instagram posts today            "5",  # YouTube posts today            "100",  # YouTube quota        mock_redis.get.side_effect = [        ]            ["rate_limit:ip:127.0.0.1"],  # Rate limit keys            ["instagram:challenge:1"],  # Instagram challenges            ["whatsapp:session:1"],  # WhatsApp sessions            ["tiktok:session:1"],  # TikTok sessions            ["instagram:session:1"],  # Instagram sessions            ["youtube:session:1"],  # YouTube sessions            ["worker:heartbeat:1"],  # Worker heartbeats            ["scheduled_post:1"],  # Scheduled posts            ["dlq:1", "dlq:2"],  # DLQ keys        mock_redis.keys.side_effect = [        # Setup mock data        """Should correctly parse Redis data"""    def test_metrics_with_redis_data(self, client, mock_redis):        assert 'version="2.0.0"' in content        assert "didin_app_info" in content                content = response.text        response = client.get("/metrics")        """Should include application info metric"""    def test_metrics_contains_app_info(self, client, mock_redis):        assert "didin_rate_limit_unique_ips" in content        assert "didin_rate_limit_blocked_total" in content                content = response.text        response = client.get("/metrics")        """Should include rate limiting metrics"""    def test_metrics_contains_rate_limit_metrics(self, client, mock_redis):        assert "didin_api_response_time_avg_ms" in content        assert "didin_api_errors_5xx_total" in content        assert "didin_api_requests_total" in content                content = response.text        response = client.get("/metrics")        """Should include API performance metrics"""    def test_metrics_contains_api_metrics(self, client, mock_redis):        assert "didin_instagram_challenges_pending" in content        assert "didin_youtube_quota_remaining" in content        assert "didin_youtube_quota_used" in content        assert "didin_platform_sessions_active" in content                content = response.text        response = client.get("/metrics")        """Should include platform-specific metrics"""    def test_metrics_contains_platform_metrics(self, client, mock_redis):        assert "didin_workers_active" in content        assert "didin_dlq_size" in content        assert "didin_posts_pending" in content        assert "didin_scheduled_posts_total" in content                content = response.text        response = client.get("/metrics")        """Should include worker-related metrics"""    def test_metrics_contains_worker_metrics(self, client, mock_redis):        assert "didin_" in content  # Our metric prefix        assert "# TYPE" in content        assert "# HELP" in content        content = response.text        # Check for expected metrics                assert "text/plain" in response.headers["content-type"]        assert response.status_code == 200                response = client.get("/metrics")        """Metrics endpoint should return Prometheus text format"""    def test_metrics_endpoint_returns_prometheus_format(self, client, mock_redis):        return TestClient(app)        from api.main import app        """Create test client"""    def client(self, mock_redis):    @pytest.fixture            yield mock            mock.set = AsyncMock(return_value=True)            mock.incrbyfloat = AsyncMock(return_value=1.0)            mock.incr = AsyncMock(return_value=1)            mock.ping = AsyncMock(return_value=True)            mock.lrange = AsyncMock(return_value=[])            mock.hgetall = AsyncMock(return_value={})            mock.get = AsyncMock(return_value=None)            mock.keys = AsyncMock(return_value=[])            # Configure async methods        with patch("api.routes.metrics.redis_client") as mock:        """Mock Redis client"""    def mock_redis(self):    @pytest.fixture    """Test suite for metrics endpoint"""class TestPrometheusMetrics:from fastapi.testclient import TestClientfrom unittest.mock import AsyncMock, patch, MagicMockimport pytest"""services:
+# ===========================================
+# Didin Fácil - Observability Stack
+# ===========================================
+# Prometheus + Grafana + Jaeger + Exporters
+#
+# Uso:
+#   docker-compose -f docker/observability.yml up -d
+#
+# Acessos:
+#   - Prometheus: http://localhost:9090
+#   - Grafana: http://localhost:3001 (admin/admin)
+#   - Jaeger: http://localhost:16686
+# ===========================================
+
+services:
+  # =========================================
+  # Jaeger - Distributed Tracing
+  # =========================================
   jaeger:
     image: jaegertracing/all-in-one:1.53
-    container_name: tiktrend-jaeger
+    container_name: didin-jaeger
     restart: unless-stopped
     ports:
-      - "16686:16686" # UI
-      - "14268:14268" # Collector HTTP
-      - "4317:4317" # OTLP gRPC
-      - "4318:4318" # OTLP HTTP
+      - "16686:16686"  # UI
+      - "14268:14268"  # Collector HTTP
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     networks:
-      - tiktrend-network
+      - didin-network
 
+  # =========================================
+  # Prometheus - Metrics Collection
+  # =========================================
   prometheus:
     image: prom/prometheus:v2.49.1
-    container_name: tiktrend-prometheus
+    container_name: didin-prometheus
     restart: unless-stopped
     ports:
-      - "9090:9090"
+      - "9096:9090"  # Mapeado para 9096
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules:/etc/prometheus/rules:ro
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.enable-lifecycle'
       - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-admin-api'
     networks:
-      - tiktrend-network
+      - didin-network
 
+  # =========================================
+  # Grafana - Visualization
+  # =========================================
   grafana:
     image: grafana/grafana:10.2.3
-    container_name: tiktrend-grafana
+    container_name: didin-grafana
     restart: unless-stopped
     ports:
       - "3001:3000"
@@ -322,19 +67,22 @@ version: "3.8"
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_ROOT_URL=http://localhost:3001
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning
-      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       - prometheus
     networks:
-      - tiktrend-network
+      - didin-network
 
-  # Node Exporter - Métricas do sistema host
+  # =========================================
+  # Node Exporter - Host Metrics
+  # =========================================
   node-exporter:
     image: prom/node-exporter:v1.7.0
-    container_name: tiktrend-node-exporter
+    container_name: didin-node-exporter
     restart: unless-stopped
     ports:
       - "9100:9100"
@@ -348,24 +96,46 @@ version: "3.8"
       - '--path.rootfs=/rootfs'
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
     networks:
-      - tiktrend-network
+      - didin-network
 
-  # Redis Exporter - Métricas do Redis
+  # =========================================
+  # Redis Exporter - Redis Metrics
+  # =========================================
   redis-exporter:
     image: oliver006/redis_exporter:v1.56.0
-    container_name: tiktrend-redis-exporter
+    container_name: didin-redis-exporter
     restart: unless-stopped
     ports:
       - "9121:9121"
     environment:
       - REDIS_ADDR=${REDIS_URL:-redis://redis:6379}
     networks:
-      - tiktrend-network
+      - didin-network
+
+  # =========================================
+  # Alertmanager - Alert Routing
+  # =========================================
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: didin-alertmanager
+    restart: unless-stopped
+    ports:
+      - "19093:9093"  # Porta alta para evitar conflitos
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--cluster.listen-address='
+    networks:
+      - didin-network
 
 networks:
-  tiktrend-network:
-    external: true
+  didin-network:
+    driver: bridge
 
 volumes:
   prometheus_data:
   grafana_data:
+  alertmanager_data:

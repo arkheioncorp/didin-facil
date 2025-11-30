@@ -1,10 +1,18 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { FavoritesIcon, TrendingIcon, StarIcon } from "@/components/icons";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import type { Product } from "@/types";
+import { Sparkles, Calendar, MessageCircle, MoreHorizontal } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
@@ -16,6 +24,8 @@ interface ProductCardProps {
   showCheckbox?: boolean;
   isSelected?: boolean;
   onCheckboxChange?: (product: Product, checked: boolean) => void;
+  // Quick actions
+  showQuickActions?: boolean;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -27,10 +37,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   showCheckbox = false,
   isSelected = false,
   onCheckboxChange,
+  showQuickActions = true,
 }) => {
+  const navigate = useNavigate();
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
+
+  // Quick action handlers
+  const handleQuickCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/copy?productId=${product.id}&title=${encodeURIComponent(product.title)}&price=${product.price}`);
+  };
+
+  const handleQuickSchedule = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/automation/scheduler?productId=${product.id}`);
+  };
+
+  const handleQuickWhatsApp = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/whatsapp?action=send&productId=${product.id}`);
+  };
 
   return (
     <Card
@@ -112,6 +140,82 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             />
           </Button>
         ) : null}
+
+        {/* Quick Actions Bar - Appears on Hover */}
+        {showQuickActions && (
+          <div className="absolute bottom-12 left-0 right-0 px-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+            <TooltipProvider>
+              <div className="flex items-center justify-center gap-1 bg-black/70 backdrop-blur-sm rounded-full p-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full text-white hover:bg-white/20"
+                      onClick={handleQuickCopy}
+                    >
+                      <Sparkles size={14} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    Gerar Copy IA
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full text-white hover:bg-white/20"
+                      onClick={handleQuickSchedule}
+                    >
+                      <Calendar size={14} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    Agendar Post
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full text-white hover:bg-white/20"
+                      onClick={handleQuickWhatsApp}
+                    >
+                      <MessageCircle size={14} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    WhatsApp
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full text-white hover:bg-white/20"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelect?.(product);
+                      }}
+                    >
+                      <MoreHorizontal size={14} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    Ver Todas Ações
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
+          </div>
+        )}
 
         {/* Quick Stats Overlay - Bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">

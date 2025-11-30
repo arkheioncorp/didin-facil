@@ -491,17 +491,112 @@ from modules.chatbot import WhatsAppHubAdapter
 
 ### Linhas de Código
 - **Removidas (duplicação):** ~500 linhas
-- **Adicionadas (hubs + adapters + resilience):** ~1300 linhas
-- **Resultado Líquido:** +800 linhas (mais features, menos duplicação)
+- **Adicionadas (hubs + adapters + resilience + alerts):** ~1700 linhas
+- **Resultado Líquido:** +1200 linhas (mais features, menos duplicação)
 
 ### Cobertura de Testes
 - **Testes de Hub:** 60 testes (WhatsApp: 21, Instagram: 21, TikTok: 19)
 - **Testes de Resiliência:** 30 testes
-- **Total:** 90+ testes passando
+- **Testes de Alertas:** 30 testes
+- **Testes de Rotas Health:** 12 testes
+- **Total:** 132+ testes passando
 
 ### Arquivos Modificados
-- **Novos:** 10 arquivos (3 adapters + 3 docs + 1 resilience + 4 test files)
-- **Modificados:** 5 arquivos (exports, rotas e refatoração)
+- **Novos:** 15 arquivos (3 adapters + 3 docs + 1 resilience + 1 alerts + 7 test/config files)
+- **Modificados:** 8 arquivos (exports, rotas, hubs com métricas)
+
+---
+
+## 🔔 Sistema de Alertas e Observabilidade
+
+### Visão Geral
+
+Implementamos um sistema completo de alertas e observabilidade para monitorar a saúde dos hubs em tempo real.
+
+### Componentes
+
+#### 1. Alert Manager (`backend/integrations/alerts.py`)
+- **Canais de Alerta:**
+  - `SlackAlertChannel` - Notificações no Slack
+  - `DiscordAlertChannel` - Notificações no Discord
+  - `WebhookAlertChannel` - Webhooks customizados
+  - `LogAlertChannel` - Logging local (fallback)
+
+- **Features:**
+  - Deduplicação automática (5 min window)
+  - Rate limiting por tipo de alerta
+  - Histórico de alertas
+  - Alertas específicos para circuit breakers
+
+#### 2. Métricas (`backend/integrations/metrics.py`)
+- `HubMetricsRegistry` - Coleta métricas de todos os hubs
+- `HubHealthChecker` - Verifica saúde dos hubs
+- Export Prometheus format para `/hub/metrics/prometheus`
+
+#### 3. Rotas de Monitoramento (`backend/api/routes/hub_health.py`)
+```
+GET  /hub/health                    # Status geral
+GET  /hub/health/{hub_name}         # Status de hub específico
+GET  /hub/metrics                   # Métricas em JSON
+GET  /hub/metrics/prometheus        # Métricas para Prometheus
+GET  /hub/circuit-breaker/status    # Status dos circuit breakers
+POST /hub/circuit-breaker/{hub}/reset  # Reset manual de circuit breaker
+```
+
+### Configuração
+
+```python
+# .env
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/xxx
+ALERTS_WEBHOOK_URL=https://your-custom-webhook.com/alerts
+```
+
+### Alertas Automáticos
+
+Os hubs disparam alertas automaticamente quando:
+- Circuit breaker abre (muitas falhas)
+- Circuit breaker entra em half-open (tentando recuperar)
+- Circuit breaker fecha (recuperado)
+- Latência alta detectada
+- Taxa de sucesso baixa
+
+### Prometheus + Grafana
+
+#### prometheus.yml
+```yaml
+scrape_configs:
+  - job_name: 'didin-hubs'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['api:8000']
+    metrics_path: '/hub/metrics/prometheus'
+```
+
+#### Alertas Configurados
+- `HubCircuitBreakerOpen` - Circuit breaker aberto por 5+ min
+- `HubHighErrorRate` - Taxa de erro > 10%
+- `HubHighLatency` - Latência média > 2s
+- `HubLowSuccessRate` - Taxa de sucesso < 90%
+
+### Dashboard Grafana
+
+Dashboard disponível em `docker/grafana/dashboards/didin-hubs.json`:
+- Request rate por hub
+- Latência (avg, p95, p99)
+- Status dos circuit breakers
+- Taxa de erro por hub
+- Alertas ativos
+
+### Testes
+
+```bash
+# Rodar testes de alertas
+pytest tests/integrations/test_alerts.py -v
+
+# Rodar testes de rotas health
+pytest tests/api/routes/test_hub_health.py -v
+```
 
 ---
 

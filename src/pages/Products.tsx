@@ -1,9 +1,12 @@
 import * as React from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -12,12 +15,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ProductsIcon, ExportIcon } from "@/components/icons";
+import { ProductsIcon, ExportIcon, StarIcon, TrendingIcon } from "@/components/icons";
 import { useFavoritesStore } from "@/stores";
 import { VirtualizedGrid } from "@/components/product/VirtualizedGrid";
+import { ProductActionsPanel } from "@/components/product/ProductActionsPanel";
+import { ProductHistoryChart } from "@/components/product/ProductHistoryChart";
 import { analytics } from "@/lib/analytics";
-import { cn } from "@/lib/utils";
-import { Grid3X3, List, X, Heart, Download, Check, RefreshCw } from "lucide-react";
+import { cn, formatCurrency, formatNumber } from "@/lib/utils";
+import { Grid3X3, List, X, Heart, Download, RefreshCw, Info, ExternalLink, BarChart3 } from "lucide-react";
+import { getProductHistory } from "@/services/products";
 
 import { getProducts } from "@/services/products";
 import { 
@@ -27,7 +33,7 @@ import {
   fetchCategories,
   type CategoryInfo 
 } from "@/services/api/products";
-import type { Product } from "@/types";
+import type { Product, ProductHistory } from "@/types";
 
 // Sort options
 const SORT_OPTIONS = [
@@ -51,9 +57,319 @@ const DEFAULT_CATEGORIES: CategoryInfo[] = [
   { name: "Esportes", slug: "sports", count: 0 },
 ];
 
+// ============================================
+// ENHANCED PRODUCT DETAIL MODAL COMPONENT
+// ============================================
+
+interface ProductDetailModalEnhancedProps {
+  product: Product;
+  isOpen: boolean;
+  onClose: () => void;
+  isFavorite?: boolean;
+  onFavorite?: (product: Product) => void;
+}
+
+const ProductDetailModalEnhanced: React.FC<ProductDetailModalEnhancedProps> = ({
+  product,
+  isOpen,
+  onClose,
+  isFavorite = false,
+  onFavorite,
+}) => {
+  const [history, setHistory] = React.useState<ProductHistory[]>([]);
+  const [activeTab, setActiveTab] = React.useState("info");
+  const [selectedImage, setSelectedImage] = React.useState(0);
+
+  React.useEffect(() => {
+    if (product?.id) {
+      getProductHistory(product.id)
+        .then(setHistory)
+        .catch((err) => console.error("Failed to load history:", err));
+    } else {
+      setHistory([]);
+    }
+  }, [product?.id]);
+
+  // Handle escape key
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
+
+  if (!isOpen || !product) return null;
+
+  const discount = product.originalPrice
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : 0;
+
+  const images = product.images?.length ? product.images : [product.imageUrl || ""];
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+        onClick={onClose}
+        data-testid="modal-backdrop"
+      />
+      
+      {/* Modal */}
+      <div 
+        className="fixed inset-2 md:inset-6 lg:inset-10 bg-background rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden"
+        data-testid="product-detail-modal"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 md:p-6 border-b shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <Badge variant="secondary" className="shrink-0">
+              {product.category || "Sem categoria"}
+            </Badge>
+            {product.isTrending && (
+              <Badge variant="tiktrend" className="gap-1 shrink-0">
+                <TrendingIcon size={12} />
+                Em Alta
+              </Badge>
+            )}
+            {discount > 0 && (
+              <Badge variant="destructive" className="shrink-0">
+                -{discount}%
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Quick Actions Bar */}
+            <ProductActionsPanel 
+              product={product} 
+              isFavorite={isFavorite}
+              onFavorite={onFavorite}
+              onClose={onClose}
+              variant="compact" 
+            />
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X size={20} />
+            </Button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full grid lg:grid-cols-[1fr,400px]">
+            {/* Left: Product Info */}
+            <ScrollArea className="h-full">
+              <div className="p-4 md:p-6 space-y-6">
+                {/* Image Gallery */}
+                <div className="space-y-4">
+                  <div className="relative aspect-video md:aspect-[4/3] bg-muted rounded-xl overflow-hidden">
+                    <img
+                      src={images[selectedImage] || "https://placehold.co/600x400/1a1a2e/ffffff?text=Produto"}
+                      alt={product.title}
+                      className="w-full h-full object-contain"
+                    />
+                    {/* Badges on image */}
+                    {product.hasFreeShipping && (
+                      <Badge variant="success" className="absolute top-4 left-4 shadow-lg">
+                        Frete Grátis
+                      </Badge>
+                    )}
+                  </div>
+                  {images.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-2">
+                      {images.map((img, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setSelectedImage(i)}
+                          className={cn(
+                            "w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition-all shrink-0",
+                            selectedImage === i 
+                              ? "border-tiktrend-primary ring-2 ring-tiktrend-primary/20" 
+                              : "border-transparent hover:border-muted-foreground/30"
+                          )}
+                        >
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Title & Price */}
+                <div className="space-y-3">
+                  <h1 className="text-xl md:text-2xl font-bold leading-tight">{product.title}</h1>
+                  <div className="flex items-baseline gap-3 flex-wrap">
+                    <span className="text-3xl md:text-4xl font-bold text-tiktrend-primary">
+                      {formatCurrency(product.price)}
+                    </span>
+                    {product.originalPrice && (
+                      <span className="text-lg text-muted-foreground line-through">
+                        {formatCurrency(product.originalPrice)}
+                      </span>
+                    )}
+                    {discount > 0 && (
+                      <span className="text-sm font-medium text-green-500">
+                        Economia de {formatCurrency(product.originalPrice! - product.price)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="p-4 rounded-xl bg-muted/50 text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <StarIcon size={16} filled className="text-yellow-500" />
+                      <span className="text-lg font-bold">{product.productRating?.toFixed(1) || "N/A"}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Avaliação</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-muted/50 text-center">
+                    <p className="text-lg font-bold text-green-500">{formatNumber(product.salesCount)}</p>
+                    <p className="text-xs text-muted-foreground">Vendas Totais</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-muted/50 text-center">
+                    <p className="text-lg font-bold">{formatNumber(product.reviewsCount)}</p>
+                    <p className="text-xs text-muted-foreground">Reviews</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-muted/50 text-center">
+                    <p className="text-lg font-bold text-tiktrend-primary">
+                      +{formatNumber(product.sales7d || 0)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Vendas 7 dias</p>
+                  </div>
+                </div>
+
+                {/* Tabs */}
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="w-full grid grid-cols-3">
+                    <TabsTrigger value="info" className="gap-2">
+                      <Info size={14} />
+                      Detalhes
+                    </TabsTrigger>
+                    <TabsTrigger value="stats" className="gap-2">
+                      <BarChart3 size={14} />
+                      Estatísticas
+                    </TabsTrigger>
+                    <TabsTrigger value="supplier" className="gap-2">
+                      <ExternalLink size={14} />
+                      Fornecedor
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="info" className="space-y-4 mt-4">
+                    {/* Description */}
+                    <div data-testid="product-description">
+                      <h3 className="font-semibold mb-2 flex items-center gap-2">
+                        <Info size={16} />
+                        Descrição
+                      </h3>
+                      <p className="text-muted-foreground leading-relaxed">
+                        {product.description || "Sem descrição disponível para este produto."}
+                      </p>
+                    </div>
+
+                    {/* Sales Trend */}
+                    {product.sales7d > 0 && (
+                      <div className="p-4 rounded-xl bg-gradient-to-r from-tiktrend-primary/10 to-tiktrend-secondary/10 border border-tiktrend-primary/20">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">Tendência de Vendas</span>
+                          <span className="text-sm font-bold text-green-500">
+                            +{formatNumber(product.sales7d)} nos últimos 7 dias
+                          </span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min((product.sales7d / 1000) * 100, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="stats" className="space-y-4 mt-4">
+                    {/* History Chart */}
+                    <div>
+                      <h3 className="font-semibold mb-3 flex items-center gap-2">
+                        <BarChart3 size={16} />
+                        Histórico de Vendas
+                      </h3>
+                      <ProductHistoryChart history={history} />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="supplier" className="space-y-4 mt-4">
+                    <div data-testid="supplier-info">
+                      <h3 className="font-semibold mb-3">Informações do Fornecedor</h3>
+                      <Card className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-medium text-lg">{product.sellerName || "TikTok Shop"}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {product.productUrl ? "✓ Loja verificada no TikTok Shop" : "Loja TikTok Shop"}
+                            </p>
+                          </div>
+                          {product.productUrl && (
+                            <Button variant="outline" size="sm" asChild>
+                              <a href={product.productUrl} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink size={14} className="mr-1" />
+                                Visitar
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      </Card>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </ScrollArea>
+
+            {/* Right: Actions Panel (Desktop) */}
+            <div className="hidden lg:block border-l">
+              <ScrollArea className="h-full">
+                <div className="p-6">
+                  <ProductActionsPanel 
+                    product={product}
+                    isFavorite={isFavorite}
+                    onFavorite={onFavorite}
+                    onClose={onClose}
+                    variant="full"
+                  />
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile: Actions Panel Bottom Sheet */}
+        <div className="lg:hidden border-t p-4 bg-background shrink-0">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-2xl font-bold text-tiktrend-primary">{formatCurrency(product.price)}</p>
+              <p className="text-xs text-muted-foreground">{formatNumber(product.salesCount)} vendas</p>
+            </div>
+            <ProductActionsPanel 
+              product={product}
+              isFavorite={isFavorite}
+              onFavorite={onFavorite}
+              onClose={onClose}
+              variant="compact"
+            />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
+
 export const Products: React.FC = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { isFavorite, addFavorite: addToFavorites, removeFavorite: removeFromFavorites } = useFavoritesStore();
   const { toast } = useToast();
@@ -442,23 +758,6 @@ export const Products: React.FC = () => {
   const handleCloseModal = () => {
     setShowDetailModal(false);
     setSelectedProduct(null);
-  };
-
-  const handleCopyProductInfo = async () => {
-    if (!selectedProduct) return;
-    const info = `${selectedProduct.title}\nPreço: R$ ${selectedProduct.price}\nVendas: ${selectedProduct.salesCount}`;
-    try {
-      await navigator.clipboard.writeText(info);
-    } catch {
-      // Fallback for environments without clipboard API
-      console.log("Clipboard API not available");
-    }
-    toast({ title: "Copiado!", description: "Informações copiadas para a área de transferência." });
-  };
-
-  const handleGenerateCopy = () => {
-    if (!selectedProduct) return;
-    navigate(`/copy?product=${selectedProduct.id}`);
   };
 
   // Handle escape key for modal
@@ -963,117 +1262,15 @@ export const Products: React.FC = () => {
         </Card>
       )}
 
-      {/* Product Detail Modal */}
+      {/* Enhanced Product Detail Modal */}
       {showDetailModal && selectedProduct && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black/50 z-50"
-            data-testid="modal-backdrop"
-            onClick={handleCloseModal}
-          />
-          <div 
-            className="fixed inset-4 md:inset-10 lg:inset-20 bg-background rounded-2xl shadow-2xl z-50 overflow-auto"
-            data-testid="product-detail-modal"
-          >
-            <div className="p-6">
-              {/* Modal Header */}
-              <div className="flex items-start justify-between mb-6">
-                <h2 className="text-2xl font-bold">{selectedProduct.title}</h2>
-                <Button variant="ghost" size="icon" onClick={handleCloseModal}>
-                  <X size={20} />
-                </Button>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-8">
-                {/* Image Gallery */}
-                <div data-testid="product-gallery">
-                  <img
-                    src={selectedProduct.imageUrl ?? undefined}
-                    alt={selectedProduct.title}
-                    className="w-full rounded-xl"
-                  />
-                  {selectedProduct.images && selectedProduct.images.length > 1 && (
-                    <div className="flex gap-2 mt-4 overflow-x-auto">
-                      {selectedProduct.images.map((img, i) => (
-                        <img 
-                          key={i}
-                          src={img}
-                          alt={`${selectedProduct.title} ${i + 1}`}
-                          className="w-20 h-20 object-cover rounded-lg border-2 border-transparent hover:border-tiktrend-primary cursor-pointer"
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Product Info */}
-                <div className="space-y-6">
-                  {/* Price & Sales */}
-                  <div className="flex items-center gap-4">
-                    <span className="text-3xl font-bold text-tiktrend-primary">
-                      R$ {selectedProduct.price.toFixed(2)}
-                    </span>
-                    <span className="text-muted-foreground">
-                      {selectedProduct.salesCount} vendas
-                    </span>
-                  </div>
-
-                  {/* Description */}
-                  <div data-testid="product-description">
-                    <h3 className="font-semibold mb-2">Descrição</h3>
-                    <p className="text-muted-foreground">
-                      {selectedProduct.description || "Sem descrição disponível."}
-                    </p>
-                  </div>
-
-                  {/* Supplier Info */}
-                  <div data-testid="supplier-info">
-                    <h3 className="font-semibold mb-2">Fornecedor</h3>
-                    <div className="bg-accent/50 rounded-lg p-4">
-                      <p className="font-medium">{selectedProduct.sellerName || "TikTok Shop"}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedProduct.productUrl ? "Loja verificada no TikTok Shop" : "Loja TikTok Shop"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-3">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1 gap-2"
-                      onClick={handleCopyProductInfo}
-                      data-testid="copy-info"
-                    >
-                      <Check size={16} />
-                      Copiar Info
-                    </Button>
-                    <Button 
-                      variant="tiktrend" 
-                      className="flex-1 gap-2"
-                      onClick={handleGenerateCopy}
-                      data-testid="generate-copy"
-                    >
-                      Gerar Copy
-                    </Button>
-                  </div>
-
-                  <Button 
-                    variant={isFavorite(selectedProduct.id) ? "secondary" : "outline"}
-                    className="w-full gap-2"
-                    onClick={() => handleFavorite(selectedProduct)}
-                  >
-                    <Heart 
-                      size={16} 
-                      className={isFavorite(selectedProduct.id) ? "fill-red-500 text-red-500" : ""} 
-                    />
-                    {isFavorite(selectedProduct.id) ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
+        <ProductDetailModalEnhanced
+          product={selectedProduct}
+          isOpen={showDetailModal}
+          onClose={handleCloseModal}
+          isFavorite={isFavorite(selectedProduct.id)}
+          onFavorite={handleFavorite}
+        />
       )}
 
       {/* Export Modal */}
