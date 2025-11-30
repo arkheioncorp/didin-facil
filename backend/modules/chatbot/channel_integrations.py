@@ -23,6 +23,8 @@ from .professional_seller_bot import (
     MessageChannel,
 )
 from integrations.whatsapp_hub import WhatsAppHub
+from integrations.instagram_hub import InstagramHub, get_instagram_hub, InstagramHubConfig
+from integrations.tiktok_hub import TikTokHub, get_tiktok_hub, TikTokHubConfig
 
 logger = logging.getLogger(__name__)
 
@@ -357,112 +359,89 @@ class InstagramConfig:
 class InstagramAdapter(ChannelAdapter):
     """
     Adaptador para Instagram Messaging API.
+    
+    DEPRECATED: Esta classe agora é um wrapper para o InstagramHubAdapter.
+    Prefira usar InstagramHubAdapter diretamente.
     """
     
     def __init__(self, config: InstagramConfig):
+        from .instagram_adapter import InstagramHubAdapter
         self.config = config
-        self.graph_url = "https://graph.facebook.com/v18.0"
-        self._client: Optional[httpx.AsyncClient] = None
-    
-    async def _get_client(self) -> httpx.AsyncClient:
-        if self._client is None:
-            self._client = httpx.AsyncClient(
-                base_url=self.graph_url,
-                timeout=30.0
-            )
-        return self._client
+        # Configura o Hub singleton com as credenciais deste adapter
+        self.hub = get_instagram_hub()
+        self.hub.configure(
+            access_token=config.access_token,
+            page_id=config.page_id,
+            app_secret=config.app_secret
+        )
+        self.adapter = InstagramHubAdapter(self.hub)
     
     async def close(self):
-        if self._client:
-            await self._client.aclose()
-            self._client = None
+        # Hub é singleton, não fechamos aqui
+        pass
     
-    async def parse_incoming(self, payload: Dict[str, Any]) -> Optional[IncomingMessage]:
-        """Converte webhook do Instagram para IncomingMessage."""
-        try:
-            # Estrutura do webhook Instagram
-            entry = payload.get("entry", [{}])[0]
-            messaging = entry.get("messaging", [{}])[0]
-            
-            sender = messaging.get("sender", {})
-            message = messaging.get("message", {})
-            
-            # Extrair mídia
-            media_url = None
-            media_type = None
-            attachments = message.get("attachments", [])
-            if attachments:
-                media_url = attachments[0].get("payload", {}).get("url")
-                media_type = attachments[0].get("type")
-            
-            return IncomingMessage(
-                channel=MessageChannel.INSTAGRAM,
-                sender_id=sender.get("id", ""),
-                content=message.get("text", ""),
-                media_url=media_url,
-                media_type=media_type,
-                metadata={
-                    "mid": message.get("mid"),
-                    "timestamp": messaging.get("timestamp"),
-                }
-            )
-            
-        except Exception as e:
-            logger.error(f"Erro ao parsear webhook Instagram: {e}")
-            return None
+    async def parse_incoming(
+        self, payload: Dict[str, Any]
+    ) -> Optional[IncomingMessage]:
+        """Converte webhook usando o Hub."""
+        return await self.adapter.parse_incoming(payload)
     
-    async def send_response(self, response: BotResponse, recipient_id: str) -> bool:
-        """Envia resposta via Instagram API."""
-        try:
-            client = await self._get_client()
-            
-            payload = {
-                "recipient": {"id": recipient_id},
-                "message": {"text": response.content}
-            }
-            
-            # Adicionar quick replies se houver
-            if response.quick_replies:
-                payload["message"]["quick_replies"] = [
-                    {"content_type": "text", "title": qr, "payload": qr}
-                    for qr in response.quick_replies[:13]  # Max 13 quick replies
-                ]
-            
-            resp = await client.post(
-                f"/{self.config.page_id}/messages",
-                params={"access_token": self.config.access_token},
-                json=payload
-            )
-            resp.raise_for_status()
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"Erro ao enviar mensagem Instagram: {e}")
-            return False
+    async def send_response(
+        self, response: BotResponse, recipient_id: str
+    ) -> bool:
+        """Envia resposta via Instagram Hub."""
+        return await self.adapter.send_response(response, recipient_id)
     
-    async def send_typing(self, recipient_id: str, duration_ms: int = 3000) -> bool:
+    async def send_typing(
+        self, recipient_id: str, duration_ms: int = 3000
+    ) -> bool:
         """Envia indicador de digitação."""
-        try:
-            client = await self._get_client()
-            
-            await client.post(
-                f"/{self.config.page_id}/messages",
-                params={"access_token": self.config.access_token},
-                json={
-                    "recipient": {"id": recipient_id},
-                    "sender_action": "typing_on"
-                }
-            )
-            
-            import asyncio
-            await asyncio.sleep(duration_ms / 1000)
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"Erro ao enviar typing Instagram: {e}")
-            return False
+        return await self.adapter.send_typing(recipient_id, duration_ms)
+
+
+# ============================================
+# TIKTOK ADAPTER
+# ============================================
+
+@dataclass
+class TikTokConfig:
+    """Configuração do TikTok."""
+    headless: bool = True
+
+
+class TikTokAdapter(ChannelAdapter):
+    """
+    Adaptador para TikTok.
+    
+    DEPRECATED: Esta classe agora é um wrapper para o TikTokHubAdapter.
+    Prefira usar TikTokHubAdapter diretamente.
+    
+    Nota: Mensagens ainda não suportadas (TikTok não possui API oficial).
+    """
+    
+    def __init__(self, config: TikTokConfig):
+        from .tiktok_adapter import TikTokHubAdapter
+        self.config = config
+        self.hub = get_tiktok_hub()
+        self.adapter = TikTokHubAdapter(self.hub)
+    
+    async def parse_incoming(
+        self, payload: Dict[str, Any]
+    ) -> Optional[IncomingMessage]:
+        """Converte webhook do TikTok usando o Hub."""
+        return await self.adapter.parse_incoming(payload)
+    
+    async def send_response(
+        self, response: BotResponse, recipient_id: str
+    ) -> bool:
+        """Envia resposta via TikTok Hub."""
+        return await self.adapter.send_response(response, recipient_id)
+    
+    async def send_typing(
+        self, recipient_id: str, duration_ms: int = 3000
+    ) -> bool:
+        """Envia indicador de digitação."""
+        return await self.adapter.send_typing(recipient_id, duration_ms)
 
 
 # ============================================

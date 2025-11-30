@@ -12,7 +12,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,6 +26,8 @@ import {
   Filter, Search, RefreshCw, Settings, BarChart3
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { api } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 // Types
 interface PipelineStage {
@@ -363,6 +366,7 @@ const StageColumn = ({
 };
 
 export const Pipeline = () => {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   const [selectedPipeline, setSelectedPipeline] = useState<Pipeline | null>(null);
@@ -371,6 +375,19 @@ export const Pipeline = () => {
   const [draggedDeal, setDraggedDeal] = useState<Deal | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+  
+  // Estados para modais de edição/criação
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [currentStageId, setCurrentStageId] = useState<string>("");
+  const [dealForm, setDealForm] = useState({
+    title: "",
+    value: 0,
+    contact_name: "",
+    contact_email: "",
+    expected_close_date: "",
+    description: "",
+  });
 
   // Load data
   useEffect(() => {
@@ -415,13 +432,103 @@ export const Pipeline = () => {
   };
 
   const handleEditDeal = (deal: Deal) => {
-    // TODO: Abrir modal de edição
-    console.log("Edit deal:", deal);
+    setSelectedDeal(deal);
+    setDealForm({
+      title: deal.title,
+      value: deal.value,
+      contact_name: deal.contact.name,
+      contact_email: deal.contact.email,
+      expected_close_date: deal.expected_close_date || "",
+      description: "",
+    });
+    setEditDialogOpen(true);
   };
 
   const handleAddDeal = (stageId: string) => {
-    // TODO: Abrir modal de criação
-    console.log("Add deal to stage:", stageId);
+    setCurrentStageId(stageId);
+    setDealForm({
+      title: "",
+      value: 0,
+      contact_name: "",
+      contact_email: "",
+      expected_close_date: "",
+      description: "",
+    });
+    setCreateDialogOpen(true);
+  };
+
+  const handleSaveDeal = async () => {
+    try {
+      if (editDialogOpen && selectedDeal) {
+        // Editar deal existente
+        await api.patch(`/crm/deals/${selectedDeal.id}`, {
+          title: dealForm.title,
+          value: dealForm.value,
+          expected_close_date: dealForm.expected_close_date || null,
+        });
+        
+        setDeals(prev => prev.map(d => 
+          d.id === selectedDeal.id
+            ? { ...d, title: dealForm.title, value: dealForm.value, expected_close_date: dealForm.expected_close_date }
+            : d
+        ));
+        
+        toast({
+          title: "Deal atualizado!",
+          description: `"${dealForm.title}" foi atualizado com sucesso.`,
+        });
+      } else if (createDialogOpen) {
+        // Criar novo deal
+        const response = await api.post<{ id?: string; contact_id?: string }>("/crm/deals", {
+          title: dealForm.title,
+          value: dealForm.value,
+          contact_email: dealForm.contact_email,
+          contact_name: dealForm.contact_name,
+          pipeline_id: selectedPipeline?.id,
+          stage_id: currentStageId,
+          expected_close_date: dealForm.expected_close_date || null,
+        });
+        
+        const newDeal: Deal = {
+          id: response.data.id || `deal_${Date.now()}`,
+          title: dealForm.title,
+          value: dealForm.value,
+          stage_id: currentStageId,
+          pipeline_id: selectedPipeline?.id || "",
+          lead_id: "",
+          probability: selectedPipeline?.stages.find(s => s.id === currentStageId)?.probability || 0,
+          expected_close_date: dealForm.expected_close_date,
+          status: "open",
+          contact: {
+            id: response.data.contact_id || `contact_${Date.now()}`,
+            name: dealForm.contact_name,
+            email: dealForm.contact_email,
+          },
+          tags: [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          days_in_stage: 0,
+        };
+        
+        setDeals(prev => [...prev, newDeal]);
+        
+        toast({
+          title: "Deal criado!",
+          description: `"${dealForm.title}" foi adicionado ao pipeline.`,
+        });
+      }
+      
+      setEditDialogOpen(false);
+      setCreateDialogOpen(false);
+      setSelectedDeal(null);
+    } catch (error) {
+      console.error("Error saving deal:", error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar o deal. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Filter deals by pipeline and search
@@ -668,6 +775,104 @@ export const Pipeline = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Edição/Criação de Deal */}
+      <Dialog open={editDialogOpen || createDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setEditDialogOpen(false);
+          setCreateDialogOpen(false);
+          setSelectedDeal(null);
+        }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editDialogOpen ? "Editar Deal" : "Novo Deal"}
+            </DialogTitle>
+            <DialogDescription>
+              {editDialogOpen 
+                ? "Atualize as informações do deal abaixo."
+                : "Preencha as informações para criar um novo deal."}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="deal-title">Título do Deal *</Label>
+              <Input
+                id="deal-title"
+                placeholder="Ex: Proposta para Cliente ABC"
+                value={dealForm.title}
+                onChange={(e) => setDealForm(prev => ({ ...prev, title: e.target.value }))}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="deal-value">Valor (R$) *</Label>
+              <Input
+                id="deal-value"
+                type="number"
+                placeholder="0,00"
+                value={dealForm.value}
+                onChange={(e) => setDealForm(prev => ({ ...prev, value: parseFloat(e.target.value) || 0 }))}
+              />
+            </div>
+            
+            {createDialogOpen && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="contact-name">Nome do Contato *</Label>
+                  <Input
+                    id="contact-name"
+                    placeholder="Nome completo"
+                    value={dealForm.contact_name}
+                    onChange={(e) => setDealForm(prev => ({ ...prev, contact_name: e.target.value }))}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="contact-email">Email do Contato *</Label>
+                  <Input
+                    id="contact-email"
+                    type="email"
+                    placeholder="email@exemplo.com"
+                    value={dealForm.contact_email}
+                    onChange={(e) => setDealForm(prev => ({ ...prev, contact_email: e.target.value }))}
+                  />
+                </div>
+              </>
+            )}
+            
+            <div className="space-y-2">
+              <Label htmlFor="expected-date">Data Prevista de Fechamento</Label>
+              <Input
+                id="expected-date"
+                type="date"
+                value={dealForm.expected_close_date}
+                onChange={(e) => setDealForm(prev => ({ ...prev, expected_close_date: e.target.value }))}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditDialogOpen(false);
+                setCreateDialogOpen(false);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSaveDeal}
+              disabled={!dealForm.title || !dealForm.value || (createDialogOpen && (!dealForm.contact_name || !dealForm.contact_email))}
+            >
+              {editDialogOpen ? "Salvar Alterações" : "Criar Deal"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

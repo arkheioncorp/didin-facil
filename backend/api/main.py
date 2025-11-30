@@ -15,7 +15,8 @@ from .routes import (
     analytics, templates, accounts, api_docs, marketplaces,
     analytics_social, chatbot, automation, template_library,
     email, campaigns, crm, seller_bot,
-    accounting, credits, checkout  # New financial routes
+    accounting, credits, checkout, users, favorites,  # New financial routes + favorites
+    hub_health  # Hub monitoring & health checks
 )
 from .routers import crm_advanced  # CRM Advanced Services
 from .middleware.ratelimit import RateLimitMiddleware
@@ -106,7 +107,9 @@ app.add_middleware(RateLimitMiddleware)
 
 # Include routers
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+app.include_router(users.router, prefix="/users", tags=["Users"])
 app.include_router(products.router, prefix="/products", tags=["Products"])
+app.include_router(favorites.router, prefix="/favorites", tags=["Favorites"])
 app.include_router(copy.router, prefix="/copy", tags=["AI Copy Generation"])
 app.include_router(license.router, prefix="/license", tags=["License Management"])
 app.include_router(webhooks.router, prefix="/webhooks", tags=["Webhooks"])
@@ -230,6 +233,12 @@ app.include_router(
     credits.router,
     prefix="/credits",
     tags=["Credits Purchase"]
+)
+
+# Hub Monitoring & Health Checks
+app.include_router(
+    hub_health.router,
+    tags=["Hub Monitoring"]
 )
 
 

@@ -323,7 +323,7 @@ function EngagementCard({ engagement }: { engagement: EngagementStats }) {
             <p className="text-xl font-bold">{engagement.total_saves.toLocaleString('pt-BR')}</p>
           </div>
         </div>
-        
+
         <div className="mt-6 pt-4 border-t space-y-3">
           <div className="flex justify-between">
             <span className="text-sm text-muted-foreground">Taxa média de engajamento</span>
@@ -347,22 +347,22 @@ export default function AnalyticsDashboard() {
   const [period, setPeriod] = useState('30d');
   const [_platform] = useState('all');
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['analytics', period, _platform],
     queryFn: async () => {
       const params = new URLSearchParams();
-      
+
       // Calculate dates based on period
       const endDate = new Date();
       const startDate = new Date();
-      
+
       if (period === '7d') startDate.setDate(startDate.getDate() - 7);
       else if (period === '30d') startDate.setDate(startDate.getDate() - 30);
       else if (period === '90d') startDate.setDate(startDate.getDate() - 90);
-      
+
       params.set('start_date', startDate.toISOString().split('T')[0]);
       params.set('end_date', endDate.toISOString().split('T')[0]);
-      
+
       const response = await api.get<AnalyticsOverview>(`/analytics/overview?${params}`);
       return response.data;
     },
@@ -372,9 +372,10 @@ export default function AnalyticsDashboard() {
     try {
       const response = await api.get<Blob>('/analytics/export', {
         params: { format: 'csv' },
+        responseType: 'blob'
       });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data as BlobPart]));
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `analytics-${new Date().toISOString().split('T')[0]}.csv`);
@@ -390,8 +391,12 @@ export default function AnalyticsDashboard() {
     return (
       <div className="p-6">
         <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <p className="text-destructive">Erro ao carregar analytics. Tente novamente.</p>
+          <CardContent className="pt-6 flex flex-col items-center gap-4">
+            <p className="text-destructive font-medium">Erro ao carregar analytics</p>
+            <p className="text-sm text-muted-foreground">Não foi possível obter os dados mais recentes.</p>
+            <Button variant="outline" onClick={() => refetch()}>
+              Tentar novamente
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -409,6 +414,9 @@ export default function AnalyticsDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => refetch()} disabled={isLoading}>
+            <ArrowUpRight className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </Button>
           <Select value={period} onValueChange={setPeriod}>
             <SelectTrigger className="w-[180px]">
               <Calendar className="h-4 w-4 mr-2" />

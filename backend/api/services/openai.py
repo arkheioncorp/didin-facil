@@ -229,11 +229,11 @@ Sempre responda APENAS com o texto da copy, sem explicações ou comentários ad
         """Get user's credits balance"""
         async with get_db() as db:
             user = await db.fetch_one(
-                "SELECT credits, has_lifetime_license FROM users WHERE id = :user_id",
+                "SELECT credits_balance, has_lifetime_license FROM users WHERE id = :user_id",
                 {"user_id": user_id}
             )
 
-        credits = user["credits"] if user else 0
+        credits = user["credits_balance"] if user else 0
         has_license = user["has_lifetime_license"] if user else False
 
         return {
@@ -247,9 +247,10 @@ Sempre responda APENAS com o texto da copy, sem explicações ou comentários ad
             result = await db.execute(
                 """
                 UPDATE users 
-                SET credits = credits - :amount 
-                WHERE id = :user_id AND credits >= :amount
-                RETURNING credits
+                SET credits_balance = credits_balance - :amount,
+                    credits_used = credits_used + :amount
+                WHERE id = :user_id AND credits_balance >= :amount
+                RETURNING credits_balance
                 """,
                 {"user_id": user_id, "amount": amount}
             )

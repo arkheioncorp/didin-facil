@@ -6,8 +6,9 @@ Complete financial tracking and reporting for Didin Fácil
 import uuid
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 
+from databases import Database
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -114,7 +115,8 @@ DEFAULT_CREDIT_PACKAGES = [
 class AccountingService:
     """Complete financial tracking service"""
 
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db):
+        """Initialize with database connection (Database or AsyncSession)"""
         self.db = db
 
     # =========================================================================
@@ -123,19 +125,46 @@ class AccountingService:
 
     async def get_active_packages(self) -> List[CreditPackage]:
         """Get all active credit packages for purchase"""
-        result = await self.db.execute(
-            select(CreditPackage)
-            .where(CreditPackage.is_active == True)
-            .order_by(CreditPackage.sort_order)
-        )
-        return result.scalars().all()
+        # Support both Database and AsyncSession
+        query = """
+            SELECT id, name, slug, credits, price_brl, price_usd,
+                   discount_percent, original_price, description,
+                   badge, is_featured, sort_order, is_active, created_at, updated_at
+            FROM credit_packages
+            WHERE is_active = true
+            ORDER BY sort_order
+        """
+        rows = await self.db.fetch_all(query)
+        
+        # Convert to CreditPackage-like objects
+        packages = []
+        for row in rows:
+            pkg = type('CreditPackage', (), dict(row._mapping))()
+            pkg.price_per_credit = (
+                Decimal(str(row['price_brl'])) / row['credits']
+                if row['credits'] > 0 else Decimal("0")
+            )
+            packages.append(pkg)
+        return packages
 
     async def get_package_by_slug(self, slug: str) -> Optional[CreditPackage]:
         """Get a specific package by slug"""
-        result = await self.db.execute(
-            select(CreditPackage).where(CreditPackage.slug == slug)
-        )
-        return result.scalar_one_or_none()
+        query = """
+            SELECT id, name, slug, credits, price_brl, price_usd,
+                   discount_percent, original_price, description,
+                   badge, is_featured, sort_order, is_active, created_at, updated_at
+            FROM credit_packages
+            WHERE slug = :slug
+        """
+        row = await self.db.fetch_one(query, {"slug": slug})
+        if row:
+            pkg = type('CreditPackage', (), dict(row._mapping))()
+            pkg.price_per_credit = (
+                Decimal(str(row['price_brl'])) / row['credits']
+                if row['credits'] > 0 else Decimal("0")
+            )
+            return pkg
+        return None
 
     async def seed_default_packages(self):
         """Seed default credit packages if none exist"""

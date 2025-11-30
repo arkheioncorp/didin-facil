@@ -24,11 +24,16 @@ export const Subscription: React.FC = () => {
     // Simulating purchase
     setTimeout(() => {
       const newLicense = {
+        id: "lic_" + Date.now(),
         isValid: true,
         isLifetime: true,
+        plan: 'lifetime' as const,
         activatedAt: new Date().toISOString(),
+        expiresAt: null,
         maxDevices: 2,
         activeDevices: 1,
+        currentDeviceId: null,
+        isCurrentDeviceAuthorized: true,
       };
       setLicense(newLicense);
       setIsProcessing(false);

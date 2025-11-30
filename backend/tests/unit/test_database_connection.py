@@ -37,14 +37,14 @@ class TestDatabaseConnection:
 
 class TestGetDb:
     """Testes para get_db context manager"""
-    
+
     @pytest.mark.asyncio
     async def test_get_db_yields_database(self):
         """Deve retornar instância do database"""
         from api.database.connection import get_db, database
-        
-        async with get_db() as db:
-            assert db == database
+
+        db = await get_db()
+        assert db == database
 
 
 class TestDatabaseManager:

@@ -77,6 +77,9 @@ class CreditPackage(Base):
     is_featured = Column(Boolean, default=False)
     sort_order = Column(Integer, default=0)
     
+    # License inclusion
+    includes_license = Column(Boolean, default=False)  # First purchase includes lifetime license
+    
     # Status
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)

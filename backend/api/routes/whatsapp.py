@@ -1,6 +1,14 @@
 """
-WhatsApp Routes
-Integration with Evolution API via vendor module
+WhatsApp Routes (Legacy v1)
+===========================
+Rotas legadas usando WhatsApp Hub.
+
+NOTA: Este módulo está em modo de compatibilidade.
+Para novas implementações, use /api/v2/whatsapp/* (whatsapp_v2.py)
+
+Migração:
+- Todas as chamadas agora usam o Hub centralizado
+- Backward compatible com chamadas antigas
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
@@ -8,49 +16,55 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timezone
 import uuid
+import logging
 
 from shared.config import settings
-from vendor.whatsapp.client import WhatsAppClient, WhatsAppConfig
+from integrations.whatsapp_hub import get_whatsapp_hub, WhatsAppHub
 from api.middleware.auth import get_current_user
 from api.database.connection import database
 from api.database.models import WhatsAppInstance, WhatsAppMessage
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
+
+# Hub singleton
+_hub: Optional[WhatsAppHub] = None
+
+
+def get_hub() -> WhatsAppHub:
+    """Retorna o hub WhatsApp singleton."""
+    global _hub
+    if _hub is None:
+        _hub = get_whatsapp_hub()
+    return _hub
+
 
 class WhatsAppInstanceCreate(BaseModel):
     instance_name: str
     webhook_url: Optional[str] = None
+
 
 class WhatsAppMessageSend(BaseModel):
     instance_name: str
     to: str
     content: str
 
-def get_whatsapp_client(instance_name: str) -> WhatsAppClient:
-    if not settings.EVOLUTION_API_KEY:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Evolution API Key not configured"
-        )
-        
-    config = WhatsAppConfig(
-        api_url=settings.EVOLUTION_API_URL,
-        api_key=settings.EVOLUTION_API_KEY,
-        instance_name=instance_name
-    )
-    return WhatsAppClient(config)
 
 @router.post("/instances")
 async def create_instance(
     data: WhatsAppInstanceCreate,
-    current_user = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
-    """Create a new WhatsApp instance"""
-    client = get_whatsapp_client(data.instance_name)
+    """Create a new WhatsApp instance using Hub."""
+    hub = get_hub()
     try:
         webhook_url = data.webhook_url or f"{settings.API_URL}/whatsapp/webhook"
-        result = await client.create_instance(webhook_url=webhook_url)
-        
+        result = await hub.create_instance(
+            instance_name=data.instance_name,
+            webhook_url=webhook_url
+        )
+
         # Save instance to DB
         query = WhatsAppInstance.__table__.insert().values(
             id=uuid.uuid4(),
@@ -61,44 +75,48 @@ async def create_instance(
             created_at=datetime.now(timezone.utc)
         )
         await database.execute(query)
-        
+
         return result
     except Exception as e:
+        logger.error(f"Erro ao criar instância: {e}")
         raise HTTPException(status_code=400, detail=str(e))
-    finally:
-        await client.close()
+
 
 @router.get("/instances/{instance_name}/qrcode")
 async def get_qrcode(
     instance_name: str,
-    current_user = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
-    """Get QR Code for instance"""
-    client = get_whatsapp_client(instance_name)
+    """Get QR Code for instance using Hub."""
+    hub = get_hub()
     try:
-        qr_code = await client.get_qr_code()
+        qr_code = await hub.get_qr_code(instance_name=instance_name)
         return qr_code
     except Exception as e:
+        logger.error(f"Erro ao obter QR code: {e}")
         raise HTTPException(status_code=400, detail=str(e))
-    finally:
-        await client.close()
+
 
 @router.post("/messages/text")
 async def send_message(
     data: WhatsAppMessageSend,
-    current_user = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
-    """Send text message"""
-    client = get_whatsapp_client(data.instance_name)
+    """Send text message using Hub."""
+    hub = get_hub()
     try:
-        result = await client.send_text(data.to, data.content)
-        
+        result = await hub.send_message(
+            instance_name=data.instance_name,
+            to=data.to,
+            message=data.content
+        )
+
         # Get instance ID
         instance_query = WhatsAppInstance.__table__.select().where(
             WhatsAppInstance.name == data.instance_name
         )
         instance = await database.fetch_one(instance_query)
-        
+
         if instance:
             # Save message to DB
             msg_query = WhatsAppMessage.__table__.insert().values(
@@ -112,23 +130,27 @@ async def send_message(
                 timestamp=datetime.now(timezone.utc)
             )
             await database.execute(msg_query)
-            
+
         return result
     except Exception as e:
+        logger.error(f"Erro ao enviar mensagem: {e}")
         raise HTTPException(status_code=400, detail=str(e))
-    finally:
-        await client.close()
+
 
 @router.post("/webhook")
 async def whatsapp_webhook(request: Request):
-    """Handle WhatsApp Webhooks from Evolution API"""
+    """
+    Handle WhatsApp Webhooks from Evolution API.
+
+    Processa eventos de conexão, QR Code e mensagens.
+    """
     payload = await request.json()
-    
-    # Basic event handling
+
+    # Extract event info from Evolution API payload
     event_type = payload.get("event")
     instance_name = payload.get("instance")
     data = payload.get("data", {})
-    
+
     if not instance_name:
         return {"status": "ignored", "reason": "no_instance"}
 
@@ -137,14 +159,14 @@ async def whatsapp_webhook(request: Request):
         WhatsAppInstance.name == instance_name
     )
     instance = await database.fetch_one(instance_query)
-    
+
     if not instance:
         return {"status": "ignored", "reason": "instance_not_found"}
 
     # Handle connection status updates
     if event_type == "connection.update":
         connection_state = data.get("state", "")
-        
+
         # Map Evolution API states to our status
         status_map = {
             "open": "connected",
@@ -152,9 +174,8 @@ async def whatsapp_webhook(request: Request):
             "connecting": "connecting",
             "refused": "error"
         }
-        
         new_status = status_map.get(connection_state, "unknown")
-        
+
         # Update instance status in DB
         update_query = WhatsAppInstance.__table__.update().where(
             WhatsAppInstance.id == instance.id
@@ -163,11 +184,11 @@ async def whatsapp_webhook(request: Request):
             updated_at=datetime.now(timezone.utc)
         )
         await database.execute(update_query)
-        
+
         # If disconnected, try to reconnect automatically
         if new_status == "disconnected":
-            await _schedule_reconnection(instance_name, instance.user_id)
-        
+            await _schedule_reconnection(instance_name, str(instance.user_id))
+
         return {
             "status": "processed",
             "event": "connection.update",
@@ -177,7 +198,7 @@ async def whatsapp_webhook(request: Request):
     # Handle QR code updates
     if event_type == "qrcode.updated":
         qr_code = data.get("qrcode", {})
-        
+
         # Store QR code temporarily in Redis for frontend polling
         from shared.redis import get_redis
         redis = await get_redis()
@@ -186,7 +207,7 @@ async def whatsapp_webhook(request: Request):
             qr_code.get("base64", ""),
             ex=120  # QR codes expire in 2 minutes
         )
-        
+
         # Update status to awaiting scan
         update_query = WhatsAppInstance.__table__.update().where(
             WhatsAppInstance.id == instance.id
@@ -195,22 +216,23 @@ async def whatsapp_webhook(request: Request):
             updated_at=datetime.now(timezone.utc)
         )
         await database.execute(update_query)
-        
+
         return {"status": "processed", "event": "qrcode.updated"}
 
+    # Handle messages
     if event_type == "messages.upsert":
         message_data = data.get("message", {})
         key = data.get("key", {})
         remote_jid = key.get("remoteJid")
         from_me = key.get("fromMe", False)
-        
-        # Extract content (simplified)
+
+        # Extract content
         content = ""
         if "conversation" in message_data:
             content = message_data["conversation"]
         elif "extendedTextMessage" in message_data:
             content = message_data["extendedTextMessage"].get("text", "")
-            
+
         if content:
             msg_query = WhatsAppMessage.__table__.insert().values(
                 id=uuid.uuid4(),
@@ -309,7 +331,11 @@ async def get_instance_status(
         "status": instance.status,
         "qr_code": qr_code if instance.status == "awaiting_scan" else None,
         "reconnection": reconnect_info,
-        "updated_at": instance.updated_at.isoformat() if hasattr(instance, 'updated_at') and instance.updated_at else None
+        "updated_at": (
+            instance.updated_at.isoformat()
+            if hasattr(instance, 'updated_at') and instance.updated_at
+            else None
+        )
     }
 
 
@@ -318,24 +344,25 @@ async def force_reconnect(
     instance_name: str,
     current_user=Depends(get_current_user)
 ):
-    """Force reconnection attempt for a disconnected instance."""
+    """Force reconnection attempt for a disconnected instance using Hub."""
+    hub = get_hub()
+    
     # Find instance
     instance_query = WhatsAppInstance.__table__.select().where(
         WhatsAppInstance.name == instance_name
     )
     instance = await database.fetch_one(instance_query)
-    
+
     if not instance:
         raise HTTPException(status_code=404, detail="Instance not found")
-    
+
     if instance.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
-    # Try to reconnect via Evolution API
-    client = get_whatsapp_client(instance_name)
+
+    # Try to reconnect via Hub
     try:
-        result = await client.get_qr_code()
-        
+        result = await hub.get_qr_code(instance_name=instance_name)
+
         # Update status
         update_query = WhatsAppInstance.__table__.update().where(
             WhatsAppInstance.id == instance.id
@@ -344,15 +371,14 @@ async def force_reconnect(
             updated_at=datetime.now(timezone.utc)
         )
         await database.execute(update_query)
-        
+
         return {
             "status": "reconnecting",
-            "qr_code": result.get("base64")
+            "qr_code": result.get("base64") if result else None
         }
     except Exception as e:
+        logger.error(f"Erro ao reconectar: {e}")
         raise HTTPException(status_code=400, detail=str(e))
-    finally:
-        await client.close()
 
 
 @router.get("/messages/{instance_name}")
@@ -360,7 +386,7 @@ async def list_messages(
     instance_name: str,
     limit: int = 50,
     offset: int = 0,
-    current_user = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     """List messages for an instance"""
     # Find instance
@@ -368,10 +394,10 @@ async def list_messages(
         WhatsAppInstance.name == instance_name
     )
     instance = await database.fetch_one(instance_query)
-    
+
     if not instance:
         raise HTTPException(status_code=404, detail="Instance not found")
-        
+
     # Check ownership
     if instance.user_id != current_user.id and not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Not authorized")

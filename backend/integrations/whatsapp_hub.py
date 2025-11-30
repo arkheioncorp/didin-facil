@@ -11,7 +11,7 @@ Este módulo consolida todas as integrações com WhatsApp via Evolution API:
 - Integração com Chatwoot
 
 Autor: Didin Fácil
-Versão: 1.0.0
+Versão: 1.2.0 (com alertas e métricas)
 """
 
 import logging
@@ -21,6 +21,16 @@ from datetime import datetime, timezone
 from enum import Enum
 import httpx
 import asyncio
+
+from .resilience import (
+    CircuitBreaker,
+    CircuitBreakerConfig,
+    CircuitBreakerOpenError as CircuitBreakerOpen,
+    retry_with_backoff,
+    RetryConfig
+)
+from .metrics import get_metrics_registry, with_metrics
+from .alerts import get_alert_manager, AlertSeverity, AlertType
 
 logger = logging.getLogger(__name__)
 
@@ -143,6 +153,17 @@ class WhatsAppHub:
         self._instances: Dict[str, InstanceInfo] = {}
         self._rate_limiter: Dict[str, List[datetime]] = {}
         
+        # Resiliência: Circuit Breaker para Evolution API
+        cb_config = CircuitBreakerConfig(
+            failure_threshold=5,
+            timeout_seconds=30.0,
+            half_open_max_calls=3
+        )
+        self._circuit_breaker = CircuitBreaker(
+            name="whatsapp_hub",
+            config=cb_config
+        )
+        
     @classmethod
     def from_settings(cls) -> "WhatsAppHub":
         """Cria instância a partir das configurações do projeto."""
@@ -175,6 +196,96 @@ class WhatsAppHub:
             )
         return self._client
     
+    async def _api_request(
+        self,
+        method: str,
+        endpoint: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Executa requisição HTTP com resiliência (circuit breaker + retry).
+        
+        Args:
+            method: Método HTTP (GET, POST, PUT, DELETE)
+            endpoint: Endpoint da API (ex: /instance/create)
+            **kwargs: Argumentos adicionais para httpx
+            
+        Returns:
+            Dict com a resposta JSON
+            
+        Raises:
+            CircuitBreakerOpen: Se o circuit breaker estiver aberto
+            httpx.HTTPError: Para erros de rede/HTTP
+        """
+        # Registrar métrica
+        metrics = get_metrics_registry()
+        start_time = asyncio.get_event_loop().time()
+        
+        async def _make_request():
+            # Captura estado antes
+            state_before = self._circuit_breaker.state
+            
+            # Verifica circuit breaker
+            if not await self._circuit_breaker.can_execute():
+                stats = self._circuit_breaker.stats
+                raise CircuitBreakerOpen(
+                    f"WhatsApp Hub circuit breaker is open "
+                    f"(failures: {stats.failure_count})"
+                )
+            
+            try:
+                client = await self._get_client()
+                resp = await getattr(client, method.lower())(endpoint, **kwargs)
+                resp.raise_for_status()
+                
+                # Sucesso - registra no circuit breaker
+                await self._circuit_breaker.record_success()
+                
+                # Verifica se circuit breaker fechou (recuperação)
+                state_after = self._circuit_breaker.state
+                if state_before.value != "closed" and state_after.value == "closed":
+                    await get_alert_manager().send_circuit_breaker_closed("whatsapp")
+                
+                # Registra métrica de sucesso
+                elapsed = (asyncio.get_event_loop().time() - start_time) * 1000
+                metrics.record_request("whatsapp", True, elapsed)
+                
+                return resp.json()
+                
+            except (httpx.HTTPStatusError, httpx.RequestError) as e:
+                # Falha - registra no circuit breaker
+                state_before = self._circuit_breaker.state
+                await self._circuit_breaker.record_failure()
+                state_after = self._circuit_breaker.state
+                
+                # Registra métrica de falha
+                elapsed = (asyncio.get_event_loop().time() - start_time) * 1000
+                metrics.record_request("whatsapp", False, elapsed)
+                
+                # Alerta se circuit breaker abriu
+                if state_before.value != "open" and state_after.value == "open":
+                    await get_alert_manager().send_circuit_breaker_open(
+                        hub="whatsapp",
+                        failure_count=self._circuit_breaker.stats.failure_count,
+                        threshold=self._circuit_breaker.config.failure_threshold
+                    )
+                elif state_before.value != "half_open" and state_after.value == "half_open":
+                    await get_alert_manager().send_circuit_breaker_half_open("whatsapp")
+                
+                logger.warning(
+                    f"API request failed: {method} {endpoint} - {e}"
+                )
+                raise
+        
+        # Aplica retry com exponential backoff
+        retry_config = RetryConfig(
+            max_retries=self.config.max_retries,
+            base_delay=self.config.retry_delay,
+            max_delay=30.0,
+            retryable_exceptions=(httpx.RequestError, httpx.HTTPStatusError)
+        )
+        return await retry_with_backoff(_make_request, retry_config)
+    
     async def close(self):
         """Fecha conexões."""
         if self._client:
@@ -206,7 +317,6 @@ class WhatsAppHub:
             webhook_events: Lista de eventos para receber
         """
         name = instance_name or self.config.default_instance
-        client = await self._get_client()
         
         payload = {
             "instanceName": name,
@@ -227,9 +337,7 @@ class WhatsAppHub:
             }
         
         try:
-            response = await client.post("/instance/create", json=payload)
-            response.raise_for_status()
-            data = response.json()
+            await self._api_request("POST", "/instance/create", json=payload)
             
             instance = InstanceInfo(
                 name=name,
@@ -241,6 +349,9 @@ class WhatsAppHub:
             logger.info(f"Instância '{name}' criada com sucesso")
             return instance
             
+        except CircuitBreakerOpen as e:
+            logger.error(f"Circuit breaker aberto ao criar instância: {e}")
+            raise
         except httpx.HTTPStatusError as e:
             logger.error(f"Erro ao criar instância: {e}")
             raise
@@ -251,11 +362,10 @@ class WhatsAppHub:
     ) -> InstanceInfo:
         """Retorna o status da instância."""
         name = instance_name or self.config.default_instance
-        client = await self._get_client()
         
-        response = await client.get(f"/instance/connectionState/{name}")
-        response.raise_for_status()
-        data = response.json()
+        data = await self._api_request(
+            "GET", f"/instance/connectionState/{name}"
+        )
         
         state_map = {
             "open": ConnectionState.CONNECTED,
@@ -285,11 +395,7 @@ class WhatsAppHub:
             Dict com 'base64' (imagem) e 'code' (texto)
         """
         name = instance_name or self.config.default_instance
-        client = await self._get_client()
-        
-        response = await client.get(f"/instance/connect/{name}")
-        response.raise_for_status()
-        return response.json()
+        return await self._api_request("GET", f"/instance/connect/{name}")
     
     async def disconnect_instance(
         self,
@@ -297,11 +403,9 @@ class WhatsAppHub:
     ) -> bool:
         """Desconecta a instância do WhatsApp."""
         name = instance_name or self.config.default_instance
-        client = await self._get_client()
         
         try:
-            response = await client.delete(f"/instance/logout/{name}")
-            response.raise_for_status()
+            await self._api_request("DELETE", f"/instance/logout/{name}")
             
             if name in self._instances:
                 self._instances[name].state = ConnectionState.DISCONNECTED
@@ -318,11 +422,9 @@ class WhatsAppHub:
     ) -> bool:
         """Remove a instância completamente."""
         name = instance_name or self.config.default_instance
-        client = await self._get_client()
         
         try:
-            response = await client.delete(f"/instance/delete/{name}")
-            response.raise_for_status()
+            await self._api_request("DELETE", f"/instance/delete/{name}")
             
             if name in self._instances:
                 del self._instances[name]
@@ -335,11 +437,7 @@ class WhatsAppHub:
     
     async def list_instances(self) -> List[InstanceInfo]:
         """Lista todas as instâncias."""
-        client = await self._get_client()
-        
-        response = await client.get("/instance/fetchInstances")
-        response.raise_for_status()
-        data = response.json()
+        data = await self._api_request("GET", "/instance/fetchInstances")
         
         instances = []
         for item in data:
@@ -378,10 +476,9 @@ class WhatsAppHub:
         Args:
             webhook_url: URL do webhook
             instance_name: Nome da instância
-            events: Lista de eventos (default: MESSAGES_UPSERT, CONNECTION_UPDATE)
+            events: Lista de eventos
         """
         name = instance_name or self.config.default_instance
-        client = await self._get_client()
         
         payload = {
             "url": webhook_url,
@@ -396,8 +493,9 @@ class WhatsAppHub:
         }
         
         try:
-            response = await client.post(f"/webhook/set/{name}", json=payload)
-            response.raise_for_status()
+            await self._api_request(
+                "POST", f"/webhook/set/{name}", json=payload
+            )
             logger.info(f"Webhook configurado para '{name}': {webhook_url}")
             return True
         except Exception as e:
@@ -410,11 +508,7 @@ class WhatsAppHub:
     ) -> Dict[str, Any]:
         """Retorna a configuração atual do webhook."""
         name = instance_name or self.config.default_instance
-        client = await self._get_client()
-        
-        response = await client.get(f"/webhook/find/{name}")
-        response.raise_for_status()
-        return response.json()
+        return await self._api_request("GET", f"/webhook/find/{name}")
 
     # ============================================
     # MESSAGING
@@ -472,7 +566,6 @@ class WhatsAppHub:
         if not await self._check_rate_limit(name):
             raise Exception("Rate limit exceeded")
         
-        client = await self._get_client()
         phone = self._format_phone(to)
         
         payload = {
@@ -481,14 +574,12 @@ class WhatsAppHub:
             "delay": delay_ms
         }
         
-        response = await client.post(
-            f"/message/sendText/{name}",
-            json=payload
+        result = await self._api_request(
+            "POST", f"/message/sendText/{name}", json=payload
         )
-        response.raise_for_status()
         
         logger.debug(f"Mensagem enviada para {phone}")
-        return response.json()
+        return result
     
     async def send_image(
         self,
@@ -503,7 +594,6 @@ class WhatsAppHub:
         if not await self._check_rate_limit(name):
             raise Exception("Rate limit exceeded")
         
-        client = await self._get_client()
         phone = self._format_phone(to)
         
         payload = {
@@ -513,12 +603,9 @@ class WhatsAppHub:
             "caption": caption or ""
         }
         
-        response = await client.post(
-            f"/message/sendMedia/{name}",
-            json=payload
+        return await self._api_request(
+            "POST", f"/message/sendMedia/{name}", json=payload
         )
-        response.raise_for_status()
-        return response.json()
     
     async def send_video(
         self,

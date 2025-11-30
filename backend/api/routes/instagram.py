@@ -8,13 +8,12 @@ import json
 from api.middleware.auth import get_current_user
 from vendor.instagram.client import InstagramClient, InstagramConfig, PostConfig
 from shared.redis import get_redis
-from api.services.instagram_session import (
-    InstagramSessionManager,
-    ChallengeStatus
-)
+from integrations.instagram_hub import get_instagram_hub
+from api.services.instagram_session import ChallengeStatus
 
 router = APIRouter()
-session_manager = InstagramSessionManager()
+hub = get_instagram_hub()
+session_manager = hub.session_manager
 
 
 class InstagramLogin(BaseModel):

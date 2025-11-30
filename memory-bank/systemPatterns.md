@@ -1,6 +1,6 @@
-# System Patterns - TikTrend Finder
+# System Patterns - Didin Fácil
 
-**Última Atualização:** 26 de Novembro de 2025
+**Última Atualização:** 30 de Novembro de 2025
 
 ---
 
@@ -23,6 +23,12 @@
 - **Descrição:** Circuit breaker com estado persistido no Redis
 - **Motivação:** Evitar cascata de falhas quando scrapers detectam bloqueios
 - **Exemplos:** `backend/scraper/tiktok/scraper.py` - `check_safety()`, `record_result()`
+
+### User State Management Pattern
+
+- **Descrição:** Estado do usuário gerenciado com Zustand + persist middleware
+- **Motivação:** Manter estado entre sessões, separar User/License/Credits
+- **Exemplos:** `src/stores/userStore.ts` - login, logout, useCredits, addCredits
 
 ---
 

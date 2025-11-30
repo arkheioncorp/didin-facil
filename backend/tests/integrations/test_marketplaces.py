@@ -6,15 +6,15 @@ import pytest
 from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from backend.integrations.marketplaces.base import (
+from integrations.marketplaces.base import (
     MarketplaceType,
     Product,
     ProductCondition,
     SearchResult,
 )
-from backend.integrations.marketplaces.mercadolivre import MercadoLivreClient
-from backend.integrations.marketplaces.shopee import ShopeeClient
-from backend.integrations.marketplaces.manager import MarketplaceManager
+from integrations.marketplaces.mercadolivre import MercadoLivreClient
+from integrations.marketplaces.shopee import ShopeeClient
+from integrations.marketplaces.manager import MarketplaceManager
 
 
 # === Fixtures ===
@@ -209,7 +209,8 @@ class TestShopeeClient:
         product = shopee_client._normalize_product(sample_shopee_product)
         
         assert product.thumbnail is not None
-        assert "cf.shopee.com.br/file/" in product.thumbnail
+        # Converter HttpUrl para string antes de verificar
+        assert "cf.shopee.com.br/file/" in str(product.thumbnail)
     
     def test_price_conversion(self, shopee_client):
         """Testa conversão de preço da Shopee."""

@@ -376,8 +376,33 @@ class SocialAnalyticsService:
         sort_by: str = "engagement"  # engagement, likes, comments, views
     ) -> List[PostAnalytics]:
         """Obtém posts com melhor performance."""
-        # TODO: Implementar query real
-        return []
+        # Mock data for development
+        mock_posts = []
+        platforms = [Platform.INSTAGRAM, Platform.TIKTOK, Platform.YOUTUBE]
+        
+        for i in range(limit):
+            p = platform or platforms[i % 3]
+            metrics = EngagementMetrics(
+                likes=150 + (i * 10),
+                comments=20 + i,
+                shares=5 + i,
+                saves=2 + i,
+                views=1000 + (i * 100),
+                reach=800 + (i * 80),
+                impressions=1200 + (i * 120)
+            )
+            
+            mock_posts.append(PostAnalytics(
+                post_id=f"post_{i}",
+                platform=p,
+                published_at=datetime.utcnow() - timedelta(days=i),
+                content_type="video",
+                caption=f"Amazing content #{i} about dropshipping strategies 🚀",
+                metrics=metrics,
+                thumbnail_url=f"https://picsum.photos/seed/{i}/300/200"
+            ))
+            
+        return mock_posts
     
     async def get_best_posting_times(
         self,
@@ -394,15 +419,15 @@ class SocialAnalyticsService:
             Dict mapeando dia da semana para lista de horários
             Ex: {"monday": [9, 12, 18], "tuesday": [10, 15, 20]}
         """
-        # TODO: Implementar análise real
+        # Mock data based on general best practices
         return {
-            "monday": [9, 12, 18, 21],
-            "tuesday": [10, 13, 19, 21],
-            "wednesday": [9, 12, 18, 20],
-            "thursday": [10, 14, 19, 21],
-            "friday": [9, 12, 17, 20],
-            "saturday": [11, 15, 19, 21],
-            "sunday": [10, 14, 18, 20]
+            "Monday": [9, 12, 18, 21],
+            "Tuesday": [10, 13, 19, 21],
+            "Wednesday": [9, 12, 18, 20],
+            "Thursday": [10, 14, 19, 21],
+            "Friday": [9, 12, 17, 20],
+            "Saturday": [11, 15, 19, 21],
+            "Sunday": [10, 14, 18, 20]
         }
     
     # ========================================

@@ -1,13 +1,13 @@
-# Contexto do Produto: TikTrend Finder
+# Contexto do Produto: Didin Fácil
 
-**Versão:** 1.0.0  
-**Última Atualização:** 26 de Novembro de 2025
+**Versão:** 1.1.0  
+**Última Atualização:** 30 de Novembro de 2025
 
 ---
 
 ## Declaração de Missão
 
-O TikTrend Finder é uma ferramenta essencial para dropshippers e afiliados que buscam automatizar a descoberta de produtos virais no TikTok Shop. Nossa missão é reduzir o tempo de pesquisa de horas para minutos, fornecendo dados acionáveis e ferramentas de criação de copy para maximizar as vendas.
+O **Didin Fácil** é uma plataforma completa para dropshippers e afiliados que buscam automatizar a descoberta de produtos virais no TikTok Shop e outras fontes. Nossa missão é reduzir o tempo de pesquisa de horas para minutos, fornecendo dados acionáveis, ferramentas de criação de copy com IA e gestão financeira simplificada.
 
 ---
 
@@ -17,19 +17,83 @@ O TikTrend Finder é uma ferramenta essencial para dropshippers e afiliados que 
 - **Falta de Dados:** É difícil saber se um produto é realmente viral ou apenas um vídeo isolado.
 - **Bloqueio Criativo:** Criar copies de venda persuasivas é difícil e demorado.
 - **Risco de Bloqueio:** Scraping manual ou com ferramentas amadoras leva a bloqueios de IP.
+- **Gestão Fragmentada:** Múltiplas ferramentas para diferentes tarefas.
 
 ---
 
 ## Solução
 
-Uma aplicação desktop híbrida (Tauri + FastAPI) que centraliza o scraping no servidor para proteger o usuário e oferece uma interface rica para análise de dados.
+Uma aplicação desktop híbrida (Tauri + FastAPI) que centraliza o scraping no servidor para proteger o usuário e oferece uma interface rica para análise de dados, geração de conteúdo e gestão de vendas.
 
 ### Diferenciais Chave
 
 1. **Arquitetura Híbrida:** Interface desktop rápida com backend robusto em nuvem.
 2. **Safety Switch:** Sistema de proteção contra falhas de scraping.
 3. **Copy Generator:** Integração com IA para criar anúncios instantâneos.
-4. **Preço Competitivo:** Planos acessíveis com recursos Enterprise.
+4. **Sistema de Créditos:** Modelo flexível de pagamento por uso para IA.
+5. **Gestão de Dispositivos:** Licença vinculada a até 2 dispositivos.
+6. **Preço Competitivo:** Licença vitalícia acessível com recursos Enterprise.
+
+---
+
+## Modelo de Usuário (Atualizado v1.1)
+
+### Estrutura do Perfil
+
+```typescript
+interface User {
+  id: string;
+  email: string;
+  name: string | null;
+  avatarUrl: string | null;
+  phone: string | null;
+  hasLifetimeLicense: boolean;
+  licenseActivatedAt: string | null;
+  isActive: boolean;
+  isEmailVerified: boolean;
+  language: string;          // pt-BR, en-US, es-ES
+  timezone: string;          // America/Sao_Paulo
+  createdAt: string;
+  updatedAt: string | null;
+  lastLoginAt: string | null;
+}
+
+interface License {
+  id: string | null;
+  isValid: boolean;
+  isLifetime: boolean;
+  plan: 'free' | 'lifetime' | 'trial';
+  activatedAt: string | null;
+  expiresAt: string | null;
+  maxDevices: number;        // Padrão: 2
+  activeDevices: number;
+  currentDeviceId: string | null;
+  isCurrentDeviceAuthorized: boolean;
+}
+
+interface Credits {
+  balance: number;
+  totalPurchased: number;
+  totalUsed: number;
+  lastPurchaseAt: string | null;
+  bonusBalance: number;      // Créditos promocionais
+  bonusExpiresAt: string | null;
+}
+```
+
+### Fluxo de Autenticação
+
+1. **Registro:** Email + Senha → Verificação de email → 10 créditos de cortesia
+2. **Login:** Email + Senha + HWID → JWT Token (12h) → Validação de dispositivo
+3. **Refresh:** Token expirado → Novo token com mesmo HWID
+4. **Logout:** Limpa token local (opcional: blacklist no Redis)
+
+### Gestão de Dispositivos
+
+- Licença **Free:** 1 dispositivo
+- Licença **Lifetime:** 2 dispositivos
+- Dispositivos são identificados por HWID (Hardware ID)
+- Usuário pode desconectar dispositivos remotamente
 
 ---
 

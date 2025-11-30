@@ -253,7 +253,7 @@ class TestActivateLicense:
 # ============================================
 
 class TestDeactivateLicense:
-    """Testes do endpoint deactivate_license"""
+    """Testes do endpoint deactivate_device"""
     
     @pytest.mark.asyncio
     async def test_deactivate_success(self, mock_user, mock_license_service):
@@ -262,15 +262,18 @@ class TestDeactivateLicense:
             MockService.return_value = mock_license_service
             
             from api.routes.license import (
-                deactivate_license, 
+                deactivate_device,
                 DeactivateLicenseRequest
             )
-            
+
+            # Confirma import bem sucedido
+            assert deactivate_device is not None
+
             request = DeactivateLicenseRequest(
                 hwid="hwid-abc123",
                 reason="Trocando de dispositivo"
             )
-            
+
             # Verifica que a fixture está correta
             assert mock_license_service.deactivate_device is not None
 

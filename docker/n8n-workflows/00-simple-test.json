@@ -1,0 +1,86 @@
+{
+  "id": "simple-test-001",
+  "name": "00 - Simple Test",
+  "versionId": "1",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot",
+        "options": {},
+        "responseMode": "lastNode"
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "simple-test"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\n// Verificar se é mensagem válida\nif (data.event !== 'message_created' || data.message_type !== 'incoming') {\n  return [];\n}\n\nconst convId = data.conversation?.id;\nif (!convId) {\n  return [];\n}\n\nconst msg = (data.content || '').toLowerCase().trim();\nlet response = 'Digite MENU para opcoes.';\n\nif (/^(oi|ola|bom|hello|hi)/.test(msg)) {\n  response = 'Ola! Bem-vindo ao Didin Facil!';\n} else if (msg.includes('menu')) {\n  response = '1-Precos 2-Ofertas 3-Atendente';\n}\n\nreturn [{\n  json: {\n    convId: convId,\n    msg: response\n  }\n}];"
+      },
+      "id": "code",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $json.convId }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"{{ $json.msg }}\",\n  \"message_type\": \"outgoing\"\n}"
+      },
+      "id": "http",
+      "name": "HTTP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [690, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

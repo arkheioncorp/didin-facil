@@ -373,10 +373,33 @@ function CreateTemplateDialog({
 
   const createMutation = useMutation({
     mutationFn: async () => {
+      // Extrair variáveis do template (padrões: {{variavel}}, {variavel}, [variavel])
+      const extractVariables = (template: string): string[] => {
+        const patterns = [
+          /\{\{([^}]+)\}\}/g,  // {{variavel}}
+          /\{([^}]+)\}/g,      // {variavel}
+          /\[([^\]]+)\]/g,     // [variavel]
+        ];
+        
+        const variables = new Set<string>();
+        patterns.forEach(pattern => {
+          const matches = template.matchAll(pattern);
+          for (const match of matches) {
+            const varName = match[1].trim();
+            // Filtrar variáveis que parecem ser placeholders reais (não URLs ou hashtags)
+            if (varName && !varName.includes('http') && !varName.startsWith('#') && varName.length < 50) {
+              variables.add(varName);
+            }
+          }
+        });
+        
+        return Array.from(variables);
+      };
+      
       const payload = {
         ...formData,
         hashtags: formData.hashtags.split(',').map((h) => h.trim()).filter(Boolean),
-        variables: [], // TODO: Add variable extraction from template
+        variables: extractVariables(formData.caption_template),
       };
       
       if (initialData && 'id' in initialData && initialData.id) {

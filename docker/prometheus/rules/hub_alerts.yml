@@ -1,0 +1,192 @@
+# Prometheus Alert Rules - Hub Integration Alerts
+# ==================================================
+# Alertas para monitoramento dos Integration Hubs
+# 
+# Autor: Didin Fácil
+# Versão: 1.0.0
+
+groups:
+  - name: hub_circuit_breaker_alerts
+    interval: 30s
+    rules:
+      # ========================================
+      # CIRCUIT BREAKER ALERTS
+      # ========================================
+      
+      - alert: HubCircuitBreakerOpen
+        expr: hub_circuit_breaker_state{state="open"} == 1
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "🔴 Circuit Breaker ABERTO - {{ $labels.hub }}"
+          description: |
+            O circuit breaker do hub {{ $labels.hub }} está aberto há mais de 1 minuto.
+            Isso significa que a integração está falhando consistentemente.
+            
+            Ações recomendadas:
+            1. Verificar status do serviço externo (Evolution API, Facebook API, TikTok API)
+            2. Revisar logs para identificar a causa
+            3. Se o serviço externo estiver ok, resetar manualmente via API
+          runbook_url: "https://docs.didin.dev/runbooks/circuit-breaker-open"
+
+      - alert: HubCircuitBreakerHalfOpen
+        expr: hub_circuit_breaker_state{state="half_open"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "🟡 Circuit Breaker HALF-OPEN - {{ $labels.hub }}"
+          description: |
+            O circuit breaker do hub {{ $labels.hub }} está em half-open há mais de 5 minutos.
+            O sistema está tentando recuperar, mas ainda não conseguiu.
+            
+            Monitorar de perto.
+          runbook_url: "https://docs.didin.dev/runbooks/circuit-breaker-halfopen"
+
+      # ========================================
+      # SUCCESS RATE ALERTS
+      # ========================================
+      
+      - alert: HubLowSuccessRate
+        expr: |
+          (
+            hub_requests_success_total 
+            / (hub_requests_success_total + hub_requests_failure_total)
+          ) * 100 < 90
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "⚠️ Taxa de sucesso baixa - {{ $labels.hub }}"
+          description: |
+            O hub {{ $labels.hub }} tem taxa de sucesso abaixo de 90% nos últimos 5 minutos.
+            Taxa atual: {{ printf "%.1f" $value }}%
+            
+            Verificar logs e status do serviço externo.
+
+      - alert: HubCriticalSuccessRate
+        expr: |
+          (
+            hub_requests_success_total 
+            / (hub_requests_success_total + hub_requests_failure_total)
+          ) * 100 < 50
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "🔴 Taxa de sucesso CRÍTICA - {{ $labels.hub }}"
+          description: |
+            O hub {{ $labels.hub }} tem taxa de sucesso abaixo de 50%.
+            Taxa atual: {{ printf "%.1f" $value }}%
+            
+            AÇÃO IMEDIATA NECESSÁRIA!
+
+      # ========================================
+      # LATENCY ALERTS
+      # ========================================
+      
+      - alert: HubHighLatency
+        expr: hub_request_latency_p95_ms > 5000
+        for: 3m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "🐢 Latência alta - {{ $labels.hub }}"
+          description: |
+            O hub {{ $labels.hub }} está com latência P95 acima de 5 segundos.
+            Latência atual: {{ printf "%.0f" $value }}ms
+            
+            Possíveis causas:
+            - Serviço externo lento
+            - Rede congestionada
+            - Rate limiting
+
+      - alert: HubVeryHighLatency
+        expr: hub_request_latency_p95_ms > 15000
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "🔴 Latência CRÍTICA - {{ $labels.hub }}"
+          description: |
+            O hub {{ $labels.hub }} está com latência P95 acima de 15 segundos.
+            Isso está impactando a experiência do usuário.
+
+      # ========================================
+      # RATE LIMITING ALERTS
+      # ========================================
+      
+      - alert: HubHighRateLimitRejections
+        expr: |
+          rate(hub_rate_limit_rejections_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "⚡ Muitas rejeições de rate limit - {{ $labels.hub }}"
+          description: |
+            O hub {{ $labels.hub }} está rejeitando mais de 10 requisições/min por rate limiting.
+            Isso pode indicar:
+            - Tráfego acima do esperado
+            - Bot ou cliente mal-comportado
+            - Configuração de rate limit muito restritiva
+
+  - name: hub_health_alerts
+    interval: 1m
+    rules:
+      # ========================================
+      # HEALTH STATUS ALERTS
+      # ========================================
+      
+      - alert: HubUnhealthy
+        expr: hub_health_status{status="unhealthy"} == 1
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+          pagerduty: "true"
+        annotations:
+          summary: "🔴 Hub UNHEALTHY - {{ $labels.hub }}"
+          description: |
+            O hub {{ $labels.hub }} está marcado como unhealthy há mais de 2 minutos.
+            
+            Este é um alerta crítico que requer atenção imediata.
+
+      - alert: HubDegraded
+        expr: hub_health_status{status="degraded"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "🟡 Hub DEGRADED - {{ $labels.hub }}"
+          description: |
+            O hub {{ $labels.hub }} está em estado degradado há mais de 5 minutos.
+            
+            O serviço ainda está funcionando, mas com performance reduzida.
+
+      # ========================================
+      # NO DATA / SCRAPE FAILURE
+      # ========================================
+      
+      - alert: HubMetricsNotAvailable
+        expr: up{job="didin-hubs"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: devops
+        annotations:
+          summary: "🔴 Métricas de Hub indisponíveis"
+          description: |
+            Não foi possível coletar métricas do endpoint /hub/metrics/prometheus
+            há mais de 5 minutos.
+            
+            Verificar se a API está rodando e se o endpoint está acessível.

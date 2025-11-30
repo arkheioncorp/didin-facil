@@ -25,6 +25,11 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=True)
     name = Column(String(255), nullable=True)
+    # Profile fields (new)
+    avatar_url = Column(String(500), nullable=True)
+    phone = Column(String(50), nullable=True)
+    language = Column(String(10), default='pt-BR')
+    timezone = Column(String(50), default='America/Sao_Paulo')
     # Lifetime license flag
     has_lifetime_license = Column(Boolean, default=False)
     license_activated_at = Column(DateTime, nullable=True)
@@ -32,9 +37,15 @@ class User(Base):
     credits_balance = Column(Integer, default=0)
     credits_purchased = Column(Integer, default=0)
     credits_used = Column(Integer, default=0)
+    # Bonus credits (new)
+    bonus_balance = Column(Integer, default=0)
+    bonus_expires_at = Column(DateTime, nullable=True)
+    last_purchase_at = Column(DateTime, nullable=True)
     # Status
     is_active = Column(Boolean, default=True)
+    is_email_verified = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False)
+    last_login_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

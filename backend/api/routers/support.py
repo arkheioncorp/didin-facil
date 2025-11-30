@@ -25,6 +25,21 @@ router = APIRouter(prefix="/api/v1/support", tags=["Support"])
 # Webhook handler global
 webhook_handler = ChatwootWebhookHandler()
 
+# Cliente Chatwoot global (inicializado sob demanda)
+chatwoot_client: Optional[ChatwootClient] = None
+
+
+def get_chatwoot_client() -> Optional[ChatwootClient]:
+    """Obtém cliente Chatwoot, inicializando se necessário."""
+    global chatwoot_client
+    if chatwoot_client is None:
+        try:
+            config = get_chatwoot_config()
+            chatwoot_client = ChatwootClient(config)
+        except HTTPException:
+            return None
+    return chatwoot_client
+
 
 # ==================== Schemas ====================
 
@@ -463,14 +478,66 @@ async def on_message_created(payload: Dict):
     message_type = payload.get("message_type")
     content = payload.get("content", "")
     conversation_id = payload.get("conversation", {}).get("id")
+    inbox_id = payload.get("inbox_id")
     
     # Apenas processa mensagens de entrada (clientes)
     if message_type == "incoming":
-        logger.info(f"Nova mensagem de cliente em #{conversation_id}: {content[:100]}")
+        logger.info(f"Nova mensagem em #{conversation_id}: {content[:100]}")
         
-        # TODO: Implementar auto-resposta com IA
-        # TODO: Notificar agentes via WhatsApp/Telegram
-        # TODO: Criar alerta no dashboard
+        # Auto-resposta com IA (se configurado)
+        try:
+            from shared.config import settings
+            from integrations.openai import OpenAIClient
+            
+            if hasattr(settings, 'OPENAI_API_KEY') and settings.OPENAI_API_KEY:
+                ai_client = OpenAIClient()
+                
+                # Gerar resposta inteligente
+                system_prompt = """Você é o assistente virtual do Didin Fácil.
+                Responda de forma amigável e objetiva. Se não souber algo,
+                diga que um atendente humano entrará em contato."""
+                
+                response = await ai_client.chat_completion(
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": content}
+                    ],
+                    model="gpt-3.5-turbo",
+                    max_tokens=300
+                )
+                
+                ai_response = response.get("choices", [{}])[0].get(
+                    "message", {}
+                ).get("content", "")
+                
+                if ai_response:
+                    # Enviar resposta via Chatwoot
+                    if chatwoot_client:
+                        await chatwoot_client.send_message(
+                            conversation_id=conversation_id,
+                            content=ai_response,
+                            private=False
+                        )
+                        logger.info(f"Auto-resposta enviada em #{conversation_id}")
+                        
+        except Exception as e:
+            logger.error(f"Erro na auto-resposta IA: {e}")
+        
+        # Notificar agentes via webhook interno
+        try:
+            from integrations.n8n import N8nClient
+            n8n = N8nClient()
+            await n8n.trigger_webhook(
+                webhook_path="/support/new-message",
+                data={
+                    "conversation_id": conversation_id,
+                    "inbox_id": inbox_id,
+                    "content": content[:200],
+                    "timestamp": payload.get("created_at"),
+                }
+            )
+        except Exception as e:
+            logger.debug(f"n8n webhook não disponível: {e}")
 
 
 @webhook_handler.on("conversation_status_changed")
@@ -481,8 +548,34 @@ async def on_status_changed(payload: Dict):
     
     logger.info(f"Conversa #{conversation_id} mudou para status: {status}")
     
-    # TODO: Atualizar métricas
-    # TODO: Disparar automações (ex: pesquisa de satisfação)
+    # Atualizar métricas internas
+    try:
+        from api.database.connection import get_db_pool
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            await conn.execute("""
+                INSERT INTO support_metrics (
+                    conversation_id, event, status, created_at
+                ) VALUES ($1, 'status_changed', $2, NOW())
+            """, conversation_id, status)
+    except Exception as e:
+        logger.debug(f"Métricas não atualizadas: {e}")
+    
+    # Disparar automações (pesquisa de satisfação ao resolver)
+    if status == "resolved":
+        try:
+            from integrations.n8n import N8nClient
+            n8n = N8nClient()
+            await n8n.trigger_webhook(
+                webhook_path="/support/resolved",
+                data={
+                    "conversation_id": conversation_id,
+                    "status": status,
+                    "trigger": "satisfaction_survey",
+                }
+            )
+        except Exception as e:
+            logger.debug(f"Automação de satisfação não disparada: {e}")
 
 
 @webhook_handler.on("conversation_created")
@@ -490,8 +583,60 @@ async def on_conversation_created(payload: Dict):
     """Handler para nova conversa."""
     conversation_id = payload.get("id")
     inbox_id = payload.get("inbox_id")
+    contact_inbox = payload.get("contact_inbox", {})
     
     logger.info(f"Nova conversa #{conversation_id} no inbox #{inbox_id}")
     
-    # TODO: Atribuir automaticamente a agente disponível
-    # TODO: Aplicar regras de roteamento
+    # Atribuir automaticamente a agente disponível
+    try:
+        if chatwoot_client:
+            # Buscar agentes disponíveis
+            agents = await chatwoot_client.list_agents(inbox_id=inbox_id)
+            available_agents = [
+                a for a in agents 
+                if a.get("availability_status") == "online"
+            ]
+            
+            if available_agents:
+                # Distribuição round-robin ou por menor carga
+                agent = min(
+                    available_agents, 
+                    key=lambda a: a.get("active_conversations", 0)
+                )
+                await chatwoot_client.assign_agent(
+                    conversation_id=conversation_id,
+                    agent_id=agent.get("id")
+                )
+                logger.info(
+                    f"Conversa #{conversation_id} atribuída a {agent.get('name')}"
+                )
+            else:
+                # Nenhum agente online - marcar como pendente
+                logger.warning(
+                    f"Nenhum agente disponível para #{conversation_id}"
+                )
+                
+    except Exception as e:
+        logger.error(f"Erro ao atribuir agente: {e}")
+    
+    # Aplicar regras de roteamento por inbox
+    try:
+        # Regras podem ser configuradas em settings ou banco
+        routing_rules = {
+            # inbox_id: tag ou label a aplicar
+            "whatsapp": "whatsapp",
+            "instagram": "instagram",
+            "email": "email",
+        }
+        
+        inbox_name = contact_inbox.get("inbox", {}).get("name", "").lower()
+        for keyword, tag in routing_rules.items():
+            if keyword in inbox_name:
+                await chatwoot_client.add_labels(
+                    conversation_id=conversation_id,
+                    labels=[tag]
+                )
+                break
+                
+    except Exception as e:
+        logger.debug(f"Regras de roteamento não aplicadas: {e}")

@@ -61,7 +61,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"content\": {{ JSON.stringify($json.response) }},\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "jsonBody": "={\n  \"content\": $json.response,\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
         "options": {
           "timeout": 15000
         }

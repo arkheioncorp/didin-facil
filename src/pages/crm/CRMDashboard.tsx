@@ -17,6 +17,7 @@ import {
   ArrowUpRight, ArrowDownRight, Flame, Thermometer
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { api } from "@/lib/api";
 
 // Types
 interface DashboardStats {
@@ -350,19 +351,37 @@ export const CRMDashboard = () => {
   const [activities, setActivities] = useState<RecentActivity[]>([]);
 
   useEffect(() => {
-    // Simulate API call
     const fetchData = async () => {
       try {
-        // TODO: Replace with actual API call
-        // const response = await fetch('/api/crm/dashboard');
-        // const data = await response.json();
+        // Buscar dados reais da API
+        const response = await api.get<{ 
+          contacts?: DashboardStats['contacts']; 
+          leads?: DashboardStats['leads']; 
+          deals?: DashboardStats['deals']; 
+          summary?: DashboardStats['summary']; 
+        }>('/crm/dashboard');
+        const data = response.data;
         
-        // Using mock data for now
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setStats(mockStats);
-        setActivities(mockActivities);
+        // Transformar dados da API para o formato esperado
+        setStats({
+          contacts: data.contacts || mockStats.contacts,
+          leads: data.leads || mockStats.leads,
+          deals: data.deals || mockStats.deals,
+          summary: data.summary || mockStats.summary,
+        });
+        
+        // Buscar atividades recentes
+        try {
+          const activitiesResponse = await api.get<{ activities?: RecentActivity[] }>('/crm/activities?limit=10');
+          setActivities(activitiesResponse.data.activities || mockActivities);
+        } catch {
+          setActivities(mockActivities);
+        }
       } catch (error) {
         console.error("Failed to fetch CRM dashboard:", error);
+        // Fallback para dados mock se API falhar
+        setStats(mockStats);
+        setActivities(mockActivities);
       } finally {
         setLoading(false);
       }

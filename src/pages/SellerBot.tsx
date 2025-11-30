@@ -76,50 +76,168 @@ interface Profile {
 }
 
 // ============================================
-// API Functions (Mocked for now)
+// API Response Types
 // ============================================
 
-const API_BASE = "http://localhost:8000";
+interface ConversationsResponse {
+  conversations: Array<{
+    conversation_id: string;
+    channel: string;
+    is_active: boolean;
+    last_interaction: string;
+    search_history?: string[];
+  }>;
+}
+
+interface StatsResponse {
+  active_conversations: number;
+  total_conversations: number;
+  handoffs_today: number;
+  top_intents?: Array<{ name: string; count: number }>;
+}
+
+interface ConfigResponse {
+  chatwoot_enabled?: boolean;
+  evolution_enabled?: boolean;
+}
+
+interface MessageResponse {
+  message_id?: string;
+  response?: { text?: string };
+}
+
+// ============================================
+// API Functions
+// ============================================
+
+import { api } from "@/lib/api";
 
 async function fetchTasks(): Promise<Task[]> {
-  // TODO: Replace with actual API call
-  return [];
+  try {
+    const response = await api.get<ConversationsResponse>("/seller-bot/conversations");
+    // Adaptar conversas para formato de tasks
+    const conversations = response.data.conversations || [];
+    return conversations.map((conv) => ({
+      id: conv.conversation_id,
+      task_type: conv.channel === "whatsapp" ? "reply_messages" : "manage_orders",
+      state: conv.is_active ? "running" : "completed",
+      created_at: conv.last_interaction,
+      started_at: conv.last_interaction,
+      completed_at: conv.is_active ? undefined : conv.last_interaction,
+      screenshots: [],
+      logs: conv.search_history || [],
+    }));
+  } catch (error) {
+    console.error("Failed to fetch tasks:", error);
+    return [];
+  }
 }
 
 async function fetchStats(): Promise<QueueStats> {
-  return {
-    total_queued: 0,
-    total_running: 0,
-    total_completed: 0,
-    total_failed: 0,
-    by_task_type: {},
-  };
+  try {
+    const response = await api.get<StatsResponse>("/seller-bot/stats");
+    const data = response.data;
+    return {
+      total_queued: 0,
+      total_running: data.active_conversations || 0,
+      total_completed: data.total_conversations - (data.active_conversations || 0),
+      total_failed: data.handoffs_today || 0,
+      by_task_type: data.top_intents?.reduce((acc: Record<string, number>, intent) => {
+        acc[intent.name || "unknown"] = intent.count || 0;
+        return acc;
+      }, {}) || {},
+    };
+  } catch (error) {
+    console.error("Failed to fetch stats:", error);
+    return {
+      total_queued: 0,
+      total_running: 0,
+      total_completed: 0,
+      total_failed: 0,
+      by_task_type: {},
+    };
+  }
 }
 
 async function fetchProfiles(): Promise<Profile[]> {
-  return [];
+  try {
+    // Para SellerBot, profiles são as integrações configuradas
+    const response = await api.get<ConfigResponse>("/seller-bot/config");
+    const config = response.data;
+    const profiles: Profile[] = [];
+    
+    if (config.chatwoot_enabled) {
+      profiles.push({
+        id: "chatwoot",
+        name: "Chatwoot",
+        is_logged_in: true,
+        created_at: new Date().toISOString(),
+      });
+    }
+    if (config.evolution_enabled) {
+      profiles.push({
+        id: "evolution",
+        name: "Evolution API (WhatsApp)",
+        is_logged_in: true,
+        created_at: new Date().toISOString(),
+      });
+    }
+    return profiles;
+  } catch (error) {
+    console.error("Failed to fetch profiles:", error);
+    return [];
+  }
 }
 
 async function createTask(data: { task_type: string; task_data?: Record<string, unknown> }): Promise<Task> {
-  const response = await fetch(`${API_BASE}/bot/tasks`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  return response.json();
+  try {
+    // Enviar mensagem direta através do seller-bot
+    const response = await api.post<MessageResponse>("/seller-bot/message", {
+      channel: data.task_data?.channel || "webchat",
+      sender_id: data.task_data?.sender_id || "system",
+      sender_name: "Didin Bot",
+      content: data.task_data?.content || "",
+    });
+    return {
+      id: response.data.message_id || crypto.randomUUID(),
+      task_type: data.task_type,
+      state: "completed",
+      created_at: new Date().toISOString(),
+      completed_at: new Date().toISOString(),
+      screenshots: [],
+      logs: [response.data.response?.text || "Tarefa executada"],
+    };
+  } catch (error) {
+    console.error("Failed to create task:", error);
+    throw error;
+  }
 }
 
 async function cancelTask(taskId: string): Promise<void> {
-  await fetch(`${API_BASE}/bot/tasks/${taskId}`, { method: "DELETE" });
+  try {
+    await api.post(`/seller-bot/conversations/${taskId}/close`);
+  } catch (error) {
+    console.error("Failed to cancel task:", error);
+  }
 }
 
 async function createProfile(data: { name: string; clone_from_system: boolean }): Promise<Profile> {
-  const response = await fetch(`${API_BASE}/bot/profiles`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  return response.json();
+  try {
+    // Profiles são gerenciados via configuração do bot
+    await api.post("/seller-bot/config", {
+      name: data.name,
+      clone_from_system: data.clone_from_system,
+    });
+    return {
+      id: crypto.randomUUID(),
+      name: data.name,
+      is_logged_in: true,
+      created_at: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Failed to create profile:", error);
+    throw error;
+  }
 }
 
 // ============================================

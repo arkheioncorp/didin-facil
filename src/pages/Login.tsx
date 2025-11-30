@@ -88,17 +88,30 @@ export const Login: React.FC = () => {
           id: "user_" + Date.now(),
           email: formData.email,
           name: formData.name || formData.email.split("@")[0],
+          avatarUrl: null,
+          phone: null,
           hasLifetimeLicense: true,
           licenseActivatedAt: new Date().toISOString(),
+          isActive: true,
+          isEmailVerified: true,
+          language: 'pt-BR',
+          timezone: 'America/Sao_Paulo',
           createdAt: new Date().toISOString(),
+          updatedAt: null,
+          lastLoginAt: new Date().toISOString(),
         };
 
         const mockLicense = {
+          id: "lic_" + Date.now(),
           isValid: true,
           isLifetime: true,
+          plan: 'lifetime' as const,
           activatedAt: new Date().toISOString(),
+          expiresAt: null,
           maxDevices: 2,
           activeDevices: 1,
+          currentDeviceId: null,
+          isCurrentDeviceAuthorized: true,
         };
 
         const mockCredits = {
@@ -106,6 +119,8 @@ export const Login: React.FC = () => {
           totalPurchased: 0,
           totalUsed: 0,
           lastPurchaseAt: null,
+          bonusBalance: 0,
+          bonusExpiresAt: null,
         };
 
         setUser(mockUser);
@@ -136,11 +151,16 @@ export const Login: React.FC = () => {
 
         // Use license from response or create default lifetime license
         const license = response.license || {
+          id: null,
           isValid: true,
           isLifetime: true,
+          plan: 'lifetime' as const,
           activatedAt: new Date().toISOString(),
+          expiresAt: null,
           maxDevices: 2,
           activeDevices: 1,
+          currentDeviceId: null,
+          isCurrentDeviceAuthorized: true,
         };
 
         // Credits from response or default
@@ -149,6 +169,8 @@ export const Login: React.FC = () => {
           totalPurchased: 0,
           totalUsed: 0,
           lastPurchaseAt: null,
+          bonusBalance: 0,
+          bonusExpiresAt: null,
         };
 
         setUser(response.user);

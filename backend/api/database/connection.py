@@ -34,13 +34,9 @@ async def get_db_pool() -> Database:
     return database
 
 
-@asynccontextmanager
-async def get_db() -> AsyncGenerator[Database, None]:
-    """Get database connection from pool"""
-    try:
-        yield database
-    finally:
-        pass  # Connection is managed by the pool
+async def get_db() -> Database:
+    """Get database connection - FastAPI dependency"""
+    return database
 
 
 class DatabaseManager:

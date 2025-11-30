@@ -78,31 +78,36 @@ class TestHandlePaymentEvent:
     
     @pytest.mark.asyncio
     async def test_handle_payment_approved_license(self):
-        """Deve criar licença para payment.approved"""
+        """Deve ativar licença para payment.approved com includes_license"""
         from api.routes.webhooks import handle_payment_event
-        
+
         mock_mp = AsyncMock()
         mock_mp.get_payment = AsyncMock(return_value={
             "id": 123,
             "payer": {"email": "test@example.com"},
-            "metadata": {"product_type": "license"}
+            "metadata": {
+                "product_type": "credits",
+                "credits": 100,
+                "includes_license": True
+            }
         })
         mock_mp.log_event = AsyncMock()
-        mock_mp.send_license_email = AsyncMock()
-        
+        mock_mp.send_credits_email = AsyncMock()
+
         mock_license = AsyncMock()
-        mock_license.get_license_by_email = AsyncMock(return_value=None)
-        mock_license.create_license = AsyncMock(return_value="LICENSE-KEY-123")
-        
+        mock_license.add_credits = AsyncMock()
+        mock_license.activate_lifetime_license = AsyncMock()
+
         await handle_payment_event(
             action="payment.approved",
             data={"id": 123},
             mp_service=mock_mp,
             license_service=mock_license
         )
-        
-        mock_license.create_license.assert_called_once()
-        mock_mp.send_license_email.assert_called_once()
+
+        mock_license.add_credits.assert_called_once()
+        mock_license.activate_lifetime_license.assert_called_once()
+        mock_mp.send_credits_email.assert_called_once()
     
     @pytest.mark.asyncio
     async def test_handle_payment_approved_credits(self):

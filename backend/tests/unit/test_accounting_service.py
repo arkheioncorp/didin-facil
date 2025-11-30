@@ -15,14 +15,40 @@ import uuid
 
 @pytest.fixture
 def mock_db():
-    """Mock do AsyncSession"""
+    """Mock do Database (databases library)"""
     db = AsyncMock()
     return db
 
 
 @pytest.fixture
+def mock_credit_package_row():
+    """Mock de row retornado pelo databases"""
+    row = MagicMock()
+    row._mapping = {
+        'id': uuid.uuid4(),
+        'name': 'Starter Pack',
+        'slug': 'starter',
+        'credits': 100,
+        'price_brl': Decimal("29.90"),
+        'price_usd': Decimal("5.24"),
+        'discount_percent': 25,
+        'original_price': Decimal("39.90"),
+        'description': 'Pacote inicial',
+        'badge': 'Popular',
+        'is_featured': True,
+        'sort_order': 1,
+        'is_active': True,
+        'created_at': datetime.now(timezone.utc),
+        'updated_at': datetime.now(timezone.utc),
+    }
+    # Allow dict-like access via row['key']
+    row.__getitem__ = lambda self, key: self._mapping[key]
+    return row
+
+
+@pytest.fixture
 def mock_credit_package():
-    """Mock de CreditPackage"""
+    """Mock de CreditPackage object"""
     pkg = MagicMock()
     pkg.id = uuid.uuid4()
     pkg.name = "Starter Pack"
@@ -42,7 +68,7 @@ def mock_credit_package():
 
 @pytest.fixture
 def mock_result(mock_credit_package):
-    """Mock de resultado de query"""
+    """Mock de resultado de query (para SQLAlchemy)"""
     result = MagicMock()
     scalars = MagicMock()
     scalars.all.return_value = [mock_credit_package]
@@ -60,9 +86,10 @@ class TestCreditPackages:
     """Testes de pacotes de créditos"""
     
     @pytest.mark.asyncio
-    async def test_get_active_packages(self, mock_db, mock_result):
+    async def test_get_active_packages(self, mock_db, mock_credit_package_row):
         """Deve retornar pacotes ativos"""
-        mock_db.execute = AsyncMock(return_value=mock_result)
+        # AccountingService uses fetch_all for get_active_packages
+        mock_db.fetch_all = AsyncMock(return_value=[mock_credit_package_row])
         
         from api.services.accounting import AccountingService
         
@@ -73,23 +100,23 @@ class TestCreditPackages:
         assert packages[0].name == "Starter Pack"
     
     @pytest.mark.asyncio
-    async def test_get_package_by_slug(self, mock_db, mock_result, mock_credit_package):
+    async def test_get_package_by_slug(self, mock_db, mock_credit_package_row):
         """Deve retornar pacote por slug"""
-        mock_db.execute = AsyncMock(return_value=mock_result)
+        # AccountingService uses fetch_one for get_package_by_slug
+        mock_db.fetch_one = AsyncMock(return_value=mock_credit_package_row)
         
         from api.services.accounting import AccountingService
         
         service = AccountingService(mock_db)
         package = await service.get_package_by_slug("starter")
         
-        assert package == mock_credit_package
+        assert package is not None
+        assert package.slug == "starter"
     
     @pytest.mark.asyncio
     async def test_get_package_not_found(self, mock_db):
         """Deve retornar None para pacote inexistente"""
-        mock_result = MagicMock()
-        mock_result.scalar_one_or_none.return_value = None
-        mock_db.execute = AsyncMock(return_value=mock_result)
+        mock_db.fetch_one = AsyncMock(return_value=None)
         
         from api.services.accounting import AccountingService
         
@@ -233,10 +260,10 @@ class TestOpenAIUsageTracking:
         input_tokens = 1000
         output_tokens = 500
         
-        # Cálculo esperado
+        # Cálculo esperado (usando Decimal para compatibilidade)
         expected_usd = (
-            (input_tokens / 1000) * OPENAI_PRICING[model]["input"] +
-            (output_tokens / 1000) * OPENAI_PRICING[model]["output"]
+            (Decimal(input_tokens) / 1000) * OPENAI_PRICING[model]["input"] +
+            (Decimal(output_tokens) / 1000) * OPENAI_PRICING[model]["output"]
         )
         expected_brl = expected_usd * USD_TO_BRL
         

@@ -35,6 +35,7 @@ from . import (
     seller_bot,
     accounting,
     credits,
+    users,
 )
 
 __all__ = [
@@ -72,4 +73,5 @@ __all__ = [
     "seller_bot",
     "accounting",
     "credits",
+    "users",
 ]

@@ -67,18 +67,18 @@ def get_channel_router() -> ChannelRouter:
         _channel_router = ChannelRouter()
         
         # Registrar adaptadores baseado em configuração
-        if hasattr(settings, 'CHATWOOT_API_TOKEN') and settings.CHATWOOT_API_TOKEN:
+        if settings.CHATWOOT_ACCESS_TOKEN:
             chatwoot = create_chatwoot_adapter(
-                api_url=getattr(settings, 'CHATWOOT_API_URL', 'http://localhost:3000'),
-                api_token=settings.CHATWOOT_API_TOKEN,
-                account_id=getattr(settings, 'CHATWOOT_ACCOUNT_ID', 1),
+                api_url=settings.CHATWOOT_API_URL,
+                api_token=settings.CHATWOOT_ACCESS_TOKEN,
+                account_id=settings.CHATWOOT_ACCOUNT_ID,
             )
             _channel_router.register_adapter(MessageChannel.WEBCHAT, chatwoot)
             _channel_router.register_adapter(MessageChannel.WHATSAPP, chatwoot)
         
-        if hasattr(settings, 'EVOLUTION_API_KEY') and settings.EVOLUTION_API_KEY:
+        if settings.EVOLUTION_API_KEY:
             evolution = create_evolution_adapter(
-                api_url=getattr(settings, 'EVOLUTION_API_URL', 'http://localhost:8080'),
+                api_url=settings.EVOLUTION_API_URL,
                 api_key=settings.EVOLUTION_API_KEY,
                 instance_name=getattr(settings, 'EVOLUTION_INSTANCE', 'didin-bot'),
             )

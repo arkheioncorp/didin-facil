@@ -467,7 +467,7 @@ class TestQuotaMiddleware:
     def mock_db(self):
         """Create mock database connection"""
         mock = AsyncMock()
-        mock.fetchrow = AsyncMock()
+        mock.fetch_one = AsyncMock()
         mock.execute = AsyncMock()
         return mock
 
@@ -511,7 +511,7 @@ class TestQuotaMiddleware:
         """Test getting user credits"""
         from api.middleware.quota import get_user_credits
         
-        mock_db.fetchrow.return_value = {
+        mock_db.fetch_one.return_value = {
             "balance": 100,
             "total_purchased": 150,
             "total_used": 50
@@ -529,7 +529,7 @@ class TestQuotaMiddleware:
         from api.middleware.quota import get_user_credits
         from fastapi import HTTPException
         
-        mock_db.fetchrow.return_value = None
+        mock_db.fetch_one.return_value = None
         
         with pytest.raises(HTTPException) as exc_info:
             await get_user_credits("missing", mock_db)
@@ -541,7 +541,7 @@ class TestQuotaMiddleware:
         """Test check_credits with sufficient balance"""
         from api.middleware.quota import check_credits
         
-        mock_db.fetchrow.return_value = {
+        mock_db.fetch_one.return_value = {
             "balance": 100,
             "total_purchased": 100,
             "total_used": 0
@@ -561,7 +561,7 @@ class TestQuotaMiddleware:
             InsufficientCreditsError
         )
         
-        mock_db.fetchrow.return_value = {
+        mock_db.fetch_one.return_value = {
             "balance": 0,
             "total_purchased": 10,
             "total_used": 10
@@ -578,7 +578,7 @@ class TestQuotaMiddleware:
         """Test check_credits for trend_analysis (2 credits)"""
         from api.middleware.quota import check_credits
         
-        mock_db.fetchrow.return_value = {
+        mock_db.fetch_one.return_value = {
             "balance": 10,
             "total_purchased": 10,
             "total_used": 0
@@ -594,7 +594,7 @@ class TestQuotaMiddleware:
         """Test successful credit deduction"""
         from api.middleware.quota import deduct_credits
         
-        mock_db.fetchrow.return_value = {"new_balance": 99}
+        mock_db.fetch_one.return_value = {"new_balance": 99}
         
         result = await deduct_credits("user_123", "copy", mock_db)
         
@@ -609,7 +609,7 @@ class TestQuotaMiddleware:
             InsufficientCreditsError
         )
         
-        mock_db.fetchrow.return_value = None  # UPDATE returns nothing
+        mock_db.fetch_one.return_value = None  # UPDATE returns nothing
         
         with pytest.raises(InsufficientCreditsError):
             await deduct_credits("user_123", "copy", mock_db)
@@ -619,7 +619,7 @@ class TestQuotaMiddleware:
         """Test adding credits to user"""
         from api.middleware.quota import add_credits
         
-        mock_db.fetchrow.return_value = {"new_balance": 200}
+        mock_db.fetch_one.return_value = {"new_balance": 200}
         
         result = await add_credits("user_123", 100, "pay_123", mock_db)
         
@@ -632,7 +632,7 @@ class TestQuotaMiddleware:
         """Test adding credits without payment logging"""
         from api.middleware.quota import add_credits
         
-        mock_db.fetchrow.return_value = {"new_balance": 150}
+        mock_db.fetch_one.return_value = {"new_balance": 150}
         
         result = await add_credits("user_123", 50, None, mock_db)
         
@@ -645,7 +645,7 @@ class TestQuotaMiddleware:
         from api.middleware.quota import add_credits
         from fastapi import HTTPException
         
-        mock_db.fetchrow.return_value = None
+        mock_db.fetch_one.return_value = None
         
         with pytest.raises(HTTPException) as exc_info:
             await add_credits("missing", 100, None, mock_db)
@@ -657,7 +657,7 @@ class TestQuotaMiddleware:
         """Test legacy check_copy_quota function"""
         from api.middleware.quota import check_copy_quota
         
-        mock_db.fetchrow.return_value = {
+        mock_db.fetch_one.return_value = {
             "balance": 50,
             "total_purchased": 50,
             "total_used": 0
@@ -672,7 +672,7 @@ class TestQuotaMiddleware:
         """Test legacy get_user_quota function"""
         from api.middleware.quota import get_user_quota
         
-        mock_db.fetchrow.return_value = {
+        mock_db.fetch_one.return_value = {
             "balance": 75,
             "total_purchased": 100,
             "total_used": 25
@@ -690,9 +690,9 @@ class TestQuotaMiddleware:
         """Test legacy increment_quota function"""
         from api.middleware.quota import increment_quota
         
-        mock_db.fetchrow.return_value = {"new_balance": 49}
+        mock_db.fetch_one.return_value = {"new_balance": 49}
         
         await increment_quota("user_123", "copy", 1, mock_db)
         
-        mock_db.fetchrow.assert_called()
+        mock_db.fetch_one.assert_called()
 

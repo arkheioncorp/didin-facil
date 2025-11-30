@@ -256,6 +256,159 @@ async def get_credit_balance(
     )
 
 
+# =============================================================================
+# CREDIT USAGE ENDPOINTS
+# =============================================================================
+
+class UseCreditsRequest(BaseModel):
+    """Request to consume credits"""
+    amount: int = Field(..., ge=1, le=1000, description="Number of credits to use")
+    operation: str = Field(..., description="Operation type: ai_copy, search, export")
+    resource_id: Optional[str] = Field(None, description="Related resource ID")
+
+
+class UseCreditsResponse(BaseModel):
+    """Response after using credits"""
+    success: bool
+    credits_used: int
+    new_balance: int
+    bonus_used: int = 0
+    message: str
+
+
+@router.post("/use", response_model=UseCreditsResponse)
+async def use_credits(
+    request: UseCreditsRequest,
+    current_user = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    """
+    Use credits for an operation.
+    Consumes bonus credits first, then regular credits.
+    """
+    from sqlalchemy import select, update
+    from api.database.models import User
+    from api.database.accounting_models import FinancialTransaction, TransactionType
+    from datetime import datetime, timezone
+    
+    # Get current user balance
+    result = await db.execute(
+        select(User.credits_balance, User.bonus_balance, User.bonus_expires_at)
+        .where(User.id == current_user.id)
+    )
+    row = result.fetchone()
+    
+    if not row:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado"
+        )
+    
+    current_balance = row.credits_balance or 0
+    bonus_balance = row.bonus_balance or 0
+    bonus_expires = row.bonus_expires_at
+    
+    # Check if bonus credits are expired
+    if bonus_expires and bonus_expires < datetime.now(timezone.utc):
+        bonus_balance = 0
+    
+    total_available = current_balance + bonus_balance
+    
+    if total_available < request.amount:
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail=f"Créditos insuficientes. Disponível: {total_available}"
+        )
+    
+    # Calculate how much comes from bonus vs regular
+    bonus_used = min(bonus_balance, request.amount)
+    regular_used = request.amount - bonus_used
+    
+    # Update balances
+    new_bonus = bonus_balance - bonus_used
+    new_balance = current_balance - regular_used
+    
+    await db.execute(
+        update(User)
+        .where(User.id == current_user.id)
+        .values(
+            credits_balance=new_balance,
+            bonus_balance=new_bonus,
+            credits_used=User.credits_used + request.amount,
+        )
+    )
+    
+    # Record transaction
+    transaction = FinancialTransaction(
+        user_id=current_user.id,
+        transaction_type=TransactionType.CREDIT_USAGE.value,
+        credits_amount=-request.amount,
+        operation_type=request.operation,
+        description=f"Uso de créditos: {request.operation}",
+        resource_id=request.resource_id,
+    )
+    db.add(transaction)
+    await db.commit()
+    
+    return UseCreditsResponse(
+        success=True,
+        credits_used=request.amount,
+        new_balance=new_balance + new_bonus,
+        bonus_used=bonus_used,
+        message=f"{request.amount} créditos consumidos com sucesso"
+    )
+
+
+class AddBonusRequest(BaseModel):
+    """Request to add bonus credits (admin only)"""
+    user_id: str
+    amount: int = Field(..., ge=1, le=10000)
+    reason: str
+    expires_in_days: int = Field(30, ge=1, le=365)
+
+
+@router.post("/bonus/add")
+async def add_bonus_credits(
+    request: AddBonusRequest,
+    current_user = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    """
+    Add bonus credits to a user (admin only).
+    """
+    from sqlalchemy import select, update
+    from api.database.models import User
+    from datetime import datetime, timezone, timedelta
+    
+    # Check if current user is admin
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso restrito a administradores"
+        )
+    
+    # Update target user
+    expires_at = datetime.now(timezone.utc) + timedelta(days=request.expires_in_days)
+    
+    await db.execute(
+        update(User)
+        .where(User.id == request.user_id)
+        .values(
+            bonus_balance=User.bonus_balance + request.amount,
+            bonus_expires_at=expires_at,
+        )
+    )
+    await db.commit()
+    
+    return {
+        "success": True,
+        "user_id": request.user_id,
+        "bonus_added": request.amount,
+        "expires_at": expires_at.isoformat(),
+        "reason": request.reason,
+    }
+
+
 @router.get("/status/{order_id}")
 async def get_purchase_status(
     order_id: str,

@@ -40,6 +40,7 @@ from .channel_integrations import (
     EvolutionAdapter,
     ChatwootAdapter,
     InstagramAdapter,
+    TikTokAdapter,
     
     # Router
     ChannelRouter,
@@ -48,12 +49,18 @@ from .channel_integrations import (
     EvolutionConfig,
     ChatwootConfig,
     InstagramConfig,
+    TikTokConfig,
     
     # Factory functions
     create_evolution_adapter,
     create_chatwoot_adapter,
     create_instagram_adapter,
 )
+
+# Hub Adapters (New Centralized Architecture)
+from .whatsapp_adapter import WhatsAppHubAdapter
+from .instagram_adapter import InstagramHubAdapter
+from .tiktok_adapter import TikTokHubAdapter
 
 __all__ = [
     # Main Bot
@@ -77,17 +84,24 @@ __all__ = [
     "IntentDetector",
     "ResponseTemplates",
     
-    # Channel Adapters
+    # Channel Adapters (Legacy - use Hub Adapters instead)
     "ChannelAdapter",
     "EvolutionAdapter",
     "ChatwootAdapter",
     "InstagramAdapter",
+    "TikTokAdapter",
     "ChannelRouter",
+    
+    # Hub Adapters (New Architecture)
+    "WhatsAppHubAdapter",
+    "InstagramHubAdapter",
+    "TikTokHubAdapter",
     
     # Configs
     "EvolutionConfig",
     "ChatwootConfig",
     "InstagramConfig",
+    "TikTokConfig",
     
     # Factory functions
     "create_evolution_adapter",

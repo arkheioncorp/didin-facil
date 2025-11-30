@@ -16,7 +16,11 @@ class MercadoPagoService:
     """Mercado Pago payment integration"""
     
     def __init__(self):
-        self.access_token = settings.MERCADO_PAGO_ACCESS_TOKEN
+        # Support both naming conventions
+        self.access_token = (
+            settings.MERCADO_PAGO_ACCESS_TOKEN or 
+            settings.MERCADOPAGO_ACCESS_TOKEN
+        )
         self.base_url = "https://api.mercadopago.com"
         self.headers = {
             "Authorization": f"Bearer {self.access_token}",
@@ -145,8 +149,101 @@ class MercadoPagoService:
     async def send_credits_email(
         self,
         email: str,
-        credits_amount: int
+        credits_amount: int,
+        includes_license: bool = False
     ):
         """Send credits purchase confirmation via email"""
-        # TODO: Implement email sending (SendGrid, AWS SES, etc.)
-        print(f"[EMAIL] Créditos adicionados para {email}: {credits_amount}")
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        license_msg = ""
+        if includes_license:
+            license_msg = """
+                <p style='background: #10b981; color: white; padding: 12px; 
+                   border-radius: 8px; text-align: center;'>
+                    🎫 <strong>Licença Vitalícia ATIVADA!</strong><br>
+                    Você agora tem acesso ilimitado à plataforma.
+                </p>
+            """
+        
+        # Tentar enviar email via serviço configurado
+        try:
+            # Verificar se há serviço de email configurado
+            if hasattr(settings, 'SMTP_HOST') and settings.SMTP_HOST:
+                # Envio via SMTP
+                import smtplib
+                from email.mime.text import MIMEText
+                from email.mime.multipart import MIMEMultipart
+                
+                subject = f'🎉 {credits_amount} créditos adicionados!'
+                if includes_license:
+                    subject = f'🎉 Licença + {credits_amount} créditos!'
+                
+                msg = MIMEMultipart('alternative')
+                msg['Subject'] = subject
+                msg['From'] = settings.SMTP_FROM or 'noreply@didinfacil.com'
+                msg['To'] = email
+                
+                html = f"""
+                <html>
+                <body style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2>Seus créditos foram adicionados! 🚀</h2>
+                    {license_msg}
+                    <p>Olá!</p>
+                    <p>Confirmamos a adição de <strong>{credits_amount} créditos</strong> 
+                       à sua conta Didin Fácil.</p>
+                    <p>Você já pode usar para:</p>
+                    <ul>
+                        <li>Gerar copies com IA</li>
+                        <li>Analisar produtos</li>
+                        <li>Criar automações</li>
+                    </ul>
+                    <p>Boas vendas!</p>
+                    <p><small>Equipe Didin Fácil</small></p>
+                </body>
+                </html>
+                """
+                
+                msg.attach(MIMEText(html, 'html'))
+                
+                with smtplib.SMTP(
+                    settings.SMTP_HOST, 
+                    getattr(settings, 'SMTP_PORT', 587)
+                ) as server:
+                    if getattr(settings, 'SMTP_TLS', True):
+                        server.starttls()
+                    if settings.SMTP_USER and settings.SMTP_PASSWORD:
+                        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                    server.send_message(msg)
+                
+                logger.info(f"Email de créditos enviado para {email}")
+                
+            elif hasattr(settings, 'RESEND_API_KEY') and settings.RESEND_API_KEY:
+                # Envio via Resend (alternativa moderna)
+                async with httpx.AsyncClient() as client:
+                    await client.post(
+                        "https://api.resend.com/emails",
+                        headers={
+                            "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                            "Content-Type": "application/json",
+                        },
+                        json={
+                            "from": "Didin Fácil <noreply@didinfacil.com>",
+                            "to": [email],
+                            "subject": f"🎉 {credits_amount} créditos adicionados!",
+                            "html": f"""
+                            <h2>Seus créditos foram adicionados! 🚀</h2>
+                            <p>{credits_amount} créditos disponíveis na sua conta.</p>
+                            """,
+                        },
+                    )
+                logger.info(f"Email enviado via Resend para {email}")
+            else:
+                # Log apenas se não houver serviço configurado
+                logger.info(
+                    f"[EMAIL SIM] Créditos adicionados: {email} +{credits_amount}"
+                )
+                
+        except Exception as e:
+            logger.error(f"Erro ao enviar email: {e}")
+            # Não falhar a operação principal por erro de email

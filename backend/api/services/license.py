@@ -276,16 +276,69 @@ class LicenseService:
             {"license_id": license_id, "plan": new_plan, "max_devices": max_devices}
         )
 
+    async def activate_lifetime_license(
+        self,
+        email: str,
+        payment_id: Optional[str] = None
+    ) -> bool:
+        """
+        Activate lifetime license for user.
+        Called when user purchases a package that includes license.
+        """
+        # Get user by email
+        user = await self.db.fetch_one(
+            "SELECT id, has_lifetime_license FROM users WHERE email = :email",
+            {"email": email}
+        )
+
+        if not user:
+            return False
+
+        # Already has license
+        if user["has_lifetime_license"]:
+            return True
+
+        user_id = user["id"]
+
+        # Activate lifetime license on user
+        await self.db.execute(
+            """
+            UPDATE users
+            SET has_lifetime_license = true,
+                license_activated_at = NOW()
+            WHERE id = :user_id
+            """,
+            {"user_id": user_id}
+        )
+
+        # Log activation in financial_transactions
+        await self.db.execute(
+            """
+            INSERT INTO financial_transactions
+            (id, user_id, transaction_type, amount_brl, 
+             payment_id, payment_status, description, created_at)
+            VALUES (:id, :user_id, 'license_activation', 0, 
+                    :payment_id, 'completed', 'Lifetime license activated', NOW())
+            """,
+            {
+                "id": str(uuid.uuid4()),
+                "user_id": user_id,
+                "payment_id": payment_id
+            }
+        )
+
+        return True
+
     async def add_credits(
         self,
         email: str,
         amount: int,
         payment_id: Optional[str] = None
     ) -> int:
-        """Add credits to user account"""
+        """Add credits to user account after payment"""
         # Get user by email
         user = await self.db.fetch_one(
-            "SELECT id, credits FROM users WHERE email = :email",
+            "SELECT id, credits_balance FROM users WHERE email = :email",
             {"email": email}
         )
 
@@ -293,24 +346,27 @@ class LicenseService:
             return 0
 
         user_id = user["id"]
-        new_balance = user["credits"] + amount
+        new_balance = user["credits_balance"] + amount
 
         # Update user credits
         await self.db.execute(
             """
             UPDATE users
-            SET credits = credits + :amount
+            SET credits_balance = credits_balance + :amount,
+                credits_purchased = credits_purchased + :amount
             WHERE id = :user_id
             """,
             {"user_id": user_id, "amount": amount}
         )
 
-        # Log credit transaction
+        # Log to financial_transactions
         await self.db.execute(
             """
-            INSERT INTO credit_transactions
-            (id, user_id, amount, type, payment_id, created_at)
-            VALUES (:id, :user_id, :amount, 'purchase', :payment_id, NOW())
+            INSERT INTO financial_transactions
+            (id, user_id, transaction_type, amount_brl, credits_amount, 
+             payment_id, payment_status, created_at)
+            VALUES (:id, :user_id, 'credit_purchase', 0, :amount, 
+                    :payment_id, 'completed', NOW())
             """,
             {
                 "id": str(uuid.uuid4()),
@@ -329,7 +385,7 @@ class LicenseService:
             """
             SELECT
                 l.is_lifetime,
-                u.credits,
+                u.credits_balance,
                 (SELECT COUNT(*) FROM license_devices ld
                     WHERE ld.license_id = :license_id
                     AND ld.is_active = true) as active_devices
@@ -343,7 +399,7 @@ class LicenseService:
         if result:
             return {
                 "is_lifetime": result["is_lifetime"],
-                "credits": result["credits"],
+                "credits": result["credits_balance"],
                 "active_devices": result["active_devices"],
                 # Lifetime = unlimited everything except credits
                 "searches_limit": -1,

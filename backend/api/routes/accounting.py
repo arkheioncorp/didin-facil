@@ -254,13 +254,132 @@ async def export_financial_report(
     db = Depends(get_db)
 ):
     """Export financial report in various formats"""
-    # TODO: Implement export functionality
-    return {
-        "message": "Export functionality coming soon",
-        "start_date": str(start_date),
-        "end_date": str(end_date),
-        "format": format,
-    }
+    from fastapi.responses import StreamingResponse
+    from io import StringIO, BytesIO
+    import csv
+    import json
+    
+    # Buscar dados do relatório
+    from sqlalchemy import select, func
+    from api.database.accounting_models import DailyReport
+    
+    result = await db.execute(
+        select(DailyReport).where(
+            DailyReport.report_date >= start_date.date(),
+            DailyReport.report_date <= end_date.date()
+        ).order_by(DailyReport.report_date)
+    )
+    reports = result.scalars().all()
+    
+    if format == "json":
+        # Export como JSON
+        data = [
+            {
+                "date": str(r.report_date),
+                "total_revenue": float(r.total_revenue),
+                "subscription_revenue": float(r.subscription_revenue),
+                "credits_revenue": float(r.credits_revenue),
+                "gross_profit": float(r.gross_profit),
+                "openai_cost": float(r.openai_cost),
+                "active_users": r.active_users,
+                "new_subscriptions": r.new_subscriptions,
+            }
+            for r in reports
+        ]
+        
+        output = BytesIO()
+        output.write(json.dumps(data, indent=2).encode('utf-8'))
+        output.seek(0)
+        
+        return StreamingResponse(
+            output,
+            media_type="application/json",
+            headers={
+                "Content-Disposition": f"attachment; filename=report_{start_date.date()}_{end_date.date()}.json"
+            }
+        )
+    
+    elif format == "csv":
+        # Export como CSV
+        output = StringIO()
+        writer = csv.writer(output)
+        
+        # Header
+        writer.writerow([
+            "Data", "Receita Total", "Assinaturas", "Créditos",
+            "Lucro Bruto", "Custo OpenAI", "Usuários Ativos", "Novas Assinaturas"
+        ])
+        
+        # Dados
+        for r in reports:
+            writer.writerow([
+                str(r.report_date),
+                float(r.total_revenue),
+                float(r.subscription_revenue),
+                float(r.credits_revenue),
+                float(r.gross_profit),
+                float(r.openai_cost),
+                r.active_users,
+                r.new_subscriptions,
+            ])
+        
+        output.seek(0)
+        
+        return StreamingResponse(
+            iter([output.getvalue()]),
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f"attachment; filename=report_{start_date.date()}_{end_date.date()}.csv"
+            }
+        )
+    
+    elif format == "xlsx":
+        # Export como Excel (requer openpyxl)
+        try:
+            from openpyxl import Workbook
+            from openpyxl.utils import get_column_letter
+            
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Relatório Financeiro"
+            
+            # Header
+            headers = [
+                "Data", "Receita Total", "Assinaturas", "Créditos",
+                "Lucro Bruto", "Custo OpenAI", "Usuários Ativos", "Novas Assinaturas"
+            ]
+            for col, header in enumerate(headers, 1):
+                ws.cell(row=1, column=col, value=header)
+                ws.column_dimensions[get_column_letter(col)].width = 15
+            
+            # Dados
+            for row, r in enumerate(reports, 2):
+                ws.cell(row=row, column=1, value=str(r.report_date))
+                ws.cell(row=row, column=2, value=float(r.total_revenue))
+                ws.cell(row=row, column=3, value=float(r.subscription_revenue))
+                ws.cell(row=row, column=4, value=float(r.credits_revenue))
+                ws.cell(row=row, column=5, value=float(r.gross_profit))
+                ws.cell(row=row, column=6, value=float(r.openai_cost))
+                ws.cell(row=row, column=7, value=r.active_users)
+                ws.cell(row=row, column=8, value=r.new_subscriptions)
+            
+            output = BytesIO()
+            wb.save(output)
+            output.seek(0)
+            
+            return StreamingResponse(
+                output,
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={
+                    "Content-Disposition": f"attachment; filename=report_{start_date.date()}_{end_date.date()}.xlsx"
+                }
+            )
+            
+        except ImportError:
+            raise HTTPException(
+                status_code=501,
+                detail="Excel export requires openpyxl. Use CSV or JSON."
+            )
 
 
 # =============================================================================

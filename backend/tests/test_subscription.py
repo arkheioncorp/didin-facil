@@ -6,14 +6,21 @@ from unittest.mock import AsyncMock
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from backend.modules.subscription.plans import (
+from modules.subscription.plans import (
     PlanTier,
-    PlanLimits,
-    SubscriptionPlan,
-    SubscriptionManager,
-    UserSubscription,
-    FeatureUsage,
+    FeatureLimit,
+    PlanFeatures,
+    SubscriptionService,
+    Subscription,
+    UsageRecord,
 )
+
+# Alias para compatibilidade com testes existentes
+PlanLimits = FeatureLimit
+SubscriptionPlan = PlanFeatures
+SubscriptionManager = SubscriptionService
+UserSubscription = Subscription
+FeatureUsage = UsageRecord
 
 
 class TestPlanTier:

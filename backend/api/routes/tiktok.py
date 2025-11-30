@@ -18,16 +18,15 @@ from vendor.tiktok.client import (
     TikTokClient, TikTokConfig, VideoConfig, Privacy
 )
 from shared.config import settings
-from api.services.tiktok_session import (
-    TikTokSessionManager,
-    TikTokSessionStatus
-)
+from integrations.tiktok_hub import get_tiktok_hub
+from api.services.tiktok_session import TikTokSessionStatus
 from api.services.cache import CacheService
 from scraper.tiktok.api_scraper import TikTokAPIScraper
 from scraper.cache import ProductCacheManager
 
 router = APIRouter()
-session_manager = TikTokSessionManager()
+hub = get_tiktok_hub()
+session_manager = hub.session_manager
 
 
 class TikTokSessionSetup(BaseModel):
@@ -321,17 +320,19 @@ class TikTokSearchRequest(BaseModel):
 
 class TikTokProductResponse(BaseModel):
     """TikTok product from API scraper."""
-    id: str
+    id: str = Field(alias="tiktok_id")
     title: str
     price: Optional[float] = None
     original_price: Optional[float] = None
     discount: Optional[str] = None
     image_url: Optional[str] = None
     product_url: Optional[str] = None
-    shop_name: Optional[str] = None
-    sales_count: Optional[int] = None
+    shop_name: Optional[str] = Field(default=None, alias="seller_name")
+    sales_count: Optional[int] = Field(default=None, alias="sold_count")
     rating: Optional[float] = None
     source: str = "tiktok_api"
+    
+    model_config = {"populate_by_name": True}
 
 
 class TikTokSearchResponse(BaseModel):
@@ -459,7 +460,7 @@ async def search_tiktok_products(
     # Fetch from API
     try:
         scraper = TikTokAPIScraper()
-        products = await scraper.search_products(q, max_results=max_results)
+        products = await scraper.search_products(q, limit=max_results)
         
         # Cache results
         if products:

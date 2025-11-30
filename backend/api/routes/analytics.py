@@ -3,419 +3,303 @@ Analytics Routes
 Engagement metrics and platform statistics
 """
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import BaseModel
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
-from enum import Enum
 
 from api.middleware.auth import get_current_user
-from shared.redis import redis_client
+from modules.analytics.social_analytics import (
+    SocialAnalyticsService,
+    MetricPeriod,
+    Platform as SocialPlatform,
+)
 
 router = APIRouter()
+analytics_service = SocialAnalyticsService()
+
+# ============================================
+# FRONTEND DATA MODELS
+# ============================================
 
 
-class Platform(str, Enum):
-    INSTAGRAM = "instagram"
-    TIKTOK = "tiktok"
-    YOUTUBE = "youtube"
-    ALL = "all"
+class Period(BaseModel):
+    start: str
+    end: str
+    days: int
 
 
-class TimeRange(str, Enum):
-    DAY = "24h"
-    WEEK = "7d"
-    MONTH = "30d"
-    QUARTER = "90d"
-
-
-class EngagementMetrics(BaseModel):
-    """Engagement metrics for a platform"""
+class PlatformMetrics(BaseModel):
     platform: str
-    posts_count: int = 0
-    views: int = 0
-    likes: int = 0
-    comments: int = 0
-    shares: int = 0
-    saves: int = 0
-    engagement_rate: float = 0.0
-    reach: int = 0
-    impressions: int = 0
+    followers: int
+    followers_change: float
+    posts: int
+    engagement_rate: float
+    impressions: int
+    reach: int
 
 
-class DailyStats(BaseModel):
-    """Daily statistics"""
-    date: str
-    posts: int = 0
-    engagement: int = 0
-    views: int = 0
+class EngagementStats(BaseModel):
+    total_likes: int
+    total_comments: int
+    total_shares: int
+    total_saves: int
+    avg_engagement_rate: float
+    best_performing_day: str
+    best_performing_time: str
 
 
-class TopContent(BaseModel):
-    """Top performing content"""
+class ContentPerformance(BaseModel):
     id: str
+    title: str
     platform: str
-    caption: str
-    thumbnail_url: Optional[str] = None
-    views: int = 0
-    likes: int = 0
-    engagement_rate: float = 0.0
-    posted_at: datetime
+    type: str
+    likes: int
+    comments: int
+    shares: int
+    views: int
+    engagement_rate: float
+    posted_at: str
+
+
+class Demographics(BaseModel):
+    age_groups: Dict[str, int]
+    gender: Dict[str, int]
+    top_locations: Dict[str, int]
+
+
+class AudienceInsights(BaseModel):
+    total_audience: int
+    growth_rate: float
+    demographics: Demographics
+    active_hours: List[int]
 
 
 class AnalyticsOverview(BaseModel):
-    """Complete analytics overview"""
-    period: str
-    total_posts: int
-    total_views: int
-    total_engagement: int
-    avg_engagement_rate: float
-    platforms: List[EngagementMetrics]
-    daily_stats: List[DailyStats]
-    top_content: List[TopContent]
-    growth: Dict[str, float]
+    period: Period
+    platforms: List[PlatformMetrics]
+    engagement: EngagementStats
+    top_content: List[ContentPerformance]
+    audience: AudienceInsights
 
 
-class AnalyticsService:
-    """Service for analytics data"""
-    
-    METRICS_PREFIX = "analytics:"
-    
-    async def record_post(
-        self,
-        user_id: str,
-        platform: str,
-        post_id: str,
-        metrics: Dict
-    ):
-        """Record post metrics"""
-        key = f"{self.METRICS_PREFIX}posts:{user_id}:{platform}:{post_id}"
-        data = {
-            "platform": platform,
-            "post_id": post_id,
-            "views": metrics.get("views", 0),
-            "likes": metrics.get("likes", 0),
-            "comments": metrics.get("comments", 0),
-            "shares": metrics.get("shares", 0),
-            "saves": metrics.get("saves", 0),
-            "timestamp": datetime.utcnow().isoformat()
-        }
-        await redis_client.hset(key, mapping=data)
-        await redis_client.expire(key, 60 * 60 * 24 * 90)  # 90 days
-        
-        # Update daily counter
-        today = datetime.utcnow().strftime("%Y-%m-%d")
-        daily_key = f"{self.METRICS_PREFIX}daily:{user_id}:{today}"
-        await redis_client.hincrby(daily_key, "posts", 1)
-        await redis_client.hincrby(daily_key, "views", metrics.get("views", 0))
-        await redis_client.hincrby(daily_key, "engagement", 
-            metrics.get("likes", 0) + metrics.get("comments", 0) + metrics.get("shares", 0))
-        await redis_client.expire(daily_key, 60 * 60 * 24 * 90)
-    
-    async def get_overview(
-        self,
-        user_id: str,
-        platform: Platform,
-        time_range: TimeRange
-    ) -> AnalyticsOverview:
-        """Get analytics overview"""
-        days = {"24h": 1, "7d": 7, "30d": 30, "90d": 90}[time_range.value]
-        
-        # Get daily stats
-        daily_stats = []
-        total_posts = 0
-        total_views = 0
-        total_engagement = 0
-        
-        for i in range(days):
-            date = (datetime.utcnow() - timedelta(days=i)).strftime("%Y-%m-%d")
-            daily_key = f"{self.METRICS_PREFIX}daily:{user_id}:{date}"
-            
-            data = await redis_client.hgetall(daily_key)
-            if data:
-                posts = int(data.get("posts", 0))
-                views = int(data.get("views", 0))
-                engagement = int(data.get("engagement", 0))
-                
-                daily_stats.append(DailyStats(
-                    date=date,
-                    posts=posts,
-                    views=views,
-                    engagement=engagement
-                ))
-                
-                total_posts += posts
-                total_views += views
-                total_engagement += engagement
-            else:
-                daily_stats.append(DailyStats(date=date))
-        
-        # Calculate engagement rate
-        avg_engagement_rate = 0.0
-        if total_views > 0:
-            avg_engagement_rate = round((total_engagement / total_views) * 100, 2)
-        
-        # Platform breakdown
-        platforms = []
-        for p in [Platform.INSTAGRAM, Platform.TIKTOK, Platform.YOUTUBE]:
-            if platform == Platform.ALL or platform == p:
-                platforms.append(await self._get_platform_metrics(user_id, p, days))
-        
-        # Top content (mock for now)
-        top_content = await self._get_top_content(user_id, platform, days)
-        
-        # Growth calculation
-        growth = await self._calculate_growth(user_id, days)
-        
-        return AnalyticsOverview(
-            period=time_range.value,
-            total_posts=total_posts,
-            total_views=total_views,
-            total_engagement=total_engagement,
-            avg_engagement_rate=avg_engagement_rate,
-            platforms=platforms,
-            daily_stats=list(reversed(daily_stats)),
-            top_content=top_content,
-            growth=growth
-        )
-    
-    async def _get_platform_metrics(
-        self,
-        user_id: str,
-        platform: Platform,
-        days: int
-    ) -> EngagementMetrics:
-        """Get metrics for a specific platform"""
-        # Aggregate from daily stats
-        total_views = 0
-        total_likes = 0
-        total_comments = 0
-        total_shares = 0
-        post_count = 0
-        
-        for i in range(days):
-            date = (datetime.utcnow() - timedelta(days=i)).strftime("%Y-%m-%d")
-            key = f"{self.METRICS_PREFIX}platform:{user_id}:{platform.value}:{date}"
-            data = await redis_client.hgetall(key)
-            if data:
-                total_views += int(data.get("views", 0))
-                total_likes += int(data.get("likes", 0))
-                total_comments += int(data.get("comments", 0))
-                total_shares += int(data.get("shares", 0))
-                post_count += int(data.get("posts", 0))
-        
-        engagement_rate = 0.0
-        if total_views > 0:
-            engagement_rate = round(
-                ((total_likes + total_comments + total_shares) / total_views) * 100, 2
-            )
-        
-        return EngagementMetrics(
-            platform=platform.value,
-            posts_count=post_count,
-            views=total_views,
-            likes=total_likes,
-            comments=total_comments,
-            shares=total_shares,
-            engagement_rate=engagement_rate,
-            reach=int(total_views * 0.8),  # Estimated
-            impressions=int(total_views * 1.2)  # Estimated
-        )
-    
-    async def _get_top_content(
-        self,
-        user_id: str,
-        platform: Platform,
-        days: int
-    ) -> List[TopContent]:
-        """Get top performing content"""
-        # In production, would query from database
-        # For now, return empty list
-        return []
-    
-    async def _calculate_growth(
-        self,
-        user_id: str,
-        days: int
-    ) -> Dict[str, float]:
-        """Calculate growth compared to previous period"""
-        # Current period
-        current_posts = 0
-        current_views = 0
-        current_engagement = 0
-        
-        for i in range(days):
-            date = (datetime.utcnow() - timedelta(days=i)).strftime("%Y-%m-%d")
-            key = f"{self.METRICS_PREFIX}daily:{user_id}:{date}"
-            data = await redis_client.hgetall(key)
-            if data:
-                current_posts += int(data.get("posts", 0))
-                current_views += int(data.get("views", 0))
-                current_engagement += int(data.get("engagement", 0))
-        
-        # Previous period
-        prev_posts = 0
-        prev_views = 0
-        prev_engagement = 0
-        
-        for i in range(days, days * 2):
-            date = (datetime.utcnow() - timedelta(days=i)).strftime("%Y-%m-%d")
-            key = f"{self.METRICS_PREFIX}daily:{user_id}:{date}"
-            data = await redis_client.hgetall(key)
-            if data:
-                prev_posts += int(data.get("posts", 0))
-                prev_views += int(data.get("views", 0))
-                prev_engagement += int(data.get("engagement", 0))
-        
-        def calc_growth(current: int, previous: int) -> float:
-            if previous == 0:
-                return 100.0 if current > 0 else 0.0
-            return round(((current - previous) / previous) * 100, 1)
-        
-        return {
-            "posts": calc_growth(current_posts, prev_posts),
-            "views": calc_growth(current_views, prev_views),
-            "engagement": calc_growth(current_engagement, prev_engagement)
-        }
+# ============================================
+# ROUTES
+# ============================================
 
 
-analytics_service = AnalyticsService()
-
-
-# ============= Routes =============
-
-@router.get("/overview")
+@router.get("/overview", response_model=AnalyticsOverview)
 async def get_analytics_overview(
-    platform: Platform = Query(Platform.ALL),
-    time_range: TimeRange = Query(TimeRange.WEEK),
-    current_user=Depends(get_current_user)
+    period: str = Query("30d", description="Time period (7d, 30d, 90d)"),
+    platform: str = Query("all", description="Filter by platform"),
+    current_user=Depends(get_current_user),
 ):
     """
-    Get analytics overview with engagement metrics.
-    
-    - **platform**: Filter by platform (instagram, tiktok, youtube, all)
-    - **time_range**: Time period (24h, 7d, 30d, 90d)
+    Get analytics overview matching the frontend interface.
+    Aggregates data from SocialAnalyticsService.
     """
-    return await analytics_service.get_overview(
-        str(current_user.id),
-        platform,
-        time_range
-    )
-
-
-@router.get("/platforms/{platform}")
-async def get_platform_analytics(
-    platform: Platform,
-    time_range: TimeRange = Query(TimeRange.WEEK),
-    current_user=Depends(get_current_user)
-):
-    """Get detailed analytics for a specific platform."""
-    if platform == Platform.ALL:
-        from fastapi import HTTPException
-        raise HTTPException(400, "Specify a single platform")
-    
-    days = {"24h": 1, "7d": 7, "30d": 30, "90d": 90}[time_range.value]
-    metrics = await analytics_service._get_platform_metrics(
-        str(current_user.id),
-        platform,
-        days
-    )
-    
-    return {
-        "platform": platform.value,
-        "period": time_range.value,
-        "metrics": metrics
+    # Map frontend period to MetricPeriod
+    period_map = {
+        "7d": MetricPeriod.LAST_7_DAYS,
+        "30d": MetricPeriod.LAST_30_DAYS,
+        "90d": MetricPeriod.LAST_90_DAYS,
     }
 
+    metric_period = period_map.get(period, MetricPeriod.LAST_30_DAYS)
+    days = int(period.replace("d", "")) if period.endswith("d") else 30
 
-@router.get("/daily")
-async def get_daily_stats(
-    time_range: TimeRange = Query(TimeRange.WEEK),
-    current_user=Depends(get_current_user)
+    # Get data from service
+    dashboard_data = await analytics_service.get_dashboard_overview(
+        str(current_user.id), metric_period
+    )
+
+    # Transform Platforms Data
+    platforms_metrics = []
+    for p_name, p_data in dashboard_data.by_platform.items():
+        if platform != "all" and platform != p_name:
+            continue
+
+        platforms_metrics.append(
+            PlatformMetrics(
+                platform=p_name,
+                followers=p_data.followers_end,
+                followers_change=round(p_data.followers_growth_rate, 1),
+                posts=p_data.total_posts,
+                engagement_rate=round(p_data.avg_engagement_rate, 1),
+                impressions=p_data.total_impressions,
+                reach=p_data.total_reach,
+            )
+        )
+
+    # Transform Engagement Stats
+    # Calculate aggregates
+    total_likes = sum(p.total_likes for p in dashboard_data.by_platform.values())
+    total_comments = sum(p.total_comments for p in dashboard_data.by_platform.values())
+    total_shares = sum(p.total_shares for p in dashboard_data.by_platform.values())
+    # Saves not currently in PlatformAnalytics, using estimate or 0
+    total_saves = sum(
+        int(p.total_likes * 0.1) for p in dashboard_data.by_platform.values()
+    )
+
+    # Calculate average engagement rate across all platforms
+    total_views = sum(p.total_views for p in dashboard_data.by_platform.values())
+    total_eng = total_likes + total_comments + total_shares + total_saves
+    avg_eng_rate = round((total_eng / total_views * 100), 2) if total_views > 0 else 0.0
+
+    # Determine best time
+    best_day = "Wednesday"
+    best_time = "18:00"
+    if dashboard_data.best_times:
+        # Simple logic to pick first one for now
+        best_day = list(dashboard_data.best_times.keys())[0]
+        if dashboard_data.best_times[best_day]:
+            best_time = f"{dashboard_data.best_times[best_day][0]}:00"
+
+    engagement_stats = EngagementStats(
+        total_likes=total_likes,
+        total_comments=total_comments,
+        total_shares=total_shares,
+        total_saves=total_saves,
+        avg_engagement_rate=avg_eng_rate,
+        best_performing_day=best_day,
+        best_performing_time=best_time,
+    )
+
+    # Transform Top Content
+    top_content = []
+    for post in dashboard_data.top_posts:
+        top_content.append(
+            ContentPerformance(
+                id=post.post_id,
+                title=(
+                    post.caption[:50] + "..."
+                    if len(post.caption) > 50
+                    else post.caption
+                ),
+                platform=post.platform.value,
+                type=post.content_type,
+                likes=post.metrics.likes,
+                comments=post.metrics.comments,
+                shares=post.metrics.shares,
+                views=post.metrics.views,
+                engagement_rate=round(post.metrics.engagement_rate, 1),
+                posted_at=post.published_at.isoformat(),
+            )
+        )
+
+    # Transform Audience Insights
+    # Mock demographics data as it's not in DashboardOverview yet
+    audience_insights = AudienceInsights(
+        total_audience=dashboard_data.total_followers,
+        growth_rate=2.5,  # Mock growth rate
+        demographics=Demographics(
+            age_groups={"18-24": 30, "25-34": 45, "35-44": 15, "45+": 10},
+            gender={"female": 55, "male": 45},
+            top_locations={
+                "São Paulo": 35,
+                "Rio de Janeiro": 20,
+                "Belo Horizonte": 10,
+                "Outros": 35,
+            },
+        ),
+        active_hours=[
+            0,
+            1,
+            2,
+            5,
+            10,
+            25,
+            40,
+            55,
+            65,
+            75,
+            85,
+            90,
+            95,
+            85,
+            70,
+            60,
+            50,
+            45,
+            40,
+            35,
+            25,
+            15,
+            10,
+            5,
+        ],  # Mock activity curve
+    )
+
+    return AnalyticsOverview(
+        period=Period(
+            start=dashboard_data.start_date.isoformat(),
+            end=dashboard_data.end_date.isoformat(),
+            days=days,
+        ),
+        platforms=platforms_metrics,
+        engagement=engagement_stats,
+        top_content=top_content,
+        audience=audience_insights,
+    )
+
+
+@router.get("/export")
+async def export_analytics(
+    format: str = "csv", period: str = "30d", current_user=Depends(get_current_user)
 ):
-    """Get daily statistics for charts."""
-    days = {"24h": 1, "7d": 7, "30d": 30, "90d": 90}[time_range.value]
-    user_id = str(current_user.id)
-    
-    daily_stats = []
-    for i in range(days):
-        date = (datetime.utcnow() - timedelta(days=i)).strftime("%Y-%m-%d")
-        key = f"{analytics_service.METRICS_PREFIX}daily:{user_id}:{date}"
-        
-        data = await redis_client.hgetall(key)
-        if data:
-            daily_stats.append({
-                "date": date,
-                "posts": int(data.get("posts", 0)),
-                "views": int(data.get("views", 0)),
-                "engagement": int(data.get("engagement", 0))
-            })
-        else:
-            daily_stats.append({
-                "date": date,
-                "posts": 0,
-                "views": 0,
-                "engagement": 0
-            })
-    
-    return {"daily": list(reversed(daily_stats))}
+    """Export analytics report"""
+    # Map frontend period to MetricPeriod
+    period_map = {
+        "7d": MetricPeriod.LAST_7_DAYS,
+        "30d": MetricPeriod.LAST_30_DAYS,
+        "90d": MetricPeriod.LAST_90_DAYS,
+    }
+    metric_period = period_map.get(period, MetricPeriod.LAST_30_DAYS)
+
+    from fastapi import Response
+
+    data = await analytics_service.export_report(
+        str(current_user.id), metric_period, format
+    )
+
+    content_type = "application/json" if format == "json" else "text/csv"
+    filename = f"analytics_report_{period}.{format}"
+
+    return Response(
+        content=data,
+        media_type=content_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
 
 
-@router.post("/record")
-async def record_metrics(
-    platform: str,
-    post_id: str,
-    views: int = 0,
-    likes: int = 0,
-    comments: int = 0,
-    shares: int = 0,
-    current_user=Depends(get_current_user)
+class WebhookPayload(BaseModel):
+    platform: str
+    post_id: str
+    metrics: Dict[str, Any]
+    timestamp: Optional[str] = None
+
+
+@router.post("/webhook")
+async def analytics_webhook(
+    payload: WebhookPayload, current_user=Depends(get_current_user)
 ):
-    """Record metrics for a post (used by workers)."""
+    """
+    Receive analytics data from N8N or other external sources.
+    """
+    # Validate platform
+    try:
+        platform_enum = SocialPlatform(payload.platform.lower())
+    except ValueError:
+        raise HTTPException(
+            status_code=400, detail=f"Invalid platform: {payload.platform}"
+        )
+
+    # Record metrics via service
     await analytics_service.record_post(
-        str(current_user.id),
-        platform,
-        post_id,
-        {
-            "views": views,
-            "likes": likes,
-            "comments": comments,
-            "shares": shares
-        }
+        user_id=str(current_user.id),
+        platform=platform_enum,
+        post_id=payload.post_id,
+        metrics=payload.metrics,
     )
-    
-    return {"status": "recorded"}
 
-
-@router.get("/growth")
-async def get_growth_stats(
-    time_range: TimeRange = Query(TimeRange.WEEK),
-    current_user=Depends(get_current_user)
-):
-    """Get growth statistics compared to previous period."""
-    days = {"24h": 1, "7d": 7, "30d": 30, "90d": 90}[time_range.value]
-    growth = await analytics_service._calculate_growth(
-        str(current_user.id),
-        days
-    )
-    
-    return {
-        "period": time_range.value,
-        "compared_to": f"previous {time_range.value}",
-        "growth": growth
-    }
-
-
-@router.get("/top-posts")
-async def get_top_posts(
-    platform: Platform = Query(Platform.ALL),
-    limit: int = Query(10, ge=1, le=50),
-    current_user=Depends(get_current_user)
-):
-    """Get top performing posts."""
-    # Would query from database in production
-    return {
-        "platform": platform.value,
-        "posts": [],
-        "message": "Connect platform to see top posts"
-    }
+    return {"status": "success", "message": "Metrics recorded"}

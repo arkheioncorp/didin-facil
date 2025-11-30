@@ -42,9 +42,9 @@ async def get_user_credits(user_id: str, db) -> dict:
             COALESCE(credits_balance, 0) as balance,
             COALESCE(credits_purchased, 0) as total_purchased,
             COALESCE(credits_used, 0) as total_used
-        FROM users WHERE id = $1
+        FROM users WHERE id = :user_id
     """
-    result = await db.fetchrow(query, user_id)
+    result = await db.fetch_one(query, {"user_id": user_id})
     
     if not result:
         raise HTTPException(status_code=404, detail="User not found")
@@ -86,13 +86,13 @@ async def deduct_credits(user_id: str, action: str = "copy", db = None) -> dict:
     
     query = """
         UPDATE users 
-        SET credits_balance = credits_balance - $2,
-            credits_used = credits_used + $2,
+        SET credits_balance = credits_balance - :cost,
+            credits_used = credits_used + :cost,
             updated_at = NOW()
-        WHERE id = $1 AND credits_balance >= $2
+        WHERE id = :user_id AND credits_balance >= :cost
         RETURNING credits_balance as new_balance
     """
-    result = await db.fetchrow(query, user_id, cost)
+    result = await db.fetch_one(query, {"user_id": user_id, "cost": cost})
     
     if not result:
         raise InsufficientCreditsError(
@@ -108,13 +108,13 @@ async def add_credits(user_id: str, amount: int, payment_id: Optional[str] = Non
     """Add credits to user account after purchase"""
     query = """
         UPDATE users 
-        SET credits_balance = credits_balance + $2,
-            credits_purchased = credits_purchased + $2,
+        SET credits_balance = credits_balance + :amount,
+            credits_purchased = credits_purchased + :amount,
             updated_at = NOW()
-        WHERE id = $1
+        WHERE id = :user_id
         RETURNING credits_balance as new_balance
     """
-    result = await db.fetchrow(query, user_id, amount)
+    result = await db.fetch_one(query, {"user_id": user_id, "amount": amount})
     
     if not result:
         raise HTTPException(status_code=404, detail="User not found")
@@ -123,9 +123,13 @@ async def add_credits(user_id: str, amount: int, payment_id: Optional[str] = Non
     if payment_id:
         log_query = """
             INSERT INTO credit_purchases (user_id, amount, payment_id, created_at)
-            VALUES ($1, $2, $3, NOW())
+            VALUES (:user_id, :amount, :payment_id, NOW())
         """
-        await db.execute(log_query, user_id, amount, payment_id)
+        await db.execute(log_query, {
+            "user_id": user_id, 
+            "amount": amount, 
+            "payment_id": payment_id
+        })
     
     return {"new_balance": result["new_balance"], "added": amount}
 

@@ -1,0 +1,76 @@
+{
+    "name": "Send Analytics to Backend",
+    "nodes": [
+        {
+            "parameters": {},
+            "name": "Start",
+            "type": "n8n-nodes-base.start",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://backend:8000/analytics/webhook",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "platform",
+                            "value": "instagram"
+                        },
+                        {
+                            "name": "post_id",
+                            "value": "123456789"
+                        },
+                        {
+                            "name": "metrics",
+                            "value": "={{ {\"likes\": 150, \"comments\": 20, \"views\": 3000} }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "Send Metrics",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 1,
+            "position": [
+                450,
+                300
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "1",
+                    "name": "Backend Auth"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Start": {
+            "main": [
+                [
+                    {
+                        "node": "Send Metrics",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

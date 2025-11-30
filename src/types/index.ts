@@ -159,30 +159,55 @@ export interface User {
   id: string;
   email: string;
   name: string | null;
+  avatarUrl: string | null;
+  phone: string | null;
+  // License status
   hasLifetimeLicense: boolean;
   licenseActivatedAt: string | null;
+  // Account status
+  isActive: boolean;
+  isEmailVerified: boolean;
+  // Preferences
+  language: string;
+  timezone: string;
+  // Metadata
   createdAt: string;
+  updatedAt: string | null;
+  lastLoginAt: string | null;
 }
 
 export interface License {
+  id: string | null;
   isValid: boolean;
   isLifetime: boolean;
+  plan: LicensePlan;
   activatedAt: string | null;
+  expiresAt: string | null;
   maxDevices: number;
   activeDevices: number;
+  // Device binding
+  currentDeviceId: string | null;
+  isCurrentDeviceAuthorized: boolean;
 }
+
+export type LicensePlan = 'free' | 'lifetime' | 'trial';
 
 export interface Credits {
   balance: number;
   totalPurchased: number;
   totalUsed: number;
   lastPurchaseAt: string | null;
+  // Bonus credits
+  bonusBalance: number;
+  bonusExpiresAt: string | null;
 }
 
 export interface UserState {
   user: User | null;
   license: License | null;
   credits: Credits | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 // Legacy types for backward compatibility
@@ -241,7 +266,7 @@ export interface ScraperConfig {
 
 export interface LicenseConfig {
   key: string | null;
-  plan: "lifetime" | "trial";
+  plan: LicensePlan;
   expiresAt: string | null; // null = lifetime (never expires)
   trialStarted: string | null;
   isActive: boolean;

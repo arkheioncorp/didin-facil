@@ -12,17 +12,30 @@ const mockUser: User = {
   id: "user-123",
   email: "test@example.com",
   name: "Test User",
+  avatarUrl: null,
+  phone: null,
   hasLifetimeLicense: true,
   licenseActivatedAt: "2024-01-15T00:00:00Z",
+  isActive: true,
+  isEmailVerified: true,
+  language: 'pt-BR',
+  timezone: 'America/Sao_Paulo',
   createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: null,
+  lastLoginAt: "2024-01-15T00:00:00Z",
 };
 
 const mockLicense: License = {
+  id: "lic-123",
   isValid: true,
   isLifetime: true,
+  plan: 'lifetime',
   activatedAt: "2024-01-15T00:00:00Z",
+  expiresAt: null,
   maxDevices: 2,
   activeDevices: 1,
+  currentDeviceId: null,
+  isCurrentDeviceAuthorized: true,
 };
 
 const mockCredits: Credits = {
@@ -30,6 +43,8 @@ const mockCredits: Credits = {
   totalPurchased: 100,
   totalUsed: 50,
   lastPurchaseAt: "2024-06-01T00:00:00Z",
+  bonusBalance: 10,
+  bonusExpiresAt: null,
 };
 
 describe("useUserStore", () => {

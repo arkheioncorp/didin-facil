@@ -8,6 +8,7 @@ import { API_BASE_URL } from "./constants";
 interface RequestConfig {
   headers?: Record<string, string>;
   params?: Record<string, string>;
+  responseType?: 'json' | 'blob';
 }
 
 interface ApiResponse<T> {
@@ -33,7 +34,7 @@ class ApiClient {
     config?: RequestConfig
   ): Promise<ApiResponse<T>> {
     const url = new URL(endpoint, this.baseURL);
-    
+
     // Add query params
     if (config?.params) {
       Object.entries(config.params).forEach(([key, value]) => {
@@ -63,25 +64,30 @@ class ApiClient {
     const fetchConfig: RequestInit = {
       method,
       headers,
-      body: data 
-        ? isFormData 
+      body: data
+        ? isFormData
           ? data as BodyInit
-          : JSON.stringify(data) 
+          : JSON.stringify(data)
         : undefined,
     };
 
     try {
       const response = await fetch(url.toString(), fetchConfig);
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.detail || errorData.message || `HTTP ${response.status}`);
       }
 
-      const responseData = await response.json();
-      
+      let responseData;
+      if (config?.responseType === 'blob') {
+        responseData = await response.blob();
+      } else {
+        responseData = await response.json();
+      }
+
       return {
-        data: responseData,
+        data: responseData as T,
         status: response.status,
       };
     } catch (error) {

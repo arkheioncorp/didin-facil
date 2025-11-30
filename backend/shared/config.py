@@ -1,10 +1,44 @@
 """
 Application Configuration
 Environment variables and settings
+
+Detecta automaticamente se está rodando em Docker e usa URLs internas.
 """
 
+import os
 from typing import Optional
 from pydantic_settings import BaseSettings
+
+
+def _is_docker() -> bool:
+    """Detecta se está rodando dentro de um container Docker"""
+    return os.path.exists("/.dockerenv") or os.environ.get("DOCKER_CONTAINER", "") == "true"
+
+
+# Define URLs baseadas no ambiente
+_IN_DOCKER = _is_docker()
+
+# URLs internas do Docker (rede tiktrend-network)
+_DOCKER_URLS = {
+    "database": "postgresql://tiktrend:tiktrend_dev@postgres:5432/tiktrend",
+    "redis": "redis://redis:6379/0",
+    "evolution": "http://evolution-api:8080",
+    "chatwoot": "http://chatwoot:3000",
+    "n8n": "http://n8n:5678",
+    "api": "http://tiktrend-api:8000",
+}
+
+# URLs externas (localhost para desenvolvimento local)
+_LOCAL_URLS = {
+    "database": "postgresql://tiktrend:tiktrend_dev@localhost:5434/tiktrend",
+    "redis": "redis://localhost:6379/0",
+    "evolution": "http://localhost:8082",
+    "chatwoot": "http://localhost:3000",
+    "n8n": "http://localhost:5678",
+    "api": "http://localhost:8000",
+}
+
+_URLS = _DOCKER_URLS if _IN_DOCKER else _LOCAL_URLS
 
 
 class Settings(BaseSettings):
@@ -13,11 +47,12 @@ class Settings(BaseSettings):
     # Environment
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
+    IN_DOCKER: bool = _IN_DOCKER
     
     # API
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
-    API_URL: str = "http://localhost:8000"
+    API_URL: str = _URLS["api"]
     APP_URL: str = "http://localhost:1420"
     
     # Security
@@ -27,12 +62,12 @@ class Settings(BaseSettings):
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     
     # Database
-    DATABASE_URL: str = "postgresql://tiktrend:tiktrend_dev@localhost:5432/tiktrend"
+    DATABASE_URL: str = _URLS["database"]
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 10
     
     # Redis
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: str = _URLS["redis"]
     
     # OpenAI
     OPENAI_API_KEY: Optional[str] = None
@@ -52,19 +87,19 @@ class Settings(BaseSettings):
     PROXY_POOL_URL: Optional[str] = None
     
     # Evolution API (WhatsApp)
-    EVOLUTION_API_URL: str = "http://localhost:8082"
-    EVOLUTION_API_KEY: Optional[str] = "429683C4C977415CAAFCCE10F7D57E11"
-    EVOLUTION_WEBHOOK_URL: Optional[str] = "http://tiktrend-api:8000/webhooks/evolution"
+    EVOLUTION_API_URL: str = _URLS["evolution"]
+    EVOLUTION_API_KEY: str = "429683C4C977415CAAFCCE10F7D57E11"
+    EVOLUTION_WEBHOOK_URL: str = f"{_URLS['api']}/webhooks/evolution"
     
     # Chatwoot (Customer Support)
-    CHATWOOT_API_URL: str = "http://localhost:3000"
+    CHATWOOT_API_URL: str = _URLS["chatwoot"]
     CHATWOOT_ACCESS_TOKEN: Optional[str] = None
     CHATWOOT_ACCOUNT_ID: int = 1
     
     # n8n Integration
-    N8N_API_URL: Optional[str] = None
+    N8N_API_URL: str = _URLS["n8n"]
     N8N_API_KEY: Optional[str] = None
-    N8N_WEBHOOK_URL: Optional[str] = None
+    N8N_WEBHOOK_URL: str = f"{_URLS['n8n']}/webhook"
     
     # Typebot Integration
     TYPEBOT_API_URL: Optional[str] = None
@@ -98,15 +133,31 @@ class Settings(BaseSettings):
     SENTRY_DSN: Optional[str] = None
     POSTHOG_API_KEY: Optional[str] = None
     
+    # Hub Alerts - Notification Webhooks
+    SLACK_WEBHOOK_URL: Optional[str] = None
+    DISCORD_WEBHOOK_URL: Optional[str] = None
+    ALERT_WEBHOOK_URL: Optional[str] = None
+    ALERT_DEDUP_WINDOW: int = 300  # 5 minutes
+    ALERT_MAX_PER_MINUTE: int = 10
+    
+    # Email / SMTP
+    SMTP_HOST: Optional[str] = None
+    SMTP_PORT: int = 587
+    SMTP_USER: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    SMTP_FROM: Optional[str] = None
+    SMTP_TLS: bool = True
+    
+    # Resend (alternative email service)
+    RESEND_API_KEY: Optional[str] = None
+    
+    # MercadoPago (alias for compatibility)
+    MP_ACCESS_TOKEN: Optional[str] = None
+    MP_PUBLIC_KEY: Optional[str] = None
+    
     # CORS
     CORS_ORIGINS: str = "http://localhost:1420,http://localhost:3000,tauri://localhost"
     FRONTEND_URL: str = "http://localhost:5173"
-    API_URL: str = "http://localhost:8000"
-
-    # Chatwoot
-    CHATWOOT_API_URL: Optional[str] = "https://app.chatwoot.com"
-    CHATWOOT_ACCESS_TOKEN: Optional[str] = None
-    CHATWOOT_ACCOUNT_ID: int = 1
 
     class Config:
         env_file = ".env"

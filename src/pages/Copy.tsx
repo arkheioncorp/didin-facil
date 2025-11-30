@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ import {
 import { COPY_TYPES, COPY_TONES } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import { generateCopy, getCopyHistory, getFavorites } from "@/lib/tauri";
+import { api } from "@/lib/api";
 import type { FavoriteWithProduct, CopyHistory } from "@/types";
 import type { CopyType, CopyTone } from "@/types";
 import { analytics } from "@/lib/analytics";
@@ -70,6 +72,8 @@ interface CopyFormState {
   tone: CopyTone;
   generatedCopy: string | null;
   isGenerating: boolean;
+  selectedPlatform: string | null;
+  selectedType: CopyType | null;
 }
 
 interface ContentTemplate {
@@ -96,6 +100,11 @@ interface AutomationWorkflow {
   difficulty: "beginner" | "intermediate" | "advanced";
   estimatedTime: string;
   integrations: string[];
+  steps?: Array<{
+    name: string;
+    type: string;
+    config?: Record<string, unknown>;
+  }>;
 }
 
 // =============================================================================
@@ -488,6 +497,8 @@ export const Copy: React.FC = () => {
     tone: "urgent",
     generatedCopy: null,
     isGenerating: false,
+    selectedPlatform: null,
+    selectedType: null,
   });
 
   // Load data on mount
@@ -643,15 +654,22 @@ export const Copy: React.FC = () => {
   };
 
   // Action handlers for next steps
+  const navigate = useNavigate();
+  
   const handleSchedulePost = () => {
     if (!state.generatedCopy) return;
-    // Navigate to scheduler with the copy text
-    toast({
-      title: "📅 Em breve!",
-      description: "Redirecionando para o agendador...",
+    // Navegar para o agendador passando os dados da copy
+    navigate('/scheduler', { 
+      state: { 
+        copy: state.generatedCopy,
+        platform: state.selectedPlatform,
+        copyType: state.selectedType,
+      } 
     });
-    // TODO: Navigate to scheduler page with copy data
-    // navigate('/scheduler', { state: { copy: state.generatedCopy } });
+    toast({
+      title: "📅 Redirecionando!",
+      description: "Configure o agendamento da sua publicação.",
+    });
   };
 
   const handleSendWhatsApp = () => {
@@ -672,28 +690,105 @@ export const Copy: React.FC = () => {
     });
   };
 
-  const handleSaveAsTemplate = () => {
+  const handleSaveAsTemplate = async () => {
     if (!state.generatedCopy) return;
-    // TODO: Implement save template functionality
-    toast({
-      title: "💾 Template salvo!",
-      description: "Disponível na aba Templates.",
-    });
+    
+    try {
+      // Extrair variáveis do template (padrão {{variavel}})
+      const variableMatches = state.generatedCopy.match(/\{\{([^}]+)\}\}/g) || [];
+      const variables = variableMatches.map(v => v.replace(/[{}]/g, '').trim());
+      
+      await api.post('/templates', {
+        name: `Copy ${state.selectedType} - ${new Date().toLocaleDateString('pt-BR')}`,
+        description: `Template gerado automaticamente de ${state.selectedType}`,
+        platform: state.selectedPlatform || 'all',
+        category: state.selectedType || 'custom',
+        caption_template: state.generatedCopy,
+        hashtags: [],
+        variables: variables,
+        is_public: false,
+      });
+      
+      toast({
+        title: "💾 Template salvo!",
+        description: "Disponível na aba Templates.",
+      });
+    } catch (error) {
+      console.error("Error saving template:", error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar o template. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleExportN8n = (workflow: AutomationWorkflow) => {
-    // TODO: Implement n8n export
+  const handleExportN8n = async (workflow: AutomationWorkflow) => {
     toast({
       title: "📥 Exportando...",
       description: `Workflow "${workflow.name}" será baixado como JSON.`,
     });
-    // Simulate download
-    setTimeout(() => {
+    
+    try {
+      // Determinar tipo de trigger baseado na string
+      const isSchedule = workflow.trigger.toLowerCase().includes("agendado");
+      
+      // Criar estrutura de workflow n8n compatível
+      const n8nWorkflow = {
+        name: workflow.name,
+        nodes: [
+          {
+            id: "trigger",
+            name: "Trigger",
+            type: isSchedule ? "n8n-nodes-base.cron" : "n8n-nodes-base.webhook",
+            position: [250, 300],
+            parameters: isSchedule 
+              ? { cronExpression: "0 9 * * *" }
+              : { httpMethod: "POST", path: `/didin/${workflow.id}` },
+          },
+          ...(workflow.steps || []).map((step, index) => ({
+            id: `step_${index}`,
+            name: step.name,
+            type: step.type === "api_call" 
+              ? "n8n-nodes-base.httpRequest"
+              : step.type === "openai"
+              ? "n8n-nodes-base.openAi"
+              : "n8n-nodes-base.set",
+            position: [450 + (index * 200), 300],
+            parameters: step.config || {},
+          })),
+        ],
+        connections: (workflow.steps || []).reduce((acc: Record<string, unknown>, _, index: number) => {
+          const fromNode = index === 0 ? "trigger" : `step_${index - 1}`;
+          acc[fromNode] = { main: [[{ node: `step_${index}`, type: "main", index: 0 }]] };
+          return acc;
+        }, {} as Record<string, unknown>),
+        settings: { executionOrder: "v1" },
+      };
+      
+      // Criar e baixar arquivo
+      const blob = new Blob([JSON.stringify(n8nWorkflow, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `workflow_${workflow.id}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
       toast({
         title: "✅ Pronto!",
         description: "Importe o arquivo no seu n8n.",
       });
-    }, 1500);
+    } catch (error) {
+      console.error("Error exporting workflow:", error);
+      toast({
+        title: "Erro na exportação",
+        description: "Não foi possível exportar o workflow.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleOpenDocs = (workflow: AutomationWorkflow) => {

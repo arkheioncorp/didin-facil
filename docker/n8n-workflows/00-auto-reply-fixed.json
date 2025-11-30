@@ -1,0 +1,122 @@
+{
+  "id": "auto-reply-fixed-001",
+  "name": "00 - Auto Reply FIXED",
+  "versionId": "1",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot",
+        "options": {},
+        "responseMode": "lastNode"
+      },
+      "id": "webhook-node",
+      "name": "Webhook Chatwoot",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "chatwoot-fixed"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nconsole.log('Webhook recebido:', JSON.stringify(data));\n\nif (data.event !== 'message_created' || data.message_type !== 'incoming') {\n  return [{ json: { skip: true, reason: 'not_incoming' } }];\n}\n\nconst msg = (data.content || '').toLowerCase().trim();\nconst convId = data.conversation?.id;\nconst senderName = data.sender?.name || 'Cliente';\n\nif (!convId) {\n  return [{ json: { skip: true, reason: 'no_conversation_id' } }];\n}\n\nlet response = 'Desculpe, nao entendi. Digite MENU para ver as opcoes.';\n\nif (/^(oi|ola|bom dia|boa tarde|boa noite|hello|hi|hey)/.test(msg)) {\n  response = 'Ola! Bem-vindo ao Didin Facil!\\n\\n1 - Comparar precos\\n2 - Ver ofertas\\n3 - Falar com atendente\\n\\nDigite o numero da opcao!';\n} else if (msg === '1' || msg.includes('preco') || msg.includes('comparar')) {\n  response = 'Comparacao de Precos\\n\\nMe envie o nome do produto que voce quer comparar!\\n\\nExemplos: iPhone 15, Geladeira, Notebook';\n} else if (msg === '2' || msg.includes('oferta')) {\n  response = 'Ofertas do Dia\\n\\niPhone 14 - R$ 4.299 (12% OFF)\\nNotebook Dell - R$ 3.199 (8% OFF)\\nAirPods Pro - R$ 1.599 (15% OFF)';\n} else if (msg === '3' || msg.includes('atendente') || msg.includes('humano')) {\n  response = 'Atendimento Humano\\n\\nEstou transferindo para um atendente...\\n\\nTempo estimado: 2 minutos';\n} else if (msg.includes('menu') || msg.includes('ajuda') || msg.includes('help')) {\n  response = 'Menu Principal\\n\\n1 - Comparar precos\\n2 - Ver ofertas\\n3 - Falar com atendente\\n\\nDigite o numero!';\n} else if (/^(obrigad|valeu|thanks)/.test(msg)) {\n  response = 'Por nada! Estou aqui para ajudar!';\n}\n\nreturn [{\n  json: {\n    skip: false,\n    conversationId: convId,\n    response: response\n  }\n}];"
+      },
+      "id": "code-node",
+      "name": "Processar Mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip }}",
+              "value2": false
+            }
+          ]
+        }
+      },
+      "id": "if-node",
+      "name": "Deve Responder?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://tiktrend-chatwoot:3000/api/v1/accounts/3/conversations/{{ $json.conversationId }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "2nQ98Rj5MtwnMurVVfaoYN4t"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": {{ JSON.stringify($json.response) }},\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "http-node",
+      "name": "Enviar para Chatwoot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [910, 300],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    }
+  ],
+  "connections": {
+    "Webhook Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Processar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Deve Responder?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deve Responder?": {
+      "main": [
+        [
+          {
+            "node": "Enviar para Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  }
+}

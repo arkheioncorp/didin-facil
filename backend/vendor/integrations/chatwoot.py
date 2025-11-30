@@ -25,6 +25,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _get_chatwoot_url() -> str:
+    """Obtém URL do Chatwoot das settings (com auto-detecção Docker)."""
+    try:
+        from shared.config import settings
+        return settings.CHATWOOT_API_URL
+    except Exception:
+        return os.getenv("CHATWOOT_API_URL", "http://localhost:3000")
+
+
 class ConversationStatus(Enum):
     """Status de conversas no Chatwoot."""
     OPEN = "open"
@@ -51,12 +60,30 @@ class InboxType(Enum):
     TELEGRAM = "Channel::Telegram"
 
 
+def _get_chatwoot_token() -> str:
+    """Obtém token do Chatwoot das settings."""
+    try:
+        from shared.config import settings
+        return settings.CHATWOOT_ACCESS_TOKEN or ""
+    except Exception:
+        return os.getenv("CHATWOOT_ACCESS_TOKEN", "")
+
+
+def _get_chatwoot_account_id() -> str:
+    """Obtém account ID do Chatwoot das settings."""
+    try:
+        from shared.config import settings
+        return str(settings.CHATWOOT_ACCOUNT_ID)
+    except Exception:
+        return os.getenv("CHATWOOT_ACCOUNT_ID", "1")
+
+
 @dataclass
 class ChatwootConfig:
     """Configuração do Chatwoot."""
-    api_url: str = field(default_factory=lambda: os.getenv("CHATWOOT_API_URL", "https://app.chatwoot.com"))
-    api_token: str = field(default_factory=lambda: os.getenv("CHATWOOT_API_TOKEN", ""))
-    account_id: str = field(default_factory=lambda: os.getenv("CHATWOOT_ACCOUNT_ID", ""))
+    api_url: str = field(default_factory=_get_chatwoot_url)
+    api_token: str = field(default_factory=_get_chatwoot_token)
+    account_id: str = field(default_factory=_get_chatwoot_account_id)
     timeout: int = 30
 
 

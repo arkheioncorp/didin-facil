@@ -379,7 +379,7 @@ class TestCreditsManagement:
     async def test_add_credits_to_user(self, license_service, mock_db):
         """Test adding credits to user"""
         mock_db.fetch_one = AsyncMock(
-            return_value={"id": "user_123", "credits": 50}
+            return_value={"id": "user_123", "credits_balance": 50}
         )
         mock_db.execute = AsyncMock()
 

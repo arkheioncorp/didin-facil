@@ -109,42 +109,34 @@ async def handle_payment_event(
         await mp_service.log_event("payment_created", payment)
 
     elif action == "payment.approved":
-        # Payment successful - activate license or add credits
+        # Payment successful - activate license and/or add credits
         user_email = payment.get("payer", {}).get("email")
-        product_type = payment.get("metadata", {}).get("product_type", "license")
-        credits_amount = payment.get("metadata", {}).get("credits", 0)
+        metadata = payment.get("metadata", {})
+        product_type = metadata.get("product_type", "credits")
+        credits_amount = int(metadata.get("credits", 0))
+        includes_license = metadata.get("includes_license", False)
+        package_slug = metadata.get("package_slug", "")
 
         if user_email:
-            if product_type == "license":
-                # Lifetime license purchase
-                existing = await license_service.get_license_by_email(user_email)
-
-                if not existing:
-                    # Create new lifetime license
-                    license_key = await license_service.create_license(
-                        email=user_email,
-                        plan="lifetime",
-                        duration_days=-1,  # Lifetime = no expiration
-                        payment_id=str(payment_id)
-                    )
-
-                    # Send license key via email
-                    await mp_service.send_license_email(
-                        user_email, license_key, "lifetime"
-                    )
-
-            elif product_type == "credits":
-                # Credits pack purchase
+            # Add credits to user account
+            if credits_amount > 0:
                 await license_service.add_credits(
                     email=user_email,
-                    amount=int(credits_amount),
+                    amount=credits_amount,
                     payment_id=str(payment_id)
                 )
 
-                # Send credits confirmation email
-                await mp_service.send_credits_email(
-                    user_email, int(credits_amount)
+            # Activate lifetime license if package includes it
+            if includes_license:
+                await license_service.activate_lifetime_license(
+                    email=user_email,
+                    payment_id=str(payment_id)
                 )
+
+            # Send confirmation email
+            await mp_service.send_credits_email(
+                user_email, credits_amount, includes_license
+            )
 
         await mp_service.log_event("payment_approved", payment)
 

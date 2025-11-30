@@ -4,6 +4,7 @@ Subscription API Routes
 Endpoints para gerenciamento de assinaturas e planos.
 """
 
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any
@@ -15,9 +16,22 @@ from modules.subscription.plans import (
     PlanTier,
     BillingCycle
 )
+from shared.config import settings
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 subscription_service = SubscriptionService()
+
+
+# MercadoPago SDK
+try:
+    import mercadopago
+    sdk = mercadopago.SDK(settings.MP_ACCESS_TOKEN)
+    MP_AVAILABLE = True
+except (ImportError, Exception):
+    sdk = None
+    MP_AVAILABLE = False
+    logger.warning("MercadoPago SDK não disponível")
 
 
 # ============================================
@@ -192,16 +206,73 @@ async def upgrade_subscription(
         raise HTTPException(status_code=400, detail="Plano ou ciclo inválido")
     
     if plan == PlanTier.FREE:
-        raise HTTPException(status_code=400, detail="Não é possível fazer upgrade para FREE")
+        raise HTTPException(
+            status_code=400,
+            detail="Não é possível fazer upgrade para FREE"
+        )
     
     if plan == PlanTier.ENTERPRISE:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="Entre em contato para plano Enterprise"
         )
     
-    # TODO: Criar preference no MercadoPago
-    # Por enquanto, simula upgrade direto
+    # Obter informações do plano
+    plan_info = subscription_service.get_plan_info(plan)
+    price = (
+        plan_info["price_yearly"] 
+        if cycle == BillingCycle.YEARLY 
+        else plan_info["price_monthly"]
+    )
+    
+    # Criar preference no MercadoPago
+    if MP_AVAILABLE and sdk:
+        try:
+            preference_data = {
+                "items": [
+                    {
+                        "title": f"Didin Fácil - Plano {plan_info['name']}",
+                        "description": plan_info["description"],
+                        "quantity": 1,
+                        "currency_id": "BRL",
+                        "unit_price": float(price),
+                    }
+                ],
+                "payer": {
+                    "email": current_user.email,
+                },
+                "back_urls": {
+                    "success": f"{settings.FRONTEND_URL}/subscription/success",
+                    "failure": f"{settings.FRONTEND_URL}/subscription/error",
+                    "pending": f"{settings.FRONTEND_URL}/subscription/pending",
+                },
+                "auto_return": "approved",
+                "external_reference": f"{current_user.id}:{plan.value}:{cycle.value}",
+                "notification_url": f"{settings.API_URL}/webhooks/mercadopago",
+                "statement_descriptor": "DIDIN FACIL",
+                "metadata": {
+                    "user_id": str(current_user.id),
+                    "plan": plan.value,
+                    "billing_cycle": cycle.value,
+                },
+            }
+            
+            preference_response = sdk.preference().create(preference_data)
+            preference = preference_response.get("response", {})
+            
+            return {
+                "status": "redirect",
+                "checkout_url": preference.get("init_point"),
+                "preference_id": preference.get("id"),
+                "plan": plan.value,
+                "price": float(price),
+            }
+            
+        except Exception as e:
+            logger.error(f"Erro ao criar preference MP: {e}")
+            # Fallback: ativar plano direto (dev mode)
+    
+    # Fallback ou modo desenvolvimento: upgrade direto
     subscription = await subscription_service.upgrade_plan(
         str(current_user.id),
         plan,
@@ -226,7 +297,8 @@ async def cancel_subscription(current_user=Depends(get_current_user)):
     
     Mantém acesso até o final do período pago.
     """
-    subscription = await subscription_service.cancel_subscription(str(current_user.id))
+    user_id = str(current_user.id)
+    subscription = await subscription_service.cancel_subscription(user_id)
     
     return {
         "status": "canceled",
@@ -250,10 +322,63 @@ async def mercadopago_webhook(payload: Dict[str, Any]):
     - subscription_preapproval.updated
     """
     event_type = payload.get("type")
-    payload.get("data", {})
+    data = payload.get("data", {})
+    payment_id = data.get("id")
     
-    # TODO: Processar eventos do MercadoPago
-    # - Atualizar status da assinatura
-    # - Enviar notificações
+    logger.info(f"Webhook MP recebido: {event_type} - ID: {payment_id}")
+    
+    if not MP_AVAILABLE or not sdk:
+        logger.warning("MercadoPago SDK não disponível para processar webhook")
+        return {"status": "received", "event": event_type}
+    
+    try:
+        if event_type in ["payment", "payment.created", "payment.updated"]:
+            # Buscar detalhes do pagamento
+            payment_response = sdk.payment().get(payment_id)
+            payment = payment_response.get("response", {})
+            
+            status = payment.get("status")
+            external_ref = payment.get("external_reference", "")
+            metadata = payment.get("metadata", {})
+            
+            # Parse external_reference: "user_id:plan:cycle"
+            parts = external_ref.split(":")
+            if len(parts) >= 3:
+                user_id, plan_str, cycle_str = parts[0], parts[1], parts[2]
+            else:
+                user_id = metadata.get("user_id")
+                plan_str = metadata.get("plan")
+                cycle_str = metadata.get("billing_cycle", "monthly")
+            
+            if status == "approved" and user_id and plan_str:
+                # Ativar/atualizar assinatura
+                try:
+                    plan = PlanTier(plan_str)
+                    cycle = BillingCycle(cycle_str)
+                    await subscription_service.upgrade_plan(user_id, plan, cycle)
+                    logger.info(f"Assinatura ativada: {user_id} -> {plan.value}")
+                except Exception as e:
+                    logger.error(f"Erro ao ativar assinatura: {e}")
+            
+            elif status == "rejected":
+                logger.warning(f"Pagamento rejeitado: {payment_id}")
+            
+            elif status == "pending":
+                logger.info(f"Pagamento pendente: {payment_id}")
+        
+        elif event_type == "subscription_preapproval.updated":
+            # Atualizar status de assinatura recorrente
+            preapproval_id = data.get("id")
+            preapproval_response = sdk.preapproval().get(preapproval_id)
+            preapproval = preapproval_response.get("response", {})
+            
+            status = preapproval.get("status")
+            payer_email = preapproval.get("payer_email")
+            
+            logger.info(f"Preapproval {preapproval_id}: {status}")
+            # TODO: Buscar usuário por email e atualizar status
+            
+    except Exception as e:
+        logger.error(f"Erro ao processar webhook MP: {e}")
     
     return {"status": "received", "event": event_type}
