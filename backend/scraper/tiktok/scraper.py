@@ -15,6 +15,7 @@ from ..config import ScraperConfig
 from ..utils.proxy import ProxyPool
 from .parser import TikTokParser
 from .antibot import AntiDetection
+from .data_provider import get_data_provider
 
 # Import redis for state persistence
 import sys
@@ -241,11 +242,16 @@ class TikTokScraper:
         return await self.scrape_products(category=category, limit=limit)
     
     async def scrape_trending(self, limit: int = 50) -> List[dict]:
-        """Scrape trending products"""
+        """Scrape trending products with intelligent fallback"""
         is_safe = await self.check_safety()
         if not is_safe:
-            print("[TikTok Scraper] Safety mode active. Skipping scrape.")
-            raise Exception("Safety mode active")
+            print("[TikTok Scraper] Safety mode active. Using data provider.")
+            provider = get_data_provider(self.config)
+            return await provider.get_trending_products(limit=limit)
+
+        # Start browser if not already running
+        if not self.browser:
+            await self.start()
 
         context = await self._create_context()
         page = await context.new_page()
@@ -253,20 +259,26 @@ class TikTokScraper:
         products = []
 
         try:
-            # Navigate to trending hashtag
-            # url = "https://www.tiktok.com/tag/tiktokmademebuyit"
-            # url = "https://www.tiktok.com/explore"
+            # Try TikTok search
             url = "https://www.tiktok.com/search?q=tiktokmademebuyit"
             print(f"[TikTok Scraper] Navigating to {url}")
             await self._navigate_with_delay(page, url)
+
+            # Check for CAPTCHA or blocks
+            content = await page.content()
+            if self._is_blocked(content):
+                print("[TikTok Scraper] CAPTCHA/Block detected. Using fallback.")
+                await self.record_result(False)
+                provider = get_data_provider(self.config)
+                return await provider.get_trending_products(limit=limit)
 
             # Wait for network idle to ensure dynamic content loads
             try:
                 await page.wait_for_load_state("networkidle", timeout=20000)
             except Exception as e:
-                print(f"[TikTok Scraper] Network idle timeout (continuing anyway): {e}")
+                print(f"[TikTok Scraper] Network idle timeout: {e}")
 
-            # Scroll down to trigger lazy loading
+            # Scroll to trigger lazy loading
             try:
                 for _ in range(3):
                     await page.evaluate("window.scrollBy(0, 1000)")
@@ -279,56 +291,28 @@ class TikTokScraper:
             print(f"[TikTok Scraper] Page title: {title}")
 
             # Extract items
-            page_products = []
-            # Get all video links
-            elements = await page.query_selector_all("a")
-            
-            for el in elements:
-                try:
-                    href = await el.get_attribute("href")
-                    if not href or "/video/" not in href:
-                        continue
-
-                    # Create a mock product from the video
-                    video_id = href.split("/")[-1]
-
-                    # Avoid duplicates in the same page
-                    if any(p["tiktok_id"] == video_id for p in page_products):
-                        continue
-
-                    page_products.append({
-                        "id": str(uuid.uuid4()),
-                        "tiktok_id": video_id,
-                        "title": f"Trending Video {video_id}",
-                        "description": "Trending product from #tiktokmademebuyit",
-                        "price": 0.0,
-                        "currency": "BRL",
-                        "category": "Trending",
-                        "product_url": href,
-                        "image_url": "",
-                        "is_trending": True,
-                        "collected_at": datetime.now(timezone.utc),
-                        "sales_count": 0
-                    })
-                except Exception:
-                    continue
-
-            print(f"[TikTok Scraper] Found {len(page_products)} products")
+            page_products = await self._extract_video_products(page)
             products.extend(page_products)
-            
-            if not products:
-                print("[TikTok Scraper] No products found. Using fallback mock data.")
-                products = self._generate_mock_trending_products(limit=limit)
 
-            await self.record_result(True)
+            print(f"[TikTok Scraper] Found {len(products)} products")
+
+            # If no products found, use fallback
+            if not products:
+                print("[TikTok Scraper] No products found. Using fallback.")
+                provider = get_data_provider(self.config)
+                products = await provider.get_trending_products(limit=limit)
+
+            await self.record_result(len(products) > 0)
             return products[:limit]
 
         except Exception as e:
             print(f"[TikTok Scraper] Error in trending: {e}")
             await self.record_result(False)
-            
-            print("[TikTok Scraper] Error occurred. Using fallback mock data.")
-            return self._generate_mock_trending_products(limit=limit)
+
+            # Use data provider fallback
+            print("[TikTok Scraper] Error occurred. Using fallback.")
+            provider = get_data_provider(self.config)
+            return await provider.get_trending_products(limit=limit)
 
         finally:
             try:
@@ -343,6 +327,58 @@ class TikTokScraper:
 
             if context in self.contexts:
                 self.contexts.remove(context)
+
+    def _is_blocked(self, content: str) -> bool:
+        """Check if page content indicates a block or CAPTCHA"""
+        content_lower = content.lower()
+        block_indicators = [
+            'captcha',
+            'verify you are human',
+            'access denied',
+            'blocked',
+            'unusual traffic',
+            'robot',
+            'automated',
+            'recaptcha',
+            'hcaptcha',
+        ]
+        return any(indicator in content_lower for indicator in block_indicators)
+
+    async def _extract_video_products(self, page) -> List[dict]:
+        """Extract product info from video links"""
+        products = []
+        elements = await page.query_selector_all("a")
+
+        for el in elements:
+            try:
+                href = await el.get_attribute("href")
+                if not href or "/video/" not in href:
+                    continue
+
+                video_id = href.split("/")[-1].split("?")[0]
+
+                # Avoid duplicates
+                if any(p["tiktok_id"] == video_id for p in products):
+                    continue
+
+                products.append({
+                    "id": str(uuid.uuid4()),
+                    "tiktok_id": video_id,
+                    "title": f"Trending Video {video_id}",
+                    "description": "Trending from #tiktokmademebuyit",
+                    "price": 0.0,
+                    "currency": "BRL",
+                    "category": "Trending",
+                    "product_url": href,
+                    "image_url": "",
+                    "is_trending": True,
+                    "collected_at": datetime.now(timezone.utc),
+                    "sales_count": 0
+                })
+            except Exception:
+                continue
+
+        return products
     
     async def scrape_product_details(self, product_id: str) -> Optional[dict]:
         """Scrape detailed information for a single product"""
@@ -442,25 +478,3 @@ class TikTokScraper:
         
         delay = random.uniform(min_d, max_d)
         await asyncio.sleep(delay)
-
-    def _generate_mock_trending_products(self, limit: int = 5) -> List[dict]:
-        """Generate mock trending products when scraping fails"""
-        print("[TikTok Scraper] Generating mock trending products (fallback)")
-        mock_products = []
-        for i in range(limit):
-            product_id = str(uuid.uuid4())
-            mock_products.append({
-                "id": product_id,
-                "tiktok_id": f"mock_{int(datetime.now(timezone.utc).timestamp())}_{i}",
-                "title": f"Trending Product {i+1} (Mock)",
-                "description": "This is a mock product generated because live scraping was blocked.",
-                "price": round(random.uniform(10.0, 100.0), 2),
-                "currency": "BRL",
-                "category": "Trending",
-                "product_url": "https://www.tiktok.com/",
-                "image_url": "https://p16-va.tiktokcdn.com/img/musically-maliva-obj/1665282759496710~c5_100x100.jpeg",
-                "is_trending": True,
-                "collected_at": datetime.now(timezone.utc),
-                "sales_count": random.randint(100, 10000)
-            })
-        return mock_products
