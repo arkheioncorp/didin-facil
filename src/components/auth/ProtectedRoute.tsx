@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type { AppSettings } from "@/types";
 
+// Check if running in Tauri environment
+const isTauri = (): boolean => {
+  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+};
+
 export const ProtectedRoute = () => {
   const isAuthenticated = useUserStore((state) => state.isAuthenticated);
   const hasHydrated = useUserStore((state) => state.hasHydrated);
@@ -14,6 +19,12 @@ export const ProtectedRoute = () => {
   // Check if setup is complete
   useEffect(() => {
     const checkSetup = async () => {
+      // In non-Tauri environment (browser), skip setup check
+      if (!isTauri()) {
+        setSetupComplete(true);
+        return;
+      }
+      
       try {
         const settings = await invoke<AppSettings>("get_settings");
         setSetupComplete(settings.setupComplete ?? false);
