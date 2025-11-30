@@ -6,7 +6,7 @@ Autenticação OAuth centralizada para múltiplas plataformas
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 import secrets
 import hashlib
@@ -164,7 +164,7 @@ async def init_oauth(
         "user_id": current_user["id"],
         "platform": data.platform,
         "account_name": data.account_name,
-        "created_at": datetime.utcnow().isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat()
     }
     await redis.set(
         f"oauth:state:{state}",
@@ -291,14 +291,14 @@ async def oauth_callback(
         "token_type": tokens.get("token_type", "Bearer"),
         "expires_in": tokens.get("expires_in"),
         "scope": tokens.get("scope"),
-        "connected_at": datetime.utcnow().isoformat(),
+        "connected_at": datetime.now(timezone.utc).isoformat(),
         "platform": platform,
         "account_name": account_name,
     }
     
     # Calcular expiração
     if stored_data["expires_in"]:
-        expires_at = datetime.utcnow() + timedelta(
+        expires_at = datetime.now(timezone.utc) + timedelta(
             seconds=stored_data["expires_in"]
         )
         stored_data["expires_at"] = expires_at.isoformat()
@@ -387,10 +387,10 @@ async def refresh_token(
     stored["access_token"] = encrypt_token(new_access, user_id)
     stored["refresh_token"] = encrypt_token(new_refresh, user_id)
     stored["expires_in"] = tokens.get("expires_in")
-    stored["refreshed_at"] = datetime.utcnow().isoformat()
+    stored["refreshed_at"] = datetime.now(timezone.utc).isoformat()
     
     if stored["expires_in"]:
-        expires_at = datetime.utcnow() + timedelta(
+        expires_at = datetime.now(timezone.utc) + timedelta(
             seconds=stored["expires_in"]
         )
         stored["expires_at"] = expires_at.isoformat()
@@ -435,7 +435,7 @@ async def list_connected_accounts(
                     expires_at = None
                     if data.get("expires_at"):
                         expires_at = datetime.fromisoformat(data["expires_at"])
-                        if expires_at < datetime.utcnow():
+                        if expires_at < datetime.now(timezone.utc):
                             status = "expired"
                     
                     accounts.append(ConnectedAccount(
@@ -515,7 +515,7 @@ async def get_access_token(
     if stored.get("expires_at"):
         expires_at = datetime.fromisoformat(stored["expires_at"])
         # Refresh 5 minutos antes de expirar
-        if expires_at < datetime.utcnow() + timedelta(minutes=5):
+        if expires_at < datetime.now(timezone.utc) + timedelta(minutes=5):
             needs_refresh = True
     
     if needs_refresh and stored.get("refresh_token"):

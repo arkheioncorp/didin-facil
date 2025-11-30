@@ -24,7 +24,7 @@ import random
 import re
 import sys
 from dataclasses import dataclass, asdict, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
@@ -216,7 +216,7 @@ class TikTokShopScraper:
             # Generate unique ID
             tiktok_id = self._extract_id_from_url(product_url)
             
-            now = datetime.utcnow().isoformat()
+            now = datetime.now(timezone.utc).isoformat()
             
             return Product(
                 id=f"prod_{tiktok_id}",
@@ -394,7 +394,7 @@ def generate_mock_products(count: int = 10, category: str = None) -> List[dict]:
         category = random.choice(categories)
     
     products = []
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).isoformat()
     
     product_names = [
         "Fone Bluetooth TWS Pro",
@@ -458,7 +458,7 @@ def output_result(products: List[dict], output_file: str = None):
     result = {
         "success": True,
         "count": len(products),
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "products": products
     }
     

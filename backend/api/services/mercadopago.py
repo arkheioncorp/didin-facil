@@ -92,6 +92,58 @@ class MercadoPagoService:
             response.raise_for_status()
             return response.json()
     
+    async def create_pix_payment(
+        self,
+        amount: float,
+        email: str,
+        cpf: str,
+        name: str,
+        external_reference: str,
+    ) -> dict:
+        """
+        Create a PIX payment with QR code.
+        Returns QR code for immediate payment.
+        """
+        payment_data = {
+            "transaction_amount": amount,
+            "payment_method_id": "pix",
+            "payer": {
+                "email": email,
+                "first_name": name.split()[0] if name else "Cliente",
+                "last_name": " ".join(name.split()[1:]) if len(name.split()) > 1 else "",
+                "identification": {
+                    "type": "CPF",
+                    "number": cpf
+                }
+            },
+            "external_reference": external_reference,
+            "notification_url": f"{settings.API_URL}/webhooks/mercadopago",
+            "description": "TikTrend Finder - Licença Vitalícia"
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/v1/payments",
+                headers=self.headers,
+                json=payment_data
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+            # Extract PIX payment data
+            point_of_interaction = data.get("point_of_interaction", {})
+            transaction_data = point_of_interaction.get("transaction_data", {})
+            
+            return {
+                "payment_id": data.get("id"),
+                "status": data.get("status"),
+                "qr_code": transaction_data.get("qr_code"),
+                "qr_code_base64": transaction_data.get("qr_code_base64"),
+                "copy_paste": transaction_data.get("qr_code"),
+                "date_of_expiration": data.get("date_of_expiration"),
+                "ticket_url": transaction_data.get("ticket_url")
+            }
+
     async def create_subscription(
         self,
         plan: str,

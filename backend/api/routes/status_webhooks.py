@@ -6,7 +6,7 @@ Notifies external services about post status changes
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, HttpUrl, Field
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 import httpx
 import hmac
 import hashlib
@@ -73,7 +73,7 @@ async def list_webhooks() -> List[WebhookConfig]:
                 events=json.loads(data.get("events", "[]")),
                 secret=data.get("secret"),
                 active=data.get("active", "true").lower() == "true",
-                created_at=datetime.fromisoformat(data.get("created_at", datetime.utcnow().isoformat())),
+                created_at=datetime.fromisoformat(data.get("created_at", datetime.now(timezone.utc).isoformat())),
                 last_triggered=datetime.fromisoformat(data["last_triggered"]) if data.get("last_triggered") else None,
                 failure_count=int(data.get("failure_count", 0))
             ))
@@ -125,7 +125,7 @@ async def get_webhook(webhook_id: str) -> WebhookConfig:
         events=json.loads(data.get("events", "[]")),
         secret=data.get("secret") or None,
         active=data.get("active", "true").lower() == "true",
-        created_at=datetime.fromisoformat(data.get("created_at", datetime.utcnow().isoformat())),
+        created_at=datetime.fromisoformat(data.get("created_at", datetime.now(timezone.utc).isoformat())),
         last_triggered=datetime.fromisoformat(data["last_triggered"]) if data.get("last_triggered") else None,
         failure_count=int(data.get("failure_count", 0))
     )
@@ -175,7 +175,7 @@ async def test_webhook(webhook_id: str, background_tasks: BackgroundTasks):
     
     test_event = WebhookEvent(
         event_type="test",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         data={
             "message": "This is a test webhook event from Didin Fácil",
             "webhook_id": webhook_id
@@ -212,7 +212,7 @@ async def send_webhook(webhook: WebhookConfig, event: WebhookEvent):
     headers = {
         "Content-Type": "application/json",
         "X-Didin-Event": event.event_type,
-        "X-Didin-Delivery": datetime.utcnow().isoformat(),
+        "X-Didin-Delivery": datetime.now(timezone.utc).isoformat(),
     }
     
     # Add HMAC signature if secret is configured
@@ -225,7 +225,7 @@ async def send_webhook(webhook: WebhookConfig, event: WebhookEvent):
         headers["X-Didin-Signature"] = f"sha256={signature}"
     
     result = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "event_type": event.event_type,
         "success": False,
         "status_code": None,
@@ -255,7 +255,7 @@ async def send_webhook(webhook: WebhookConfig, event: WebhookEvent):
     
     # Update webhook metadata
     key = f"webhook:config:{webhook.id}"
-    await redis_client.hset(key, "last_triggered", datetime.utcnow().isoformat())
+    await redis_client.hset(key, "last_triggered", datetime.now(timezone.utc).isoformat())
     
     if not result["success"]:
         await redis_client.hincrby(key, "failure_count", 1)
@@ -285,7 +285,7 @@ async def trigger_event(event_type: str, data: dict):
     
     event = WebhookEvent(
         event_type=event_type,
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         data=data
     )
     

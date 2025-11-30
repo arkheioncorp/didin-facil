@@ -82,6 +82,7 @@
     "react-router-dom": "^6.21.2",
     "react-virtuoso": "^4.15.0",
     "recharts": "^2.10.4",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^2.2.0",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.22.4",

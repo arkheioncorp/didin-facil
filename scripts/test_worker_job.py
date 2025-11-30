@@ -1,7 +1,7 @@
 import asyncio
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from redis.asyncio import Redis
 
 async def push_job():
@@ -12,7 +12,7 @@ async def push_job():
         "id": job_id,
         "type": "scrape_trending",
         "limit": 10,
-        "created_at": datetime.utcnow().isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat()
     }
     
     print(f"Pushing job {job_id} to scraper:jobs...")

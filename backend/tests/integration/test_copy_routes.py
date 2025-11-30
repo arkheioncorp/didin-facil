@@ -6,7 +6,7 @@ Tests for AI copy generation endpoints using AsyncClient.
 import pytest
 import pytest_asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime
+from datetime import datetime, timezone
 from httpx import AsyncClient, ASGITransport
 from api.main import app
 from api.routes.copy import get_current_user
@@ -96,7 +96,7 @@ class TestGenerateCopy:
             "platform": "instagram",
             "word_count": 2,
             "character_count": 16,
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat()
         }
 
         response = await async_client.post(
@@ -132,7 +132,7 @@ class TestGenerateCopy:
             "platform": "instagram",
             "word_count": 2,
             "character_count": 12,
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat()
         }
 
         response = await async_client.post(
@@ -202,7 +202,7 @@ class TestGenerateCopy:
             "platform": "facebook",
             "word_count": 3,
             "character_count": 20,
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat()
         }
 
         response = await async_client.post(
@@ -242,7 +242,7 @@ class TestCreditsEndpoints:
             "balance": 100,
             "total_purchased": 200,
             "total_used": 50,
-            "last_reload": datetime.utcnow().isoformat()
+            "last_reload": datetime.now(timezone.utc).isoformat()
         }
 
         response = await async_client.get("/copy/credits")
@@ -303,7 +303,7 @@ class TestHistoryEndpoints:
                 "copy_type": "ad",
                 "tone": "professional",
                 "copy_text": "Amazing product!",
-                "created_at": datetime.utcnow()
+                "created_at": datetime.now(timezone.utc)
             }
         ]
 

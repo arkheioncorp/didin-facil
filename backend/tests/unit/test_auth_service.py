@@ -4,7 +4,7 @@ Authentication Service Unit Tests
 
 import pytest
 from unittest.mock import patch
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from api.services.auth import AuthService
 
@@ -238,7 +238,7 @@ class TestAuthService:
         """Should create valid JWT token."""
         user_id = "user-123"
         hwid = "test-hwid"
-        expires_at = datetime.utcnow() + timedelta(hours=12)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=12)
 
         token = auth_service.create_token(user_id, hwid, expires_at)
 
@@ -253,7 +253,7 @@ class TestAuthService:
 
         user_id = "user-123"
         hwid = "test-hwid"
-        expires_at = datetime.utcnow() + timedelta(hours=12)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=12)
 
         token = auth_service.create_token(user_id, hwid, expires_at)
 

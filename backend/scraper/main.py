@@ -7,7 +7,7 @@ import asyncio
 import json
 import signal
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 from .config import ScraperConfig
 from .tiktok.scraper import TikTokScraper
@@ -123,7 +123,7 @@ class ScraperWorker:
         
         # Update job status
         await redis.hset(f"job:{job_id}", "status", "running")
-        await redis.hset(f"job:{job_id}", "started_at", datetime.utcnow().isoformat())
+        await redis.hset(f"job:{job_id}", "started_at", datetime.now(timezone.utc).isoformat())
         
         try:
             products = []
@@ -143,7 +143,7 @@ class ScraperWorker:
             # Update job status
             await redis.hset(f"job:{job_id}", mapping={
                 "status": "completed",
-                "completed_at": datetime.utcnow().isoformat(),
+                "completed_at": datetime.now(timezone.utc).isoformat(),
                 "products_count": str(saved_count)
             })
             
@@ -154,7 +154,7 @@ class ScraperWorker:
             
             await redis.hset(f"job:{job_id}", mapping={
                 "status": "failed",
-                "completed_at": datetime.utcnow().isoformat(),
+                "completed_at": datetime.now(timezone.utc).isoformat(),
                 "error": str(e)
             })
         

@@ -6,7 +6,7 @@ Tests for license management endpoints using AsyncClient
 import pytest
 import pytest_asyncio
 from unittest.mock import AsyncMock, patch, MagicMock
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from httpx import AsyncClient, ASGITransport
 from api.main import app
 from api.routes.license import get_current_user
@@ -50,7 +50,7 @@ async def test_validate_license_success(mock_license_service, async_client):
         "id": "lic_123",
         "user_id": "user_123",
         "plan": "pro",
-        "expires_at": datetime.utcnow() + timedelta(days=30)
+        "expires_at": datetime.now(timezone.utc) + timedelta(days=30)
     }
     mock_license_service.validate_hwid.return_value = True
     mock_license_service.create_license_jwt.return_value = "jwt_token"
@@ -93,7 +93,7 @@ async def test_validate_license_expired(mock_license_service, async_client):
     """Test license validation when expired."""
     mock_license_service.get_license_by_email.return_value = {
         "id": "lic_123",
-        "expires_at": datetime.utcnow() - timedelta(days=1)
+        "expires_at": datetime.now(timezone.utc) - timedelta(days=1)
     }
 
     payload = {
@@ -116,7 +116,7 @@ async def test_validate_license_device_not_registered(
     """Test license validation when device not registered."""
     mock_license_service.get_license_by_email.return_value = {
         "id": "lic_123",
-        "expires_at": datetime.utcnow() + timedelta(days=30)
+        "expires_at": datetime.now(timezone.utc) + timedelta(days=30)
     }
     mock_license_service.validate_hwid.return_value = False
 
@@ -167,8 +167,8 @@ async def test_activate_license_add_device(mock_license_service, async_client):
     mock_license_service.get_license_by_key.return_value = {
         "id": "lic_123",
         "plan": "pro",
-        "activated_at": datetime.utcnow(),
-        "expires_at": datetime.utcnow() + timedelta(days=30),
+        "activated_at": datetime.now(timezone.utc),
+        "expires_at": datetime.now(timezone.utc) + timedelta(days=30),
         "max_devices": 2
     }
     mock_license_service.get_license_by_email.return_value = {"id": "lic_123"}
@@ -198,7 +198,7 @@ async def test_activate_license_max_devices_reached(
     mock_license_service.get_license_by_key.return_value = {
         "id": "lic_123",
         "plan": "pro",
-        "activated_at": datetime.utcnow(),
+        "activated_at": datetime.now(timezone.utc),
         "max_devices": 1
     }
     mock_license_service.get_license_by_email.return_value = {"id": "lic_123"}
@@ -286,9 +286,9 @@ class TestLicenseEdgeCases:
         mock_license_service.get_license_by_key.return_value = {
             "id": "lic_free",
             "plan": "free",
-            "activated_at": datetime.utcnow(),
+            "activated_at": datetime.now(timezone.utc),
             "max_devices": 1,
-            "expires_at": datetime.utcnow() + timedelta(days=30)
+            "expires_at": datetime.now(timezone.utc) + timedelta(days=30)
         }
         mock_license_service.get_license_by_email.return_value = {
             "id": "lic_free"

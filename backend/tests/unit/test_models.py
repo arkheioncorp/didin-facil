@@ -3,7 +3,7 @@ SQLAlchemy Models Smoke Tests
 Tests to verify model schema integrity and instantiation
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 import sys
@@ -51,14 +51,14 @@ class TestModelInstantiation:
             password_hash="$2b$12$hash",
             name="Full User",
             has_lifetime_license=True,
-            license_activated_at=datetime.utcnow(),
+            license_activated_at=datetime.now(timezone.utc),
             credits_balance=100,
             credits_purchased=150,
             credits_used=50,
             is_active=True,
             is_admin=True,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         
         assert user.name == "Full User"
@@ -238,8 +238,8 @@ class TestModelInstantiation:
             category="electronics",
             status="completed",
             priority=5,
-            started_at=datetime.utcnow(),
-            completed_at=datetime.utcnow(),
+            started_at=datetime.now(timezone.utc),
+            completed_at=datetime.now(timezone.utc),
             products_scraped=150
         )
         

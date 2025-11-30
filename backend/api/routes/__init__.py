@@ -17,7 +17,8 @@ from . import (
     integrations,
     social_auth,
     metrics,
-    status_webhooks
+    status_webhooks,
+    checkout
 )
 
 __all__ = [
@@ -37,5 +38,6 @@ __all__ = [
     "integrations",
     "social_auth",
     "metrics",
-    "status_webhooks"
+    "status_webhooks",
+    "checkout"
 ]

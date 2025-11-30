@@ -6,7 +6,7 @@ Tests for authentication endpoints using AsyncClient.
 import pytest
 import pytest_asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from httpx import AsyncClient, ASGITransport
 from api.main import app
 from api.routes.auth import get_current_user
@@ -182,7 +182,7 @@ class TestRefreshEndpoint:
         payload = {
             "sub": "user_123",
             "hwid": "hwid_abc123",
-            "exp": (datetime.utcnow() + timedelta(hours=12)).timestamp()
+            "exp": (datetime.now(timezone.utc) + timedelta(hours=12)).timestamp()
         }
         token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
@@ -213,7 +213,7 @@ class TestRefreshEndpoint:
         payload = {
             "sub": "user_123",
             "hwid": "original_hwid",
-            "exp": (datetime.utcnow() + timedelta(hours=12)).timestamp()
+            "exp": (datetime.now(timezone.utc) + timedelta(hours=12)).timestamp()
         }
         token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
@@ -239,7 +239,7 @@ class TestRefreshEndpoint:
         payload = {
             "sub": "deleted_user",
             "hwid": "hwid_abc123",
-            "exp": (datetime.utcnow() + timedelta(hours=12)).timestamp()
+            "exp": (datetime.now(timezone.utc) + timedelta(hours=12)).timestamp()
         }
         token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 

@@ -6,7 +6,7 @@ Rotating proxy management for scraping
 import random
 from dataclasses import dataclass
 from typing import List, Optional, Dict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 @dataclass
@@ -97,7 +97,7 @@ class ProxyPool:
     def get_available_proxies(self) -> List[Dict]:
         """Get list of available (non-blocked) proxies"""
         available = []
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         for proxy in self.proxies:
             stats = self.stats.get(proxy["server"])
@@ -127,7 +127,7 @@ class ProxyPool:
         # Update stats
         stats = self.stats.get(proxy["server"])
         if stats:
-            stats.last_used = datetime.utcnow()
+            stats.last_used = datetime.now(timezone.utc)
             stats.total_requests += 1
         
         return proxy
@@ -144,7 +144,7 @@ class ProxyPool:
         # Update stats
         stats = self.stats.get(proxy["server"])
         if stats:
-            stats.last_used = datetime.utcnow()
+            stats.last_used = datetime.now(timezone.utc)
             stats.total_requests += 1
         
         return proxy
@@ -168,7 +168,7 @@ class ProxyPool:
         # Update stats
         stats = self.stats.get(proxy["server"])
         if stats:
-            stats.last_used = datetime.utcnow()
+            stats.last_used = datetime.now(timezone.utc)
             stats.total_requests += 1
         
         return proxy
@@ -220,7 +220,7 @@ class ProxyPool:
         
         stats = self.stats[server]
         stats.is_blocked = True
-        stats.blocked_until = datetime.utcnow() + timedelta(minutes=minutes)
+        stats.blocked_until = datetime.now(timezone.utc) + timedelta(minutes=minutes)
         
         print(f"[Proxy Pool] Blocked {server} for {minutes} minutes")
     

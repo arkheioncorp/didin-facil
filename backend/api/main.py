@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routes import (
     auth, products, copy, license, webhooks, bot,
     whatsapp, chatwoot, instagram, tiktok, youtube, content, scheduler,
-    integrations, social_auth, metrics, status_webhooks
+    integrations, social_auth, metrics, status_webhooks, checkout
 )
 from .middleware.ratelimit import RateLimitMiddleware
 from .middleware.security import SecurityHeadersMiddleware
@@ -108,6 +108,11 @@ app.include_router(
     status_webhooks.router,
     prefix="/status",
     tags=["Status Webhooks"]
+)
+app.include_router(
+    checkout.router,
+    prefix="/checkout",
+    tags=["Checkout & Payments"]
 )
 
 

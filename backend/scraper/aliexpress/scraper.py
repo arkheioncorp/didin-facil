@@ -7,7 +7,7 @@ import asyncio
 import re
 import uuid
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page
@@ -242,7 +242,7 @@ class AliExpressScraper:
                 "is_trending": False,
                 "is_on_sale": False,
                 "in_stock": True,
-                "collected_at": datetime.utcnow().isoformat(),
+                "collected_at": datetime.now(timezone.utc).isoformat(),
             }
             
         except Exception as e:

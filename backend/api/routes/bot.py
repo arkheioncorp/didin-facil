@@ -63,7 +63,7 @@ async def verify_premium_access(
             detail={
                 "message": "Requer assinatura Premium Bot",
                 "plan_required": "premium_bot",
-                "price": "R\$149,90/mês",
+                "price": "R$149,90/mês",
                 "features": [
                     "Publicar produtos automaticamente",
                     "Gerenciar pedidos e envios",
@@ -82,7 +82,7 @@ async def verify_premium_access(
                 "message": "Seu plano não inclui o Seller Bot",
                 "current_plan": license_info["plan"],
                 "plan_required": "premium_bot",
-                "price": "R\$149,90/mês",
+                "price": "R$149,90/mês",
                 "upgrade_url": "/subscription?upgrade=premium_bot"
             }
         )
@@ -188,7 +188,7 @@ async def start_task(
     """
     Inicia uma nova tarefa de automação.
 
-    Requer licença Premium (R\$149,90/mês).
+    Requer licença Premium (R$149,90/mês).
 
     Tipos de tarefa:
     - post_product: Publicar produto

@@ -336,6 +336,8 @@ class TestN8nWebhooks:
         with patch("httpx.AsyncClient") as mock_httpx:
             mock_client = AsyncMock()
             mock_client.post.return_value = mock_response
+            mock_client.__aenter__.return_value = mock_client
+            mock_client.__aexit__.return_value = None
             mock_httpx.return_value = mock_client
             
             client = N8nClient(n8n_config)

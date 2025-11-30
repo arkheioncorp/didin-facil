@@ -11,7 +11,7 @@ from typing import Optional, List
 import shutil
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from api.middleware.auth import get_current_user
 from vendor.youtube.client import (
@@ -326,7 +326,7 @@ async def _check_quota_alerts(user_id: str, current_usage: int):
                         "usage": current_usage,
                         "limit": YOUTUBE_DAILY_QUOTA,
                         "percentage": int((current_usage / YOUTUBE_DAILY_QUOTA) * 100),
-                        "timestamp": datetime.utcnow().isoformat()
+                        "timestamp": datetime.now(timezone.utc).isoformat()
                     })
                 )
 

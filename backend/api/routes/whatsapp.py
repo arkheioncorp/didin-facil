@@ -6,7 +6,7 @@ Integration with Evolution API via vendor module
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from shared.config import settings
@@ -58,7 +58,7 @@ async def create_instance(
             name=data.instance_name,
             status="created",
             webhook_url=webhook_url,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
         await database.execute(query)
         
@@ -109,7 +109,7 @@ async def send_message(
                 content=data.content,
                 message_type="text",
                 status="sent",
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(timezone.utc)
             )
             await database.execute(msg_query)
             
@@ -160,7 +160,7 @@ async def whatsapp_webhook(request: Request):
             WhatsAppInstance.id == instance.id
         ).values(
             status=new_status,
-            updated_at=datetime.utcnow()
+            updated_at=datetime.now(timezone.utc)
         )
         await database.execute(update_query)
         
@@ -192,7 +192,7 @@ async def whatsapp_webhook(request: Request):
             WhatsAppInstance.id == instance.id
         ).values(
             status="awaiting_scan",
-            updated_at=datetime.utcnow()
+            updated_at=datetime.now(timezone.utc)
         )
         await database.execute(update_query)
         
@@ -220,7 +220,7 @@ async def whatsapp_webhook(request: Request):
                 content=content,
                 message_type="text",
                 status="delivered",
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
                 message_id=key.get("id")
             )
             await database.execute(msg_query)
@@ -265,7 +265,7 @@ async def _schedule_reconnection(instance_name: str, user_id: str):
     # Agendar reconexão (via worker ou background task)
     await redis.zadd(
         "whatsapp:pending_reconnections",
-        {instance_name: datetime.utcnow().timestamp() + delay}
+        {instance_name: datetime.now(timezone.utc).timestamp() + delay}
     )
 
 
@@ -341,7 +341,7 @@ async def force_reconnect(
             WhatsAppInstance.id == instance.id
         ).values(
             status="connecting",
-            updated_at=datetime.utcnow()
+            updated_at=datetime.now(timezone.utc)
         )
         await database.execute(update_query)
         

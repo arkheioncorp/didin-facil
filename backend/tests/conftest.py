@@ -5,7 +5,7 @@ Shared fixtures for all backend tests
 
 import os
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import AsyncGenerator, Generator
 from unittest.mock import AsyncMock, MagicMock, patch
 import uuid
@@ -190,7 +190,7 @@ def mock_openai_service():
             "platform": "instagram",
             "word_count": 10,
             "character_count": 56,
-            "created_at": datetime.utcnow()
+            "created_at": datetime.now(timezone.utc)
         })
         yield service
 
@@ -241,8 +241,8 @@ def mock_user_data() -> dict:
         "password_hash": "$2b$12$test-hash",
         "plan": "premium",
         "is_active": True,
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
     }
 
 
@@ -256,8 +256,8 @@ def mock_license_data() -> dict:
         "plan": "premium",
         "status": "active",
         "max_devices": 3,
-        "activated_at": datetime.utcnow() - timedelta(days=30),
-        "expires_at": datetime.utcnow() + timedelta(days=335),
+        "activated_at": datetime.now(timezone.utc) - timedelta(days=30),
+        "expires_at": datetime.now(timezone.utc) + timedelta(days=335),
         "is_active": True
     }
 
@@ -292,8 +292,8 @@ def mock_product_data() -> dict:
         "is_trending": True,
         "is_on_sale": True,
         "in_stock": True,
-        "collected_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
+        "collected_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
     }
 
 
@@ -320,8 +320,8 @@ def create_test_token(user_id: str = "user-123", hwid: str = "test-hwid") -> str
     payload = {
         "sub": user_id,
         "hwid": hwid,
-        "exp": datetime.utcnow() + timedelta(hours=12),
-        "iat": datetime.utcnow()
+        "exp": datetime.now(timezone.utc) + timedelta(hours=12),
+        "iat": datetime.now(timezone.utc)
     }
     
     return jwt.encode(payload, "test-secret-key-for-testing-only-12345", algorithm="HS256")

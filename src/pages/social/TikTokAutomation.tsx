@@ -73,6 +73,15 @@ export const TikTokAutomation = () => {
       }
     } catch (error) {
       console.error("Error fetching sessions", error);
+      // Mostrar erro mais amigável para o usuário
+      const errorMessage = error instanceof Error && error.message === "Load failed"
+        ? "Não foi possível conectar ao servidor. Verifique se o backend está rodando."
+        : "Erro ao carregar sessões";
+      toast({
+        title: "Erro de conexão",
+        description: errorMessage,
+        variant: "destructive"
+      });
     } finally {
       setSessionsLoading(false);
     }

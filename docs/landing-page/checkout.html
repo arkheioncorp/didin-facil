@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - TikTrend Finder</title>
+    <meta name="description" content="Adquira sua licença vitalícia do TikTrend Finder">
+    
+    <link rel="icon" type="image/png" href="./assets/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- MercadoPago SDK -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    
+    <style>
+        :root {
+            --primary: #FF0050;
+            --primary-dark: #E6004A;
+            --secondary: #00F2EA;
+            --dark: #0F0F0F;
+            --dark-2: #1A1A1A;
+            --dark-3: #252525;
+            --white: #FFFFFF;
+            --gray: #888888;
+            --success: #00C853;
+            --warning: #FFB300;
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        header {
+            padding: 1rem 2rem;
+            background: var(--dark-2);
+            border-bottom: 1px solid var(--dark-3);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--white);
+            text-decoration: none;
+        }
+        
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--success);
+            font-size: 0.875rem;
+        }
+        
+        /* Main */
+        main {
+            flex: 1;
+            padding: 3rem 2rem;
+        }
+        
+        .checkout-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 3rem;
+        }
+        
+        /* Order Summary */
+        .order-summary {
+            background: var(--dark-2);
+            border-radius: 16px;
+            padding: 2rem;
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+        
+        .order-summary h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--dark-3);
+        }
+        
+        .product-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .product-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .product-details h3 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .product-details p {
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+        
+        .price-breakdown {
+            margin: 1.5rem 0;
+            padding: 1rem 0;
+            border-top: 1px solid var(--dark-3);
+            border-bottom: 1px solid var(--dark-3);
+        }
+        
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        
+        .price-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .price-row.total {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--dark-3);
+        }
+        
+        .price-row .label {
+            color: var(--gray);
+        }
+        
+        .price-row.discount .value {
+            color: var(--success);
+        }
+        
+        .guarantee {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(0, 200, 83, 0.1);
+            border: 1px solid rgba(0, 200, 83, 0.2);
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+        
+        .guarantee-icon {
+            font-size: 1.25rem;
+        }
+        
+        .guarantee-text {
+            font-size: 0.875rem;
+        }
+        
+        .guarantee-text strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        
+        .guarantee-text span {
+            color: var(--gray);
+        }
+        
+        /* Checkout Form */
+        .checkout-form {
+            background: var(--dark-2);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+        
+        .checkout-form h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .checkout-form > p {
+            color: var(--gray);
+            margin-bottom: 2rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        
+        .form-section h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-section h3 .step {
+            width: 24px;
+            height: 24px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--dark);
+            border: 1px solid var(--dark-3);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-group input::placeholder {
+            color: #555;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        /* Payment Methods */
+        .payment-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--dark);
+            border: 2px solid var(--dark-3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .payment-method:hover {
+            border-color: var(--gray);
+        }
+        
+        .payment-method.selected {
+            border-color: var(--primary);
+            background: rgba(255, 0, 80, 0.05);
+        }
+        
+        .payment-method input {
+            display: none;
+        }
+        
+        .payment-method .radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gray);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .payment-method.selected .radio {
+            border-color: var(--primary);
+        }
+        
+        .payment-method.selected .radio::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+        
+        .payment-method .icon {
+            font-size: 1.5rem;
+        }
+        
+        .payment-method .info {
+            flex: 1;
+        }
+        
+        .payment-method .info strong {
+            display: block;
+        }
+        
+        .payment-method .info span {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .payment-method .badge {
+            padding: 0.25rem 0.5rem;
+            background: rgba(0, 200, 83, 0.1);
+            color: var(--success);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        /* PIX Section */
+        .pix-section {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            background: var(--dark);
+            border-radius: 12px;
+            margin-top: 1rem;
+        }
+        
+        .pix-section.active {
+            display: block;
+        }
+        
+        .pix-qr {
+            width: 200px;
+            height: 200px;
+            background: white;
+            border-radius: 12px;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .pix-qr img {
+            width: 180px;
+            height: 180px;
+        }
+        
+        .pix-code {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .pix-code input {
+            flex: 1;
+            padding: 0.75rem;
+            background: var(--dark-2);
+            border: 1px solid var(--dark-3);
+            border-radius: 8px;
+            color: var(--white);
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+        
+        .pix-code button {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .pix-timer {
+            margin-top: 1rem;
+            color: var(--warning);
+            font-size: 0.9rem;
+        }
+        
+        /* Card Form */
+        .card-section {
+            display: none;
+            margin-top: 1rem;
+        }
+        
+        .card-section.active {
+            display: block;
+        }
+        
+        #cardPaymentBrick_container {
+            min-height: 300px;
+        }
+        
+        /* Submit */
+        .submit-section {
+            margin-top: 2rem;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--gradient);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 0, 80, 0.3);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .submit-btn .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        
+        .submit-btn.loading .spinner {
+            display: block;
+        }
+        
+        .submit-btn.loading .text {
+            display: none;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .terms {
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--gray);
+            text-align: center;
+        }
+        
+        .terms a {
+            color: var(--primary);
+        }
+        
+        /* Coupon */
+        .coupon-section {
+            margin-top: 1rem;
+        }
+        
+        .coupon-toggle {
+            color: var(--primary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .coupon-form {
+            display: none;
+            margin-top: 0.75rem;
+        }
+        
+        .coupon-form.active {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .coupon-form input {
+            flex: 1;
+            padding: 0.75rem;
+            background: var(--dark);
+            border: 1px solid var(--dark-3);
+            border-radius: 8px;
+            color: var(--white);
+        }
+        
+        .coupon-form button {
+            padding: 0.75rem 1rem;
+            background: var(--dark-3);
+            border: none;
+            border-radius: 8px;
+            color: var(--white);
+            cursor: pointer;
+        }
+        
+        /* Footer */
+        footer {
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid var(--dark-3);
+        }
+        
+        .payment-icons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            opacity: 0.6;
+        }
+        
+        .payment-icons img {
+            height: 24px;
+        }
+        
+        footer p {
+            color: var(--gray);
+            font-size: 0.8rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 900px) {
+            .checkout-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .order-summary {
+                order: -1;
+                position: static;
+            }
+        }
+        
+        /* Error Message */
+        .error-message {
+            padding: 1rem;
+            background: rgba(255, 0, 80, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .error-message.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                🔥 TikTrend Finder
+            </a>
+            <div class="secure-badge">
+                🔒 Pagamento Seguro
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        <div class="checkout-container">
+            <div class="checkout-form">
+                <h1>Finalizar Compra</h1>
+                <p>Preencha seus dados para receber sua licença</p>
+                
+                <div class="error-message" id="error-message"></div>
+                
+                <form id="checkout-form">
+                    <!-- Step 1: Personal Info -->
+                    <div class="form-section">
+                        <h3>
+                            <span class="step">1</span>
+                            Seus Dados
+                        </h3>
+                        
+                        <div class="form-group">
+                            <label for="name">Nome Completo</label>
+                            <input type="text" id="name" name="name" required placeholder="Seu nome">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required placeholder="seu@email.com">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cpf">CPF</label>
+                                <input type="text" id="cpf" name="cpf" required placeholder="000.000.000-00" maxlength="14">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Telefone</label>
+                                <input type="tel" id="phone" name="phone" placeholder="(00) 00000-0000" maxlength="15">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Payment Method -->
+                    <div class="form-section">
+                        <h3>
+                            <span class="step">2</span>
+                            Forma de Pagamento
+                        </h3>
+                        
+                        <div class="payment-methods">
+                            <label class="payment-method selected" data-method="pix">
+                                <input type="radio" name="payment_method" value="pix" checked>
+                                <span class="radio"></span>
+                                <span class="icon">📱</span>
+                                <span class="info">
+                                    <strong>PIX</strong>
+                                    <span>Aprovação instantânea</span>
+                                </span>
+                                <span class="badge">-5%</span>
+                            </label>
+                            
+                            <label class="payment-method" data-method="card">
+                                <input type="radio" name="payment_method" value="card">
+                                <span class="radio"></span>
+                                <span class="icon">💳</span>
+                                <span class="info">
+                                    <strong>Cartão de Crédito</strong>
+                                    <span>Até 12x sem juros</span>
+                                </span>
+                            </label>
+                            
+                            <label class="payment-method" data-method="boleto">
+                                <input type="radio" name="payment_method" value="boleto">
+                                <span class="radio"></span>
+                                <span class="icon">📄</span>
+                                <span class="info">
+                                    <strong>Boleto Bancário</strong>
+                                    <span>Vencimento em 3 dias</span>
+                                </span>
+                            </label>
+                        </div>
+                        
+                        <!-- PIX Section -->
+                        <div class="pix-section active" id="pix-section">
+                            <p style="margin-bottom: 1rem; color: var(--gray);">
+                                Clique em "Gerar PIX" para criar seu código de pagamento
+                            </p>
+                            <div class="pix-qr" id="pix-qr" style="display: none;">
+                                <img id="pix-qr-image" src="" alt="QR Code PIX">
+                            </div>
+                            <div class="pix-code" id="pix-code-container" style="display: none;">
+                                <input type="text" id="pix-code" readonly>
+                                <button type="button" onclick="copyPixCode()">Copiar</button>
+                            </div>
+                            <div class="pix-timer" id="pix-timer" style="display: none;">
+                                ⏱️ Expira em: <span id="timer-countdown">15:00</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Card Section -->
+                        <div class="card-section" id="card-section">
+                            <div id="cardPaymentBrick_container"></div>
+                        </div>
+                        
+                        <!-- Boleto Section -->
+                        <div class="pix-section" id="boleto-section">
+                            <p style="color: var(--gray);">
+                                Clique em "Gerar Boleto" para criar seu boleto bancário.<br>
+                                <small>O boleto vence em 3 dias úteis.</small>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Coupon -->
+                    <div class="coupon-section">
+                        <button type="button" class="coupon-toggle" onclick="toggleCoupon()">
+                            🏷️ Tenho um cupom de desconto
+                        </button>
+                        <div class="coupon-form" id="coupon-form">
+                            <input type="text" id="coupon-code" placeholder="Código do cupom">
+                            <button type="button" onclick="applyCoupon()">Aplicar</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit -->
+                    <div class="submit-section">
+                        <button type="submit" class="submit-btn" id="submit-btn">
+                            <span class="spinner"></span>
+                            <span class="text">🔒 Finalizar Compra - R$ 49,90</span>
+                        </button>
+                        
+                        <p class="terms">
+                            Ao continuar, você concorda com os 
+                            <a href="/termos.html" target="_blank">Termos de Uso</a> e 
+                            <a href="/privacidade.html" target="_blank">Política de Privacidade</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="order-summary">
+                <h2>Resumo do Pedido</h2>
+                
+                <div class="product-item">
+                    <div class="product-icon">🔥</div>
+                    <div class="product-details">
+                        <h3>TikTrend Finder</h3>
+                        <p>Licença Vitalícia</p>
+                    </div>
+                </div>
+                
+                <div class="price-breakdown">
+                    <div class="price-row">
+                        <span class="label">Subtotal</span>
+                        <span class="value">R$ 49,90</span>
+                    </div>
+                    <div class="price-row discount" id="discount-row" style="display: none;">
+                        <span class="label">Desconto PIX (5%)</span>
+                        <span class="value">-R$ 2,50</span>
+                    </div>
+                    <div class="price-row total">
+                        <span class="label">Total</span>
+                        <span class="value" id="total-price">R$ 49,90</span>
+                    </div>
+                </div>
+                
+                <div style="color: var(--gray); font-size: 0.875rem; margin-bottom: 1rem;">
+                    ✅ Windows, Linux e macOS<br>
+                    ✅ Atualizações gratuitas<br>
+                    ✅ Suporte por email<br>
+                    ✅ Até 3 dispositivos
+                </div>
+                
+                <div class="guarantee">
+                    <span class="guarantee-icon">🛡️</span>
+                    <div class="guarantee-text">
+                        <strong>Garantia de 7 dias</strong>
+                        <span>Se não gostar, devolvemos seu dinheiro. Sem perguntas.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="payment-icons">
+            <span>💳 Visa</span>
+            <span>💳 Mastercard</span>
+            <span>💳 Elo</span>
+            <span>📱 PIX</span>
+        </div>
+        <p>Pagamento processado por MercadoPago • 100% Seguro</p>
+    </footer>
+    
+    <script>
+        // Configuration
+        const API_URL = 'https://api.arkheion-tiktrend.com.br';
+        const MP_PUBLIC_KEY = 'APP_USR-XXXXXXXX'; // Substituir pela chave pública
+        
+        // Price configuration
+        const PRICE = 49.90;
+        const PIX_DISCOUNT = 0.05; // 5%
+        
+        let selectedMethod = 'pix';
+        let appliedCoupon = null;
+        let mp = null;
+        let cardPaymentBrick = null;
+        
+        // Initialize MercadoPago
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize MP SDK
+            // mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'pt-BR' });
+            
+            // Update price display
+            updatePrice();
+            
+            // CPF mask
+            document.getElementById('cpf').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) value = value.slice(0, 11);
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                e.target.value = value;
+            });
+            
+            // Phone mask
+            document.getElementById('phone').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) value = value.slice(0, 11);
+                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                e.target.value = value;
+            });
+        });
+        
+        // Payment method selection
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.addEventListener('click', function() {
+                document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input').checked = true;
+                
+                selectedMethod = this.dataset.method;
+                
+                // Show/hide sections
+                document.getElementById('pix-section').classList.remove('active');
+                document.getElementById('card-section').classList.remove('active');
+                document.getElementById('boleto-section').classList.remove('active');
+                
+                document.getElementById(`${selectedMethod}-section`).classList.add('active');
+                
+                // Update price
+                updatePrice();
+                
+                // Initialize card form if needed
+                if (selectedMethod === 'card' && !cardPaymentBrick) {
+                    initCardForm();
+                }
+            });
+        });
+        
+        // Update price display
+        function updatePrice() {
+            let total = PRICE;
+            const discountRow = document.getElementById('discount-row');
+            
+            if (selectedMethod === 'pix') {
+                const discount = total * PIX_DISCOUNT;
+                total = total - discount;
+                discountRow.style.display = 'flex';
+                discountRow.querySelector('.value').textContent = `-R$ ${discount.toFixed(2).replace('.', ',')}`;
+            } else {
+                discountRow.style.display = 'none';
+            }
+            
+            document.getElementById('total-price').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            document.querySelector('.submit-btn .text').textContent = `🔒 Finalizar Compra - R$ ${total.toFixed(2).replace('.', ',')}`;
+        }
+        
+        // Initialize card form (MercadoPago Brick)
+        async function initCardForm() {
+            /* 
+            const bricksBuilder = mp.bricks();
+            cardPaymentBrick = await bricksBuilder.create('cardPayment', 'cardPaymentBrick_container', {
+                initialization: {
+                    amount: PRICE
+                },
+                callbacks: {
+                    onReady: () => console.log('Card form ready'),
+                    onSubmit: (cardFormData) => processCardPayment(cardFormData),
+                    onError: (error) => showError(error.message)
+                }
+            });
+            */
+            document.getElementById('card-section').innerHTML = `
+                <div style="padding: 2rem; text-align: center; color: var(--gray);">
+                    <p>Formulário de cartão será carregado aqui</p>
+                    <p style="font-size: 0.8rem; margin-top: 0.5rem;">Integração MercadoPago</p>
+                </div>
+            `;
+        }
+        
+        // Form submission
+        document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submit-btn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                cpf: document.getElementById('cpf').value.replace(/\D/g, ''),
+                phone: document.getElementById('phone').value.replace(/\D/g, ''),
+                payment_method: selectedMethod,
+                coupon: appliedCoupon
+            };
+            
+            try {
+                // Simulate API call (replace with real API)
+                // const response = await fetch(`${API_URL}/api/checkout`, {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(formData)
+                // });
+                
+                // Simulate response
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                if (selectedMethod === 'pix') {
+                    showPixPayment({
+                        qr_code: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+                        qr_code_base64: 'https://via.placeholder.com/180',
+                        copy_paste: '00020126580014br.gov.bcb.pix0136example-pix-code-here'
+                    });
+                } else if (selectedMethod === 'boleto') {
+                    window.location.href = '/pagamento/pendente.html?method=boleto';
+                } else {
+                    // Card payment handled by brick
+                }
+            } catch (error) {
+                showError('Erro ao processar pagamento. Tente novamente.');
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        });
+        
+        // Show PIX payment
+        function showPixPayment(data) {
+            document.getElementById('pix-qr').style.display = 'flex';
+            document.getElementById('pix-qr-image').src = data.qr_code_base64 || data.qr_code;
+            document.getElementById('pix-code').value = data.copy_paste;
+            document.getElementById('pix-code-container').style.display = 'flex';
+            document.getElementById('pix-timer').style.display = 'block';
+            
+            // Start timer
+            startTimer(15 * 60);
+            
+            // Start polling for payment
+            // pollPaymentStatus(paymentId);
+        }
+        
+        // Copy PIX code
+        function copyPixCode() {
+            const code = document.getElementById('pix-code');
+            code.select();
+            document.execCommand('copy');
+            
+            const btn = event.target;
+            btn.textContent = 'Copiado!';
+            setTimeout(() => btn.textContent = 'Copiar', 2000);
+        }
+        
+        // Timer
+        function startTimer(seconds) {
+            const countdown = document.getElementById('timer-countdown');
+            
+            const interval = setInterval(() => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                countdown.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    countdown.textContent = 'Expirado';
+                    countdown.style.color = 'var(--primary)';
+                }
+                
+                seconds--;
+            }, 1000);
+        }
+        
+        // Coupon
+        function toggleCoupon() {
+            document.getElementById('coupon-form').classList.toggle('active');
+        }
+        
+        async function applyCoupon() {
+            const code = document.getElementById('coupon-code').value.toUpperCase();
+            
+            // Simulate coupon validation
+            if (code === 'LAUNCH10') {
+                appliedCoupon = { code, discount: 0.10 };
+                alert('Cupom aplicado! 10% de desconto');
+                updatePrice();
+            } else {
+                alert('Cupom inválido');
+            }
+        }
+        
+        // Show error
+        function showError(message) {
+            const errorEl = document.getElementById('error-message');
+            errorEl.textContent = message;
+            errorEl.classList.add('active');
+            
+            setTimeout(() => errorEl.classList.remove('active'), 5000);
+        }
+    </script>
+</body>
+</html>

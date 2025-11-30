@@ -6,7 +6,7 @@ Cron jobs for automated tasks
 import asyncio
 import json
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Callable, Dict, List, Optional
 
 import sys
@@ -50,11 +50,11 @@ class Job:
         if self.next_run is None:
             return True
         
-        return datetime.utcnow() >= self.next_run
+        return datetime.now(timezone.utc) >= self.next_run
     
     def schedule_next(self):
         """Calculate next run time"""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         if self.cron_expression:
             self.next_run = self._parse_cron(self.cron_expression, now)
@@ -161,7 +161,7 @@ class Scheduler:
     
     async def _run_job(self, job: Job):
         """Execute a job"""
-        job_start = datetime.utcnow()
+        job_start = datetime.now(timezone.utc)
         print(f"[Scheduler] Running job: {job.name}")
         
         try:
@@ -177,7 +177,7 @@ class Scheduler:
             job.last_run = job_start
             job.schedule_next()
             
-            duration = (datetime.utcnow() - job_start).total_seconds()
+            duration = (datetime.now(timezone.utc) - job_start).total_seconds()
             print(f"[Scheduler] Job {job.name} completed in {duration:.2f}s")
             
             # Store result in Redis
@@ -196,7 +196,7 @@ class Scheduler:
             if job.retry_on_failure and job.consecutive_failures < job.max_retries:
                 # Retry with backoff
                 backoff = min(60, 5 * (2 ** job.consecutive_failures))
-                job.next_run = datetime.utcnow() + timedelta(seconds=backoff)
+                job.next_run = datetime.now(timezone.utc) + timedelta(seconds=backoff)
                 print(f"[Scheduler] Will retry {job.name} in {backoff}s")
             else:
                 job.schedule_next()
@@ -218,7 +218,7 @@ class Scheduler:
                 "status": status,
                 "duration": duration,
                 "error": error,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
             
             # Store in list (keep last 100)
@@ -258,7 +258,7 @@ async def refresh_products_job():
         "id": str(uuid.uuid4()),
         "type": "refresh_products",
         "limit": 500,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     
     await redis.lpush("scraper:jobs", json.dumps(job_data))
@@ -273,7 +273,7 @@ async def refresh_trending_job():
         "id": str(uuid.uuid4()),
         "type": "scrape_trending",
         "limit": 100,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     
     await redis.lpush("scraper:jobs", json.dumps(job_data))

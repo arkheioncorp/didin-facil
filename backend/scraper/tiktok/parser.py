@@ -5,7 +5,7 @@ Extract product data from TikTok Shop pages
 
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from playwright.async_api import Page
@@ -176,7 +176,7 @@ class TikTokParser:
                 "is_trending": bool(data.get("isTrending") or data.get("trending")),
                 "is_on_sale": original_price > price if original_price else False,
                 "in_stock": data.get("inStock", True) if "inStock" in data else data.get("stock", 1) > 0,
-                "collected_at": datetime.utcnow().isoformat(),
+                "collected_at": datetime.now(timezone.utc).isoformat(),
             }
             
         except Exception as e:
@@ -262,7 +262,7 @@ class TikTokParser:
                 "is_trending": False,
                 "is_on_sale": False,
                 "in_stock": True,
-                "collected_at": datetime.utcnow().isoformat(),
+                "collected_at": datetime.now(timezone.utc).isoformat(),
             }
             
         except Exception as e:
@@ -322,7 +322,7 @@ class TikTokParser:
                 "is_trending": False,
                 "is_on_sale": False,
                 "in_stock": True,
-                "collected_at": datetime.utcnow().isoformat(),
+                "collected_at": datetime.now(timezone.utc).isoformat(),
             }
             
         except Exception as e:

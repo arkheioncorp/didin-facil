@@ -8,7 +8,7 @@ Inclui:
 - Métricas de processamento
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List
 from enum import Enum
 from pydantic import BaseModel, Field
@@ -175,7 +175,7 @@ class PostSchedulerService:
     async def get_pending_posts(self) -> List[ScheduledPost]:
         """Busca posts prontos para publicar (incluindo retries)."""
         redis = await self._get_redis()
-        now = datetime.utcnow().timestamp()
+        now = datetime.now(timezone.utc).timestamp()
         
         # Buscar posts com scheduled_time <= now
         post_ids = await redis.zrangebyscore(
@@ -235,12 +235,12 @@ class PostSchedulerService:
         
         # Incrementar contador e registrar erro
         post.retry_count += 1
-        post.last_retry_at = datetime.utcnow()
-        post.retry_errors.append(f"[{datetime.utcnow().isoformat()}] {error}")
+        post.last_retry_at = datetime.now(timezone.utc)
+        post.retry_errors.append(f"[{datetime.now(timezone.utc).isoformat()}] {error}")
         
         # Calcular próximo retry
         delay = self._calculate_retry_delay(post.retry_count)
-        post.next_retry_at = datetime.utcnow() + timedelta(seconds=delay)
+        post.next_retry_at = datetime.now(timezone.utc) + timedelta(seconds=delay)
         post.status = PostStatus.SCHEDULED  # Volta para scheduled
         
         # Atualizar no Redis
@@ -315,7 +315,7 @@ class PostSchedulerService:
         post.retry_count = 0
         post.retry_errors = []
         post.status = PostStatus.SCHEDULED
-        post.scheduled_time = datetime.utcnow()
+        post.scheduled_time = datetime.now(timezone.utc)
         
         # Remover da DLQ
         await redis.lrem("dlq_scheduled_posts", 0, post_id)
@@ -342,7 +342,7 @@ class PostSchedulerService:
             result = await self._publish(post)
             
             post.status = PostStatus.PUBLISHED
-            post.published_at = datetime.utcnow()
+            post.published_at = datetime.now(timezone.utc)
             post.result = result
             
             logger.info(

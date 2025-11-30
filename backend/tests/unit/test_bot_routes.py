@@ -5,7 +5,7 @@ Endpoints do Seller Bot que requerem licença Premium.
 """
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import HTTPException
 
@@ -294,7 +294,7 @@ class TestTaskEndpoints:
         mock_task.id = "task-123"
         mock_task.task_type = "reply_messages"
         mock_task.state = TaskState.QUEUED
-        mock_task.created_at = datetime.utcnow()
+        mock_task.created_at = datetime.now(timezone.utc)
         mock_task.screenshots = []
         mock_task.logs = []
         
@@ -323,9 +323,9 @@ class TestTaskEndpoints:
         mock_task.id = "task-123"
         mock_task.task_type = "analytics"
         mock_task.state = TaskState.COMPLETED
-        mock_task.created_at = datetime.utcnow()
-        mock_task.started_at = datetime.utcnow()
-        mock_task.completed_at = datetime.utcnow()
+        mock_task.created_at = datetime.now(timezone.utc)
+        mock_task.started_at = datetime.now(timezone.utc)
+        mock_task.completed_at = datetime.now(timezone.utc)
         mock_task.error_message = None
         mock_task.screenshots = ["screen.png"]
         mock_task.logs = ["Log entry"]
@@ -365,7 +365,7 @@ class TestTaskEndpoints:
         mock_task1.id = "task-1"
         mock_task1.task_type = "analytics"
         mock_task1.state = TaskState.COMPLETED
-        mock_task1.created_at = datetime.utcnow()
+        mock_task1.created_at = datetime.now(timezone.utc)
         mock_task1.started_at = None
         mock_task1.completed_at = None
         mock_task1.error_message = None
@@ -376,8 +376,8 @@ class TestTaskEndpoints:
         mock_task2.id = "task-2"
         mock_task2.task_type = "reply_messages"
         mock_task2.state = TaskState.RUNNING
-        mock_task2.created_at = datetime.utcnow()
-        mock_task2.started_at = datetime.utcnow()
+        mock_task2.created_at = datetime.now(timezone.utc)
+        mock_task2.started_at = datetime.now(timezone.utc)
         mock_task2.completed_at = None
         mock_task2.error_message = None
         mock_task2.screenshots = []
@@ -465,7 +465,7 @@ class TestProfileEndpoints:
         mock_profile.name = "Test Profile"
         mock_profile.is_logged_in = False
         mock_profile.last_used_at = None
-        mock_profile.created_at = datetime.utcnow()
+        mock_profile.created_at = datetime.now(timezone.utc)
         
         mock_profiles = MagicMock()
         mock_profiles.detect_system_chrome_profile.return_value = None
@@ -490,7 +490,7 @@ class TestProfileEndpoints:
         mock_profile.name = "Cloned Profile"
         mock_profile.is_logged_in = True
         mock_profile.last_used_at = None
-        mock_profile.created_at = datetime.utcnow()
+        mock_profile.created_at = datetime.now(timezone.utc)
         
         mock_profiles = MagicMock()
         mock_profiles.detect_system_chrome_profile.return_value = "/path/to/chrome"
@@ -532,15 +532,15 @@ class TestProfileEndpoints:
         mock_profile1.id = "profile-1"
         mock_profile1.name = "Profile 1"
         mock_profile1.is_logged_in = True
-        mock_profile1.last_used_at = datetime.utcnow()
-        mock_profile1.created_at = datetime.utcnow()
+        mock_profile1.last_used_at = datetime.now(timezone.utc)
+        mock_profile1.created_at = datetime.now(timezone.utc)
         
         mock_profile2 = MagicMock()
         mock_profile2.id = "profile-2"
         mock_profile2.name = "Profile 2"
         mock_profile2.is_logged_in = False
         mock_profile2.last_used_at = None
-        mock_profile2.created_at = datetime.utcnow()
+        mock_profile2.created_at = datetime.now(timezone.utc)
         
         mock_profiles = MagicMock()
         mock_profiles.get_user_profiles.return_value = [mock_profile1, mock_profile2]
@@ -696,7 +696,7 @@ class TestModels:
             id="task-123",
             task_type="post_product",
             state=TaskState.QUEUED,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
         
         assert response.id == "task-123"
@@ -722,7 +722,7 @@ class TestModels:
             id="profile-123",
             name="Test Profile",
             is_logged_in=True,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
         
         assert response.id == "profile-123"

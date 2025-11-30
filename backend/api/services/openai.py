@@ -5,7 +5,7 @@ AI copy generation with credits system
 
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from openai import AsyncOpenAI
@@ -88,7 +88,7 @@ class OpenAIService:
             "platform": platform,
             "word_count": len(copy_text.split()),
             "character_count": len(copy_text),
-            "created_at": datetime.utcnow()
+            "created_at": datetime.now(timezone.utc)
         }
     
     def _get_system_prompt(self, platform: str, language: str) -> str:

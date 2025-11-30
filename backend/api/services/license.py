@@ -5,7 +5,7 @@ License management and validation
 
 import uuid
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, List
 
 from jose import jwt
@@ -144,7 +144,7 @@ class LicenseService:
         license_id = str(uuid.uuid4())
         
         # Lifetime license: no expiration
-        expires_at = None if duration_days == -1 else datetime.utcnow() + timedelta(days=duration_days)
+        expires_at = None if duration_days == -1 else datetime.now(timezone.utc) + timedelta(days=duration_days)
         
         # All lifetime licenses get 2 devices
         max_devices = 2
@@ -365,8 +365,8 @@ class LicenseService:
             "sub": user_id,
             "hwid": hwid,
             "is_lifetime": is_lifetime,
-            "exp": expires_at if expires_at else datetime.utcnow() + timedelta(days=365*100),  # 100 years for lifetime
-            "iat": datetime.utcnow(),
+            "exp": expires_at if expires_at else datetime.now(timezone.utc) + timedelta(days=365*100),  # 100 years for lifetime
+            "iat": datetime.now(timezone.utc),
             "iss": "tiktrend-license-service"
         }
         

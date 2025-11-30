@@ -4,7 +4,7 @@ Exposes application metrics in Prometheus format
 """
 
 from fastapi import APIRouter, Response
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import asyncio
 from typing import Dict, Any
 
@@ -103,7 +103,7 @@ async def get_worker_metrics() -> Dict[str, Any]:
         
         # Check worker heartbeats
         worker_keys = await redis_client.keys("worker:heartbeat:*")
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         for key in worker_keys:
             try:
                 last_beat = await redis_client.get(key)
@@ -131,7 +131,7 @@ async def get_platform_metrics() -> Dict[str, Dict[str, Any]]:
     
     try:
         # YouTube quota
-        today = datetime.utcnow().strftime("%Y-%m-%d")
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         quota_key = f"youtube:quota:{today}"
         quota_used = await redis_client.get(quota_key)
         if quota_used:
@@ -386,13 +386,13 @@ async def metrics_health():
         return {
             "status": "healthy",
             "redis": "connected",
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
     except Exception as e:
         return {
             "status": "unhealthy",
             "error": str(e),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
 
 

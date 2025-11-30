@@ -6,7 +6,7 @@ Process various background jobs
 import asyncio
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 import sys
@@ -74,7 +74,7 @@ class JobProcessor:
         
         update = {
             "status": status,
-            "updated_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
         }
         
         if result is not None:

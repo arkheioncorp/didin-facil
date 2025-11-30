@@ -6,7 +6,7 @@ Main scraper implementation using Playwright
 import asyncio
 import random
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page
@@ -56,7 +56,7 @@ class TikTokScraper:
             # Check if safety mode is active
             safety_until = await redis.get(self.redis_key_safety)
             if safety_until:
-                if datetime.fromisoformat(safety_until) > datetime.utcnow():
+                if datetime.fromisoformat(safety_until) > datetime.now(timezone.utc):
                     return False
                 else:
                     # Expired, clear it
@@ -86,7 +86,7 @@ class TikTokScraper:
                 if failures >= self.config.consecutive_failures_threshold:
                     # Trigger safety mode
                     cooldown = self.config.safety_cooldown
-                    safety_until = (datetime.utcnow() + timedelta(seconds=cooldown)).isoformat()
+                    safety_until = (datetime.now(timezone.utc) + timedelta(seconds=cooldown)).isoformat()
                     await redis.set(self.redis_key_safety, safety_until)
                     print(f"[TikTok Scraper] Safety mode triggered until {safety_until}")
         except Exception as e:
@@ -307,7 +307,7 @@ class TikTokScraper:
                         "product_url": href,
                         "image_url": "",
                         "is_trending": True,
-                        "collected_at": datetime.utcnow(),
+                        "collected_at": datetime.now(timezone.utc),
                         "sales_count": 0
                     })
                 except Exception:
@@ -451,7 +451,7 @@ class TikTokScraper:
             product_id = str(uuid.uuid4())
             mock_products.append({
                 "id": product_id,
-                "tiktok_id": f"mock_{int(datetime.utcnow().timestamp())}_{i}",
+                "tiktok_id": f"mock_{int(datetime.now(timezone.utc).timestamp())}_{i}",
                 "title": f"Trending Product {i+1} (Mock)",
                 "description": "This is a mock product generated because live scraping was blocked.",
                 "price": round(random.uniform(10.0, 100.0), 2),
@@ -460,7 +460,7 @@ class TikTokScraper:
                 "product_url": "https://www.tiktok.com/",
                 "image_url": "https://p16-va.tiktokcdn.com/img/musically-maliva-obj/1665282759496710~c5_100x100.jpeg",
                 "is_trending": True,
-                "collected_at": datetime.utcnow(),
+                "collected_at": datetime.now(timezone.utc),
                 "sales_count": random.randint(100, 10000)
             })
         return mock_products

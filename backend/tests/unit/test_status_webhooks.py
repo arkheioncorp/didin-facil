@@ -4,7 +4,7 @@ Tests for Status Webhooks
 
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class TestWebhookConfig:
@@ -49,7 +49,7 @@ class TestWebhookEvent:
         
         event = WebhookEvent(
             event_type="post.completed",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             data={"post_id": "123", "platform": "youtube"}
         )
         
@@ -129,7 +129,7 @@ class TestWebhookDelivery:
         
         event = WebhookEvent(
             event_type="post.completed",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             data={"post_id": "123"}
         )
         
@@ -159,7 +159,7 @@ class TestWebhookDelivery:
         
         event = WebhookEvent(
             event_type="post.completed",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             data={"post_id": "123"}
         )
         
@@ -190,7 +190,7 @@ class TestWebhookDelivery:
         
         event = WebhookEvent(
             event_type="post.completed",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             data={"post_id": "123"}
         )
         

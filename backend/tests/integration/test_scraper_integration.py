@@ -5,7 +5,7 @@ Tests for save_products (upsert) and get_products (complex filters)
 
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 import sys
@@ -132,8 +132,8 @@ class TestScraperOrchestratorIntegration:
             "is_trending": True,
             "is_on_sale": True,
             "in_stock": True,
-            "collected_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
+            "collected_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
         }
     
     # ==================== SAVE_PRODUCTS (UPSERT) Tests ====================

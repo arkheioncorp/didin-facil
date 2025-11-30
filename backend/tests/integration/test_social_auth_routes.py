@@ -8,7 +8,7 @@ import pytest_asyncio
 import json
 from unittest.mock import AsyncMock, patch
 from httpx import AsyncClient, ASGITransport
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from api.main import app
 from api.routes.social_auth import encrypt_token, decrypt_token
@@ -289,7 +289,7 @@ class TestGetAccessToken:
             "access_token": encrypted,
             "token_type": "Bearer",
             "expires_at": (
-                datetime.utcnow() + timedelta(hours=1)
+                datetime.now(timezone.utc) + timedelta(hours=1)
             ).isoformat()
         }
         
