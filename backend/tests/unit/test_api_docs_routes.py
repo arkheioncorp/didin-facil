@@ -3,7 +3,6 @@ Unit tests for API Documentation Routes
 """
 
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 
 
 class TestAPIDocsRoutes:

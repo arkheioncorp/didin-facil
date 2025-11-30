@@ -18,7 +18,16 @@ from . import (
     social_auth,
     metrics,
     status_webhooks,
-    checkout
+    checkout,
+    analytics,
+    templates,
+    accounts,
+    api_docs,
+    marketplaces,
+    subscription,
+    analytics_social,
+    chatbot,
+    automation
 )
 
 __all__ = [
@@ -39,5 +48,14 @@ __all__ = [
     "social_auth",
     "metrics",
     "status_webhooks",
-    "checkout"
+    "checkout",
+    "analytics",
+    "templates",
+    "accounts",
+    "api_docs",
+    "marketplaces",
+    "subscription",
+    "analytics_social",
+    "chatbot",
+    "automation"
 ]

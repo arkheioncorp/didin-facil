@@ -3,9 +3,8 @@ Tests for Checkout Routes
 """
 
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 from fastapi import HTTPException
-from datetime import datetime
 
 
 class TestCheckoutCreate:

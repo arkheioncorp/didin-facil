@@ -1,0 +1,138 @@
+{
+  "name": "Didin Fácil",
+  "short_name": "Didin",
+  "description": "Plataforma de comparação de preços e gestão de vendas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["shopping", "business", "finance"],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard de preços"
+    },
+    {
+      "src": "/screenshots/search.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Busca de produtos"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Buscar Produtos",
+      "short_name": "Buscar",
+      "description": "Buscar e comparar preços",
+      "url": "/search",
+      "icons": [{ "src": "/icons/search.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Favoritos",
+      "short_name": "Favoritos",
+      "description": "Ver produtos favoritos",
+      "url": "/favorites",
+      "icons": [{ "src": "/icons/heart.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Alertas de Preço",
+      "short_name": "Alertas",
+      "description": "Gerenciar alertas de preço",
+      "url": "/alerts",
+      "icons": [{ "src": "/icons/bell.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Social Media",
+      "short_name": "Social",
+      "description": "Dashboard de redes sociais",
+      "url": "/social",
+      "icons": [{ "src": "/icons/social.png", "sizes": "96x96" }]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "media",
+          "accept": ["image/*", "video/*"]
+        }
+      ]
+    }
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+didin",
+      "url": "/protocol?url=%s"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "windows",
+      "url": "https://github.com/arkheioncorp/didin-facil/releases"
+    }
+  ],
+  "prefer_related_applications": false
+}

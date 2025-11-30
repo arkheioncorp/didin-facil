@@ -3,8 +3,7 @@ Tests for Analytics Routes
 """
 
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
-from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, patch
 
 
 class MockUser:

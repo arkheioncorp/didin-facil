@@ -12,7 +12,8 @@ from .routes import (
     auth, products, copy, license, webhooks, bot,
     whatsapp, chatwoot, instagram, tiktok, youtube, content, scheduler,
     integrations, social_auth, metrics, status_webhooks, checkout,
-    analytics, templates, accounts, api_docs, marketplaces
+    analytics, templates, accounts, api_docs, marketplaces,
+    subscription, analytics_social, chatbot, automation
 )
 from .middleware.ratelimit import RateLimitMiddleware
 from .middleware.security import SecurityHeadersMiddleware
@@ -163,6 +164,28 @@ app.include_router(
 app.include_router(
     marketplaces.router,
     tags=["Marketplace Integrations"]
+)
+
+# New routes for monetization, analytics, chatbot, and automation
+app.include_router(
+    subscription.router,
+    prefix="/subscription",
+    tags=["Subscription & Plans"]
+)
+app.include_router(
+    analytics_social.router,
+    prefix="/analytics/social",
+    tags=["Social Analytics"]
+)
+app.include_router(
+    chatbot.router,
+    prefix="/chatbot",
+    tags=["Chatbot (Typebot)"]
+)
+app.include_router(
+    automation.router,
+    prefix="/automation",
+    tags=["Automation (n8n)"]
 )
 
 

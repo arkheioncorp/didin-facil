@@ -64,9 +64,11 @@ class Settings(BaseSettings):
     # n8n Integration
     N8N_API_URL: Optional[str] = None
     N8N_API_KEY: Optional[str] = None
+    N8N_WEBHOOK_URL: Optional[str] = None
     
     # Typebot Integration
     TYPEBOT_API_URL: Optional[str] = None
+    TYPEBOT_API_KEY: Optional[str] = None
     TYPEBOT_PUBLIC_ID: Optional[str] = None
     
     # Social Media OAuth
@@ -76,6 +78,7 @@ class Settings(BaseSettings):
     TIKTOK_CLIENT_SECRET: Optional[str] = None
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_API_KEY: Optional[str] = None  # Para YouTube Data API
     
     # Instagram Credentials
     INSTAGRAM_USERNAME: Optional[str] = None

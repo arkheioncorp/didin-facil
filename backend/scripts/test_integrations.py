@@ -68,7 +68,7 @@ async def test_evolution_api() -> TestResult:
                         message=f"Conectado ({count} instâncias)",
                         details=data if isinstance(data, dict) else None
                     )
-                except:
+                except ValueError:
                     return TestResult(
                         name="Evolution API",
                         status=Status.WARNING,

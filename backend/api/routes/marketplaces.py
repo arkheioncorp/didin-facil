@@ -4,11 +4,10 @@ API Endpoints para busca unificada de marketplaces.
 Permite buscar produtos em múltiplos e-commerces e comparar preços.
 """
 
-from decimal import Decimal
-from typing import Any, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 try:
     from integrations.marketplaces import (

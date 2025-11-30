@@ -1,0 +1,45 @@
+[Unit]
+Description=Didin Facil TikTok Scraping Worker
+Documentation=https://github.com/arkheioncorp/didin-facil
+After=network.target redis.service postgresql.service
+Wants=redis.service
+
+[Service]
+Type=simple
+User=didin
+Group=didin
+WorkingDirectory=/opt/didin-facil/backend
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/opt/didin-facil/backend
+EnvironmentFile=/opt/didin-facil/backend/.env
+
+# Worker command
+ExecStart=/opt/didin-facil/.venv/bin/python -m workers.scraping_worker
+
+# Restart configuration
+Restart=always
+RestartSec=10
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+# Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/didin-facil/backend/data /opt/didin-facil/backend/logs
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+
+# Resource limits
+MemoryMax=512M
+CPUQuota=50%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=didin-scraper
+
+[Install]
+WantedBy=multi-user.target

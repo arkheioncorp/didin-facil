@@ -468,7 +468,7 @@ export const Settings: React.FC = () => {
               <p className="text-xs text-muted-foreground">Chave de autenticação da Evolution API</p>
             </div>
           </div>
-          <Button onClick={handleSaveSettings} disabled={isSaving} className="mt-4">
+          <Button onClick={handleSave} disabled={isSaving} className="mt-4">
             {isSaving ? "Salvando..." : "Salvar Configurações"}
           </Button>
         </CardContent>

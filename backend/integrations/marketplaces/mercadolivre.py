@@ -19,11 +19,9 @@ Endpoints principais:
     - /users/{user_id} - Informações do vendedor
 """
 
-import asyncio
 import logging
-from datetime import datetime
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Optional
 
 import httpx
 
@@ -268,7 +266,7 @@ class MercadoLivreClient(MarketplaceBase):
                 if desc_response.status_code == 200:
                     desc_data = desc_response.json()
                     item["description"] = desc_data.get("plain_text", "")
-            except:
+            except Exception:
                 pass
             
             return self._normalize_product(item)

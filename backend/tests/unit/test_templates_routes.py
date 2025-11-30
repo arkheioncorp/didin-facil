@@ -3,7 +3,7 @@ Unit tests for Content Templates Routes
 """
 
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 from datetime import datetime
 import json
 
@@ -166,7 +166,7 @@ class TestTemplateService:
         
         with patch("api.routes.templates.redis_client", mock_redis):
             update_data = TemplateUpdate(name="New Name", is_public=True)
-            template = await template_service.update(
+            await template_service.update(
                 str(mock_current_user.id),
                 "template-123",
                 update_data

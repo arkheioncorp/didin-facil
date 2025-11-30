@@ -1,0 +1,364 @@
+# ============================================================================
+# Didin Fácil - Docker Compose (Production)
+# ============================================================================
+# Configuração para produção com todas as integrações
+# Uso: docker compose -f docker-compose.production.yml up -d
+# ============================================================================
+
+version: '3.9'
+
+services:
+  # ============================================================================
+  # API Gateway (FastAPI) - Production
+  # ============================================================================
+  api:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+      target: production
+    container_name: didin-api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MERCADO_PAGO_ACCESS_TOKEN=${MERCADO_PAGO_ACCESS_TOKEN}
+      - EVOLUTION_API_URL=${EVOLUTION_API_URL}
+      - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
+      - CHATWOOT_API_URL=${CHATWOOT_API_URL}
+      - CHATWOOT_ACCESS_TOKEN=${CHATWOOT_ACCESS_TOKEN}
+      - TYPEBOT_API_URL=${TYPEBOT_API_URL:-http://typebot:3000}
+      - TYPEBOT_API_KEY=${TYPEBOT_API_KEY}
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:-http://n8n:5678}
+      - N8N_API_KEY=${N8N_API_KEY}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - SENTRY_DSN=${SENTRY_DSN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: gunicorn api.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - didin-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ============================================================================
+  # Scraper Worker
+  # ============================================================================
+  scraper:
+    build:
+      context: ..
+      dockerfile: docker/scraper.Dockerfile
+      target: production
+    container_name: didin-scraper
+    restart: always
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+    volumes:
+      - scraper-cache:/app/.cache
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - didin-network
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # ============================================================================
+  # Social Media Post Worker
+  # ============================================================================
+  social-worker:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+      target: production
+    container_name: didin-social-worker
+    restart: always
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - INSTAGRAM_SESSION_PATH=/app/sessions/instagram
+      - TIKTOK_COOKIES_PATH=/app/sessions/tiktok
+    volumes:
+      - social-sessions:/app/sessions
+      - media-uploads:/app/uploads
+    command: python -m workers.scheduler_runner
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - didin-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # ============================================================================
+  # PostgreSQL Database
+  # ============================================================================
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: didin-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - didin-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  # ============================================================================
+  # Redis Cache & Message Broker
+  # ============================================================================
+  redis:
+    image: redis:7.4-alpine
+    container_name: didin-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - didin-network
+
+  # ============================================================================
+  # MeiliSearch (Full-text Search)
+  # ============================================================================
+  meilisearch:
+    image: getmeili/meilisearch:v1.6
+    container_name: didin-meilisearch
+    restart: always
+    ports:
+      - "7700:7700"
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+      - MEILI_ENV=production
+    volumes:
+      - meilisearch-data:/meili_data
+    networks:
+      - didin-network
+
+  # ============================================================================
+  # Typebot (Chatbot Builder) - Self-hosted
+  # ============================================================================
+  typebot-builder:
+    image: baptistearno/typebot-builder:latest
+    container_name: didin-typebot-builder
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      - DATABASE_URL=${TYPEBOT_DATABASE_URL:-postgresql://typebot:typebot@postgres:5432/typebot}
+      - NEXTAUTH_URL=${TYPEBOT_NEXTAUTH_URL:-http://localhost:3001}
+      - NEXT_PUBLIC_VIEWER_URL=${TYPEBOT_VIEWER_URL:-http://localhost:3002}
+      - ENCRYPTION_SECRET=${TYPEBOT_ENCRYPTION_SECRET}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+    depends_on:
+      - postgres
+    networks:
+      - didin-network
+
+  typebot-viewer:
+    image: baptistearno/typebot-viewer:latest
+    container_name: didin-typebot-viewer
+    restart: always
+    ports:
+      - "3002:3000"
+    environment:
+      - DATABASE_URL=${TYPEBOT_DATABASE_URL:-postgresql://typebot:typebot@postgres:5432/typebot}
+      - NEXT_PUBLIC_VIEWER_URL=${TYPEBOT_VIEWER_URL:-http://localhost:3002}
+      - ENCRYPTION_SECRET=${TYPEBOT_ENCRYPTION_SECRET}
+    depends_on:
+      - postgres
+    networks:
+      - didin-network
+
+  # ============================================================================
+  # n8n (Workflow Automation)
+  # ============================================================================
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: didin-n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=${POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - n8n-data:/home/node/.n8n
+    depends_on:
+      - postgres
+    networks:
+      - didin-network
+
+  # ============================================================================
+  # Evolution API (WhatsApp)
+  # ============================================================================
+  evolution-api:
+    image: atendai/evolution-api:latest
+    container_name: didin-evolution
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_URL=${EVOLUTION_SERVER_URL}
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=${DATABASE_URL}
+      - REDIS_ENABLED=true
+      - REDIS_URI=${REDIS_URL}
+      - CHATWOOT_ENABLED=true
+      - CHATWOOT_URL=${CHATWOOT_API_URL}
+      - TYPEBOT_ENABLED=true
+      - TYPEBOT_API_URL=${TYPEBOT_API_URL}
+    volumes:
+      - evolution-data:/evolution/instances
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - didin-network
+
+  # ============================================================================
+  # Nginx Reverse Proxy
+  # ============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: didin-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - frontend-build:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+    networks:
+      - didin-network
+
+  # ============================================================================
+  # Prometheus (Metrics)
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: didin-prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+    networks:
+      - didin-network
+
+  # ============================================================================
+  # Grafana (Dashboards)
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: didin-grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_SERVER_ROOT_URL=${GRAFANA_URL:-http://localhost:3000}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - didin-network
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  didin-network:
+    driver: bridge
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  postgres-data:
+  redis-data:
+  meilisearch-data:
+  scraper-cache:
+  social-sessions:
+  media-uploads:
+  n8n-data:
+  evolution-data:
+  frontend-build:
+  prometheus-data:
+  grafana-data:

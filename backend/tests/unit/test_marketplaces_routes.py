@@ -6,11 +6,9 @@ Cobertura: api/routes/marketplaces.py
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
 from httpx import AsyncClient, ASGITransport
 from decimal import Decimal
 from enum import Enum
-from pydantic import HttpUrl
 
 
 # Mock classes for integrations.marketplaces module
@@ -599,7 +597,6 @@ async def test_get_categories_error(async_client, mock_manager):
 def test_product_response_from_product():
     """Testa conversão de Product para ProductResponse."""
     with patch.dict("sys.modules", {"integrations.marketplaces": mock_integrations}):
-        from api.routes.marketplaces import ProductResponse
         
         # Mock Product with basic attributes
         product = MockProduct(

@@ -3,7 +3,7 @@ Multi-Account Management Routes
 Manage multiple social media accounts per platform
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime

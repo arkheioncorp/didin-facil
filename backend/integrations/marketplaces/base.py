@@ -3,7 +3,7 @@ Base classes e tipos compartilhados para integrações de marketplaces.
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum

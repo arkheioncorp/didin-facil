@@ -3,7 +3,6 @@ TikTok Session Manager
 Handles session persistence, backup, and restoration via Redis
 """
 
-import json
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, List

@@ -28,14 +28,14 @@ const YouTubeAutomation = lazy(() => import("@/pages/social/YouTubeAutomation"))
 const ChatbotBuilder = lazy(() => import("@/pages/automation/ChatbotBuilder"));
 const Scheduler = lazy(() => import("@/pages/automation/Scheduler"));
 const DLQPage = lazy(() => import("@/pages/automation/DLQ"));
+const Workflows = lazy(() => import("@/pages/automation/Workflows"));
 const CRMDashboard = lazy(() => import("@/pages/crm/CRMDashboard"));
 const Pipeline = lazy(() => import("@/pages/crm/Pipeline"));
 const MetricsPage = lazy(() => import("@/pages/admin/Metrics"));
-// Note: These pages don't exist yet - commenting out for now
-// const AnalyticsDashboard = lazy(() => import("@/pages/admin/AnalyticsDashboard"));
-// const ContentTemplates = lazy(() => import("@/pages/admin/ContentTemplates"));
-// const MultiAccountManager = lazy(() => import("@/pages/admin/MultiAccountManager"));
-// const APIDocumentation = lazy(() => import("@/pages/admin/APIDocumentation"));
+const AnalyticsDashboard = lazy(() => import("@/pages/analytics/AnalyticsDashboard"));
+const ContentTemplates = lazy(() => import("@/pages/templates/ContentTemplates"));
+const MultiAccountManager = lazy(() => import("@/pages/accounts/MultiAccountManager"));
+const APIDocumentation = lazy(() => import("@/pages/docs/APIDocumentation"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -87,6 +87,7 @@ function App() {
                       <Route path="chatbot" element={<ChatbotBuilder />} />
                       <Route path="scheduler" element={<Scheduler />} />
                       <Route path="dlq" element={<DLQPage />} />
+                      <Route path="workflows" element={<Workflows />} />
                     </Route>
 
                     {/* CRM Routes */}
@@ -98,12 +99,10 @@ function App() {
                     {/* Admin Routes */}
                     <Route path="admin">
                       <Route path="metrics" element={<MetricsPage />} />
-                      {/* TODO: Create these pages 
                       <Route path="analytics" element={<AnalyticsDashboard />} />
                       <Route path="templates" element={<ContentTemplates />} />
                       <Route path="accounts" element={<MultiAccountManager />} />
                       <Route path="docs" element={<APIDocumentation />} />
-                      */}
                     </Route>
 
                     <Route path="settings" element={<Settings />} />

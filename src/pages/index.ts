@@ -21,6 +21,7 @@ export { YouTubeAutomation } from "./social/YouTubeAutomation";
 export { ChatbotBuilder } from "./automation/ChatbotBuilder";
 export { Scheduler } from "./automation/Scheduler";
 export { default as DLQPage } from "./automation/DLQ";
+export { default as Workflows } from "./automation/Workflows";
 
 // Admin
 export { default as MetricsPage } from "./admin/Metrics";

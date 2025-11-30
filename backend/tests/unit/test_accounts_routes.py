@@ -3,7 +3,7 @@ Unit tests for Multi-Account Management Routes
 """
 
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 from datetime import datetime
 import json
 
@@ -223,7 +223,7 @@ class TestMultiAccountService:
                 status=AccountStatus.INACTIVE
             )
             
-            account = await account_service.update(
+            await account_service.update(
                 str(mock_current_user.id),
                 "account-123",
                 update_data
@@ -277,7 +277,7 @@ class TestMultiAccountService:
         }
         
         with patch("api.routes.accounts.redis_client", mock_redis):
-            account = await account_service.switch(str(mock_current_user.id), "account-123")
+            await account_service.switch(str(mock_current_user.id), "account-123")
             
             # Should update last_used_at
             mock_redis.hset.assert_called()
@@ -362,7 +362,7 @@ class TestMultiAccountService:
                 engagement_rate=5.5
             )
             
-            account = await account_service.update_metrics(
+            await account_service.update_metrics(
                 str(mock_current_user.id),
                 "account-123",
                 metrics

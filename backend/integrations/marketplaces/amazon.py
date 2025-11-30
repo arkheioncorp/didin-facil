@@ -26,11 +26,9 @@ Limitações:
 
 import asyncio
 import logging
-from datetime import datetime
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Optional
 
-import httpx
 
 from .base import (
     MarketplaceBase,
@@ -293,7 +291,7 @@ class AmazonClient(MarketplaceBase):
                     try:
                         product = self._normalize_product(item)
                         products.append(product)
-                    except:
+                    except Exception:
                         pass
             return products
             
@@ -326,7 +324,7 @@ class AmazonClient(MarketplaceBase):
             price_str = str(item.price).replace('R$', '').replace(',', '.').strip()
             try:
                 price = Decimal(price_str)
-            except:
+            except Exception:
                 pass
         
         if hasattr(item, 'price_savings') and item.price_savings:
@@ -336,7 +334,7 @@ class AmazonClient(MarketplaceBase):
                 original_price = price + savings
                 if original_price > 0:
                     discount = float((savings / original_price) * 100)
-            except:
+            except Exception:
                 pass
         
         # Imagens

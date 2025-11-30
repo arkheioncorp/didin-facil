@@ -3,11 +3,10 @@ API Documentation Routes
 Enhanced OpenAPI documentation with examples
 """
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
-from datetime import datetime
 
 router = APIRouter()
 

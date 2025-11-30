@@ -506,7 +506,40 @@
     "integrations": {
       "title": "Integrações",
       "connected": "Conectadas",
-      "available": "Disponíveis"
+      "available": "Disponíveis",
+      "whatsapp": {
+        "title": "WhatsApp",
+        "description": "Conecte seu WhatsApp para enviar notificações e mensagens",
+        "connect": "Conectar WhatsApp",
+        "disconnect": "Desconectar",
+        "connected_as": "Conectado como",
+        "scan_qr": "Abra o WhatsApp no seu celular > Menu > Aparelhos conectados > Conectar aparelho"
+      },
+      "youtube": {
+        "title": "YouTube",
+        "description": "Gerencie suas contas do YouTube para upload de vídeos",
+        "add_account": "Adicionar Conta YouTube",
+        "no_accounts": "Nenhuma conta conectada"
+      },
+      "tiktok": {
+        "title": "TikTok",
+        "description": "Gerencie suas sessões do TikTok para upload",
+        "add_account": "Adicionar Conta TikTok (Cookies)",
+        "no_accounts": "Nenhuma conta conectada"
+      },
+      "instagram": {
+        "title": "Instagram",
+        "description": "Conecte sua conta para upload de fotos e reels",
+        "manage": "Gerenciar Instagram"
+      },
+      "api_config": {
+        "title": "Configurações de API",
+        "description": "Configure as chaves de API para integrações externas",
+        "evolution_url": "Evolution API URL",
+        "evolution_url_hint": "URL da API Evolution para WhatsApp",
+        "evolution_key": "Evolution API Key",
+        "evolution_key_hint": "Chave de autenticação da Evolution API"
+      }
     },
     "advanced": {
       "title": "Avançado",

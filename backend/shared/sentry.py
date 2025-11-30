@@ -10,7 +10,7 @@ from sentry_sdk.integrations.redis import RedisIntegration
 from sentry_sdk.integrations.httpx import HttpxIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 import logging
-from typing import Optional, Any
+from typing import Optional
 from functools import wraps
 
 from .config import settings
@@ -72,7 +72,7 @@ class SentryService:
                 
                 # Ambiente
                 environment=settings.ENVIRONMENT,
-                release=f"tiktrend-api@2.0.0",
+                release="tiktrend-api@2.0.0",
                 
                 # Sampling
                 traces_sample_rate=0.2 if settings.is_production else 1.0,

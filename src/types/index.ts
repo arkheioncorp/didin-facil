@@ -232,6 +232,11 @@ export interface SystemConfig {
   logsEnabled: boolean;
   maxLogSize: number;
   analyticsEnabled: boolean;
+  // API Configurations
+  evolutionApiUrl?: string;
+  evolutionApiKey?: string;
+  youtubeCredentialsPath?: string;
+  tiktokDataDir?: string;
 }
 
 export interface AppSettings {
