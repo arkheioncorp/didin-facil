@@ -34,22 +34,45 @@ export const Tutorial = () => {
   };
 
   const steps: Step[] = [
+    // ═══════════════════════════════════════════════════════════════════
+    // 🎯 ONBOARDING - Boas-vindas e modelo de negócio
+    // ═══════════════════════════════════════════════════════════════════
     {
       target: 'body',
       content: (
         <div>
-          <h2 className="text-lg font-bold mb-2">Bem-vindo ao TikTrend Finder!</h2>
-          <p>Vamos fazer um tour rápido para você conhecer todas as funcionalidades da plataforma.</p>
+          <h2 className="text-lg font-bold mb-2">🚀 Bem-vindo ao TikTrend Finder!</h2>
+          <p className="mb-2">Sua plataforma completa para encontrar produtos vencedores e automatizar suas vendas.</p>
+          <p className="text-sm text-muted-foreground">Este tour vai te mostrar todas as funcionalidades em ~2 minutos.</p>
         </div>
       ),
       placement: 'center',
     },
     {
+      target: '[data-testid="user-menu"]',
+      content: (
+        <div>
+          <h3 className="font-bold mb-2">💳 Licença & Créditos</h3>
+          <p className="mb-2">Seu acesso funciona assim:</p>
+          <ul className="text-sm space-y-1 mb-2">
+            <li>• <strong>Licença Vitalícia:</strong> Buscas ilimitadas para sempre</li>
+            <li>• <strong>Créditos IA:</strong> Para gerar copies e análises</li>
+          </ul>
+          <p className="text-xs text-muted-foreground">Clique no seu perfil para ver saldo e comprar créditos.</p>
+        </div>
+      ),
+      placement: 'right',
+    },
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 🔍 CORE - Busca e gestão de produtos
+    // ═══════════════════════════════════════════════════════════════════
+    {
       target: '[data-testid="nav-dashboard"]',
       content: (
         <div>
-          <h3 className="font-bold">Dashboard</h3>
-          <p>Aqui você tem uma visão geral das tendências e estatísticas importantes.</p>
+          <h3 className="font-bold">📊 Dashboard</h3>
+          <p>Visão geral das tendências, métricas de performance e insights do mercado.</p>
         </div>
       ),
       placement: 'right',
@@ -58,8 +81,9 @@ export const Tutorial = () => {
       target: '[data-testid="nav-search"]',
       content: (
         <div>
-          <h3 className="font-bold">Buscar</h3>
-          <p>Realize buscas avançadas por produtos no TikTok Shop.</p>
+          <h3 className="font-bold">🔍 Buscar Produtos</h3>
+          <p className="mb-2">O coração da plataforma! Encontre produtos vencedores no TikTok Shop com filtros avançados.</p>
+          <p className="text-sm text-muted-foreground">Buscas ilimitadas com sua licença vitalícia.</p>
         </div>
       ),
       placement: 'right',
@@ -68,8 +92,8 @@ export const Tutorial = () => {
       target: '[data-testid="nav-products"]',
       content: (
         <div>
-          <h3 className="font-bold">Produtos</h3>
-          <p>Gerencie e visualize os produtos que você encontrou.</p>
+          <h3 className="font-bold">📦 Produtos</h3>
+          <p>Gerencie todos os produtos que você encontrou. Organize, compare e exporte para planilhas.</p>
         </div>
       ),
       placement: 'right',
@@ -78,28 +102,8 @@ export const Tutorial = () => {
       target: '[data-testid="nav-favorites"]',
       content: (
         <div>
-          <h3 className="font-bold">Favoritos</h3>
-          <p>Acesse rapidamente os produtos que você salvou.</p>
-        </div>
-      ),
-      placement: 'right',
-    },
-    {
-      target: '[data-testid="nav-copy"]',
-      content: (
-        <div>
-          <h3 className="font-bold">Copy AI</h3>
-          <p>Crie textos persuasivos para seus anúncios usando nossa Inteligência Artificial.</p>
-        </div>
-      ),
-      placement: 'right',
-    },
-    {
-      target: '[data-testid="nav-settings"]',
-      content: (
-        <div>
-          <h3 className="font-bold">Configurações</h3>
-          <p>Ajuste as preferências da aplicação e do seu perfil.</p>
+          <h3 className="font-bold">⭐ Favoritos</h3>
+          <p>Salve os melhores produtos aqui para acessar rapidamente depois.</p>
         </div>
       ),
       placement: 'right',
@@ -108,11 +112,186 @@ export const Tutorial = () => {
       target: '[data-testid="search-input"]',
       content: (
         <div>
-          <h3 className="font-bold">Busca Rápida</h3>
-          <p>Use este campo para encontrar produtos rapidamente em qualquer tela.</p>
+          <h3 className="font-bold">⚡ Busca Rápida</h3>
+          <p>Encontre qualquer produto instantaneamente de qualquer tela.</p>
         </div>
       ),
       placement: 'bottom',
+    },
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 🤖 INTELIGÊNCIA ARTIFICIAL - Copy AI + Sistema de Créditos
+    // ═══════════════════════════════════════════════════════════════════
+    {
+      target: '[data-testid="nav-copy"]',
+      content: (
+        <div>
+          <h3 className="font-bold">🤖 Copy AI</h3>
+          <p className="mb-2">Crie textos persuasivos para anúncios usando IA avançada.</p>
+          <div className="bg-muted p-2 rounded text-sm mt-2">
+            <p className="font-medium mb-1">💰 Consumo de Créditos:</p>
+            <ul className="space-y-0.5">
+              <li>• Copy simples: <strong>1 crédito</strong></li>
+              <li>• Análise de tendência: <strong>2 créditos</strong></li>
+              <li>• Lote de copies: <strong>5 créditos</strong></li>
+            </ul>
+          </div>
+        </div>
+      ),
+      placement: 'right',
+    },
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 📱 SOCIAL SUITE - Redes Sociais
+    // ═══════════════════════════════════════════════════════════════════
+    {
+      target: '[data-testid="nav-social"]',
+      content: (
+        <div>
+          <h3 className="font-bold">📱 Social Hub</h3>
+          <p className="mb-2">Central de gerenciamento de todas as suas redes sociais em um só lugar.</p>
+          <p className="text-sm text-muted-foreground">Conecte Instagram, TikTok e YouTube.</p>
+        </div>
+      ),
+      placement: 'right',
+    },
+    {
+      target: '[data-testid="nav-instagram"]',
+      content: (
+        <div>
+          <h3 className="font-bold">📸 Instagram</h3>
+          <p>Gerencie posts, stories e analise métricas do seu perfil comercial.</p>
+        </div>
+      ),
+      placement: 'right',
+    },
+    {
+      target: '[data-testid="nav-tiktok"]',
+      content: (
+        <div>
+          <h3 className="font-bold">🎵 TikTok</h3>
+          <p>Acompanhe tendências, agende vídeos e monitore performance dos seus conteúdos.</p>
+        </div>
+      ),
+      placement: 'right',
+    },
+    {
+      target: '[data-testid="nav-youtube"]',
+      content: (
+        <div>
+          <h3 className="font-bold">▶️ YouTube</h3>
+          <p>Gerencie seu canal, agende uploads e acompanhe analytics detalhados.</p>
+        </div>
+      ),
+      placement: 'right',
+    },
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ⚡ AUTOMAÇÃO - WhatsApp, Chatbot, Agendador, Seller Bot
+    // ═══════════════════════════════════════════════════════════════════
+    {
+      target: '[data-testid="nav-whatsapp"]',
+      content: (
+        <div>
+          <h3 className="font-bold">💬 WhatsApp Business</h3>
+          <p>Automatize atendimento, envie mensagens em massa e gerencie conversas.</p>
+        </div>
+      ),
+      placement: 'right',
+    },
+    {
+      target: '[data-testid="nav-chatbot"]',
+      content: (
+        <div>
+          <h3 className="font-bold">🤖 Chatbot</h3>
+          <p>Configure respostas automáticas inteligentes para atender clientes 24/7.</p>
+        </div>
+      ),
+      placement: 'right',
+    },
+    {
+      target: '[data-testid="nav-scheduler"]',
+      content: (
+        <div>
+          <h3 className="font-bold">📅 Agendador</h3>
+          <p>Programe posts e ações automáticas para todas as suas redes sociais.</p>
+        </div>
+      ),
+      placement: 'right',
+    },
+    {
+      target: '[data-testid="nav-seller-bot"]',
+      content: (
+        <div>
+          <h3 className="font-bold">🏆 Seller Bot <span className="text-xs bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-1.5 py-0.5 rounded ml-1">PREMIUM</span></h3>
+          <p className="mb-2">Automação avançada para vendedores do TikTok Shop.</p>
+          <ul className="text-sm space-y-0.5">
+            <li>• Publicar produtos automaticamente</li>
+            <li>• Responder mensagens com IA</li>
+            <li>• Gerenciar pedidos</li>
+          </ul>
+          <p className="text-xs text-muted-foreground mt-2">Disponível no plano Premium.</p>
+        </div>
+      ),
+      placement: 'right',
+    },
+
+    // ═══════════════════════════════════════════════════════════════════
+    // 📈 CRM & VENDAS - Pipeline e gestão de leads
+    // ═══════════════════════════════════════════════════════════════════
+    {
+      target: '[data-testid="nav-crm"]',
+      content: (
+        <div>
+          <h3 className="font-bold">📈 CRM Dashboard</h3>
+          <p>Visão completa das suas vendas, leads e métricas de conversão.</p>
+        </div>
+      ),
+      placement: 'right',
+    },
+    {
+      target: '[data-testid="nav-pipeline"]',
+      content: (
+        <div>
+          <h3 className="font-bold">🎯 Pipeline de Vendas</h3>
+          <p>Gerencie leads em estilo Kanban. Arraste e solte para atualizar status.</p>
+        </div>
+      ),
+      placement: 'right',
+    },
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ⚙️ CONFIGURAÇÕES - Finalização
+    // ═══════════════════════════════════════════════════════════════════
+    {
+      target: '[data-testid="nav-settings"]',
+      content: (
+        <div>
+          <h3 className="font-bold">⚙️ Configurações</h3>
+          <p className="mb-2">Personalize a plataforma do seu jeito:</p>
+          <ul className="text-sm space-y-0.5">
+            <li>• Tema claro/escuro</li>
+            <li>• Integrações e APIs</li>
+            <li>• Preferências de notificação</li>
+          </ul>
+        </div>
+      ),
+      placement: 'right',
+    },
+    {
+      target: 'body',
+      content: (
+        <div>
+          <h2 className="text-lg font-bold mb-2">🎉 Tudo pronto!</h2>
+          <p className="mb-2">Você conhece todas as funcionalidades do TikTrend Finder.</p>
+          <div className="bg-muted p-3 rounded text-sm">
+            <p className="font-medium mb-1">💡 Dica:</p>
+            <p>Comece fazendo uma busca de produtos e depois use a Copy AI para criar anúncios incríveis!</p>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">Você pode reiniciar este tutorial em Configurações.</p>
+        </div>
+      ),
+      placement: 'center',
     },
   ];
 

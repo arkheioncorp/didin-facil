@@ -18,8 +18,13 @@ from vendor.tiktok.client import (
     TikTokClient, TikTokConfig, VideoConfig, Privacy
 )
 from shared.config import settings
+from api.services.tiktok_session import (
+    TikTokSessionManager,
+    TikTokSessionStatus
+)
 
 router = APIRouter()
+session_manager = TikTokSessionManager()
 
 
 class TikTokSessionSetup(BaseModel):
@@ -43,49 +48,165 @@ async def create_session(
     current_user=Depends(get_current_user)
 ):
     """
-    Salva cookies de sessão do TikTok.
+    Salva cookies de sessão do TikTok no Redis.
     
     O usuário deve exportar cookies do navegador usando extensão como
     'EditThisCookie' ou 'Cookie-Editor' e enviar aqui.
+    
+    A sessão é salva no Redis e pode ser restaurada automaticamente
+    em caso de reinício do worker.
     """
-    sessions_dir = os.path.join(settings.DATA_DIR, "tiktok_sessions")
-    os.makedirs(sessions_dir, exist_ok=True)
-    
-    cookies_file = os.path.join(
-        sessions_dir, 
-        f"{current_user.id}_{data.account_name}.json"
-    )
-    
-    with open(cookies_file, 'w') as f:
-        json.dump(data.cookies, f)
-    
-    return {
-        "status": "success",
-        "message": "Sessão salva com sucesso",
-        "account_name": data.account_name
-    }
+    try:
+        session = await session_manager.save_session(
+            user_id=str(current_user.id),
+            account_name=data.account_name,
+            cookies=data.cookies,
+            metadata={"source": "manual_import"}
+        )
+        
+        return {
+            "status": "success",
+            "message": "Sessão salva com sucesso",
+            "account_name": data.account_name,
+            "session_id": session.id,
+            "expires_at": session.expires_at.isoformat() if session.expires_at else None
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao salvar sessão: {str(e)}"
+        )
 
 
 @router.get("/sessions")
 async def list_sessions(current_user=Depends(get_current_user)):
     """Lista sessões TikTok do usuário."""
-    sessions_dir = os.path.join(settings.DATA_DIR, "tiktok_sessions")
+    sessions = await session_manager.list_sessions(str(current_user.id))
     
-    if not os.path.exists(sessions_dir):
-        return {"sessions": []}
+    return {
+        "sessions": [
+            {
+                "account_name": s.account_name,
+                "status": s.status.value,
+                "created_at": s.created_at.isoformat(),
+                "last_used": s.last_used.isoformat() if s.last_used else None,
+                "expires_at": s.expires_at.isoformat() if s.expires_at else None,
+                "upload_count": s.upload_count,
+                "is_valid": s.status == TikTokSessionStatus.ACTIVE
+            }
+            for s in sessions
+        ]
+    }
+
+
+@router.get("/sessions/{account_name}")
+async def get_session(
+    account_name: str,
+    current_user=Depends(get_current_user)
+):
+    """Obtém detalhes de uma sessão específica."""
+    health = await session_manager.get_session_health(
+        str(current_user.id),
+        account_name
+    )
     
-    sessions = []
-    prefix = f"{current_user.id}_"
+    if not health.get("exists"):
+        raise HTTPException(status_code=404, detail="Sessão não encontrada")
     
-    for filename in os.listdir(sessions_dir):
-        if filename.startswith(prefix) and filename.endswith('.json'):
-            account_name = filename[len(prefix):-5]
-            sessions.append({
-                "account_name": account_name,
-                "file": filename
-            })
+    return health
+
+
+@router.post("/sessions/{account_name}/backup")
+async def backup_session(
+    account_name: str,
+    current_user=Depends(get_current_user)
+):
+    """Cria backup manual da sessão."""
+    success = await session_manager.backup_session(
+        str(current_user.id),
+        account_name
+    )
     
-    return {"sessions": sessions}
+    if not success:
+        raise HTTPException(
+            status_code=400,
+            detail="Falha ao criar backup (sessão não encontrada?)"
+        )
+    
+    return {"status": "success", "message": "Backup criado"}
+
+
+@router.post("/sessions/{account_name}/restore")
+async def restore_session(
+    account_name: str,
+    current_user=Depends(get_current_user)
+):
+    """Restaura sessão do backup mais recente."""
+    session = await session_manager.restore_session(
+        str(current_user.id),
+        account_name
+    )
+    
+    if not session:
+        raise HTTPException(
+            status_code=404,
+            detail="Nenhum backup encontrado"
+        )
+    
+    return {
+        "status": "success",
+        "message": "Sessão restaurada",
+        "account_name": session.account_name
+    }
+
+
+@router.put("/sessions/{account_name}/cookies")
+async def update_cookies(
+    account_name: str,
+    cookies: List[dict],
+    current_user=Depends(get_current_user)
+):
+    """
+    Atualiza cookies de uma sessão existente.
+    
+    Cria backup da sessão antiga automaticamente.
+    """
+    success = await session_manager.update_cookies(
+        str(current_user.id),
+        account_name,
+        cookies
+    )
+    
+    if not success:
+        raise HTTPException(
+            status_code=400,
+            detail="Falha ao atualizar cookies"
+        )
+    
+    return {"status": "success", "message": "Cookies atualizados"}
+
+
+@router.delete("/sessions/{account_name}")
+async def delete_session(
+    account_name: str,
+    keep_backups: bool = True,
+    current_user=Depends(get_current_user)
+):
+    """Remove sessão (opcionalmente mantém backups)."""
+    success = await session_manager.delete_session(
+        str(current_user.id),
+        account_name,
+        keep_backups=keep_backups
+    )
+    
+    if not success:
+        raise HTTPException(
+            status_code=400,
+            detail="Falha ao remover sessão"
+        )
+    
+    return {"status": "success", "message": "Sessão removida"}
 
 
 @router.post("/upload")

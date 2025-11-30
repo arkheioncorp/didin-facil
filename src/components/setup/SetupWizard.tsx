@@ -20,8 +20,28 @@ export const SetupWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = React.useState(0);
   const [licenseKey, setLicenseKey] = React.useState("");
   const [acceptedTerms, setAcceptedTerms] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const { theme, setTheme } = useUserStore();
   const navigate = useNavigate();
+
+  // Check if setup is already complete - redirect if so
+  React.useEffect(() => {
+    const checkSetupStatus = async () => {
+      try {
+        const settings = await invoke<AppSettings>("get_settings");
+        if (settings.setupComplete) {
+          // Setup already done, redirect to home
+          navigate("/", { replace: true });
+          return;
+        }
+      } catch (error) {
+        console.error("Failed to check setup status:", error);
+      }
+      setIsLoading(false);
+    };
+
+    checkSetupStatus();
+  }, [navigate]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -39,20 +59,45 @@ export const SetupWizard: React.FC = () => {
       // Get current defaults
       const currentSettings = await invoke<AppSettings>("get_settings");
 
-      // Update with wizard data
+      // Get current timestamp for terms acceptance
+      const now = new Date().toISOString();
+
+      // Update with wizard data - forçando configurações obrigatórias
       const newSettings: AppSettings = {
         ...currentSettings,
         theme: theme,
+        language: "pt-BR", // Forçar idioma padrão
+        notificationsEnabled: true, // Forçar notificações ativadas
+        autoUpdate: true, // Forçar auto-update
+        
+        // Marcar setup como completo
+        setupComplete: true,
+        termsAccepted: acceptedTerms,
+        termsAcceptedAt: acceptedTerms ? now : null,
+        
         license: {
           ...currentSettings.license,
           key: licenseKey || null,
           plan: licenseKey ? "lifetime" : "trial",
           isActive: true,
-          credits: 0
-        }
+          credits: 0,
+          trialStarted: licenseKey ? null : now, // Iniciar trial se não tiver licença
+        },
+        
+        // Configurações de sistema obrigatórias
+        system: {
+          ...currentSettings.system,
+          autoUpdate: true,
+          logsEnabled: true,
+          analyticsEnabled: false, // Privacidade por padrão
+        },
       };
 
       await invoke("save_settings", { settings: newSettings });
+      
+      // Limpar flag do tutorial para exibir na primeira visita
+      localStorage.removeItem('tutorial_completed');
+      
       navigate("/");
     } catch (error) {
       console.error("Setup failed:", error);
@@ -124,9 +169,9 @@ export const SetupWizard: React.FC = () => {
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <h3 className="text-lg font-medium">Ativação</h3>
+              <h3 className="text-lg font-medium">🔑 Ativação da Licença</h3>
               <p className="text-sm text-muted-foreground">
-                Insira sua chave de licença ou continue com a versão de avaliação.
+                Insira sua chave de licença para desbloquear buscas ilimitadas.
               </p>
             </div>
             <div className="space-y-2">
@@ -137,12 +182,42 @@ export const SetupWizard: React.FC = () => {
                 onChange={(e) => setLicenseKey(e.target.value)}
               />
             </div>
+            
+            {/* Licença Vitalícia */}
+            <div className="bg-gradient-to-r from-tiktrend-primary/10 to-tiktrend-secondary/10 p-4 rounded-lg text-sm border border-tiktrend-primary/20">
+              <p className="font-medium text-tiktrend-primary mb-2">✨ Licença Vitalícia</p>
+              <ul className="space-y-1 text-muted-foreground">
+                <li>✅ Buscas de produtos <strong>ilimitadas</strong></li>
+                <li>✅ Todos os filtros avançados</li>
+                <li>✅ Exportação completa (CSV, Excel)</li>
+                <li>✅ Até 2 dispositivos simultâneos</li>
+                <li>✅ Atualizações gratuitas para sempre</li>
+              </ul>
+            </div>
+
+            {/* Créditos IA */}
             <div className="bg-muted p-4 rounded-lg text-sm">
-              <p className="font-medium">Versão Trial</p>
-              <ul className="list-disc list-inside mt-2 space-y-1 text-muted-foreground">
-                <li>7 dias de acesso gratuito</li>
+              <p className="font-medium mb-2">🤖 Créditos IA (Opcional)</p>
+              <p className="text-muted-foreground mb-2">
+                Use créditos para gerar copies e análises com IA:
+              </p>
+              <ul className="space-y-1 text-muted-foreground text-xs">
+                <li>• Copy simples: 1 crédito</li>
+                <li>• Análise de tendência: 2 créditos</li>
+                <li>• Lote de copies: 5 créditos</li>
+              </ul>
+              <p className="text-xs text-muted-foreground mt-2 italic">
+                Compre créditos a qualquer momento no menu Perfil.
+              </p>
+            </div>
+
+            {/* Trial */}
+            <div className="bg-muted/50 p-3 rounded-lg text-sm border border-dashed">
+              <p className="font-medium text-muted-foreground">📋 Versão Trial (7 dias)</p>
+              <ul className="list-disc list-inside mt-1 space-y-0.5 text-muted-foreground text-xs">
                 <li>50 produtos por busca</li>
                 <li>Funcionalidades básicas</li>
+                <li>Sem créditos IA inclusos</li>
               </ul>
             </div>
           </div>
@@ -165,8 +240,19 @@ export const SetupWizard: React.FC = () => {
           <div className="text-center space-y-4">
             <div className="text-4xl mb-4">🎉</div>
             <h2 className="text-2xl font-bold">Tudo Pronto!</h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               O TikTrend Finder está configurado e pronto para usar.
+            </p>
+            <div className="bg-muted p-4 rounded-lg text-left text-sm space-y-2">
+              <p className="font-medium">🚀 Próximos passos:</p>
+              <ul className="space-y-1 text-muted-foreground">
+                <li>1. Faça sua primeira busca de produtos</li>
+                <li>2. Salve os melhores nos favoritos</li>
+                <li>3. Use a Copy AI para criar anúncios incríveis</li>
+              </ul>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Um tutorial interativo vai te guiar após clicar em "Começar"
             </p>
           </div>
         );
@@ -174,6 +260,18 @@ export const SetupWizard: React.FC = () => {
         return null;
     }
   };
+
+  // Show loading while checking setup status
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <TikTrendLogo size={48} />
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">

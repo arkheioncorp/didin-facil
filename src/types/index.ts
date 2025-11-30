@@ -247,6 +247,11 @@ export interface AppSettings {
   defaultCopyType: CopyType;
   defaultCopyTone: CopyTone;
   
+  // Setup & Onboarding
+  setupComplete: boolean;
+  termsAccepted: boolean;
+  termsAcceptedAt: string | null;
+  
   credentials: CredentialsConfig;
   scraper: ScraperConfig;
   license: LicenseConfig;

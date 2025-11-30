@@ -54,6 +54,11 @@ pub struct AppSettings {
     pub openai_model: String,
     pub default_copy_type: String,
     pub default_copy_tone: String,
+    
+    // Setup & Onboarding
+    pub setup_complete: bool,
+    pub terms_accepted: bool,
+    pub terms_accepted_at: Option<String>,
 
     pub credentials: CredentialsConfig,
     pub scraper: ScraperConfig,
@@ -75,6 +80,11 @@ impl Default for AppSettings {
             openai_model: "gpt-4".to_string(),
             default_copy_type: "tiktok_hook".to_string(),
             default_copy_tone: "urgent".to_string(),
+            
+            // Setup & Onboarding - defaults para novo usuário
+            setup_complete: false,
+            terms_accepted: false,
+            terms_accepted_at: None,
 
             credentials: CredentialsConfig {
                 openai_key: "".to_string(),
