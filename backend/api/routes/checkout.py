@@ -4,7 +4,7 @@ Payment processing for TikTrend Finder licenses
 """
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, status, Query
@@ -206,8 +206,6 @@ async def get_payment_status(order_id: str):
     Get payment status for an order.
     Frontend polls this endpoint after PIX/boleto creation.
     """
-    license_service = LicenseService()
-    
     # Get order from database
     # order = await get_order(order_id)
     
@@ -215,6 +213,7 @@ async def get_payment_status(order_id: str):
     # In production, check MercadoPago payment status
     
     # If approved, include license key
+    # license_service = LicenseService()
     # license_info = await license_service.get_license_by_order(order_id)
     
     return PaymentStatusResponse(
