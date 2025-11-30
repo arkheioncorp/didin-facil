@@ -62,6 +62,7 @@ def mock_license_service():
         service.add_credits = AsyncMock()
         service.deactivate_license = AsyncMock()
         service.extend_license = AsyncMock()
+        service.activate_lifetime_license = AsyncMock()
         cls.return_value = service
         yield service
 
@@ -155,21 +156,24 @@ class TestMercadoPagoWebhook:
         mock_mp_service.log_event.assert_called()
 
     @pytest.mark.asyncio
-    async def test_webhook_payment_approved_new_license(
+    async def test_webhook_payment_approved_with_credits_and_license(
         self,
         mock_mp_service,
         mock_license_service,
         async_client
     ):
-        """Test payment.approved creates new license."""
+        """Test payment.approved adds credits and activates license."""
         mock_mp_service.get_payment.return_value = {
             "id": "123",
             "status": "approved",
             "payer": {"email": "test@example.com"},
-            "metadata": {"product_type": "license"}
+            "metadata": {
+                "product_type": "credits",
+                "credits": 1000,
+                "includes_license": True,
+                "package_slug": "ultra"
+            }
         }
-        mock_license_service.get_license_by_email.return_value = None
-        mock_license_service.create_license.return_value = "LIC-NEW-KEY"
 
         payload = {
             "type": "payment",
@@ -191,8 +195,9 @@ class TestMercadoPagoWebhook:
             )
 
         assert response.status_code == 200
-        mock_license_service.create_license.assert_called_once()
-        mock_mp_service.send_license_email.assert_called_once()
+        mock_license_service.add_credits.assert_called_once()
+        mock_license_service.activate_lifetime_license.assert_called_once()
+        mock_mp_service.send_credits_email.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_webhook_payment_approved_existing_license(
@@ -234,21 +239,23 @@ class TestMercadoPagoWebhook:
         assert response.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_webhook_payment_credits(
+    async def test_webhook_payment_credits_only(
         self,
         mock_mp_service,
         mock_license_service,
         async_client
     ):
-        """Test payment.approved for credits purchase."""
+        """Test payment.approved for credits purchase only (no license)."""
         mock_mp_service.get_payment.return_value = {
             "id": "123",
             "status": "approved",
             "payer": {"email": "test@example.com"},
-            "metadata": {"product_type": "credits", "credits_amount": 100}
-        }
-        mock_license_service.get_license_by_email.return_value = {
-            "id": "lic_123"
+            "metadata": {
+                "product_type": "credits",
+                "credits": 500,
+                "includes_license": False,
+                "package_slug": "starter"
+            }
         }
 
         payload = {
@@ -271,7 +278,9 @@ class TestMercadoPagoWebhook:
             )
 
         assert response.status_code == 200
-        mock_license_service.add_credits.assert_called()
+        mock_license_service.add_credits.assert_called_once()
+        # Should not activate license for credits-only package
+        mock_license_service.activate_lifetime_license.assert_not_called()
 
 
 class TestSubscriptionEvents:
