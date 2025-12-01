@@ -9,12 +9,20 @@
           "value": "pt-BR"
         },
         {
+          "name": "auth_token",
+          "value": "eyJzdWIiOiJ1c2VyXzE3NjQ2Mjk1MzM4ODciLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJleHAiOjE3NjQ3MTU5MzM4ODd9.dev.1764629533887"
+        },
+        {
+          "name": "completed_tutorials",
+          "value": "[]"
+        },
+        {
           "name": "tutorial_completed",
           "value": "true"
         },
         {
           "name": "didin-user-v2",
-          "value": "{\"state\":{\"user\":{\"id\":\"user_1764553261022\",\"email\":\"test@example.com\",\"name\":\"test\",\"avatarUrl\":null,\"phone\":null,\"hasLifetimeLicense\":true,\"licenseActivatedAt\":\"2025-12-01T01:41:01.022Z\",\"isActive\":true,\"isEmailVerified\":true,\"language\":\"pt-BR\",\"timezone\":\"America/Sao_Paulo\",\"createdAt\":\"2025-12-01T01:41:01.022Z\",\"updatedAt\":null,\"lastLoginAt\":\"2025-12-01T01:41:01.022Z\"},\"license\":{\"id\":\"lic_1764553261022\",\"isValid\":true,\"isLifetime\":true,\"plan\":\"lifetime\",\"activatedAt\":\"2025-12-01T01:41:01.022Z\",\"expiresAt\":null,\"maxDevices\":2,\"activeDevices\":1,\"currentDeviceId\":null,\"isCurrentDeviceAuthorized\":true},\"credits\":{\"balance\":10,\"totalPurchased\":0,\"totalUsed\":0,\"lastPurchaseAt\":null,\"bonusBalance\":0,\"bonusExpiresAt\":null},\"isAuthenticated\":true,\"theme\":\"system\"},\"version\":0}"
+          "value": "{\"state\":{\"user\":{\"id\":\"user_1764629533887\",\"email\":\"test@example.com\",\"name\":\"test\",\"avatarUrl\":null,\"phone\":null,\"hasLifetimeLicense\":true,\"licenseActivatedAt\":\"2025-12-01T22:52:13.887Z\",\"isActive\":true,\"isEmailVerified\":true,\"language\":\"pt-BR\",\"timezone\":\"America/Sao_Paulo\",\"createdAt\":\"2025-12-01T22:52:13.887Z\",\"updatedAt\":null,\"lastLoginAt\":\"2025-12-01T22:52:13.887Z\"},\"license\":{\"id\":\"lic_1764629533887\",\"isValid\":true,\"isLifetime\":true,\"plan\":\"lifetime\",\"activatedAt\":\"2025-12-01T22:52:13.887Z\",\"expiresAt\":null,\"maxDevices\":2,\"activeDevices\":1,\"currentDeviceId\":null,\"isCurrentDeviceAuthorized\":true},\"credits\":{\"balance\":10,\"totalPurchased\":0,\"totalUsed\":0,\"lastPurchaseAt\":null,\"bonusBalance\":0,\"bonusExpiresAt\":null},\"isAuthenticated\":true,\"theme\":\"system\"},\"version\":0}"
         },
         {
           "name": "onboarding_completed",

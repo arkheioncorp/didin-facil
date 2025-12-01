@@ -28,7 +28,7 @@ export const Footer: React.FC<FooterProps> = ({ className, minimal = false }) =>
           </Link>
         </div>
         <p className="mt-2">
-          © {currentYear} Didin Fácil / Arkheion Corp. Todos os direitos reservados.
+          © {currentYear} TikTrend / Arkheion Corp. Todos os direitos reservados.
         </p>
       </footer>
     );
@@ -161,7 +161,7 @@ export const Footer: React.FC<FooterProps> = ({ className, minimal = false }) =>
         <div className="mt-8 pt-8 border-t border-border/50">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
             <p>
-              © {currentYear} Didin Fácil / Arkheion Corp. Todos os direitos reservados.
+              © {currentYear} TikTrend / Arkheion Corp. Todos os direitos reservados.
             </p>
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">

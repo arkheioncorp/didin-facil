@@ -396,7 +396,7 @@ export function WhatsappPage() {
       }
       
       const phone = instance.owner.replace('@s.whatsapp.net', '');
-      const testMessage = `🧪 TESTE AUTOMATIZADO - Didin Fácil
+      const testMessage = `🧪 TESTE AUTOMATIZADO - TikTrend
 
 ✅ Sistema: Operacional
 📱 Instância: ${instance.instanceName}

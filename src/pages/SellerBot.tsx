@@ -195,7 +195,7 @@ async function createTask(data: { task_type: string; task_data?: Record<string, 
     const response = await api.post<MessageResponse>("/seller-bot/message", {
       channel: data.task_data?.channel || "webchat",
       sender_id: data.task_data?.sender_id || "system",
-      sender_name: "Didin Bot",
+      sender_name: "TikTrend Bot",
       content: data.task_data?.content || "",
     });
     return {

@@ -6,18 +6,42 @@ Inclui:
 - Retry com exponential backoff
 - Dead letter queue para posts que falharam múltiplas vezes
 - Métricas de processamento
+- Notificações WebSocket
 """
 
-from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Any, List
-from enum import Enum
-from pydantic import BaseModel, Field
-import uuid
 import asyncio
 import logging
 import random
+import uuid
+from datetime import datetime, timedelta, timezone
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
+
+# Prometheus Metrics
+try:
+    from monitoring.social_metrics import (DLQ_SIZE, PENDING_POSTS,
+                                           POSTS_RETRIED, PUBLISH_DURATION,
+                                           WORKER_LAST_RUN, WORKER_STATUS,
+                                           track_post_failed,
+                                           track_post_published,
+                                           track_post_scheduled)
+    METRICS_AVAILABLE = True
+except ImportError:
+    METRICS_AVAILABLE = False
+    logger.warning("Prometheus metrics not available")
+
+# WebSocket Notifications
+try:
+    from api.routes.websocket_notifications import (NotificationType,
+                                                    publish_notification)
+    NOTIFICATIONS_AVAILABLE = True
+except ImportError:
+    NOTIFICATIONS_AVAILABLE = False
+    logger.warning("WebSocket notifications not available")
 
 # Configurações de retry
 MAX_RETRY_ATTEMPTS = 3
@@ -110,6 +134,11 @@ class PostSchedulerService:
         
         # Adicionar ao set global
         await redis.zadd("all_scheduled_posts", {post.id: score})
+        
+        # Track metrics
+        if METRICS_AVAILABLE:
+            track_post_scheduled(post.platform.value, post.content_type)
+            await self._update_pending_metrics()
         
         logger.info(
             f"Post {post.id} agendado para {post.scheduled_time} "
@@ -236,12 +265,18 @@ class PostSchedulerService:
         # Incrementar contador e registrar erro
         post.retry_count += 1
         post.last_retry_at = datetime.now(timezone.utc)
-        post.retry_errors.append(f"[{datetime.now(timezone.utc).isoformat()}] {error}")
+        post.retry_errors.append(
+            f"[{datetime.now(timezone.utc).isoformat()}] {error}"
+        )
         
         # Calcular próximo retry
         delay = self._calculate_retry_delay(post.retry_count)
         post.next_retry_at = datetime.now(timezone.utc) + timedelta(seconds=delay)
         post.status = PostStatus.SCHEDULED  # Volta para scheduled
+        
+        # Track retry metric
+        if METRICS_AVAILABLE:
+            POSTS_RETRIED.labels(platform=post.platform.value).inc()
         
         # Atualizar no Redis
         await redis.set(
@@ -267,7 +302,27 @@ class PostSchedulerService:
         redis = await self._get_redis()
         
         post.status = PostStatus.FAILED
-        post.error_message = f"Max retries ({MAX_RETRY_ATTEMPTS}) exceeded. Last error: {final_error}"
+        post.error_message = (
+            f"Max retries ({MAX_RETRY_ATTEMPTS}) exceeded. "
+            f"Last error: {final_error}"
+        )
+        
+        # Track failure metric
+        if METRICS_AVAILABLE:
+            track_post_failed(post.platform.value, "max_retries")
+            await self._update_dlq_metrics()
+        
+        # Send WebSocket notification
+        if NOTIFICATIONS_AVAILABLE:
+            await publish_notification(
+                notification_type=NotificationType.POST_FAILED,
+                title="Publicação Falhou",
+                message=f"Post para {post.platform.value} falhou após "
+                        f"{MAX_RETRY_ATTEMPTS} tentativas",
+                user_id=post.user_id,
+                platform=post.platform.value,
+                data={"post_id": post.id, "error": final_error},
+            )
         
         # Salvar estado final
         await redis.set(
@@ -283,8 +338,7 @@ class PostSchedulerService:
         await redis.zrem("retry_scheduled_posts", post.id)
         
         logger.error(
-            f"Post {post.id} movido para DLQ após {post.retry_count} tentativas. "
-            f"Erros: {post.retry_errors}"
+            f"Post {post.id} movido para DLQ após {post.retry_count} tentativas."
         )
     
     async def get_dlq_posts(self, limit: int = 50) -> List[ScheduledPost]:
@@ -330,6 +384,7 @@ class PostSchedulerService:
     async def process_post(self, post: ScheduledPost) -> bool:
         """Processa e publica um post com suporte a retry."""
         redis = await self._get_redis()
+        start_time = datetime.now(timezone.utc)
         
         # Atualizar status
         post.status = PostStatus.PROCESSING
@@ -345,10 +400,34 @@ class PostSchedulerService:
             post.published_at = datetime.now(timezone.utc)
             post.result = result
             
+            # Track success metrics
+            if METRICS_AVAILABLE:
+                track_post_published(post.platform.value, post.content_type)
+                duration = (
+                    datetime.now(timezone.utc) - start_time
+                ).total_seconds()
+                PUBLISH_DURATION.labels(
+                    platform=post.platform.value
+                ).observe(duration)
+                await self._update_pending_metrics()
+            
+            # Send WebSocket notification
+            if NOTIFICATIONS_AVAILABLE:
+                await publish_notification(
+                    notification_type=NotificationType.POST_PUBLISHED,
+                    title="Post Publicado!",
+                    message=f"Seu post foi publicado no {post.platform.value}",
+                    user_id=post.user_id,
+                    platform=post.platform.value,
+                    data={
+                        "post_id": post.id,
+                        "result": result,
+                    },
+                )
+            
             logger.info(
                 f"Post {post.id} publicado com sucesso "
                 f"em {post.platform.value}"
-                f"{f' (após {post.retry_count} retries)' if post.retry_count > 0 else ''}"
             )
             
             # Remover de todos os sets
@@ -391,9 +470,8 @@ class PostSchedulerService:
     
     async def _publish_instagram(self, post: ScheduledPost) -> Dict[str, Any]:
         """Publica no Instagram."""
-        from vendor.instagram.client import (
-            InstagramClient, InstagramConfig, PostConfig
-        )
+        from vendor.instagram.client import (InstagramClient, InstagramConfig,
+                                             PostConfig)
         
         config = InstagramConfig(
             username=post.account_name or "",
@@ -429,9 +507,8 @@ class PostSchedulerService:
     
     async def _publish_tiktok(self, post: ScheduledPost) -> Dict[str, Any]:
         """Publica no TikTok."""
-        from vendor.tiktok.client import (
-            TikTokClient, TikTokConfig, VideoConfig
-        )
+        from vendor.tiktok.client import (TikTokClient, TikTokConfig,
+                                          VideoConfig)
         
         config = TikTokConfig(
             cookies_file=post.platform_config.get("cookies_file", "")
@@ -454,9 +531,8 @@ class PostSchedulerService:
     
     async def _publish_youtube(self, post: ScheduledPost) -> Dict[str, Any]:
         """Publica no YouTube."""
-        from vendor.youtube.client import (
-            YouTubeClient, YouTubeConfig, VideoMetadata, PrivacyStatus
-        )
+        from vendor.youtube.client import (PrivacyStatus, VideoMetadata,
+                                           YouTubeClient, YouTubeConfig)
         
         config = YouTubeConfig(
             client_secrets_file=post.platform_config.get(
@@ -504,6 +580,49 @@ class PostSchedulerService:
             
             return {"messages_sent": len(results), "results": results}
     
+    async def _update_pending_metrics(self):
+        """Atualiza métricas de posts pendentes."""
+        if not METRICS_AVAILABLE:
+            return
+        
+        redis = await self._get_redis()
+        
+        # Contar posts por plataforma
+        platforms = ["instagram", "tiktok", "youtube", "whatsapp"]
+        for platform in platforms:
+            # Buscar todos os posts agendados
+            post_ids = await redis.zrange("all_scheduled_posts", 0, -1)
+            count = 0
+            for pid in post_ids:
+                data = await redis.get(f"scheduled_post:{pid}")
+                if data:
+                    post = ScheduledPost.model_validate_json(data)
+                    if post.platform.value == platform:
+                        count += 1
+            PENDING_POSTS.labels(platform=platform).set(count)
+    
+    async def _update_dlq_metrics(self):
+        """Atualiza métricas da DLQ."""
+        if not METRICS_AVAILABLE:
+            return
+        
+        redis = await self._get_redis()
+        
+        # Contar posts na DLQ por plataforma
+        platforms = ["instagram", "tiktok", "youtube", "whatsapp"]
+        post_ids = await redis.lrange("dlq_scheduled_posts", 0, -1)
+        
+        counts = {p: 0 for p in platforms}
+        for pid in post_ids:
+            data = await redis.get(f"scheduled_post:{pid}")
+            if data:
+                post = ScheduledPost.model_validate_json(data)
+                if post.platform.value in counts:
+                    counts[post.platform.value] += 1
+        
+        for platform, count in counts.items():
+            DLQ_SIZE.labels(platform=platform).set(count)
+    
     async def start_worker(self):
         """Inicia worker de processamento."""
         if self._running:
@@ -511,11 +630,21 @@ class PostSchedulerService:
         
         self._running = True
         self._worker_task = asyncio.create_task(self._worker_loop())
+        
+        # Track worker status
+        if METRICS_AVAILABLE:
+            WORKER_STATUS.labels(worker_name="post_scheduler").set(1)
+        
         logger.info("Post Scheduler Worker iniciado")
     
     async def stop_worker(self):
         """Para worker de processamento."""
         self._running = False
+        
+        # Track worker status
+        if METRICS_AVAILABLE:
+            WORKER_STATUS.labels(worker_name="post_scheduler").set(0)
+        
         if self._worker_task:
             self._worker_task.cancel()
             try:
@@ -528,11 +657,22 @@ class PostSchedulerService:
         """Loop principal do worker."""
         while self._running:
             try:
+                # Track last run time
+                if METRICS_AVAILABLE:
+                    WORKER_LAST_RUN.labels(
+                        worker_name="post_scheduler"
+                    ).set(datetime.now(timezone.utc).timestamp())
+                
                 # Buscar posts pendentes
                 posts = await self.get_pending_posts()
                 
                 for post in posts:
                     await self.process_post(post)
+                
+                # Update metrics after processing
+                if METRICS_AVAILABLE:
+                    await self._update_pending_metrics()
+                    await self._update_dlq_metrics()
                 
                 # Aguardar antes da próxima verificação
                 await asyncio.sleep(30)

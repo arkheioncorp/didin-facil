@@ -4,9 +4,9 @@ from . import (accounting, accounts, analytics, analytics_social, api_docs,
                auth, automation, automation_dashboard, bot, campaigns, chatbot,
                chatwoot, checkout, content, copy, credits, crm, email,
                instagram, integrations, license, marketplaces, metrics,
-               products, scheduler, seller_bot, social_auth, status_webhooks,
-               subscription, template_library, templates, tiktok, users,
-               webhooks, whatsapp, youtube)
+               products, scheduler, scraper, seller_bot, social_auth,
+               status_webhooks, subscription, template_library, templates,
+               tiktok, users, webhooks, whatsapp, youtube)
 
 __all__ = [
     "auth",
@@ -45,4 +45,5 @@ __all__ = [
     "accounting",
     "credits",
     "users",
+    "scraper",
 ]

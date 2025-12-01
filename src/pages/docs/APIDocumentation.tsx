@@ -295,7 +295,7 @@ export default function APIDocumentation() {
             Documentação da API
           </h1>
           <p className="text-muted-foreground">
-            Referência completa da API do Didin Fácil
+            Referência completa da API do TikTrend
           </p>
         </div>
         <div className="flex items-center gap-2">

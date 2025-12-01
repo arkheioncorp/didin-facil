@@ -20,6 +20,8 @@ from .middleware.ratelimit import RateLimitMiddleware
 from .middleware.security import SecurityHeadersMiddleware
 from .routers import crm_advanced  # CRM Advanced Services
 from .routes import hub_health  # Hub monitoring & health checks
+from .routes import \
+    websocket_notifications  # WebSocket real-time notifications
 from .routes import whatsapp_analytics  # WhatsApp Analytics API
 from .routes import whatsapp_chatbot  # WhatsApp Chatbot routes
 from .routes import whatsapp_v2  # WhatsApp Hub V2 routes
@@ -306,6 +308,12 @@ app.include_router(
     whatsapp_analytics.router,
     prefix="/api",
     tags=["WhatsApp Analytics"]
+)
+
+# WebSocket Real-time Notifications
+app.include_router(
+    websocket_notifications.router,
+    tags=["WebSocket Notifications"]
 )
 
 

@@ -3,20 +3,15 @@ Unit tests for Accounting Service
 Tests for financial tracking and reporting
 """
 
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
-from api.services.accounting import (
-    OPENAI_PRICING,
-    USD_TO_BRL,
-    MP_FEE_PERCENT,
-    CREDIT_COSTS,
-    DEFAULT_CREDIT_PACKAGES,
-    AccountingService,
-)
+import pytest
+from api.services.accounting import (CREDIT_COSTS, DEFAULT_CREDIT_PACKAGES,
+                                     MP_FEE_PERCENT, OPENAI_PRICING,
+                                     USD_TO_BRL, AccountingService)
 
 
 class TestPricingConstants:
@@ -348,3 +343,466 @@ class TestOperationCosts:
         copy_cost = CREDIT_COSTS.get(OperationType.COPY_GENERATION, 0)
         
         assert niche_cost > copy_cost
+
+
+# ============================================
+# ADDITIONAL ACCOUNTING SERVICE TESTS
+# ============================================
+
+class TestApiUsageLogging:
+    """Tests for API usage logging"""
+
+    @pytest.mark.asyncio
+    async def test_log_api_usage_calculates_cost(self, mock_db):
+        """Test that log_api_usage calculates costs correctly"""
+        service = AccountingService(mock_db)
+        mock_db.add = MagicMock()
+        mock_db.commit = AsyncMock()
+        
+        result = await service.log_api_usage(
+            user_id=str(uuid4()),
+            provider="openai",
+            model="gpt-4o-mini",
+            operation_type="copy_generation",
+            tokens_input=1000,
+            tokens_output=500,
+            request_duration_ms=1200,
+            was_cached=False,
+            metadata={"test": "value"}
+        )
+        
+        mock_db.add.assert_called_once()
+        mock_db.commit.assert_called_once()
+        assert result is not None
+
+    @pytest.mark.asyncio
+    async def test_log_api_usage_with_none_user(self, mock_db):
+        """Test API logging with None user_id"""
+        service = AccountingService(mock_db)
+        mock_db.add = MagicMock()
+        mock_db.commit = AsyncMock()
+        
+        result = await service.log_api_usage(
+            user_id=None,
+            provider="openai",
+            model="gpt-4o",
+            operation_type="copy_generation",
+            tokens_input=500,
+            tokens_output=250
+        )
+        
+        # Should not raise, user_id can be None
+        mock_db.add.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_log_api_usage_cached(self, mock_db):
+        """Test API logging for cached request"""
+        service = AccountingService(mock_db)
+        mock_db.add = MagicMock()
+        mock_db.commit = AsyncMock()
+        
+        await service.log_api_usage(
+            user_id=str(uuid4()),
+            provider="openai",
+            model="gpt-4o",
+            operation_type="copy_generation",
+            tokens_input=0,
+            tokens_output=0,
+            was_cached=True
+        )
+        
+        mock_db.add.assert_called_once()
+
+
+class TestFinancialTransactions:
+    """Tests for financial transaction recording"""
+
+    @pytest.mark.asyncio
+    async def test_record_credit_purchase(self, mock_db):
+        """Test recording a credit purchase"""
+        service = AccountingService(mock_db)
+        mock_db.add = MagicMock()
+        mock_db.commit = AsyncMock()
+        
+        # Mock the user financial summary query
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = None
+        mock_db.execute = AsyncMock(return_value=mock_result)
+        
+        user_id = str(uuid4())
+        package_id = str(uuid4())
+        
+        result = await service.record_credit_purchase(
+            user_id=user_id,
+            package_id=package_id,
+            amount_brl=Decimal("24.90"),
+            credits=150,
+            payment_id="MP123456",
+            payment_method="pix"
+        )
+        
+        assert result is not None
+        mock_db.add.assert_called()
+
+    @pytest.mark.asyncio
+    async def test_record_credit_usage(self, mock_db):
+        """Test recording credit usage"""
+        service = AccountingService(mock_db)
+        mock_db.add = MagicMock()
+        mock_db.commit = AsyncMock()
+        
+        result = await service.record_credit_usage(
+            user_id=str(uuid4()),
+            operation_type="copy_generation",
+            credits_used=1,
+            cost_brl=Decimal("0.05"),
+            tokens_input=1000,
+            tokens_output=500,
+            metadata={"prompt": "test"}
+        )
+        
+        assert result is not None
+        mock_db.add.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_record_license_purchase(self, mock_db):
+        """Test recording a license purchase"""
+        service = AccountingService(mock_db)
+        mock_db.add = MagicMock()
+        mock_db.commit = AsyncMock()
+        
+        result = await service.record_license_purchase(
+            user_id=str(uuid4()),
+            amount_brl=Decimal("197.00"),
+            payment_id="MP789012",
+            payment_method="credit_card"
+        )
+        
+        assert result is not None
+        mock_db.add.assert_called_once()
+
+
+class TestUserFinancialSummary:
+    """Tests for user financial summary updates"""
+
+    @pytest.mark.asyncio
+    async def test_update_user_summary_new_user(self, mock_db):
+        """Test creating new user financial summary"""
+        service = AccountingService(mock_db)
+        mock_db.add = MagicMock()
+        mock_db.commit = AsyncMock()
+        
+        # User has no existing summary
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = None
+        mock_db.execute = AsyncMock(return_value=mock_result)
+        
+        await service._update_user_financial_summary(
+            user_id=str(uuid4()),
+            amount_spent=Decimal("24.90"),
+            credits_purchased=150
+        )
+        
+        # Should add new summary
+        mock_db.add.assert_called()
+        mock_db.commit.assert_called()
+
+    @pytest.mark.asyncio
+    async def test_update_user_summary_existing_user(self, mock_db):
+        """Test updating existing user financial summary"""
+        service = AccountingService(mock_db)
+        mock_db.commit = AsyncMock()
+        
+        # User has existing summary
+        existing_summary = MagicMock()
+        existing_summary.total_spent = Decimal("50.00")
+        existing_summary.total_credits_purchased = 200
+        existing_summary.purchase_count = 2
+        
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = existing_summary
+        mock_db.execute = AsyncMock(return_value=mock_result)
+        
+        await service._update_user_financial_summary(
+            user_id=str(uuid4()),
+            amount_spent=Decimal("24.90"),
+            credits_purchased=150
+        )
+        
+        # Summary should be updated
+        assert existing_summary.total_spent == Decimal("74.90")
+        assert existing_summary.total_credits_purchased == 350
+        assert existing_summary.purchase_count == 3
+        mock_db.commit.assert_called()
+
+
+class TestDashboardMetrics:
+    """Tests for dashboard metrics"""
+
+    @pytest.mark.asyncio
+    async def test_get_dashboard_metrics(self, mock_db):
+        """Test getting dashboard metrics"""
+        service = AccountingService(mock_db)
+        
+        # Mock all the scalar returns
+        mock_db.execute = AsyncMock()
+        mock_scalar_result = MagicMock()
+        mock_scalar_result.scalar.return_value = Decimal("1000.00")
+        mock_db.execute.return_value = mock_scalar_result
+        
+        result = await service.get_dashboard_metrics(days=30)
+        
+        assert "period_days" in result
+        assert result["period_days"] == 30
+        assert "total_revenue" in result
+        assert "gross_profit" in result
+        assert "profit_margin_percent" in result
+
+    @pytest.mark.asyncio
+    async def test_get_dashboard_metrics_empty(self, mock_db):
+        """Test dashboard metrics with no data"""
+        service = AccountingService(mock_db)
+        
+        # Mock returns None/0
+        mock_scalar_result = MagicMock()
+        mock_scalar_result.scalar.return_value = None
+        mock_db.execute = AsyncMock(return_value=mock_scalar_result)
+        
+        result = await service.get_dashboard_metrics(days=7)
+        
+        assert result["total_revenue"] == 0
+        assert result["gross_profit"] == 0
+        assert result["profit_margin_percent"] == 0
+
+
+class TestRevenueByDay:
+    """Tests for daily revenue reports"""
+
+    @pytest.mark.asyncio
+    async def test_get_revenue_by_day(self, mock_db):
+        """Test getting revenue by day"""
+        service = AccountingService(mock_db)
+        
+        # Mock fetchall
+        mock_row = MagicMock()
+        mock_row.date = "2024-01-15"
+        mock_row.revenue = Decimal("100.00")
+        mock_row.costs = Decimal("10.00")
+        mock_row.transactions = 5
+        
+        mock_result = MagicMock()
+        mock_result.fetchall.return_value = [mock_row]
+        mock_db.execute = AsyncMock(return_value=mock_result)
+        
+        result = await service.get_revenue_by_day(days=30)
+        
+        assert len(result) == 1
+        assert result[0]["date"] == "2024-01-15"
+        assert result[0]["revenue"] == 100.0
+        assert result[0]["profit"] == 90.0
+
+    @pytest.mark.asyncio
+    async def test_get_revenue_by_day_empty(self, mock_db):
+        """Test revenue by day with no data"""
+        service = AccountingService(mock_db)
+        
+        mock_result = MagicMock()
+        mock_result.fetchall.return_value = []
+        mock_db.execute = AsyncMock(return_value=mock_result)
+        
+        result = await service.get_revenue_by_day(days=7)
+        
+        assert result == []
+
+
+class TestOperationsBreakdown:
+    """Tests for operations breakdown"""
+
+    @pytest.mark.asyncio
+    async def test_get_operations_breakdown(self, mock_db):
+        """Test getting operations breakdown"""
+        service = AccountingService(mock_db)
+        
+        mock_row1 = MagicMock()
+        mock_row1.operation_type = "copy_generation"
+        mock_row1.count = 50
+        
+        mock_row2 = MagicMock()
+        mock_row2.operation_type = "trend_analysis"
+        mock_row2.count = 20
+        
+        mock_result = MagicMock()
+        mock_result.fetchall.return_value = [mock_row1, mock_row2]
+        mock_db.execute = AsyncMock(return_value=mock_result)
+        
+        result = await service.get_operations_breakdown(days=30)
+        
+        assert result["copy_generation"] == 50
+        assert result["trend_analysis"] == 20
+
+    @pytest.mark.asyncio
+    async def test_get_operations_breakdown_empty(self, mock_db):
+        """Test operations breakdown with no data"""
+        service = AccountingService(mock_db)
+        
+        mock_result = MagicMock()
+        mock_result.fetchall.return_value = []
+        mock_db.execute = AsyncMock(return_value=mock_result)
+        
+        result = await service.get_operations_breakdown(days=7)
+        
+        assert result == {}
+
+
+class TestTopUsers:
+    """Tests for top users report"""
+
+    @pytest.mark.asyncio
+    async def test_get_top_users(self, mock_db):
+        """Test getting top spending users"""
+        service = AccountingService(mock_db)
+        
+        mock_user = MagicMock()
+        mock_user.user_id = uuid4()
+        mock_user.total_spent = Decimal("500.00")
+        mock_user.total_credits_purchased = 2000
+        mock_user.total_credits_used = 1500
+        mock_user.purchase_count = 10
+        mock_user.lifetime_profit = Decimal("450.00")
+        
+        mock_result = MagicMock()
+        mock_scalars = MagicMock()
+        mock_scalars.all.return_value = [mock_user]
+        mock_result.scalars.return_value = mock_scalars
+        mock_db.execute = AsyncMock(return_value=mock_result)
+        
+        result = await service.get_top_users(limit=10)
+        
+        assert len(result) == 1
+        assert result[0]["total_spent"] == 500.0
+        assert result[0]["credits_purchased"] == 2000
+
+
+class TestPackageSalesStats:
+    """Tests for package sales statistics"""
+
+    @pytest.mark.asyncio
+    async def test_get_package_sales_stats(self, mock_db):
+        """Test getting package sales stats"""
+        service = AccountingService(mock_db)
+        
+        mock_row = MagicMock()
+        mock_row.name = "Pro"
+        mock_row.slug = "pro"
+        mock_row.sales = 25
+        mock_row.revenue = Decimal("622.50")
+        mock_row.credits = 3750
+        
+        mock_result = MagicMock()
+        mock_result.fetchall.return_value = [mock_row]
+        mock_db.execute = AsyncMock(return_value=mock_result)
+        
+        result = await service.get_package_sales_stats(days=30)
+        
+        assert len(result) == 1
+        assert result[0]["name"] == "Pro"
+        assert result[0]["sales"] == 25
+        assert result[0]["revenue"] == 622.50
+
+
+class TestDailyReportGeneration:
+    """Tests for daily report generation"""
+
+    @pytest.mark.asyncio
+    async def test_generate_daily_report_new(self, mock_db):
+        """Test generating new daily report"""
+        service = AccountingService(mock_db)
+        mock_db.add = MagicMock()
+        mock_db.commit = AsyncMock()
+        
+        # No existing report
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = None
+        mock_result.fetchone.return_value = MagicMock(
+            credit_revenue=Decimal("100"),
+            license_revenue=Decimal("0"),
+            payment_fees=Decimal("5"),
+            transactions_count=5,
+            credits_sold=500,
+            copies=10,
+            trends=5,
+            niches=2
+        )
+        mock_result.scalar.return_value = Decimal("10")
+        mock_db.execute = AsyncMock(return_value=mock_result)
+        
+        result = await service.generate_daily_report()
+        
+        assert result is not None
+        mock_db.add.assert_called()
+        mock_db.commit.assert_called()
+
+    @pytest.mark.asyncio
+    async def test_generate_daily_report_update(self, mock_db):
+        """Test updating existing daily report"""
+        service = AccountingService(mock_db)
+        mock_db.commit = AsyncMock()
+        
+        # Existing report
+        existing_report = MagicMock()
+        existing_report.updated_at = None
+        
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = existing_report
+        mock_result.fetchone.return_value = MagicMock(
+            credit_revenue=Decimal("200"),
+            license_revenue=Decimal("100"),
+            payment_fees=Decimal("15"),
+            transactions_count=10,
+            credits_sold=1000,
+            copies=20,
+            trends=10,
+            niches=5
+        )
+        mock_result.scalar.return_value = Decimal("20")
+        mock_db.execute = AsyncMock(return_value=mock_result)
+        
+        result = await service.generate_daily_report()
+        
+        assert result == existing_report
+        mock_db.commit.assert_called()
+
+
+class TestEdgeCasesAccounting:
+    """Edge case tests for accounting"""
+
+    def test_calculate_openai_cost_zero_tokens(self, mock_db):
+        """Test cost calculation with zero tokens"""
+        service = AccountingService(mock_db)
+        result = service.calculate_openai_cost("gpt-4o", 0, 0)
+        
+        assert result["total_usd"] == Decimal("0")
+        assert result["total_brl"] == Decimal("0")
+
+    def test_calculate_openai_cost_large_tokens(self, mock_db):
+        """Test cost calculation with large token counts"""
+        service = AccountingService(mock_db)
+        result = service.calculate_openai_cost("gpt-4o", 100000, 50000)
+        
+        # Should handle large numbers
+        assert result["total_usd"] > Decimal("0")
+        assert result["tokens_input"] == 100000
+        assert result["tokens_output"] == 50000
+
+    @pytest.mark.asyncio
+    async def test_get_dashboard_metrics_custom_days(self, mock_db):
+        """Test dashboard metrics with custom period"""
+        service = AccountingService(mock_db)
+        
+        mock_scalar_result = MagicMock()
+        mock_scalar_result.scalar.return_value = Decimal("500.00")
+        mock_db.execute = AsyncMock(return_value=mock_scalar_result)
+        
+        result = await service.get_dashboard_metrics(days=90)
+        
+        assert result["period_days"] == 90

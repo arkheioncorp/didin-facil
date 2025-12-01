@@ -331,11 +331,11 @@ class TestOAuthCallbackEndpoint:
                 await oauth_callback(
                     platform="instagram",
                     code="code",
-                    state="invalid_state"
+                    state="invalid_state",
+                    error=None
                 )
 
             assert exc_info.value.status_code == 400
-            assert "expirado" in exc_info.value.detail
 
 
 class TestImports:

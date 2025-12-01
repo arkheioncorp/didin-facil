@@ -1,13 +1,14 @@
 """
 Scraper Routes
 Endpoints para controle do scraper de produtos
+Suporta modo trial (sem autenticação) e modo autenticado.
 """
 
 import json
 from datetime import datetime
 from typing import List, Optional
 
-from api.middleware.auth import get_current_user
+from api.middleware.auth import get_current_user_optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from shared.redis import get_redis
@@ -17,11 +18,31 @@ router = APIRouter()
 
 class ScraperConfig(BaseModel):
     """Configuração do scraper."""
+    # Campos do frontend
+    categories: List[str] = []
+    maxProducts: int = 100
+    intervalMinutes: int = 60
+    useProxy: bool = False
+    headless: bool = True
+    timeout: int = 30000
+    # Campos legados (compatibilidade)
     keywords: List[str] = []
     category: Optional[str] = None
-    max_products: int = 100
+    max_products: Optional[int] = None
     min_sales: int = 0
     min_rating: float = 0.0
+    
+    @property
+    def effective_max_products(self) -> int:
+        """Retorna max_products considerando ambos os campos."""
+        if self.max_products is not None:
+            return self.max_products
+        return self.maxProducts
+    
+    @property
+    def effective_categories(self) -> List[str]:
+        """Retorna categories ou keywords."""
+        return self.categories if self.categories else self.keywords
 
 
 class ScraperStatus(BaseModel):
@@ -38,16 +59,20 @@ class ScraperStatus(BaseModel):
 
 @router.get("/status", response_model=ScraperStatus)
 async def get_scraper_status(
-    current_user=Depends(get_current_user)
+    current_user: Optional[dict] = Depends(get_current_user_optional)
 ):
     """
     Obtém o status atual do scraper.
+    Funciona com ou sem autenticação (modo trial).
     """
     try:
         redis = await get_redis()
         
+        # Get user ID or use 'trial' for unauthenticated users
+        user_id = current_user.get('id') if current_user else 'trial'
+        
         # Get scraper status from Redis
-        status_key = f"scraper:status:{current_user.get('id', 'default')}"
+        status_key = f"scraper:status:{user_id}"
         status_data = await redis.get(status_key)
         
         if status_data:
@@ -73,22 +98,32 @@ async def get_scraper_status(
 @router.post("/start", response_model=ScraperStatus)
 async def start_scraper(
     config: ScraperConfig,
-    current_user=Depends(get_current_user)
+    current_user: Optional[dict] = Depends(get_current_user_optional)
 ):
     """
     Inicia um novo job de scraping.
+    Funciona com ou sem autenticação (modo trial com limite de 20 produtos).
     """
     try:
         redis = await get_redis()
         
-        user_id = current_user.get('id', 'default')
+        # Get user ID or use 'trial' for unauthenticated users
+        user_id = current_user.get('id') if current_user else 'trial'
+        
+        # Limit for trial users
+        max_products = config.effective_max_products
+        if not current_user:
+            max_products = min(max_products, 20)
         
         # Create scraping job
         job_id = f"job:{user_id}:{datetime.utcnow().timestamp()}"
         job_data = {
             "id": job_id,
             "user_id": user_id,
-            "config": config.model_dump(),
+            "config": {
+                **config.model_dump(),
+                "maxProducts": max_products
+            },
             "status": "pending",
             "created_at": datetime.utcnow().isoformat()
         }
@@ -97,6 +132,7 @@ async def start_scraper(
         await redis.lpush("scraper:jobs", json.dumps(job_data))
         
         # Update user's scraper status
+        trial_msg = " (modo trial: limite 20 produtos)" if not current_user else ""
         status = {
             "isRunning": True,
             "productsFound": 0,
@@ -104,8 +140,8 @@ async def start_scraper(
             "currentProduct": None,
             "errors": [],
             "startedAt": datetime.utcnow().isoformat(),
-            "statusMessage": "Iniciando scraping...",
-            "logs": ["Job criado e adicionado à fila"]
+            "statusMessage": f"Iniciando scraping...{trial_msg}",
+            "logs": [f"Job criado e adicionado à fila{trial_msg}"]
         }
         
         status_key = f"scraper:status:{user_id}"
@@ -121,7 +157,7 @@ async def start_scraper(
 
 @router.post("/stop")
 async def stop_scraper(
-    current_user=Depends(get_current_user)
+    current_user: Optional[dict] = Depends(get_current_user_optional)
 ):
     """
     Para o scraping atual.
@@ -129,7 +165,7 @@ async def stop_scraper(
     try:
         redis = await get_redis()
         
-        user_id = current_user.get('id', 'default')
+        user_id = current_user.get('id') if current_user else 'trial'
         
         # Signal to stop
         await redis.set(f"scraper:stop:{user_id}", "1", ex=60)
@@ -159,7 +195,7 @@ async def stop_scraper(
 
 @router.get("/jobs")
 async def get_scraper_jobs(
-    current_user=Depends(get_current_user)
+    current_user: Optional[dict] = Depends(get_current_user_optional)
 ):
     """
     Lista os jobs de scraping do usuário.
@@ -167,7 +203,7 @@ async def get_scraper_jobs(
     try:
         redis = await get_redis()
         
-        user_id = current_user.get('id', 'default')
+        user_id = current_user.get('id') if current_user else 'trial'
         
         # Get recent jobs
         jobs_key = f"scraper:jobs:history:{user_id}"

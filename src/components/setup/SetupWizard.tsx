@@ -77,7 +77,7 @@ const steps: Step[] = [
   { 
     id: "welcome", 
     title: "Bem-vindo", 
-    subtitle: "Conheça o Didin Fácil",
+    subtitle: "Conheça o TikTrend",
     icon: <Sparkles className="w-5 h-5" />,
   },
   { 
@@ -241,7 +241,7 @@ export const SetupWizard: React.FC = () => {
         <div className="flex items-center gap-3 mb-10">
           <TikTrendLogo size={36} />
           <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Didin Fácil
+            TikTrend
           </span>
         </div>
 
@@ -302,7 +302,7 @@ export const SetupWizard: React.FC = () => {
         <div className="lg:hidden flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
             <TikTrendLogo size={28} />
-            <span className="font-semibold text-primary">Didin Fácil</span>
+            <span className="font-semibold text-primary">TikTrend</span>
           </div>
           <span className="text-sm text-muted-foreground">
             {currentStep + 1}/{steps.length}
@@ -448,7 +448,7 @@ const WelcomeStep: React.FC = () => (
       <h1 className="text-3xl lg:text-4xl font-bold">
         Bem-vindo ao{" "}
         <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          Didin Fácil
+          TikTrend
         </span>
       </h1>
       <p className="text-lg text-muted-foreground max-w-md mx-auto">
@@ -482,7 +482,7 @@ const FeaturesStep: React.FC = () => (
     <div className="text-center space-y-2">
       <h2 className="text-2xl lg:text-3xl font-bold">O que você pode fazer</h2>
       <p className="text-muted-foreground">
-        Conheça as principais funcionalidades do Didin Fácil
+        Conheça as principais funcionalidades do TikTrend
       </p>
     </div>
 
@@ -546,14 +546,14 @@ const ResponsibilityStep: React.FC<Pick<StepProps, "acceptedTerms" | "setAccepte
       </div>
       <h2 className="text-2xl lg:text-3xl font-bold">Termo de Responsabilidade</h2>
       <p className="text-muted-foreground">
-        Para usar o Didin Fácil, você precisa concordar com nossas práticas
+        Para usar o TikTrend, você precisa concordar com nossas práticas
       </p>
     </div>
 
     <div className="bg-card rounded-xl border border-border p-6 space-y-4">
       {[
         "O scraping é limitado para evitar bloqueios (1 requisição a cada 5-10 segundos)",
-        "O software se identifica de forma transparente como Didin Fácil",
+        "O software se identifica de forma transparente como TikTrend",
         "Você é responsável pelo uso ético, respeitando os termos das plataformas",
         "Dados coletados são usados apenas para sua análise pessoal",
       ].map((term, i) => (
@@ -745,7 +745,7 @@ const FinishStep: React.FC = () => (
     <div className="space-y-2">
       <h2 className="text-3xl font-bold">Tudo Pronto!</h2>
       <p className="text-muted-foreground">
-        O Didin Fácil está configurado e pronto para usar
+        O TikTrend está configurado e pronto para usar
       </p>
     </div>
 

@@ -1,5 +1,5 @@
 /**
- * Tutorial System - Didin Fácil
+ * Tutorial System - TikTrend
  * =============================
  * Sistema de tutorial moderno com spotlight e design consistente.
  * Suporta tutoriais globais e específicos por página.
@@ -69,12 +69,12 @@ export const TUTORIALS: Tutorial[] = [
   // ========== TUTORIAL PRINCIPAL (Onboarding) ==========
   {
     id: "main-onboarding",
-    name: "Bem-vindo ao Didin Fácil",
+    name: "Bem-vindo ao TikTrend",
     description: "Conheça as principais funcionalidades",
     steps: [
       {
         id: "welcome",
-        title: "🎉 Bem-vindo ao Didin Fácil!",
+        title: "🎉 Bem-vindo ao TikTrend!",
         content: "Sua plataforma completa para encontrar produtos vencedores, automatizar vendas e gerenciar seu negócio. Vamos fazer um tour rápido!",
         position: "center",
         icon: <Sparkles className="w-6 h-6 text-primary" />,
@@ -443,7 +443,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         id: "settings-intro",
         title: "⚙️ Configurações",
-        content: "Personalize o Didin Fácil do seu jeito. Tema, idioma, notificações e integrações.",
+        content: "Personalize o TikTrend do seu jeito. Tema, idioma, notificações e integrações.",
         position: "center",
         page: "/settings",
       },
@@ -677,23 +677,50 @@ const TutorialOverlay: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100]"
+        className="fixed inset-0 z-[100] pointer-events-none"
       >
-        {/* Backdrop with spotlight cutout */}
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm">
-          {targetRect && (
-            <div
-              className="absolute rounded-lg ring-4 ring-primary ring-offset-2 ring-offset-transparent"
-              style={{
-                top: targetRect.top - 8,
-                left: targetRect.left - 8,
-                width: targetRect.width + 16,
-                height: targetRect.height + 16,
-                boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.8)",
-              }}
-            />
-          )}
-        </div>
+        {/* SVG Mask for spotlight effect - no blur on highlighted area */}
+        <svg className="absolute inset-0 w-full h-full">
+          <defs>
+            <mask id="spotlight-mask">
+              {/* White = visible (darkened), Black = hidden (clear) */}
+              <rect x="0" y="0" width="100%" height="100%" fill="white" />
+              {targetRect && (
+                <rect
+                  x={targetRect.left - 8}
+                  y={targetRect.top - 8}
+                  width={targetRect.width + 16}
+                  height={targetRect.height + 16}
+                  rx="8"
+                  fill="black"
+                />
+              )}
+            </mask>
+          </defs>
+          {/* Dark overlay with mask cutout */}
+          <rect
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+            fill="rgba(0, 0, 0, 0.85)"
+            mask="url(#spotlight-mask)"
+          />
+        </svg>
+
+        {/* Highlight ring around target */}
+        {targetRect && (
+          <div
+            className="absolute rounded-lg ring-4 ring-primary/80 ring-offset-4 ring-offset-background/50 pointer-events-none"
+            style={{
+              top: targetRect.top - 8,
+              left: targetRect.left - 8,
+              width: targetRect.width + 16,
+              height: targetRect.height + 16,
+              zIndex: 102,
+            }}
+          />
+        )}
 
         {/* Tooltip Card */}
         <motion.div
@@ -703,9 +730,9 @@ const TutorialOverlay: React.FC = () => {
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ duration: 0.2 }}
           className={cn(
-            "absolute w-[380px] max-w-[90vw] z-[101]",
+            "absolute w-[380px] max-w-[90vw] z-[103]",
             "bg-card border border-border rounded-xl shadow-2xl",
-            "overflow-hidden"
+            "overflow-hidden pointer-events-auto"
           )}
           style={getTooltipPosition()}
         >

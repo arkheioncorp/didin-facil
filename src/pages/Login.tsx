@@ -9,7 +9,7 @@ import { TikTrendIcon, EyeIcon, EyeOffIcon } from "@/components/icons";
 import { useUserStore } from "@/stores";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 
-import { authService } from "@/services/auth";
+import { authService, setAuthToken } from "@/services/auth";
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -123,6 +123,15 @@ export const Login: React.FC = () => {
           bonusExpiresAt: null,
         };
 
+        // Generate mock JWT token for development
+        // This allows scraper and other protected endpoints to work in dev mode
+        const mockToken = btoa(JSON.stringify({
+          sub: mockUser.id,
+          email: mockUser.email,
+          exp: Date.now() + 86400000 // 24 hours from now
+        })) + '.dev.' + Date.now();
+        setAuthToken(mockToken);
+
         setUser(mockUser);
         setLicense(mockLicense);
         setCredits(mockCredits);
@@ -148,6 +157,11 @@ export const Login: React.FC = () => {
         setIsRegister(false);
       } else {
         const response = await authService.login(formData.email, formData.password, hwid);
+
+        // Save auth token
+        if (response.access_token) {
+          setAuthToken(response.access_token);
+        }
 
         // Use license from response or create default lifetime license
         const license = response.license || {
