@@ -336,31 +336,99 @@ class SocialAnalyticsService:
     ) -> PlatformAnalytics:
         """Obtém analytics de uma plataforma específica."""
         start_date, end_date = self._get_date_range(period, custom_start, custom_end)
+        redis = await self._get_redis()
         
-        # TODO: Implementar query real no banco
-        # Por enquanto, retorna dados mock
+        # Buscar posts publicados do Redis
+        start_ts = start_date.timestamp()
+        end_ts = end_date.timestamp()
+        
+        # Buscar IDs de posts publicados no período
+        published_key = f"published_posts:{user_id}:{platform.value}"
+        post_ids = await redis.zrangebyscore(published_key, start_ts, end_ts) or []
+        
+        # Se não houver dados no Redis específico, tentar o geral
+        if not post_ids:
+            all_posts_key = f"published_posts:{user_id}"
+            all_post_ids = await redis.zrangebyscore(all_posts_key, start_ts, end_ts) or []
+            # Filtrar por plataforma
+            for post_id in all_post_ids:
+                post_data = await redis.get(f"post:{post_id}")
+                if post_data:
+                    import json
+                    post = json.loads(post_data)
+                    if post.get("platform") == platform.value:
+                        post_ids.append(post_id)
+        
+        # Agregar métricas dos posts
+        total_posts = len(post_ids)
+        total_stories = 0
+        total_reels = 0
+        total_likes = 0
+        total_comments = 0
+        total_shares = 0
+        total_views = 0
+        total_reach = 0
+        total_impressions = 0
+        
+        for post_id in post_ids:
+            post_data = await redis.get(f"post:{post_id}")
+            if post_data:
+                import json
+                post = json.loads(post_data)
+                metrics = post.get("metrics", {})
+                
+                # Contar tipos de conteúdo
+                content_type = post.get("content_type", "")
+                if content_type == "story":
+                    total_stories += 1
+                elif content_type in ("reel", "video"):
+                    total_reels += 1
+                
+                # Somar métricas
+                total_likes += metrics.get("likes", 0)
+                total_comments += metrics.get("comments", 0)
+                total_shares += metrics.get("shares", 0)
+                total_views += metrics.get("views", 0)
+                total_reach += metrics.get("reach", 0)
+                total_impressions += metrics.get("impressions", 0)
+        
+        # Buscar dados de seguidores
+        followers_key = f"followers:{user_id}:{platform.value}"
+        followers_start_data = await redis.get(f"{followers_key}:history:{start_date.strftime('%Y-%m-%d')}")
+        followers_end_data = await redis.get(f"{followers_key}:current")
+        
+        followers_start = int(followers_start_data) if followers_start_data else 0
+        followers_end = int(followers_end_data) if followers_end_data else 0
+        
+        # Calcular médias
+        avg_likes = total_likes / total_posts if total_posts > 0 else 0
+        avg_comments = total_comments / total_posts if total_posts > 0 else 0
+        
+        # Calcular engagement rate
+        total_engagement = total_likes + total_comments + total_shares
+        avg_engagement_rate = (total_engagement / total_reach * 100) if total_reach > 0 else 0
         
         return PlatformAnalytics(
             platform=platform,
             period=period,
             start_date=start_date,
             end_date=end_date,
-            total_posts=25,
-            total_stories=15,
-            total_reels=10,
-            total_likes=1500,
-            total_comments=200,
-            total_shares=50,
-            total_views=10000,
-            total_reach=8000,
-            total_impressions=15000,
-            avg_engagement_rate=4.5,
-            avg_likes_per_post=60,
-            avg_comments_per_post=8,
-            followers_start=5000,
-            followers_end=5200,
-            followers_gained=250,
-            followers_lost=50
+            total_posts=total_posts,
+            total_stories=total_stories,
+            total_reels=total_reels,
+            total_likes=total_likes,
+            total_comments=total_comments,
+            total_shares=total_shares,
+            total_views=total_views,
+            total_reach=total_reach,
+            total_impressions=total_impressions,
+            avg_engagement_rate=round(avg_engagement_rate, 2),
+            avg_likes_per_post=round(avg_likes, 2),
+            avg_comments_per_post=round(avg_comments, 2),
+            followers_start=followers_start,
+            followers_end=followers_end,
+            followers_gained=max(0, followers_end - followers_start),
+            followers_lost=max(0, followers_start - followers_end) if followers_end < followers_start else 0
         )
     
     # ========================================
@@ -375,34 +443,87 @@ class SocialAnalyticsService:
         limit: int = 10,
         sort_by: str = "engagement"  # engagement, likes, comments, views
     ) -> List[PostAnalytics]:
-        """Obtém posts com melhor performance."""
-        # Mock data for development
-        mock_posts = []
-        platforms = [Platform.INSTAGRAM, Platform.TIKTOK, Platform.YOUTUBE]
+        """Obtém posts com melhor performance do Redis."""
+        import json
         
-        for i in range(limit):
-            p = platform or platforms[i % 3]
+        start_date, end_date = self._get_date_range(period)
+        redis = await self._get_redis()
+        
+        start_ts = start_date.timestamp()
+        end_ts = end_date.timestamp()
+        
+        # Buscar posts publicados no período
+        published_key = f"published_posts:{user_id}"
+        post_ids = await redis.zrangebyscore(
+            published_key, start_ts, end_ts
+        ) or []
+        
+        posts_with_metrics = []
+        
+        for post_id in post_ids:
+            post_data = await redis.get(f"post:{post_id}")
+            if not post_data:
+                continue
+                
+            post = json.loads(post_data)
+            
+            # Filtrar por plataforma se especificada
+            post_platform = post.get("platform")
+            if platform and post_platform != platform.value:
+                continue
+            
+            metrics_data = post.get("metrics", {})
             metrics = EngagementMetrics(
-                likes=150 + (i * 10),
-                comments=20 + i,
-                shares=5 + i,
-                saves=2 + i,
-                views=1000 + (i * 100),
-                reach=800 + (i * 80),
-                impressions=1200 + (i * 120)
+                likes=metrics_data.get("likes", 0),
+                comments=metrics_data.get("comments", 0),
+                shares=metrics_data.get("shares", 0),
+                saves=metrics_data.get("saves", 0),
+                views=metrics_data.get("views", 0),
+                reach=metrics_data.get("reach", 0),
+                impressions=metrics_data.get("impressions", 0)
             )
             
-            mock_posts.append(PostAnalytics(
-                post_id=f"post_{i}",
-                platform=p,
-                published_at=datetime.utcnow() - timedelta(days=i),
-                content_type="video",
-                caption=f"Amazing content #{i} about dropshipping strategies 🚀",
-                metrics=metrics,
-                thumbnail_url=f"https://picsum.photos/seed/{i}/300/200"
-            ))
+            # Calcular score de engagement para ordenação
+            engagement_score = (
+                metrics.likes + 
+                (metrics.comments * 2) + 
+                (metrics.shares * 3) + 
+                (metrics.saves * 4)
+            )
             
-        return mock_posts
+            # Parse da plataforma
+            try:
+                plat = Platform(post_platform)
+            except ValueError:
+                plat = Platform.INSTAGRAM
+            
+            published_at_str = post.get("published_at")
+            published_at = (
+                datetime.fromisoformat(published_at_str) 
+                if published_at_str else datetime.utcnow()
+            )
+            
+            posts_with_metrics.append({
+                "post": PostAnalytics(
+                    post_id=str(post_id),
+                    platform=plat,
+                    published_at=published_at,
+                    content_type=post.get("content_type", "post"),
+                    caption=post.get("caption", ""),
+                    metrics=metrics,
+                    thumbnail_url=post.get("thumbnail_url")
+                ),
+                "engagement_score": engagement_score,
+                "likes": metrics.likes,
+                "comments": metrics.comments,
+                "views": metrics.views
+            })
+        
+        # Ordenar pelo critério escolhido
+        sort_key = sort_by if sort_by != "engagement" else "engagement_score"
+        posts_with_metrics.sort(key=lambda x: x.get(sort_key, 0), reverse=True)
+        
+        return [p["post"] for p in posts_with_metrics[:limit]]
     
     async def get_best_posting_times(
         self,
@@ -411,24 +532,91 @@ class SocialAnalyticsService:
         platform: Optional[Platform] = None
     ) -> Dict[str, List[int]]:
         """
-        Calcula melhores horários para postar.
-        
-        Baseado em engagement histórico.
-        
+        Calcula melhores horários para postar baseado em engagement histórico.
+
+        Analisa posts anteriores e identifica horários com maior engagement.
+
         Returns:
             Dict mapeando dia da semana para lista de horários
-            Ex: {"monday": [9, 12, 18], "tuesday": [10, 15, 20]}
+            Ex: {"Monday": [9, 12, 18], "Tuesday": [10, 15, 20]}
         """
-        # Mock data based on general best practices
-        return {
-            "Monday": [9, 12, 18, 21],
-            "Tuesday": [10, 13, 19, 21],
-            "Wednesday": [9, 12, 18, 20],
-            "Thursday": [10, 14, 19, 21],
-            "Friday": [9, 12, 17, 20],
-            "Saturday": [11, 15, 19, 21],
-            "Sunday": [10, 14, 18, 20]
-        }
+        import json
+        from collections import defaultdict
+
+        start_date, end_date = self._get_date_range(period)
+        redis = await self._get_redis()
+
+        # Buscar posts publicados no período
+        published_key = f"published_posts:{user_id}"
+        start_ts = start_date.timestamp()
+        end_ts = end_date.timestamp()
+
+        post_ids = await redis.zrangebyscore(
+            published_key, start_ts, end_ts
+        ) or []
+
+        # Agregar engagement por dia da semana e hora
+        # Estrutura: {day_name: {hour: [engagement_scores]}}
+        engagement_by_time: Dict[str, Dict[int, List[float]]] = defaultdict(
+            lambda: defaultdict(list)
+        )
+
+        for post_id in post_ids:
+            post_data = await redis.get(f"post:{post_id}")
+            if not post_data:
+                continue
+
+            post = json.loads(post_data)
+
+            # Filtrar por plataforma se especificada
+            if platform and post.get("platform") != platform.value:
+                continue
+
+            published_at_str = post.get("published_at")
+            if not published_at_str:
+                continue
+
+            pub_date = datetime.fromisoformat(published_at_str)
+            day_name = pub_date.strftime("%A")  # Monday, Tuesday, etc
+            hour = pub_date.hour
+
+            # Calcular engagement score
+            metrics = post.get("metrics", {})
+            engagement = (
+                metrics.get("likes", 0) +
+                metrics.get("comments", 0) * 2 +
+                metrics.get("shares", 0) * 3
+            )
+
+            engagement_by_time[day_name][hour].append(engagement)
+
+        # Calcular médias e encontrar melhores horários
+        result: Dict[str, List[int]] = {}
+        days_order = [
+            "Monday", "Tuesday", "Wednesday", "Thursday",
+            "Friday", "Saturday", "Sunday"
+        ]
+
+        for day in days_order:
+            if day not in engagement_by_time:
+                # Retornar horários padrão se não houver dados
+                result[day] = [9, 12, 18, 21]
+                continue
+
+            hour_data = engagement_by_time[day]
+            # Calcular média de engagement por hora
+            hour_avgs = []
+            for hour, scores in hour_data.items():
+                avg = sum(scores) / len(scores) if scores else 0
+                hour_avgs.append((hour, avg))
+
+            # Ordenar por engagement e pegar top 4 horários
+            hour_avgs.sort(key=lambda x: x[1], reverse=True)
+            top_hours = sorted([h for h, _ in hour_avgs[:4]])
+
+            result[day] = top_hours if top_hours else [9, 12, 18, 21]
+
+        return result
     
     # ========================================
     # TRENDS
@@ -441,29 +629,82 @@ class SocialAnalyticsService:
         granularity: str = "day"  # day, week, month
     ) -> List[Dict[str, Any]]:
         """
-        Obtém tendência de engajamento ao longo do tempo.
-        
+        Obtém tendência de engajamento ao longo do tempo do Redis.
+
         Returns:
             Lista de pontos com data e métricas
         """
+        import json
+        from collections import defaultdict
+
         start_date, end_date = self._get_date_range(period)
-        
-        # TODO: Implementar query real
-        # Por enquanto, gera dados mock
-        
+        redis = await self._get_redis()
+
+        # Buscar posts publicados no período
+        published_key = f"published_posts:{user_id}"
+        start_ts = start_date.timestamp()
+        end_ts = end_date.timestamp()
+
+        post_ids = await redis.zrangebyscore(
+            published_key, start_ts, end_ts
+        ) or []
+
+        # Agregar métricas por dia
+        daily_metrics: Dict[str, Dict[str, int]] = defaultdict(
+            lambda: {"likes": 0, "comments": 0, "shares": 0, "posts": 0}
+        )
+
+        for post_id in post_ids:
+            post_data = await redis.get(f"post:{post_id}")
+            if not post_data:
+                continue
+
+            post = json.loads(post_data)
+            published_at = post.get("published_at")
+            if not published_at:
+                continue
+
+            # Parse da data
+            pub_date = datetime.fromisoformat(published_at)
+            date_key = pub_date.strftime("%Y-%m-%d")
+
+            metrics = post.get("metrics", {})
+            daily_metrics[date_key]["likes"] += metrics.get("likes", 0)
+            daily_metrics[date_key]["comments"] += metrics.get("comments", 0)
+            daily_metrics[date_key]["shares"] += metrics.get("shares", 0)
+            daily_metrics[date_key]["posts"] += 1
+
+        # Construir trend com todos os dias do período
         trend = []
         current = start_date
-        
+
         while current <= end_date:
+            date_key = current.strftime("%Y-%m-%d")
+            day_data = daily_metrics.get(date_key, {})
+
+            total_engagement = (
+                day_data.get("likes", 0) +
+                day_data.get("comments", 0) +
+                day_data.get("shares", 0)
+            )
+            posts_count = day_data.get("posts", 0)
+
+            # Calcular engagement rate (engagement / posts)
+            engagement_rate = (
+                round(total_engagement / posts_count, 2)
+                if posts_count > 0 else 0
+            )
+
             trend.append({
                 "date": current.isoformat(),
-                "likes": 50 + (current.day * 2),
-                "comments": 10 + current.day,
-                "shares": 5 + (current.day // 2),
-                "engagement_rate": 3.5 + (current.day % 10) / 10
+                "likes": day_data.get("likes", 0),
+                "comments": day_data.get("comments", 0),
+                "shares": day_data.get("shares", 0),
+                "posts": posts_count,
+                "engagement_rate": engagement_rate
             })
             current += timedelta(days=1)
-        
+
         return trend
     
     async def get_followers_trend(
@@ -472,28 +713,54 @@ class SocialAnalyticsService:
         period: MetricPeriod = MetricPeriod.LAST_30_DAYS,
         platform: Optional[Platform] = None
     ) -> List[Dict[str, Any]]:
-        """Obtém tendência de crescimento de seguidores."""
+        """Obtém tendência de crescimento de seguidores do Redis."""
+        import json
+
         start_date, end_date = self._get_date_range(period)
-        
-        # TODO: Implementar query real
+        redis = await self._get_redis()
+
+        # Determinar plataformas a consultar
+        platforms = (
+            [platform.value]
+            if platform else ["instagram", "tiktok", "youtube"]
+        )
+
         trend = []
         current = start_date
-        followers = 5000
-        
+
         while current <= end_date:
-            gained = 5 + (current.day % 10)
-            lost = 1 + (current.day % 3)
-            followers += gained - lost
-            
+            date_str = current.strftime("%Y-%m-%d")
+            total_followers = 0
+            total_gained = 0
+            total_lost = 0
+
+            for plat in platforms:
+                followers_key = f"followers:{user_id}:{plat}"
+
+                # Tentar buscar dados históricos do dia
+                day_data = await redis.get(f"{followers_key}:daily:{date_str}")
+                if day_data:
+                    data = json.loads(day_data)
+                    total_followers += data.get("total", 0)
+                    total_gained += data.get("gained", 0)
+                    total_lost += data.get("lost", 0)
+                else:
+                    # Se não houver dados históricos, usar valor atual
+                    current_val = await redis.get(f"{followers_key}:current")
+                    if current_val:
+                        total_followers += int(current_val)
+
+            net_change = total_gained - total_lost
+
             trend.append({
                 "date": current.isoformat(),
-                "total": followers,
-                "gained": gained,
-                "lost": lost,
-                "net": gained - lost
+                "total": total_followers,
+                "gained": total_gained,
+                "lost": total_lost,
+                "net": net_change
             })
             current += timedelta(days=1)
-        
+
         return trend
     
     # ========================================
@@ -505,28 +772,83 @@ class SocialAnalyticsService:
         user_id: str,
         period: MetricPeriod = MetricPeriod.LAST_30_DAYS
     ) -> SchedulerStats:
-        """Obtém estatísticas do agendador de posts."""
-        await self._get_redis()
-        
-        # Buscar dados do Redis/banco
-        # TODO: Implementar query real
-        
+        """Obtém estatísticas do agendador de posts do Redis."""
+        import json
+
+        redis = await self._get_redis()
+
+        # Buscar posts agendados do usuário
+        scheduled_key = f"scheduled_posts:{user_id}"
+        all_post_ids = await redis.zrange(scheduled_key, 0, -1) or []
+
+        # Contadores
+        total_scheduled = 0
+        total_published = 0
+        total_failed = 0
+        total_pending = 0
+        total_cancelled = 0
+        total_processing = 0
+
+        by_platform: Dict[str, Dict[str, int]] = {}
+        by_status: Dict[str, int] = {
+            "scheduled": 0,
+            "published": 0,
+            "failed": 0,
+            "pending": 0,
+            "cancelled": 0,
+            "processing": 0
+        }
+
+        for post_id in all_post_ids:
+            post_data = await redis.get(f"scheduled_post:{post_id}")
+            if not post_data:
+                continue
+
+            post = json.loads(post_data)
+            status = post.get("status", "scheduled").lower()
+            platform = post.get("platform", "unknown")
+
+            # Inicializar contagem da plataforma
+            if platform not in by_platform:
+                by_platform[platform] = {
+                    "scheduled": 0,
+                    "published": 0,
+                    "failed": 0,
+                    "pending": 0
+                }
+
+            total_scheduled += 1
+
+            # Contar por status
+            if status == "published":
+                total_published += 1
+                by_platform[platform]["published"] += 1
+                by_status["published"] += 1
+            elif status == "failed":
+                total_failed += 1
+                by_platform[platform]["failed"] += 1
+                by_status["failed"] += 1
+            elif status == "cancelled":
+                total_cancelled += 1
+                by_status["cancelled"] += 1
+            elif status == "processing":
+                total_processing += 1
+                by_status["processing"] += 1
+            else:  # scheduled ou pending
+                total_pending += 1
+                by_platform[platform]["pending"] += 1
+                by_status["pending"] += 1
+                by_platform[platform]["scheduled"] += 1
+                by_status["scheduled"] += 1
+
         return SchedulerStats(
             period=period,
-            total_scheduled=100,
-            total_published=95,
-            total_failed=3,
-            total_pending=2,
-            by_platform={
-                "instagram": {"scheduled": 40, "published": 38, "failed": 1},
-                "tiktok": {"scheduled": 35, "published": 34, "failed": 1},
-                "youtube": {"scheduled": 25, "published": 23, "failed": 1}
-            },
-            by_status={
-                "published": 95,
-                "failed": 3,
-                "pending": 2
-            }
+            total_scheduled=total_scheduled,
+            total_published=total_published,
+            total_failed=total_failed,
+            total_pending=total_pending,
+            by_platform=by_platform,
+            by_status=by_status
         )
     
     # ========================================

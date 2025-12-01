@@ -1,0 +1,101 @@
+{
+  "name": "Seller Bot - Review Request",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "didin/review-request",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-review",
+      "name": "Webhook Review Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "review-request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json.body || $input.first().json;\nconst data = payload.data || {};\n\nreturn {\n  json: {\n    event_id: payload.event_id,\n    user_id: payload.user_id,\n    name: data.name || 'Cliente',\n    order_id: data.order_id,\n    product_name: data.product_name,\n    days_since_delivery: data.days_since_delivery || 7,\n    phone: data.phone,\n    channel: payload.channel || 'whatsapp'\n  }\n};"
+      },
+      "id": "parse-review-data",
+      "name": "Parse Review Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.phone || $json.user_id }}\",\n  \"textMessage\": {\n    \"text\": \"Oi {{ $json.name }}! 👋\\n\\nTudo bem? Como foi sua experiência com *{{ $json.product_name }}*?\\n\\nAdoramos saber a opinião dos nossos clientes! ⭐\\n\\nDe 1 a 5, quanto você avalia sua compra?\\n\\n*1* - Péssimo 😞\\n*2* - Ruim 😕\\n*3* - Regular 😐\\n*4* - Bom 🙂\\n*5* - Excelente 🤩\\n\\n_Sua opinião nos ajuda a melhorar!_\"\n  }\n}",
+        "options": {}
+      },
+      "id": "send-review-request",
+      "name": "Enviar Pedido de Review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "review_requests",
+        "columns": "user_id, order_id, product_name, sent_at, status",
+        "options": {}
+      },
+      "id": "log-review-request",
+      "name": "Registrar Solicitação",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [910, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"event_id\": \"{{ $('Parse Review Data').first().json.event_id }}\",\n  \"message\": \"Review request sent\"\n}",
+        "options": {}
+      },
+      "id": "respond-review-success",
+      "name": "Responder Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1130, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Review Request": {
+      "main": [[{"node": "Parse Review Data", "type": "main", "index": 0}]]
+    },
+    "Parse Review Data": {
+      "main": [[{"node": "Enviar Pedido de Review", "type": "main", "index": 0}]]
+    },
+    "Enviar Pedido de Review": {
+      "main": [[{"node": "Registrar Solicitação", "type": "main", "index": 0}]]
+    },
+    "Registrar Solicitação": {
+      "main": [[{"node": "Responder Sucesso", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {"executionOrder": "v1"},
+  "tags": [{"name": "seller-bot"}, {"name": "review"}]
+}

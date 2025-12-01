@@ -426,4 +426,360 @@ test.describe('Products Flow', () => {
       expect(newCount).toBeGreaterThan(initialCount);
     });
   });
+
+  // ============================================
+  // PRODUCT ACTIONS PANEL
+  // ============================================
+
+  test.describe('Product Actions Panel', () => {
+    test.describe('Copy AI Modal', () => {
+      test('should open Copy AI modal from product detail', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        // Open product detail
+        await products.productCards.first().click();
+        await expect(products.productDetailModal).toBeVisible();
+
+        // Click on Actions tab
+        await page.locator('[data-testid="tab-actions"]').click();
+
+        // Click Generate Copy button
+        await page.locator('button:has-text("Gerar Copy com IA")').click();
+
+        // Verify modal opened
+        await expect(page.locator('[role="dialog"]:has-text("Gerar Copy com IA")')).toBeVisible();
+      });
+
+      test('should select copy type and tone', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Gerar Copy com IA")').click();
+
+        // Select copy type
+        await page.locator('[data-testid="copy-type-select"]').click();
+        await page.locator('[data-value="ad"]').click();
+
+        // Select tone
+        await page.locator('[data-testid="copy-tone-select"]').click();
+        await page.locator('[data-value="professional"]').click();
+
+        await expect(page.locator('[data-testid="copy-type-select"]')).toContainText('Anúncio');
+        await expect(page.locator('[data-testid="copy-tone-select"]')).toContainText('Profissional');
+      });
+
+      test('should navigate to full copy page', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Gerar Copy com IA")').click();
+
+        // Click "Abrir Página" button
+        await page.locator('button:has-text("Abrir Página")').click();
+
+        await expect(page).toHaveURL(/\/copy/);
+      });
+
+      test('should close Copy modal on cancel', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Gerar Copy com IA")').click();
+
+        // Click cancel
+        await page.locator('button:has-text("Cancelar")').click();
+
+        await expect(page.locator('[role="dialog"]:has-text("Gerar Copy com IA")')).not.toBeVisible();
+      });
+    });
+
+    test.describe('WhatsApp Modal', () => {
+      test('should open WhatsApp modal from product detail', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Enviar via WhatsApp")').click();
+
+        await expect(page.locator('[role="dialog"]:has-text("Enviar via WhatsApp")')).toBeVisible();
+      });
+
+      test('should have pre-filled message with product info', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Enviar via WhatsApp")').click();
+
+        const messageField = page.locator('textarea');
+        await expect(messageField).not.toBeEmpty();
+        await expect(messageField).toContainText(/🛍️/);
+      });
+
+      test('should allow editing phone number', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Enviar via WhatsApp")').click();
+
+        const phoneInput = page.locator('input[type="tel"]');
+        await phoneInput.fill('+5511999999999');
+        
+        await expect(phoneInput).toHaveValue('+5511999999999');
+      });
+
+      test('should navigate to WhatsApp page', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Enviar via WhatsApp")').click();
+
+        await page.locator('button:has-text("Abrir Página")').click();
+
+        await expect(page).toHaveURL(/\/whatsapp/);
+      });
+    });
+
+    test.describe('Schedule Modal', () => {
+      test('should open Schedule modal from product detail', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Agendar Publicação")').click();
+
+        await expect(page.locator('[role="dialog"]:has-text("Agendar Publicação")')).toBeVisible();
+      });
+
+      test('should select platform for scheduling', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Agendar Publicação")').click();
+
+        // Select TikTok platform
+        await page.locator('[data-testid="platform-select"]').click();
+        await page.locator('[data-value="tiktok"]').click();
+
+        await expect(page.locator('[data-testid="platform-select"]')).toContainText('TikTok');
+      });
+
+      test('should set schedule date and time', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Agendar Publicação")').click();
+
+        // Set future date
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + 1);
+        const dateString = futureDate.toISOString().slice(0, 16);
+        
+        await page.locator('input[type="datetime-local"]').fill(dateString);
+        
+        await expect(page.locator('input[type="datetime-local"]')).toHaveValue(dateString);
+      });
+
+      test('should show post preview', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Agendar Publicação")').click();
+
+        await expect(page.locator('text=Preview do Post')).toBeVisible();
+        await expect(page.locator('text=🛍️')).toBeVisible();
+      });
+
+      test('should navigate to advanced scheduler', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Agendar Publicação")').click();
+
+        await page.locator('button:has-text("Configurar Avançado")').click();
+
+        await expect(page).toHaveURL(/\/automation\/scheduler/);
+      });
+    });
+
+    test.describe('Quick Actions', () => {
+      test('should copy product info', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Copiar Informações")').click();
+
+        await expect(page.locator('[data-testid="toast"]')).toContainText(/copiado|copied/i);
+      });
+
+      test('should navigate to seller bot', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Seller Bot")').click();
+
+        await expect(page).toHaveURL(/\/seller-bot/);
+      });
+
+      test('should add to CRM', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Adicionar ao CRM")').click();
+
+        // Should show success toast or navigate to CRM
+        await expect(page.locator('[data-testid="toast"]').or(page)).toBeVisible();
+      });
+
+      test('should navigate to Instagram post', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Publicar no Instagram")').click();
+
+        await expect(page).toHaveURL(/\/social\/instagram/);
+      });
+
+      test('should navigate to TikTok post', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Publicar no TikTok")').click();
+
+        await expect(page).toHaveURL(/\/social\/tiktok/);
+      });
+
+      test('should navigate to YouTube post', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+        await page.locator('button:has-text("Publicar no YouTube")').click();
+
+        await expect(page).toHaveURL(/\/social\/youtube/);
+      });
+    });
+
+    test.describe('Product Detail Modal Tabs', () => {
+      test('should display Info tab by default', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+
+        await expect(page.locator('[data-testid="tab-info"]')).toHaveAttribute('data-state', 'active');
+      });
+
+      test('should switch to Stats tab', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-stats"]').click();
+
+        await expect(page.locator('[data-testid="tab-stats"]')).toHaveAttribute('data-state', 'active');
+        await expect(page.locator('[data-testid="stats-content"]')).toBeVisible();
+      });
+
+      test('should switch to Actions tab', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+
+        await expect(page.locator('[data-testid="tab-actions"]')).toHaveAttribute('data-state', 'active');
+        await expect(page.locator('[data-testid="actions-panel"]')).toBeVisible();
+      });
+
+      test('should display quick stats in Actions tab', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        await products.productCards.first().click();
+        await page.locator('[data-testid="tab-actions"]').click();
+
+        await expect(page.locator('text=Vendas Totais')).toBeVisible();
+        await expect(page.locator('text=Avaliação')).toBeVisible();
+      });
+    });
+
+    test.describe('Compact Actions Bar', () => {
+      test('should show quick actions on card hover', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        const card = products.productCards.first();
+        await card.hover();
+
+        await expect(card.locator('[data-testid="quick-actions"]')).toBeVisible();
+      });
+
+      test('should trigger Copy AI from quick actions', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        const card = products.productCards.first();
+        await card.hover();
+        await card.locator('button:has-text("Gerar Copy")').click();
+
+        await expect(page.locator('[role="dialog"]:has-text("Gerar Copy com IA")')).toBeVisible();
+      });
+
+      test('should trigger Schedule from quick actions', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        const card = products.productCards.first();
+        await card.hover();
+        await card.locator('[data-testid="quick-schedule"]').click();
+
+        await expect(page.locator('[role="dialog"]:has-text("Agendar Publicação")')).toBeVisible();
+      });
+
+      test('should trigger WhatsApp from quick actions', async ({ mockedPage: page }) => {
+        const products = new ProductsPage(page);
+        await products.goto();
+
+        const card = products.productCards.first();
+        await card.hover();
+        await card.locator('[data-testid="quick-whatsapp"]').click();
+
+        await expect(page.locator('[role="dialog"]:has-text("Enviar via WhatsApp")')).toBeVisible();
+      });
+    });
+  });
 });

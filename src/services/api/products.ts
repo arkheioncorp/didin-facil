@@ -5,8 +5,8 @@
 
 import type { Product, PaginatedResponse } from "@/types";
 
-// API base URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+// API base URL - usa VITE_API_URL do .env (deve corresponder ao backend FastAPI)
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Get auth token
 const getAuthToken = (): string | null => {

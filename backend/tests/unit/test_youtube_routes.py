@@ -2,19 +2,19 @@
 Tests for YouTube Routes
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+from uuid import uuid4
+
+import pytest
 from fastapi import HTTPException
-
-
-class MockUser:
-    id = "user_123"
-    email = "test@example.com"
 
 
 @pytest.fixture
 def mock_current_user():
-    return MockUser()
+    return {
+        "id": str(uuid4()),
+        "email": "test@example.com"
+    }
 
 
 @pytest.fixture
@@ -34,7 +34,7 @@ def mock_youtube_client():
 
 @pytest.mark.asyncio
 async def test_youtube_init_auth_no_creds(mock_current_user, mock_settings):
-    from api.routes.youtube import init_auth, YouTubeAuthRequest
+    from api.routes.youtube import YouTubeAuthRequest, init_auth
     
     with patch("api.routes.youtube.settings", mock_settings), \
          patch("os.makedirs"), \
@@ -55,7 +55,7 @@ async def test_youtube_init_auth_success(
     mock_settings,
     mock_youtube_client
 ):
-    from api.routes.youtube import init_auth, YouTubeAuthRequest
+    from api.routes.youtube import YouTubeAuthRequest, init_auth
     
     with patch("api.routes.youtube.settings", mock_settings), \
          patch("os.makedirs"), \
@@ -77,7 +77,7 @@ async def test_youtube_init_auth_exception(
     mock_settings,
     mock_youtube_client
 ):
-    from api.routes.youtube import init_auth, YouTubeAuthRequest
+    from api.routes.youtube import YouTubeAuthRequest, init_auth
     
     mock_youtube_client.authenticate.side_effect = Exception("Auth failed")
     
@@ -117,8 +117,8 @@ async def test_youtube_list_accounts_with_data(
     with patch("api.routes.youtube.settings", mock_settings), \
          patch("os.path.exists", return_value=True), \
          patch("os.listdir", return_value=[
-             f"{mock_current_user.id}_channel1.json",
-             f"{mock_current_user.id}_channel2.json",
+             f"{mock_current_user['id']}_channel1.json",
+             f"{mock_current_user['id']}_channel2.json",
              "other_user.json"
          ]):
         
@@ -179,6 +179,7 @@ async def test_youtube_get_quota_status_with_data(
 ):
     """Test quota status with existing usage."""
     import json
+
     from api.routes.youtube import get_quota_status
     
     usage = {"total": 1700, "operations": {"upload": 1600, "list": 100}}
@@ -210,6 +211,7 @@ async def test_youtube_track_quota_new(mock_settings):
 async def test_youtube_track_quota_existing(mock_settings):
     """Test tracking quota with existing usage."""
     import json
+
     from api.routes.youtube import _track_quota_usage
     
     usage = {"total": 100, "operations": {"list": 100}}
@@ -241,6 +243,7 @@ async def test_youtube_quota_history_empty(mock_current_user, mock_settings):
 async def test_youtube_quota_history_with_data(mock_current_user, mock_settings):
     """Test quota history with data."""
     import json
+
     from api.routes.youtube import get_quota_history
     
     usage = {"total": 500, "operations": {"list": 500}}
@@ -268,4 +271,5 @@ async def test_youtube_check_quota_alerts(mock_settings):
         
         # Should have checked for alerts
         assert mock_redis.get.called
+
 

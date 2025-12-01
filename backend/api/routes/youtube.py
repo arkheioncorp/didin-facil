@@ -3,23 +3,19 @@ YouTube Routes
 Upload de vídeos para YouTube via API oficial
 """
 
-from fastapi import (
-    APIRouter, Depends, HTTPException, UploadFile, File, Form
-)
-from pydantic import BaseModel
-from typing import Optional, List
-import shutil
-import os
 import json
+import os
+import shutil
 from datetime import datetime, timezone
+from typing import List, Optional
 
 from api.middleware.auth import get_current_user
-from vendor.youtube.client import (
-    YouTubeClient, YouTubeConfig, VideoMetadata,
-    PrivacyStatus, Category
-)
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from pydantic import BaseModel
 from shared.config import settings
 from shared.redis import get_redis
+from vendor.youtube.client import (Category, PrivacyStatus, VideoMetadata,
+                                   YouTubeClient, YouTubeConfig)
 
 router = APIRouter()
 
@@ -66,9 +62,10 @@ async def init_auth(
             )
         )
     
+    user_id = current_user["id"]
     token_file = os.path.join(
         tokens_dir,
-        f"{current_user.id}_{data.account_name}.json"
+        f"{user_id}_{data.account_name}.json"
     )
     
     try:
@@ -97,7 +94,8 @@ async def list_accounts(current_user=Depends(get_current_user)):
         return {"accounts": []}
     
     accounts = []
-    prefix = f"{current_user.id}_"
+    user_id = current_user["id"]
+    prefix = f"{user_id}_"
     
     for filename in os.listdir(tokens_dir):
         if filename.startswith(prefix) and filename.endswith('.json'):
@@ -108,6 +106,32 @@ async def list_accounts(current_user=Depends(get_current_user)):
             })
     
     return {"accounts": accounts}
+
+
+@router.delete("/accounts/{account_name}")
+async def delete_account(
+    account_name: str,
+    current_user=Depends(get_current_user)
+):
+    """Remove uma conta YouTube autenticada."""
+    tokens_dir = os.path.join(settings.DATA_DIR, "youtube_tokens")
+    user_id = current_user["id"]
+    token_file = os.path.join(tokens_dir, f"{user_id}_{account_name}.json")
+    
+    if not os.path.exists(token_file):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Conta '{account_name}' não encontrada"
+        )
+    
+    try:
+        os.remove(token_file)
+        return {"status": "success", "message": "Conta removida"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao remover conta: {str(e)}"
+        )
 
 
 @router.post("/upload")
@@ -139,9 +163,10 @@ async def upload_video(
     """
     # Verificar token
     tokens_dir = os.path.join(settings.DATA_DIR, "youtube_tokens")
+    user_id = current_user["id"]
     token_file = os.path.join(
         tokens_dir,
-        f"{current_user.id}_{account_name}.json"
+        f"{user_id}_{account_name}.json"
     )
     
     if not os.path.exists(token_file):
@@ -213,7 +238,7 @@ async def upload_video(
             )
         
         # Track quota usage
-        await _track_quota_usage(str(current_user.id), "upload", 1600)
+        await _track_quota_usage(str(user_id), "upload", 1600)
         
         return {
             "status": "success",
@@ -344,7 +369,8 @@ async def get_quota_status(current_user=Depends(get_current_user)):
     redis = await get_redis()
     
     today = datetime.now().strftime("%Y-%m-%d")
-    quota_key = f"youtube:quota:{current_user.id}:{today}"
+    user_id = current_user["id"]
+    quota_key = f"youtube:quota:{user_id}:{today}"
     
     usage_data = await redis.get(quota_key)
     
@@ -393,10 +419,11 @@ async def get_quota_history(
     redis = await get_redis()
     
     history = []
+    user_id = current_user["id"]
     
     for i in range(days):
         date = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
-        quota_key = f"youtube:quota:{current_user.id}:{date}"
+        quota_key = f"youtube:quota:{user_id}:{date}"
         
         usage_data = await redis.get(quota_key)
         

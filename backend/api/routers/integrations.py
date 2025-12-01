@@ -14,7 +14,7 @@ from backend.vendor.integrations.n8n import N8nClient, N8nConfig
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/integrations", tags=["Integrations"])
+router = APIRouter(tags=["Integrations"])
 
 
 # ==================== Schemas ====================

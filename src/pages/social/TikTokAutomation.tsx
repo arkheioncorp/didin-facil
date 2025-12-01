@@ -87,6 +87,24 @@ export const TikTokAutomation = () => {
     }
   };
 
+  const handleDeleteSession = async (accountName: string) => {
+    try {
+      await api.delete(`/tiktok/sessions/${accountName}`);
+      toast({ title: "Conta removida" });
+      fetchSessions();
+      if (selectedSession === accountName) {
+        setSelectedSession("");
+      }
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { detail?: string } } };
+      toast({ 
+        title: "Erro ao remover conta", 
+        description: err.response?.data?.detail,
+        variant: "destructive" 
+      });
+    }
+  };
+
   const handleImportCookies = async () => {
     if (!cookieForm.accountName || !cookieForm.cookiesJson) {
       toast({ title: "Preencha todos os campos", variant: "destructive" });
@@ -289,7 +307,12 @@ export const TikTokAutomation = () => {
                           <CheckCircle2 className="h-5 w-5 text-green-500" />
                           <span className="font-medium">@{session.account_name}</span>
                         </div>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteSession(session.account_name)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

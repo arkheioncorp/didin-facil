@@ -1,13 +1,35 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { TikTrendLogo } from "@/components/icons";
 import { useUserStore } from "@/stores";
 import { useNavigate } from "react-router-dom";
 import type { AppSettings } from "@/types";
 import { SUPPORTED_LANGUAGES, changeLanguage, type SupportedLanguage } from "@/lib/i18n";
+import { 
+  ChevronRight, 
+  ChevronLeft, 
+  Sparkles, 
+  Shield, 
+  Key, 
+  Palette, 
+  Rocket,
+  Check,
+  Globe,
+  Moon,
+  Sun,
+  Monitor,
+  Zap,
+  Gift,
+  Crown,
+  MessageCircle,
+  BarChart3,
+  Bot,
+  Search,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // Check if running in Tauri
 const isTauri = typeof window !== 'undefined' && '__TAURI__' in window;
@@ -40,21 +62,69 @@ const safeInvoke = async <T,>(cmd: string, args?: Record<string, unknown>): Prom
   throw new Error(`Unknown command: ${cmd}`);
 };
 
-const steps = [
-  { id: "welcome", title: "Bem-vindo" },
-  { id: "responsibility", title: "Responsabilidade" },
-  { id: "license", title: "Licença" },
-  { id: "preferences", title: "Preferências" },
-  { id: "finish", title: "Concluir" },
+// ============================================
+// TYPES
+// ============================================
+
+interface Step {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+}
+
+const steps: Step[] = [
+  { 
+    id: "welcome", 
+    title: "Bem-vindo", 
+    subtitle: "Conheça o Didin Fácil",
+    icon: <Sparkles className="w-5 h-5" />,
+  },
+  { 
+    id: "features", 
+    title: "Funcionalidades", 
+    subtitle: "O que você pode fazer",
+    icon: <Zap className="w-5 h-5" />,
+  },
+  { 
+    id: "responsibility", 
+    title: "Termos", 
+    subtitle: "Aceite os termos",
+    icon: <Shield className="w-5 h-5" />,
+  },
+  { 
+    id: "license", 
+    title: "Licença", 
+    subtitle: "Ative sua conta",
+    icon: <Key className="w-5 h-5" />,
+  },
+  { 
+    id: "preferences", 
+    title: "Preferências", 
+    subtitle: "Personalize",
+    icon: <Palette className="w-5 h-5" />,
+  },
+  { 
+    id: "finish", 
+    title: "Pronto!", 
+    subtitle: "Vamos começar",
+    icon: <Rocket className="w-5 h-5" />,
+  },
 ];
 
+// ============================================
+// MAIN COMPONENT
+// ============================================
+
 export const SetupWizard: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const [currentStep, setCurrentStep] = React.useState(0);
   const [licenseKey, setLicenseKey] = React.useState("");
   const [acceptedTerms, setAcceptedTerms] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [selectedLanguage, setSelectedLanguage] = React.useState<SupportedLanguage>(i18n.language as SupportedLanguage || "pt-BR");
+  const [selectedLanguage, setSelectedLanguage] = React.useState<SupportedLanguage>(
+    i18n.language as SupportedLanguage || "pt-BR"
+  );
   const { theme, setTheme } = useUserStore();
   const navigate = useNavigate();
 
@@ -64,13 +134,12 @@ export const SetupWizard: React.FC = () => {
     await changeLanguage(lang);
   };
 
-  // Check if setup is already complete - redirect if so
+  // Check if setup is already complete
   React.useEffect(() => {
     const checkSetupStatus = async () => {
       try {
         const settings = await safeInvoke<AppSettings>("get_settings");
         if (settings.setupComplete) {
-          // Setup already done, redirect to home
           navigate("/", { replace: true });
           return;
         }
@@ -86,7 +155,7 @@ export const SetupWizard: React.FC = () => {
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       if (steps[currentStep].id === "responsibility" && !acceptedTerms) {
-        return; // Block if terms not accepted
+        return;
       }
       setCurrentStep(currentStep + 1);
     } else {
@@ -94,301 +163,618 @@ export const SetupWizard: React.FC = () => {
     }
   };
 
+  const handlePrev = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   const handleFinish = async () => {
     try {
-      // Get current defaults
       const currentSettings = await safeInvoke<AppSettings>("get_settings");
-
-      // Get current timestamp for terms acceptance
       const now = new Date().toISOString();
 
-      // Update with wizard data - forçando configurações obrigatórias
       const newSettings: AppSettings = {
         ...currentSettings,
         theme: theme,
-        language: selectedLanguage, // Usar idioma selecionado
-        notificationsEnabled: true, // Forçar notificações ativadas
-        autoUpdate: true, // Forçar auto-update
-        
-        // Marcar setup como completo
+        language: selectedLanguage,
+        notificationsEnabled: true,
+        autoUpdate: true,
         setupComplete: true,
         termsAccepted: acceptedTerms,
         termsAcceptedAt: acceptedTerms ? now : null,
-        
         license: {
           ...currentSettings.license,
           key: licenseKey || null,
           plan: licenseKey ? "lifetime" : "trial",
           isActive: true,
           credits: 0,
-          trialStarted: licenseKey ? null : now, // Iniciar trial se não tiver licença
+          trialStarted: licenseKey ? null : now,
         },
-        
-        // Configurações de sistema obrigatórias
         system: {
           ...currentSettings.system,
           autoUpdate: true,
           logsEnabled: true,
-          analyticsEnabled: false, // Privacidade por padrão
+          analyticsEnabled: false,
         },
       };
 
       await safeInvoke("save_settings", { settings: newSettings });
-      
-      // Limpar flag do tutorial para exibir na primeira visita
       localStorage.removeItem('tutorial_completed');
-      
       navigate("/");
     } catch (error) {
       console.error("Setup failed:", error);
     }
   };
 
-  const renderStepContent = () => {
-    switch (steps[currentStep].id) {
-      case "welcome":
-        return (
-          <div className="text-center space-y-4">
-            <div className="flex justify-center mb-6">
-              <TikTrendLogo size={64} />
-            </div>
-            <h2 className="text-2xl font-bold">Bem-vindo ao TikTrend Finder</h2>
-            <p className="text-muted-foreground">
-              Sua ferramenta definitiva para encontrar produtos vencedores no TikTok Shop.
-              Vamos configurar seu ambiente em poucos passos.
-            </p>
-          </div>
-        );
-      case "responsibility":
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium text-red-600 flex items-center gap-2">
-                ⚠️ Termo de Responsabilidade
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                O TikTrend Finder é uma ferramenta poderosa para análise de mercado.
-                Para garantir a segurança da sua conta e a longevidade da ferramenta,
-                você deve concordar com as seguintes práticas:
-              </p>
-            </div>
-
-            <div className="bg-muted/50 p-4 rounded-lg text-sm space-y-3 border border-border">
-              <div className="flex gap-2">
-                <span>1.</span>
-                <p>O scraping é limitado a <strong>1 requisição a cada 5-10 segundos</strong> para evitar bloqueios.</p>
-              </div>
-              <div className="flex gap-2">
-                <span>2.</span>
-                <p>O software se identifica de forma transparente como <strong>TikTrendFinder</strong>.</p>
-              </div>
-              <div className="flex gap-2">
-                <span>3.</span>
-                <p>Você é responsável pelo uso ético da ferramenta, respeitando os termos de serviço das plataformas.</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2 pt-4">
-              <input
-                type="checkbox"
-                id="terms"
-                className="h-4 w-4 rounded border-gray-300 text-tiktrend-primary focus:ring-tiktrend-primary"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-              />
-              <label
-                htmlFor="terms"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Li e concordo com os termos de responsabilidade e uso ético.
-              </label>
-            </div>
-          </div>
-        );
-      case "license":
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">🔑 Ativação da Licença</h3>
-              <p className="text-sm text-muted-foreground">
-                Insira sua chave de licença para desbloquear buscas ilimitadas.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Chave de Licença</label>
-              <Input
-                placeholder="XXXX-XXXX-XXXX-XXXX"
-                value={licenseKey}
-                onChange={(e) => setLicenseKey(e.target.value)}
-              />
-            </div>
-            
-            {/* Licença Vitalícia */}
-            <div className="bg-gradient-to-r from-tiktrend-primary/10 to-tiktrend-secondary/10 p-4 rounded-lg text-sm border border-tiktrend-primary/20">
-              <p className="font-medium text-tiktrend-primary mb-2">✨ Licença Vitalícia</p>
-              <ul className="space-y-1 text-muted-foreground">
-                <li>✅ Buscas de produtos <strong>ilimitadas</strong></li>
-                <li>✅ Todos os filtros avançados</li>
-                <li>✅ Exportação completa (CSV, Excel)</li>
-                <li>✅ Até 2 dispositivos simultâneos</li>
-                <li>✅ Atualizações gratuitas para sempre</li>
-              </ul>
-            </div>
-
-            {/* Créditos IA */}
-            <div className="bg-muted p-4 rounded-lg text-sm">
-              <p className="font-medium mb-2">🤖 Créditos IA (Opcional)</p>
-              <p className="text-muted-foreground mb-2">
-                Use créditos para gerar copies e análises com IA:
-              </p>
-              <ul className="space-y-1 text-muted-foreground text-xs">
-                <li>• Copy simples: 1 crédito</li>
-                <li>• Análise de tendência: 2 créditos</li>
-                <li>• Lote de copies: 5 créditos</li>
-              </ul>
-              <p className="text-xs text-muted-foreground mt-2 italic">
-                Compre créditos a qualquer momento no menu Perfil.
-              </p>
-            </div>
-
-            {/* Trial */}
-            <div className="bg-muted/50 p-3 rounded-lg text-sm border border-dashed">
-              <p className="font-medium text-muted-foreground">📋 Versão Trial (7 dias)</p>
-              <ul className="list-disc list-inside mt-1 space-y-0.5 text-muted-foreground text-xs">
-                <li>50 produtos por busca</li>
-                <li>Funcionalidades básicas</li>
-                <li>Sem créditos IA inclusos</li>
-              </ul>
-            </div>
-          </div>
-        );
-      case "preferences":
-        return (
-          <div className="space-y-6">
-            {/* Idioma */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">{t("settings.appearance.language")}</h3>
-              <div className="flex gap-2 flex-wrap">
-                {SUPPORTED_LANGUAGES.map((lang) => (
-                  <Button
-                    key={lang.code}
-                    variant={selectedLanguage === lang.code ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleLanguageSelect(lang.code)}
-                    className={selectedLanguage === lang.code ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
-                  >
-                    {lang.flag} {lang.name}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Tema */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">{t("settings.appearance.theme")}</h3>
-              <div className="flex gap-2">
-                <Button 
-                  variant={theme === "light" ? "default" : "outline"} 
-                  onClick={() => setTheme("light")}
-                  className={theme === "light" ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
-                >
-                  ☀️ {t("settings.appearance.themes.light")}
-                </Button>
-                <Button 
-                  variant={theme === "dark" ? "default" : "outline"} 
-                  onClick={() => setTheme("dark")}
-                  className={theme === "dark" ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
-                >
-                  🌙 {t("settings.appearance.themes.dark")}
-                </Button>
-                <Button 
-                  variant={theme === "system" ? "default" : "outline"} 
-                  onClick={() => setTheme("system")}
-                  className={theme === "system" ? "bg-tiktrend-primary hover:bg-tiktrend-primary/90" : ""}
-                >
-                  💻 {t("settings.appearance.themes.system")}
-                </Button>
-              </div>
-            </div>
-          </div>
-        );
-      case "finish":
-        return (
-          <div className="text-center space-y-4">
-            <div className="text-4xl mb-4">🎉</div>
-            <h2 className="text-2xl font-bold">Tudo Pronto!</h2>
-            <p className="text-muted-foreground mb-4">
-              O TikTrend Finder está configurado e pronto para usar.
-            </p>
-            <div className="bg-muted p-4 rounded-lg text-left text-sm space-y-2">
-              <p className="font-medium">🚀 Próximos passos:</p>
-              <ul className="space-y-1 text-muted-foreground">
-                <li>1. Faça sua primeira busca de produtos</li>
-                <li>2. Salve os melhores nos favoritos</li>
-                <li>3. Use a Copy AI para criar anúncios incríveis</li>
-              </ul>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Um tutorial interativo vai te guiar após clicar em "Começar"
-            </p>
-          </div>
-        );
-      default:
-        return null;
+  const canProceed = () => {
+    if (steps[currentStep].id === "responsibility" && !acceptedTerms) {
+      return false;
     }
+    return true;
   };
 
-  // Show loading while checking setup status
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
           <TikTrendLogo size={48} />
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
+            <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
+            <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+          </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader>
-          <div className="flex justify-between items-center mb-4">
-            {steps.map((step, index) => (
+    <div className="min-h-screen bg-background flex">
+      {/* Left Panel - Progress */}
+      <div className="hidden lg:flex w-80 bg-card border-r border-border flex-col p-6">
+        <div className="flex items-center gap-3 mb-10">
+          <TikTrendLogo size={36} />
+          <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            Didin Fácil
+          </span>
+        </div>
+
+        {/* Steps Progress */}
+        <div className="flex-1 space-y-2">
+          {steps.map((step, index) => (
+            <motion.div
+              key={step.id}
+              initial={false}
+              animate={{
+                opacity: index <= currentStep ? 1 : 0.5,
+              }}
+              className={cn(
+                "flex items-center gap-4 p-3 rounded-lg transition-colors",
+                index === currentStep && "bg-primary/10 border border-primary/20",
+                index < currentStep && "text-muted-foreground"
+              )}
+            >
               <div
-                key={step.id}
-                className={`h-2 flex-1 rounded-full mx-1 ${index <= currentStep ? "bg-tiktrend-primary" : "bg-muted"
-                  }`}
-              />
-            ))}
-          </div>
-          <CardTitle>{steps[currentStep].title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="min-h-[300px] flex flex-col justify-between">
-            <div className="py-4">
-              {renderStepContent()}
-            </div>
-            <div className="flex justify-between pt-4 border-t">
-              <Button
-                variant="ghost"
-                onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
-                disabled={currentStep === 0}
+                className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
+                  index === currentStep && "bg-primary text-primary-foreground",
+                  index < currentStep && "bg-green-500/20 text-green-500",
+                  index > currentStep && "bg-muted text-muted-foreground"
+                )}
               >
-                Voltar
-              </Button>
+                {index < currentStep ? (
+                  <Check className="w-5 h-5" />
+                ) : (
+                  step.icon
+                )}
+              </div>
+              <div>
+                <p className={cn(
+                  "font-medium text-sm",
+                  index === currentStep && "text-foreground",
+                  index !== currentStep && "text-muted-foreground"
+                )}>
+                  {step.title}
+                </p>
+                <p className="text-xs text-muted-foreground">{step.subtitle}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Bottom info */}
+        <div className="pt-6 border-t border-border">
+          <p className="text-xs text-muted-foreground text-center">
+            Passo {currentStep + 1} de {steps.length}
+          </p>
+        </div>
+      </div>
+
+      {/* Right Panel - Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Mobile Header */}
+        <div className="lg:hidden flex items-center justify-between p-4 border-b border-border">
+          <div className="flex items-center gap-2">
+            <TikTrendLogo size={28} />
+            <span className="font-semibold text-primary">Didin Fácil</span>
+          </div>
+          <span className="text-sm text-muted-foreground">
+            {currentStep + 1}/{steps.length}
+          </span>
+        </div>
+
+        {/* Progress bar mobile */}
+        <div className="lg:hidden h-1 bg-muted">
+          <motion.div
+            className="h-full bg-gradient-to-r from-primary to-primary/60"
+            initial={{ width: 0 }}
+            animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+          />
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
+          <div className="w-full max-w-2xl">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentStep}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {renderStepContent(
+                  steps[currentStep].id,
+                  {
+                    acceptedTerms,
+                    setAcceptedTerms,
+                    licenseKey,
+                    setLicenseKey,
+                    selectedLanguage,
+                    handleLanguageSelect,
+                    theme,
+                    setTheme,
+                  }
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-border p-4 lg:p-6">
+          <div className="max-w-2xl mx-auto flex items-center justify-between">
+            <Button
+              variant="ghost"
+              onClick={handlePrev}
+              disabled={currentStep === 0}
+              className="gap-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Voltar</span>
+            </Button>
+
+            <div className="flex items-center gap-2">
+              {currentStep < steps.length - 1 && (
+                <Button
+                  variant="ghost"
+                  onClick={() => setCurrentStep(steps.length - 1)}
+                  className="text-muted-foreground text-sm"
+                >
+                  Pular
+                </Button>
+              )}
               <Button
                 onClick={handleNext}
-                variant="tiktrend"
-                disabled={steps[currentStep].id === "responsibility" && !acceptedTerms}
+                disabled={!canProceed()}
+                className="gap-2 bg-primary hover:bg-primary/90 min-w-[120px]"
               >
-                {currentStep === steps.length - 1 ? "Começar" : "Próximo"}
+                {currentStep === steps.length - 1 ? (
+                  <>
+                    <Rocket className="w-4 h-4" />
+                    Começar
+                  </>
+                ) : (
+                  <>
+                    Próximo
+                    <ChevronRight className="w-4 h-4" />
+                  </>
+                )}
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
+
+// ============================================
+// STEP CONTENT RENDERER
+// ============================================
+
+interface StepProps {
+  acceptedTerms: boolean;
+  setAcceptedTerms: (v: boolean) => void;
+  licenseKey: string;
+  setLicenseKey: (v: string) => void;
+  selectedLanguage: SupportedLanguage;
+  handleLanguageSelect: (lang: SupportedLanguage) => void;
+  theme: string;
+  setTheme: (v: "light" | "dark" | "system") => void;
+}
+
+function renderStepContent(stepId: string, props: StepProps) {
+  switch (stepId) {
+    case "welcome":
+      return <WelcomeStep />;
+    case "features":
+      return <FeaturesStep />;
+    case "responsibility":
+      return <ResponsibilityStep {...props} />;
+    case "license":
+      return <LicenseStep {...props} />;
+    case "preferences":
+      return <PreferencesStep {...props} />;
+    case "finish":
+      return <FinishStep />;
+    default:
+      return null;
+  }
+}
+
+// ============================================
+// INDIVIDUAL STEPS
+// ============================================
+
+const WelcomeStep: React.FC = () => (
+  <div className="text-center space-y-6">
+    <motion.div
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ type: "spring", duration: 0.6 }}
+      className="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center"
+    >
+      <TikTrendLogo size={56} />
+    </motion.div>
+    
+    <div className="space-y-2">
+      <h1 className="text-3xl lg:text-4xl font-bold">
+        Bem-vindo ao{" "}
+        <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          Didin Fácil
+        </span>
+      </h1>
+      <p className="text-lg text-muted-foreground max-w-md mx-auto">
+        Sua plataforma completa para encontrar produtos vencedores e automatizar suas vendas.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-3 gap-4 max-w-md mx-auto pt-4">
+      {[
+        { icon: Search, label: "Busca Inteligente" },
+        { icon: Bot, label: "Automação" },
+        { icon: BarChart3, label: "Analytics" },
+      ].map((item, i) => (
+        <motion.div
+          key={item.label}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 + i * 0.1 }}
+          className="p-4 rounded-xl bg-card border border-border text-center"
+        >
+          <item.icon className="w-6 h-6 mx-auto text-primary mb-2" />
+          <p className="text-xs text-muted-foreground">{item.label}</p>
+        </motion.div>
+      ))}
+    </div>
+  </div>
+);
+
+const FeaturesStep: React.FC = () => (
+  <div className="space-y-6">
+    <div className="text-center space-y-2">
+      <h2 className="text-2xl lg:text-3xl font-bold">O que você pode fazer</h2>
+      <p className="text-muted-foreground">
+        Conheça as principais funcionalidades do Didin Fácil
+      </p>
+    </div>
+
+    <div className="grid sm:grid-cols-2 gap-4">
+      {[
+        {
+          icon: Search,
+          title: "Busca de Produtos",
+          description: "Encontre produtos virais do TikTok Shop, AliExpress e mais.",
+          color: "text-blue-500",
+          bg: "bg-blue-500/10",
+        },
+        {
+          icon: MessageCircle,
+          title: "WhatsApp Automation",
+          description: "Chatbot inteligente para atendimento e vendas 24/7.",
+          color: "text-green-500",
+          bg: "bg-green-500/10",
+        },
+        {
+          icon: Bot,
+          title: "Seller Bot",
+          description: "Automação completa: follow-up, carrinho abandonado, cross-sell.",
+          color: "text-purple-500",
+          bg: "bg-purple-500/10",
+        },
+        {
+          icon: BarChart3,
+          title: "CRM & Pipeline",
+          description: "Gerencie leads e acompanhe cada oportunidade de venda.",
+          color: "text-orange-500",
+          bg: "bg-orange-500/10",
+        },
+      ].map((feature, i) => (
+        <motion.div
+          key={feature.title}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.1 }}
+          className="p-5 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors"
+        >
+          <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center mb-3", feature.bg)}>
+            <feature.icon className={cn("w-5 h-5", feature.color)} />
+          </div>
+          <h3 className="font-semibold mb-1">{feature.title}</h3>
+          <p className="text-sm text-muted-foreground">{feature.description}</p>
+        </motion.div>
+      ))}
+    </div>
+  </div>
+);
+
+const ResponsibilityStep: React.FC<Pick<StepProps, "acceptedTerms" | "setAcceptedTerms">> = ({
+  acceptedTerms,
+  setAcceptedTerms,
+}) => (
+  <div className="space-y-6">
+    <div className="text-center space-y-2">
+      <div className="w-16 h-16 mx-auto rounded-full bg-amber-500/10 flex items-center justify-center mb-4">
+        <Shield className="w-8 h-8 text-amber-500" />
+      </div>
+      <h2 className="text-2xl lg:text-3xl font-bold">Termo de Responsabilidade</h2>
+      <p className="text-muted-foreground">
+        Para usar o Didin Fácil, você precisa concordar com nossas práticas
+      </p>
+    </div>
+
+    <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+      {[
+        "O scraping é limitado para evitar bloqueios (1 requisição a cada 5-10 segundos)",
+        "O software se identifica de forma transparente como Didin Fácil",
+        "Você é responsável pelo uso ético, respeitando os termos das plataformas",
+        "Dados coletados são usados apenas para sua análise pessoal",
+      ].map((term, i) => (
+        <div key={i} className="flex items-start gap-3">
+          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span className="text-xs font-bold text-primary">{i + 1}</span>
+          </div>
+          <p className="text-sm text-muted-foreground">{term}</p>
+        </div>
+      ))}
+    </div>
+
+    <label className="flex items-center gap-3 cursor-pointer p-4 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
+      <input
+        type="checkbox"
+        checked={acceptedTerms}
+        onChange={(e) => setAcceptedTerms(e.target.checked)}
+        className="w-5 h-5 rounded border-2 border-primary text-primary focus:ring-primary"
+      />
+      <span className="text-sm">
+        Li e concordo com os termos de responsabilidade e uso ético
+      </span>
+    </label>
+  </div>
+);
+
+const LicenseStep: React.FC<Pick<StepProps, "licenseKey" | "setLicenseKey">> = ({
+  licenseKey,
+  setLicenseKey,
+}) => (
+  <div className="space-y-6">
+    <div className="text-center space-y-2">
+      <h2 className="text-2xl lg:text-3xl font-bold">Licença & Créditos</h2>
+      <p className="text-muted-foreground">
+        Seu acesso funciona assim
+      </p>
+    </div>
+
+    {/* License Key Input */}
+    <div className="space-y-2">
+      <label className="text-sm font-medium">Chave de Licença (opcional)</label>
+      <Input
+        placeholder="XXXX-XXXX-XXXX-XXXX"
+        value={licenseKey}
+        onChange={(e) => setLicenseKey(e.target.value)}
+        className="text-center text-lg tracking-wider"
+      />
+    </div>
+
+    <div className="grid sm:grid-cols-2 gap-4">
+      {/* Lifetime License */}
+      <div className="p-5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+        <div className="flex items-center gap-2 mb-3">
+          <Crown className="w-5 h-5 text-primary" />
+          <span className="font-semibold">Licença Vitalícia</span>
+        </div>
+        <ul className="space-y-2 text-sm text-muted-foreground">
+          <li className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-500" />
+            Buscas ilimitadas para sempre
+          </li>
+          <li className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-500" />
+            Todos os filtros avançados
+          </li>
+          <li className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-500" />
+            Exportação completa
+          </li>
+          <li className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-500" />
+            Atualizações gratuitas
+          </li>
+        </ul>
+      </div>
+
+      {/* AI Credits */}
+      <div className="p-5 rounded-xl bg-card border border-border">
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="w-5 h-5 text-purple-500" />
+          <span className="font-semibold">Créditos IA</span>
+        </div>
+        <p className="text-sm text-muted-foreground mb-3">
+          Para gerar copies e análises
+        </p>
+        <ul className="space-y-1 text-xs text-muted-foreground">
+          <li>• Copy simples: 1 crédito</li>
+          <li>• Análise de tendência: 2 créditos</li>
+          <li>• Lote de copies: 5 créditos</li>
+        </ul>
+        <p className="text-xs text-muted-foreground mt-3 italic">
+          Compre no menu Perfil
+        </p>
+      </div>
+    </div>
+
+    {/* Trial info */}
+    <div className="p-4 rounded-xl bg-muted/30 border border-dashed border-border text-center">
+      <Gift className="w-6 h-6 mx-auto text-muted-foreground mb-2" />
+      <p className="text-sm font-medium">Sem licença? Teste grátis por 7 dias</p>
+      <p className="text-xs text-muted-foreground">50 produtos por busca • Funcionalidades básicas</p>
+    </div>
+  </div>
+);
+
+const PreferencesStep: React.FC<Pick<StepProps, "selectedLanguage" | "handleLanguageSelect" | "theme" | "setTheme">> = ({
+  selectedLanguage,
+  handleLanguageSelect,
+  theme,
+  setTheme,
+}) => (
+  <div className="space-y-8">
+    <div className="text-center space-y-2">
+      <h2 className="text-2xl lg:text-3xl font-bold">Preferências</h2>
+      <p className="text-muted-foreground">
+        Personalize sua experiência
+      </p>
+    </div>
+
+    {/* Language */}
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Globe className="w-5 h-5 text-primary" />
+        <span className="font-medium">Idioma</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {SUPPORTED_LANGUAGES.map((lang) => (
+          <Button
+            key={lang.code}
+            variant={selectedLanguage === lang.code ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleLanguageSelect(lang.code)}
+            className={cn(
+              "gap-2",
+              selectedLanguage === lang.code && "bg-primary hover:bg-primary/90"
+            )}
+          >
+            {lang.flag} {lang.name}
+          </Button>
+        ))}
+      </div>
+    </div>
+
+    {/* Theme */}
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Palette className="w-5 h-5 text-primary" />
+        <span className="font-medium">Tema</span>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { id: "light", label: "Claro", icon: Sun },
+          { id: "dark", label: "Escuro", icon: Moon },
+          { id: "system", label: "Sistema", icon: Monitor },
+        ].map((option) => (
+          <button
+            key={option.id}
+            onClick={() => setTheme(option.id as "light" | "dark" | "system")}
+            className={cn(
+              "p-4 rounded-xl border transition-all text-center",
+              theme === option.id
+                ? "border-primary bg-primary/10"
+                : "border-border bg-card hover:border-primary/30"
+            )}
+          >
+            <option.icon className={cn(
+              "w-6 h-6 mx-auto mb-2",
+              theme === option.id ? "text-primary" : "text-muted-foreground"
+            )} />
+            <span className="text-sm">{option.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const FinishStep: React.FC = () => (
+  <div className="text-center space-y-6">
+    <motion.div
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ type: "spring", duration: 0.6 }}
+      className="text-6xl"
+    >
+      🎉
+    </motion.div>
+    
+    <div className="space-y-2">
+      <h2 className="text-3xl font-bold">Tudo Pronto!</h2>
+      <p className="text-muted-foreground">
+        O Didin Fácil está configurado e pronto para usar
+      </p>
+    </div>
+
+    <div className="bg-card rounded-xl border border-border p-6 text-left max-w-md mx-auto">
+      <p className="font-semibold mb-4 flex items-center gap-2">
+        <Rocket className="w-5 h-5 text-primary" />
+        Próximos passos:
+      </p>
+      <div className="space-y-3">
+        {[
+          "Faça sua primeira busca de produtos",
+          "Salve os melhores nos favoritos",
+          "Conecte seu WhatsApp",
+          "Use a Copy AI para criar anúncios",
+        ].map((step, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-primary">{i + 1}</span>
+            </div>
+            <span className="text-sm text-muted-foreground">{step}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <p className="text-sm text-muted-foreground">
+      Um tutorial interativo vai te guiar após clicar em "Começar"
+    </p>
+  </div>
+);
+
+export default SetupWizard;

@@ -13,25 +13,21 @@ Autor: Didin Fácil
 Versão: 1.1.0 (com alertas e métricas)
 """
 
-import logging
 import asyncio
-from typing import Optional, Dict, Any, List
+import logging
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from api.services.tiktok_session import TikTokSessionManager, TikTokSession
-from vendor.tiktok.client import (
-    TikTokClient, TikTokConfig, VideoConfig, Privacy, UploadStatus
-)
-from .resilience import (
-    CircuitBreaker,
-    CircuitBreakerConfig,
-    CircuitBreakerOpenError,
-    retry_with_backoff,
-    RetryConfig
-)
-from .metrics import get_metrics_registry
+from api.services.tiktok_session import TikTokSession, TikTokSessionManager
+from vendor.tiktok.client import (Privacy, TikTokClient, TikTokConfig,
+                                  UploadStatus, VideoConfig)
+
 from .alerts import get_alert_manager
+from .metrics import get_metrics_registry
+from .resilience import (CircuitBreaker, CircuitBreakerConfig,
+                         CircuitBreakerOpenError, RetryConfig,
+                         retry_with_backoff)
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +143,8 @@ class TikTokHub:
             
             # Registra métrica de sucesso
             elapsed = (asyncio.get_event_loop().time() - start_time) * 1000
-            metrics.record_request("tiktok", True, elapsed)
+            metrics.record_request("tiktok", "upload_video")
+            metrics.record_success("tiktok", "upload_video", elapsed)
             
             return result
             
@@ -158,7 +155,8 @@ class TikTokHub:
             
             # Registra métrica de falha
             elapsed = (asyncio.get_event_loop().time() - start_time) * 1000
-            metrics.record_request("tiktok", False, elapsed)
+            metrics.record_request("tiktok", "upload_video")
+            metrics.record_failure("tiktok", "upload_video")
             
             # Alertas para mudança de estado
             if state_before.value != "open" and state_after.value == "open":

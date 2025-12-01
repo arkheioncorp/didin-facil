@@ -536,7 +536,7 @@ async def create_campaign(
     data: CampaignCreate, current_user: User = Depends(get_current_user)
 ):
     """Cria uma nova campanha de email."""
-    return await campaign_service.create_campaign(str(current_user.id), data)
+    return await campaign_service.create_campaign(str(current_user["id"]), data)
 
 
 @router.get("/", response_model=List[CampaignResponse])
@@ -548,7 +548,7 @@ async def list_campaigns(
 ):
     """Lista todas as campanhas do usuário."""
     return await campaign_service.list_campaigns(
-        str(current_user.id), status=status, page=page, per_page=per_page
+        str(current_user["id"]), status=status, page=page, per_page=per_page
     )
 
 
@@ -557,7 +557,7 @@ async def get_campaign(
     campaign_id: str, current_user: User = Depends(get_current_user)
 ):
     """Busca campanha por ID."""
-    campaign = await campaign_service.get_campaign(str(current_user.id), campaign_id)
+    campaign = await campaign_service.get_campaign(str(current_user["id"]), campaign_id)
     if not campaign:
         raise HTTPException(status_code=404, detail="Campanha não encontrada")
     return campaign
@@ -571,7 +571,7 @@ async def update_campaign(
 ):
     """Atualiza uma campanha."""
     campaign = await campaign_service.update_campaign(
-        str(current_user.id), campaign_id, data
+        str(current_user["id"]), campaign_id, data
     )
     if not campaign:
         raise HTTPException(status_code=404, detail="Campanha não encontrada")
@@ -586,7 +586,7 @@ async def delete_campaign(
     redis = await get_redis()
 
     campaign = await redis.hgetall(f"campaign:{campaign_id}")
-    if not campaign or campaign.get("user_id") != str(current_user.id):
+    if not campaign or campaign.get("user_id") != str(current_user["id"]):
         raise HTTPException(status_code=404, detail="Campanha não encontrada")
 
     # Só permite deletar se não estiver enviando
@@ -596,7 +596,7 @@ async def delete_campaign(
         )
 
     await redis.delete(f"campaign:{campaign_id}")
-    await redis.srem(f"campaigns:{current_user.id}", campaign_id)
+    await redis.srem(f"campaigns:{current_user['id']}", campaign_id)
 
     return {"status": "deleted", "campaign_id": campaign_id}
 
@@ -609,7 +609,7 @@ async def send_campaign(
 ):
     """Inicia o envio da campanha."""
     return await campaign_service.send_campaign(
-        str(current_user.id), campaign_id, background_tasks
+        str(current_user["id"]), campaign_id, background_tasks
     )
 
 
@@ -621,7 +621,7 @@ async def schedule_campaign(
 ):
     """Agenda campanha para envio futuro."""
     return await campaign_service.schedule_campaign(
-        str(current_user.id), campaign_id, schedule_at
+        str(current_user["id"]), campaign_id, schedule_at
     )
 
 
@@ -633,7 +633,7 @@ async def pause_campaign(
     redis = await get_redis()
 
     campaign = await redis.hgetall(f"campaign:{campaign_id}")
-    if not campaign or campaign.get("user_id") != str(current_user.id):
+    if not campaign or campaign.get("user_id") != str(current_user["id"]):
         raise HTTPException(status_code=404, detail="Campanha não encontrada")
 
     if campaign.get("status") != CampaignStatus.SENDING.value:
@@ -656,7 +656,7 @@ async def resume_campaign(
     redis = await get_redis()
 
     campaign = await redis.hgetall(f"campaign:{campaign_id}")
-    if not campaign or campaign.get("user_id") != str(current_user.id):
+    if not campaign or campaign.get("user_id") != str(current_user["id"]):
         raise HTTPException(status_code=404, detail="Campanha não encontrada")
 
     if campaign.get("status") != CampaignStatus.PAUSED.value:
@@ -669,7 +669,7 @@ async def resume_campaign(
     # Re-adicionar à fila
     job = {
         "campaign_id": campaign_id,
-        "user_id": str(current_user.id),
+        "user_id": str(current_user["id"]),
         "resume": True,
         "created_at": datetime.now().isoformat(),
     }
@@ -683,7 +683,7 @@ async def get_campaign_stats(
     campaign_id: str, current_user: User = Depends(get_current_user)
 ):
     """Retorna estatísticas detalhadas da campanha."""
-    stats = await campaign_service.get_campaign_stats(str(current_user.id), campaign_id)
+    stats = await campaign_service.get_campaign_stats(str(current_user["id"]), campaign_id)
     if not stats:
         raise HTTPException(status_code=404, detail="Estatísticas não disponíveis")
     return stats
@@ -697,7 +697,7 @@ async def duplicate_campaign(
     redis = await get_redis()
 
     original = await redis.hgetall(f"campaign:{campaign_id}")
-    if not original or original.get("user_id") != str(current_user.id):
+    if not original or original.get("user_id") != str(current_user["id"]):
         raise HTTPException(status_code=404, detail="Campanha não encontrada")
 
     # Criar nova campanha baseada na original
@@ -714,7 +714,7 @@ async def duplicate_campaign(
         track_clicks=original.get("track_clicks") == "1",
     )
 
-    return await campaign_service.create_campaign(str(current_user.id), new_campaign)
+    return await campaign_service.create_campaign(str(current_user["id"]), new_campaign)
 
 
 # ==================== AUTOMATIONS ====================
@@ -732,7 +732,7 @@ async def create_automation(
 
     automation_data = {
         "id": automation_id,
-        "user_id": str(current_user.id),
+        "user_id": str(current_user["id"]),
         "name": data.name,
         "description": data.description or "",
         "trigger_event": data.trigger_event,
@@ -748,7 +748,7 @@ async def create_automation(
     }
 
     await redis.hset(f"automation:{automation_id}", mapping=automation_data)
-    await redis.sadd(f"automations:{current_user.id}", automation_id)
+    await redis.sadd(f"automations:{current_user['id']}", automation_id)
 
     if data.active:
         await redis.sadd("automations:active", automation_id)
@@ -773,7 +773,7 @@ async def list_automations(current_user: User = Depends(get_current_user)):
     """Lista automações do usuário."""
     redis = await get_redis()
 
-    automation_ids = await redis.smembers(f"automations:{current_user.id}")
+    automation_ids = await redis.smembers(f"automations:{current_user['id']}")
     automations = []
 
     for aid in automation_ids:
@@ -810,7 +810,7 @@ async def toggle_automation(
     redis = await get_redis()
 
     automation = await redis.hgetall(f"automation:{automation_id}")
-    if not automation or automation.get("user_id") != str(current_user.id):
+    if not automation or automation.get("user_id") != str(current_user["id"]):
         raise HTTPException(status_code=404, detail="Automação não encontrada")
 
     is_active = automation.get("active") == "1"
@@ -834,11 +834,11 @@ async def delete_automation(
     redis = await get_redis()
 
     automation = await redis.hgetall(f"automation:{automation_id}")
-    if not automation or automation.get("user_id") != str(current_user.id):
+    if not automation or automation.get("user_id") != str(current_user["id"]):
         raise HTTPException(status_code=404, detail="Automação não encontrada")
 
     await redis.delete(f"automation:{automation_id}")
-    await redis.srem(f"automations:{current_user.id}", automation_id)
+    await redis.srem(f"automations:{current_user['id']}", automation_id)
     await redis.srem("automations:active", automation_id)
 
     return {"status": "deleted", "automation_id": automation_id}

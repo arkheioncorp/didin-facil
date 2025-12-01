@@ -113,7 +113,7 @@ export default function TemplateLibrary() {
 
   const loadStats = async () => {
     try {
-      const response = await api.get<LibraryStats>('/api/v1/templates/library/stats')
+      const response = await api.get<LibraryStats>('/templates/library/stats')
       setStats(response.data)
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error)
@@ -123,7 +123,7 @@ export default function TemplateLibrary() {
   const loadTemplates = async () => {
     setLoading(true)
     try {
-      const endpoint = `/api/v1/templates/library/${activeTab}`
+      const endpoint = `/templates/library/${activeTab}`
       const params: Record<string, string> = categoryFilter ? { category: categoryFilter } : {}
       const response = await api.get<TemplateResponse>(endpoint, { params })
       setTemplates(response.data.templates || [])
@@ -138,8 +138,8 @@ export default function TemplateLibrary() {
   const handleExport = async (templateId: string) => {
     try {
       const endpoint = activeTab === 'automation' 
-        ? '/api/v1/templates/library/automation/export'
-        : '/api/v1/templates/library/chatbot/export'
+        ? '/templates/library/automation/export'
+        : '/templates/library/chatbot/export'
       
       const response = await api.post<ExportResponse>(endpoint, { template_id: templateId })
       
@@ -163,7 +163,7 @@ export default function TemplateLibrary() {
 
   const handleApplyPreset = async (presetId: string) => {
     try {
-      const response = await api.post<PresetApplyResponse>(`/api/v1/templates/library/presets/${presetId}/apply`)
+      const response = await api.post<PresetApplyResponse>(`/templates/library/presets/${presetId}/apply`)
       setSelectedTemplate(null)
       
       toast({

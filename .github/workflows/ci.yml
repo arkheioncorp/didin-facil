@@ -30,6 +30,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Check Tauri invoke safety
+        run: npm run lint:tauri
+
       - name: Unit Tests
         run: npm run test
 

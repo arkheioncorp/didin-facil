@@ -26,10 +26,13 @@ sys.modules["vendor.email"] = mock_email_module
 # Fixtures
 @pytest.fixture
 def mock_user():
-    """Mock de usuário autenticado."""
-    user = MagicMock()
-    user.id = "user-123"
-    return user
+    """Mock de usuário autenticado com suporte a dict e atributos."""
+    class MockUser(dict):
+        def __init__(self):
+            super().__init__(id="user-123", email="test@example.com")
+            self.id = "user-123"
+            self.email = "test@example.com"
+    return MockUser()
 
 
 @pytest.fixture

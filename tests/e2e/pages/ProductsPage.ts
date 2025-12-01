@@ -107,4 +107,160 @@ export class ProductsPage {
   async favoriteProduct(index: number) {
     await this.favoriteButton.nth(index).click();
   }
+
+  // ============================================
+  // PRODUCT ACTIONS PANEL METHODS
+  // ============================================
+
+  // Modal locators
+  get copyModal() {
+    return this.page.locator('[role="dialog"]:has-text("Gerar Copy com IA")');
+  }
+
+  get whatsappModal() {
+    return this.page.locator('[role="dialog"]:has-text("Enviar via WhatsApp")');
+  }
+
+  get scheduleModal() {
+    return this.page.locator('[role="dialog"]:has-text("Agendar Publicação")');
+  }
+
+  get actionsTab() {
+    return this.page.locator('[data-testid="tab-actions"]');
+  }
+
+  get statsTab() {
+    return this.page.locator('[data-testid="tab-stats"]');
+  }
+
+  get infoTab() {
+    return this.page.locator('[data-testid="tab-info"]');
+  }
+
+  get actionsPanel() {
+    return this.page.locator('[data-testid="actions-panel"]');
+  }
+
+  // Open product and switch to actions tab
+  async openProductActions(index: number = 0) {
+    await this.productCards.nth(index).click();
+    await this.productDetailModal.waitFor({ state: 'visible' });
+    await this.actionsTab.click();
+  }
+
+  // Copy AI Modal actions
+  async openCopyModal() {
+    await this.page.locator('button:has-text("Gerar Copy com IA")').click();
+    await this.copyModal.waitFor({ state: 'visible' });
+  }
+
+  async selectCopyType(type: string) {
+    await this.page.locator('[data-testid="copy-type-select"]').click();
+    await this.page.locator(`[data-value="${type}"]`).click();
+  }
+
+  async selectCopyTone(tone: string) {
+    await this.page.locator('[data-testid="copy-tone-select"]').click();
+    await this.page.locator(`[data-value="${tone}"]`).click();
+  }
+
+  async generateCopy() {
+    await this.page.locator('button:has-text("Gerar Copy")').click();
+  }
+
+  // WhatsApp Modal actions
+  async openWhatsAppModal() {
+    await this.page.locator('button:has-text("Enviar via WhatsApp")').click();
+    await this.whatsappModal.waitFor({ state: 'visible' });
+  }
+
+  async fillWhatsAppNumber(number: string) {
+    await this.page.locator('input[type="tel"]').fill(number);
+  }
+
+  async editWhatsAppMessage(message: string) {
+    await this.page.locator('textarea').fill(message);
+  }
+
+  async sendWhatsApp() {
+    await this.page.locator('button:has-text("Enviar")').click();
+  }
+
+  // Schedule Modal actions
+  async openScheduleModal() {
+    await this.page.locator('button:has-text("Agendar Publicação")').click();
+    await this.scheduleModal.waitFor({ state: 'visible' });
+  }
+
+  async selectSchedulePlatform(platform: string) {
+    await this.page.locator('[data-testid="platform-select"]').click();
+    await this.page.locator(`[data-value="${platform}"]`).click();
+  }
+
+  async setScheduleDateTime(dateTime: string) {
+    await this.page.locator('input[type="datetime-local"]').fill(dateTime);
+  }
+
+  async confirmSchedule() {
+    await this.page.locator('button:has-text("Agendar")').click();
+  }
+
+  // Quick actions (card hover)
+  async hoverProductCard(index: number = 0) {
+    await this.productCards.nth(index).hover();
+  }
+
+  async clickQuickCopy(index: number = 0) {
+    await this.hoverProductCard(index);
+    await this.productCards.nth(index).locator('button:has-text("Gerar Copy")').click();
+  }
+
+  async clickQuickSchedule(index: number = 0) {
+    await this.hoverProductCard(index);
+    await this.productCards.nth(index).locator('[data-testid="quick-schedule"]').click();
+  }
+
+  async clickQuickWhatsApp(index: number = 0) {
+    await this.hoverProductCard(index);
+    await this.productCards.nth(index).locator('[data-testid="quick-whatsapp"]').click();
+  }
+
+  async clickQuickFavorite(index: number = 0) {
+    await this.hoverProductCard(index);
+    await this.productCards.nth(index).locator('[data-testid="quick-favorite"]').click();
+  }
+
+  // Other quick actions
+  async copyProductInfo() {
+    await this.page.locator('button:has-text("Copiar Informações")').click();
+  }
+
+  async clickSellerBot() {
+    await this.page.locator('button:has-text("Seller Bot")').click();
+  }
+
+  async clickAddToCRM() {
+    await this.page.locator('button:has-text("Adicionar ao CRM")').click();
+  }
+
+  async clickInstagram() {
+    await this.page.locator('button:has-text("Publicar no Instagram")').click();
+  }
+
+  async clickTikTok() {
+    await this.page.locator('button:has-text("Publicar no TikTok")').click();
+  }
+
+  async clickYouTube() {
+    await this.page.locator('button:has-text("Publicar no YouTube")').click();
+  }
+
+  // Close modals
+  async closeModal() {
+    await this.page.locator('button:has-text("Cancelar")').click();
+  }
+
+  async closeModalByEscape() {
+    await this.page.keyboard.press('Escape');
+  }
 }

@@ -178,6 +178,61 @@ pub fn get(f: Filters) -> Vec<Product> {  // sync, sem Result
 }
 ```
 
+#### 🔒 Padrão isTauri() - OBRIGATÓRIO
+
+Ao criar ou modificar serviços em `src/services/`, **SEMPRE** verifique se o código está rodando no ambiente Tauri antes de usar `invoke()`. Isso garante que o app funcione tanto no desktop (Tauri) quanto no browser (dev/PWA).
+
+```typescript
+// ✅ CORRETO - Verifica ambiente antes de usar invoke
+import { invoke } from "@tauri-apps/api/core";
+import { api } from "@/lib/api";
+
+// Função helper para detectar ambiente Tauri
+const isTauri = (): boolean => {
+  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+};
+
+export async function getProducts(): Promise<Product[]> {
+  try {
+    // Em Tauri, usa invoke nativo
+    if (isTauri()) {
+      return await invoke<Product[]>("get_products");
+    }
+    
+    // Em browser, usa API HTTP ou retorna fallback
+    try {
+      const response = await api.get<Product[]>("/products");
+      return response.data;
+    } catch {
+      console.info("[Products] Browser mode: returning empty");
+      return [];
+    }
+  } catch (error) {
+    console.error("Error getting products:", error);
+    return [];
+  }
+}
+
+// ❌ ERRADO - Causa crash no browser
+import { invoke } from "@tauri-apps/api/core";
+
+export async function getProducts(): Promise<Product[]> {
+  // invoke() é undefined no browser → TypeError!
+  return await invoke<Product[]>("get_products");
+}
+```
+
+**Por que isso é importante:**
+- `invoke()` só existe dentro do ambiente Tauri (desktop)
+- No browser (dev server, PWA), `window.__TAURI_INTERNALS__` é `undefined`
+- Sem o check, o app crasha com `TypeError: Cannot read properties of undefined`
+
+**Checklist para novos serviços:**
+- [ ] Importa `isTauri()` helper ou define localmente
+- [ ] Verifica `isTauri()` antes de cada `invoke()`
+- [ ] Implementa fallback para browser (API HTTP ou dados default)
+- [ ] Não lança exceções - retorna valores default em caso de erro
+
 ### Testes
 
 #### Estrutura

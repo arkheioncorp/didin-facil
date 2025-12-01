@@ -2,19 +2,19 @@
 Tests for Content Routes - Video Generation
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+from uuid import uuid4
+
+import pytest
 from fastapi import HTTPException
-
-
-class MockUser:
-    id = "user_123"
-    email = "test@example.com"
 
 
 @pytest.fixture
 def mock_current_user():
-    return MockUser()
+    return {
+        "id": str(uuid4()),
+        "email": "test@example.com"
+    }
 
 
 @pytest.fixture
@@ -56,9 +56,7 @@ async def test_generate_product_video_success(
     mock_video_generator,
     mock_video_config
 ):
-    from api.routes.content import (
-        generate_product_video, ProductVideoRequest
-    )
+    from api.routes.content import ProductVideoRequest, generate_product_video
     
     with patch("api.routes.content.settings", mock_settings), \
          patch("os.makedirs"), \
@@ -89,9 +87,7 @@ async def test_generate_product_video_failure(
     mock_video_generator,
     mock_video_config
 ):
-    from api.routes.content import (
-        generate_product_video, ProductVideoRequest
-    )
+    from api.routes.content import ProductVideoRequest, generate_product_video
     
     mock_video_generator.generate_product_showcase.return_value = {
         "success": False,
@@ -123,7 +119,7 @@ async def test_generate_text_video_success(
     mock_video_generator,
     mock_video_config
 ):
-    from api.routes.content import generate_text_video, TextVideoRequest
+    from api.routes.content import TextVideoRequest, generate_text_video
     
     with patch("api.routes.content.settings", mock_settings), \
          patch("os.makedirs"), \
@@ -155,7 +151,7 @@ async def test_generate_deal_alert_success(
     mock_video_generator,
     mock_video_config
 ):
-    from api.routes.content import generate_deal_alert, DealAlertRequest
+    from api.routes.content import DealAlertRequest, generate_deal_alert
     
     with patch("api.routes.content.settings", mock_settings), \
          patch("os.makedirs"), \
@@ -186,9 +182,7 @@ async def test_generate_product_video_landscape(
     mock_video_generator,
     mock_video_config
 ):
-    from api.routes.content import (
-        generate_product_video, ProductVideoRequest
-    )
+    from api.routes.content import ProductVideoRequest, generate_product_video
     
     with patch("api.routes.content.settings", mock_settings), \
          patch("os.makedirs"), \
@@ -216,9 +210,7 @@ async def test_generate_product_video_square(
     mock_video_generator,
     mock_video_config
 ):
-    from api.routes.content import (
-        generate_product_video, ProductVideoRequest
-    )
+    from api.routes.content import ProductVideoRequest, generate_product_video
     
     with patch("api.routes.content.settings", mock_settings), \
          patch("os.makedirs"), \

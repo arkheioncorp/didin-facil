@@ -15,12 +15,23 @@ from shared.config import settings
 class MercadoPagoService:
     """Mercado Pago payment integration"""
     
-    def __init__(self):
-        # Support both naming conventions
-        self.access_token = (
-            settings.MERCADO_PAGO_ACCESS_TOKEN or 
-            settings.MERCADOPAGO_ACCESS_TOKEN
+    def __init__(self, use_sandbox: bool | None = None):
+        # Determine if should use sandbox (explicit param > env config)
+        self.is_sandbox = (
+            use_sandbox if use_sandbox is not None
+            else settings.MERCADOPAGO_USE_SANDBOX
         )
+        
+        # Select appropriate token based on environment
+        if self.is_sandbox and settings.MERCADOPAGO_SANDBOX_TOKEN:
+            self.access_token = settings.MERCADOPAGO_SANDBOX_TOKEN
+        else:
+            # Support both naming conventions
+            self.access_token = (
+                settings.MERCADO_PAGO_ACCESS_TOKEN or 
+                settings.MERCADOPAGO_ACCESS_TOKEN
+            )
+        
         self.base_url = "https://api.mercadopago.com"
         self.headers = {
             "Authorization": f"Bearer {self.access_token}",

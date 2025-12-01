@@ -1,0 +1,178 @@
+groups:
+  - name: automation_alerts
+    rules:
+      # Alerta quando a fila de eventos pendentes está muito grande
+      - alert: AutomationQueueHigh
+        expr: automation_events_pending > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: automation
+        annotations:
+          summary: "Fila de automação com muitos eventos pendentes"
+          description: "A fila de eventos pendentes está com {{ $value }} eventos há mais de 5 minutos."
+          runbook_url: "https://docs.didinfacil.com/runbooks/automation-queue-high"
+
+      # Alerta crítico - fila muito grande
+      - alert: AutomationQueueCritical
+        expr: automation_events_pending > 500
+        for: 2m
+        labels:
+          severity: critical
+          team: automation
+        annotations:
+          summary: "CRÍTICO: Fila de automação sobrecarregada"
+          description: "A fila de eventos pendentes está com {{ $value }} eventos. Ação imediata necessária!"
+          runbook_url: "https://docs.didinfacil.com/runbooks/automation-queue-critical"
+
+      # Alerta de taxa de falhas alta
+      - alert: AutomationHighFailureRate
+        expr: |
+          100 * (
+            sum(increase(automation_events_failed_total[5m])) /
+            (sum(increase(automation_events_completed_total[5m])) + sum(increase(automation_events_failed_total[5m])))
+          ) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: automation
+        annotations:
+          summary: "Taxa de falhas de automação alta"
+          description: "A taxa de falhas está em {{ $value | printf \"%.1f\" }}% nos últimos 5 minutos."
+          runbook_url: "https://docs.didinfacil.com/runbooks/automation-high-failure-rate"
+
+      # Alerta crítico - taxa de falhas muito alta
+      - alert: AutomationCriticalFailureRate
+        expr: |
+          100 * (
+            sum(increase(automation_events_failed_total[5m])) /
+            (sum(increase(automation_events_completed_total[5m])) + sum(increase(automation_events_failed_total[5m])))
+          ) > 25
+        for: 3m
+        labels:
+          severity: critical
+          team: automation
+        annotations:
+          summary: "CRÍTICO: Taxa de falhas de automação muito alta"
+          description: "A taxa de falhas está em {{ $value | printf \"%.1f\" }}%. Possível falha sistêmica!"
+          runbook_url: "https://docs.didinfacil.com/runbooks/automation-critical-failure-rate"
+
+      # Alerta de latência alta
+      - alert: AutomationHighLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(automation_processing_duration_seconds_bucket[5m])) by (le)) > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: automation
+        annotations:
+          summary: "Latência alta no processamento de automações"
+          description: "O p95 de latência está em {{ $value | printf \"%.2f\" }}s. Verificar gargalos."
+          runbook_url: "https://docs.didinfacil.com/runbooks/automation-high-latency"
+
+      # Alerta quando scheduler não está rodando
+      - alert: AutomationSchedulerDown
+        expr: automation_scheduler_running == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: automation
+        annotations:
+          summary: "CRÍTICO: Scheduler de automação está parado"
+          description: "O scheduler de automação não está rodando. Eventos não serão processados!"
+          runbook_url: "https://docs.didinfacil.com/runbooks/automation-scheduler-down"
+
+      # Alerta quando n8n está inacessível
+      - alert: N8nUnreachable
+        expr: n8n_api_health != 1
+        for: 2m
+        labels:
+          severity: critical
+          team: automation
+        annotations:
+          summary: "CRÍTICO: n8n está inacessível"
+          description: "A API do n8n não está respondendo. Fluxos de trabalho não serão executados!"
+          runbook_url: "https://docs.didinfacil.com/runbooks/n8n-unreachable"
+
+      # Alerta de acúmulo de retries
+      - alert: AutomationRetryBacklog
+        expr: sum(automation_events_pending{retry_count > 0}) > 50
+        for: 10m
+        labels:
+          severity: warning
+          team: automation
+        annotations:
+          summary: "Muitos eventos em retry"
+          description: "Há {{ $value }} eventos aguardando retry. Possível problema sistêmico."
+          runbook_url: "https://docs.didinfacil.com/runbooks/automation-retry-backlog"
+
+      # Alerta por tipo de automação específico - Carrinho abandonado
+      - alert: CartAbandonedAutomationFailing
+        expr: |
+          sum(increase(automation_events_failed_total{automation_type="CART_ABANDONED"}[15m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: automation
+          automation_type: cart_abandoned
+        annotations:
+          summary: "Automação de carrinho abandonado com falhas"
+          description: "A automação de carrinho abandonado teve {{ $value }} falhas nos últimos 15 minutos."
+          runbook_url: "https://docs.didinfacil.com/runbooks/cart-abandoned-failing"
+
+      # Alerta de recursos do scheduler
+      - alert: AutomationSchedulerHighMemory
+        expr: |
+          process_resident_memory_bytes{job="automation-scheduler"} > 512 * 1024 * 1024
+        for: 10m
+        labels:
+          severity: warning
+          team: automation
+        annotations:
+          summary: "Scheduler usando muita memória"
+          description: "O scheduler está usando {{ $value | humanize }} de memória."
+          runbook_url: "https://docs.didinfacil.com/runbooks/scheduler-high-memory"
+
+  - name: automation_slo
+    rules:
+      # SLI: Taxa de sucesso
+      - record: automation:success_rate:5m
+        expr: |
+          sum(rate(automation_events_completed_total[5m])) /
+          (sum(rate(automation_events_completed_total[5m])) + sum(rate(automation_events_failed_total[5m])))
+
+      # SLI: Latência p99
+      - record: automation:latency_p99:5m
+        expr: |
+          histogram_quantile(0.99, sum(rate(automation_processing_duration_seconds_bucket[5m])) by (le))
+
+      # SLI: Throughput
+      - record: automation:throughput:5m
+        expr: |
+          sum(rate(automation_events_completed_total[5m]))
+
+      # SLO: Taxa de sucesso > 99%
+      - alert: AutomationSLOSuccessRate
+        expr: automation:success_rate:5m < 0.99
+        for: 15m
+        labels:
+          severity: warning
+          team: automation
+          slo: success_rate
+        annotations:
+          summary: "SLO de taxa de sucesso violado"
+          description: "A taxa de sucesso está em {{ $value | printf \"%.2f\" }}%, abaixo do SLO de 99%."
+          runbook_url: "https://docs.didinfacil.com/runbooks/slo-success-rate"
+
+      # SLO: Latência p99 < 3s
+      - alert: AutomationSLOLatency
+        expr: automation:latency_p99:5m > 3
+        for: 15m
+        labels:
+          severity: warning
+          team: automation
+          slo: latency
+        annotations:
+          summary: "SLO de latência violado"
+          description: "O p99 de latência está em {{ $value | printf \"%.2f\" }}s, acima do SLO de 3s."
+          runbook_url: "https://docs.didinfacil.com/runbooks/slo-latency"

@@ -3,15 +3,50 @@ Sentry Integration
 Monitoramento de erros e performance
 """
 
-import sentry_sdk
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-from sentry_sdk.integrations.redis import RedisIntegration
-from sentry_sdk.integrations.httpx import HttpxIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
 import logging
-from typing import Optional
 from functools import wraps
+from typing import Optional
+
+import sentry_sdk
+from sentry_sdk.integrations import DidNotEnable
+from sentry_sdk.integrations.logging import LoggingIntegration
+
+# Optional integrations (not available in all contexts)
+# These may raise DidNotEnable if dependencies are missing
+try:
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+    HAS_FASTAPI = True
+except (ImportError, DidNotEnable):
+    HAS_FASTAPI = False
+    FastApiIntegration = None
+
+try:
+    from sentry_sdk.integrations.starlette import StarletteIntegration
+    HAS_STARLETTE = True
+except (ImportError, DidNotEnable):
+    HAS_STARLETTE = False
+    StarletteIntegration = None
+
+try:
+    from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+    HAS_SQLALCHEMY = True
+except (ImportError, DidNotEnable):
+    HAS_SQLALCHEMY = False
+    SqlalchemyIntegration = None
+
+try:
+    from sentry_sdk.integrations.redis import RedisIntegration
+    HAS_REDIS = True
+except (ImportError, DidNotEnable):
+    HAS_REDIS = False
+    RedisIntegration = None
+
+try:
+    from sentry_sdk.integrations.httpx import HttpxIntegration
+    HAS_HTTPX = True
+except (ImportError, DidNotEnable):
+    HAS_HTTPX = False
+    HttpxIntegration = None
 
 from .config import settings
 
@@ -51,6 +86,32 @@ class SentryService:
         """Verifica se o SDK foi inicializado"""
         return self._initialized
     
+    def _get_integrations(self) -> list:
+        """
+        Retorna lista de integrações disponíveis.
+        Algumas integrações só estão disponíveis em certos contextos.
+        """
+        integrations = [
+            LoggingIntegration(
+                level=logging.INFO,
+                event_level=logging.ERROR
+            ),
+        ]
+        
+        # Adicionar integrações opcionais se disponíveis
+        if HAS_REDIS and RedisIntegration is not None:
+            integrations.append(RedisIntegration())
+        if HAS_HTTPX and HttpxIntegration is not None:
+            integrations.append(HttpxIntegration())
+        if HAS_FASTAPI and FastApiIntegration is not None:
+            integrations.append(
+                FastApiIntegration(transaction_style="endpoint")
+            )
+        if HAS_SQLALCHEMY and SqlalchemyIntegration is not None:
+            integrations.append(SqlalchemyIntegration())
+        
+        return integrations
+    
     def init(self) -> bool:
         """
         Inicializa o Sentry SDK
@@ -78,19 +139,8 @@ class SentryService:
                 traces_sample_rate=0.2 if settings.is_production else 1.0,
                 profiles_sample_rate=0.1 if settings.is_production else 0.5,
                 
-                # Integrações
-                integrations=[
-                    FastApiIntegration(
-                        transaction_style="endpoint"
-                    ),
-                    SqlalchemyIntegration(),
-                    RedisIntegration(),
-                    HttpxIntegration(),
-                    LoggingIntegration(
-                        level=logging.INFO,
-                        event_level=logging.ERROR
-                    ),
-                ],
+                # Integrações - apenas as disponíveis
+                integrations=self._get_integrations(),
                 
                 # Configurações de dados
                 send_default_pii=False,  # LGPD compliance

@@ -161,18 +161,18 @@ export const Checkout: React.FC = () => {
 
         {/* Current Balance */}
         {balance && (
-          <Card className="mb-8 border-tiktrend-primary/20">
+          <Card className="mb-8 border-tiktrend-primary/20" data-testid="credit-balance-card">
             <CardContent className="py-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Seu saldo atual</p>
-                  <p className="text-2xl font-bold text-tiktrend-primary">
+                  <p className="text-2xl font-bold text-tiktrend-primary" data-testid="credit-balance-value">
                     {balance.credits_balance} créditos
                   </p>
                 </div>
                 <div className="text-right text-sm text-muted-foreground">
-                  <p>Comprados: {balance.credits_purchased}</p>
-                  <p>Usados: {balance.credits_used}</p>
+                  <p data-testid="credits-purchased">Comprados: {balance.credits_purchased}</p>
+                  <p data-testid="credits-used">Usados: {balance.credits_used}</p>
                 </div>
               </div>
             </CardContent>
@@ -182,17 +182,18 @@ export const Checkout: React.FC = () => {
         {/* Step: Package Selection */}
         {step === "packages" && (
           <>
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-3" data-testid="credit-packages-grid">
               {packages.map((pkg) => (
                 <Card
                   key={pkg.id}
+                  data-testid={`credit-package-${pkg.slug}`}
                   className={`relative cursor-pointer transition-all hover:shadow-lg hover:border-tiktrend-primary/50 ${
                     pkg.is_popular ? "border-tiktrend-primary ring-2 ring-tiktrend-primary/20" : ""
                   }`}
                   onClick={() => handlePurchase(pkg)}
                 >
                   {pkg.is_popular && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-tiktrend-primary">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-tiktrend-primary" data-testid="popular-badge">
                       Mais Popular
                     </Badge>
                   )}
@@ -200,21 +201,22 @@ export const Checkout: React.FC = () => {
                     <Badge 
                       variant="secondary" 
                       className="absolute -top-3 right-4 bg-green-500 text-white"
+                      data-testid="discount-badge"
                     >
                       -{pkg.discount_percent}%
                     </Badge>
                   )}
                   
                   <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-xl">{pkg.name}</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-xl" data-testid="package-name">{pkg.name}</CardTitle>
+                    <CardDescription data-testid="package-credits">
                       {pkg.credits} créditos
                     </CardDescription>
                   </CardHeader>
                   
                   <CardContent className="text-center">
                     <div className="mb-4">
-                      <span className="text-3xl font-bold">
+                      <span className="text-3xl font-bold" data-testid="package-price">
                         {formatPrice(pkg.price_brl)}
                       </span>
                     </div>
@@ -307,9 +309,9 @@ export const Checkout: React.FC = () => {
 
         {/* Step: Payment (PIX) */}
         {step === "payment" && purchase && (
-          <Card className="max-w-lg mx-auto">
+          <Card className="max-w-lg mx-auto" data-testid="pix-payment-card">
             <CardHeader className="text-center">
-              <CardTitle>Pagamento via PIX</CardTitle>
+              <CardTitle data-testid="pix-payment-title">Pagamento via PIX</CardTitle>
               <CardDescription>
                 Escaneie o QR Code ou copie o código PIX
               </CardDescription>
@@ -317,12 +319,13 @@ export const Checkout: React.FC = () => {
             <CardContent className="space-y-6">
               {/* QR Code */}
               {purchase.qr_code_base64 && (
-                <div className="flex justify-center">
+                <div className="flex justify-center" data-testid="pix-qr-container">
                   <div className="bg-white p-4 rounded-lg shadow-lg border border-border">
                     <img
                       src={`data:image/png;base64,${purchase.qr_code_base64}`}
                       alt="QR Code PIX"
                       className="w-48 h-48"
+                      data-testid="pix-qr-code"
                     />
                   </div>
                 </div>
@@ -330,18 +333,19 @@ export const Checkout: React.FC = () => {
 
               {/* PIX Copy & Paste */}
               {purchase.pix_copy_paste && (
-                <div>
+                <div data-testid="pix-copy-section">
                   <p className="text-sm text-muted-foreground mb-2 text-center">
                     Ou copie o código:
                   </p>
                   <div className="flex gap-2">
-                    <div className="flex-1 p-3 bg-muted rounded-lg text-xs break-all font-mono">
+                    <div className="flex-1 p-3 bg-muted rounded-lg text-xs break-all font-mono" data-testid="pix-code-display">
                       {purchase.pix_copy_paste.substring(0, 50)}...
                     </div>
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={handleCopyPix}
+                      data-testid="pix-copy-button"
                     >
                       {copied ? (
                         <CheckIcon className="h-4 w-4 text-green-500" />

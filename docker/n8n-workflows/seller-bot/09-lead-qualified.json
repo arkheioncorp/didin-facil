@@ -1,0 +1,147 @@
+{
+  "name": "Seller Bot - Lead Qualified",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "didin/lead-qualified",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-qualified",
+      "name": "Webhook Lead Qualified",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "lead-qualified"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json.body || $input.first().json;\nconst data = payload.data || {};\n\nconst products = data.interested_products || [];\nconst productsText = products.slice(0, 3).join(', ') || 'diversos produtos';\n\nreturn {\n  json: {\n    event_id: payload.event_id,\n    user_id: payload.user_id,\n    name: data.name || 'Cliente',\n    lead_score: data.lead_score || 80,\n    interested_products: products,\n    products_text: productsText,\n    phone: data.phone,\n    channel: payload.channel || 'whatsapp',\n    timestamp: payload.timestamp\n  }\n};"
+      },
+      "id": "parse-qualified-data",
+      "name": "Parse Lead Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT p.id, p.name, p.current_price, p.store, p.url, ROUND(((p.original_price - p.current_price) / NULLIF(p.original_price, 0) * 100)::numeric, 0) as discount FROM products p WHERE p.name ILIKE ANY(ARRAY[$1]) ORDER BY discount DESC NULLS LAST LIMIT 3",
+        "options": {
+          "queryReplacement": "={{ '%' + $json.products_text.split(', ').join('%\", \"%') + '%' }}"
+        }
+      },
+      "id": "get-best-offers",
+      "name": "Buscar Melhores Ofertas",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [690, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const userData = $('Parse Lead Data').first().json;\nconst products = $input.all();\n\nlet offersText = '';\nif (products.length > 0) {\n  offersText = '\\n\\n🔥 *Ofertas especiais pra você:*\\n' + products.map((p, i) => {\n    const item = p.json;\n    return `${i+1}. ${item.name} - R$ ${item.current_price} (${item.discount}% OFF)`;\n  }).join('\\n');\n}\n\nconst message = `Oi ${userData.name}! 🌟\\n\\nVi que você está super interessado em *${userData.products_text}*.\\n\\nComo cliente VIP, tenho uma oferta exclusiva pra você!${offersText}\\n\\n🎁 *Bônus exclusivo:* Use o cupom *VIP10* e ganhe 10% extra de desconto!\\n\\n💬 Quer que eu te mostre os detalhes? Responda *SIM*!`;\n\nreturn {\n  json: {\n    ...userData,\n    message: message,\n    has_offers: products.length > 0\n  }\n};"
+      },
+      "id": "format-vip-message",
+      "name": "Formatar Mensagem VIP",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.phone || $json.user_id }}\",\n  \"textMessage\": {\n    \"text\": \"{{ $json.message }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "send-vip-offer",
+      "name": "Enviar Oferta VIP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "table": "crm_contacts",
+        "columns": "lead_temperature, lead_score, vip_status, last_interaction",
+        "where": {
+          "values": [
+            {
+              "column": "external_id",
+              "value": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "upgrade-crm-status",
+      "name": "Atualizar CRM para VIP",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1130, 500],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"event_id\": \"{{ $('Parse Lead Data').first().json.event_id }}\",\n  \"message\": \"VIP offer sent to qualified lead\",\n  \"lead_score\": {{ $('Parse Lead Data').first().json.lead_score }}\n}",
+        "options": {}
+      },
+      "id": "respond-qualified-success",
+      "name": "Responder Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1350, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Lead Qualified": {
+      "main": [[{"node": "Parse Lead Data", "type": "main", "index": 0}]]
+    },
+    "Parse Lead Data": {
+      "main": [[{"node": "Buscar Melhores Ofertas", "type": "main", "index": 0}]]
+    },
+    "Buscar Melhores Ofertas": {
+      "main": [[{"node": "Formatar Mensagem VIP", "type": "main", "index": 0}]]
+    },
+    "Formatar Mensagem VIP": {
+      "main": [
+        [
+          {"node": "Enviar Oferta VIP", "type": "main", "index": 0},
+          {"node": "Atualizar CRM para VIP", "type": "main", "index": 0}
+        ]
+      ]
+    },
+    "Enviar Oferta VIP": {
+      "main": [[{"node": "Responder Sucesso", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {"executionOrder": "v1"},
+  "tags": [{"name": "seller-bot"}, {"name": "qualified-lead"}]
+}

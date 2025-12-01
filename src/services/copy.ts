@@ -1,13 +1,21 @@
-import { invoke } from "@tauri-apps/api/core";
 import { api } from "@/lib/api";
 import type { CopyHistory, CopyRequest, CopyResponse } from "@/types";
 
-const isTauri = () => typeof window !== 'undefined' && '__TAURI__' in window;
+const isTauri = () => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+
+// Safe invoke wrapper for Tauri commands
+async function safeInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
+  if (isTauri()) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<T>(cmd, args);
+  }
+  throw new Error(`Tauri command "${cmd}" not available in browser mode`);
+}
 
 export async function generateCopy(request: CopyRequest): Promise<CopyResponse> {
   try {
     if (isTauri()) {
-      return await invoke<CopyResponse>("generate_copy", { request });
+      return await safeInvoke<CopyResponse>("generate_copy", { request });
     }
 
     // Map to backend snake_case
@@ -53,7 +61,7 @@ export async function generateCopy(request: CopyRequest): Promise<CopyResponse> 
 export async function getCopyHistory(limit = 50): Promise<CopyHistory[]> {
   try {
     if (isTauri()) {
-      return await invoke<CopyHistory[]>("get_copy_history", { limit });
+      return await safeInvoke<CopyHistory[]>("get_copy_history", { limit });
     }
 
     const response = await api.get<any[]>("/copy/history", { params: { limit: limit.toString() } });

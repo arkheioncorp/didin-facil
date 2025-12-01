@@ -110,7 +110,7 @@ async def get_analytics_overview(
 
     # Get data from service
     dashboard_data = await analytics_service.get_dashboard_overview(
-        str(current_user.id), metric_period
+        str(current_user["id"]), metric_period
     )
 
     # Transform Platforms Data
@@ -259,7 +259,7 @@ async def export_analytics(
     from fastapi import Response
 
     data = await analytics_service.export_report(
-        str(current_user.id), metric_period, format
+        str(current_user["id"]), metric_period, format
     )
 
     content_type = "application/json" if format == "json" else "text/csv"
@@ -296,7 +296,7 @@ async def analytics_webhook(
 
     # Record metrics via service
     await analytics_service.record_post(
-        user_id=str(current_user.id),
+        user_id=str(current_user["id"]),
         platform=platform_enum,
         post_id=payload.post_id,
         metrics=payload.metrics,

@@ -393,11 +393,11 @@ async def list_accounts(
     """
     if platform:
         accounts = await account_service.list_by_platform(
-            str(current_user.id),
+            str(current_user["id"]),
             platform.value
         )
     else:
-        accounts = await account_service.list(str(current_user.id))
+        accounts = await account_service.list(str(current_user["id"]))
     
     return {"accounts": [a.model_dump() for a in accounts]}
 
@@ -409,7 +409,7 @@ async def create_account(
 ):
     """Add a new social media account."""
     try:
-        account = await account_service.create(str(current_user.id), data)
+        account = await account_service.create(str(current_user["id"]), data)
         return account.model_dump()
     except ValueError as e:
         raise HTTPException(400, str(e))
@@ -420,7 +420,7 @@ async def get_accounts_summary(
     current_user=Depends(get_current_user)
 ):
     """Get summary of all connected accounts."""
-    return await account_service.get_summary(str(current_user.id))
+    return await account_service.get_summary(str(current_user["id"]))
 
 
 @router.get("/active/{platform}")
@@ -430,7 +430,7 @@ async def get_active_account(
 ):
     """Get currently active account for a platform."""
     account = await account_service.get_active(
-        str(current_user.id),
+        str(current_user["id"]),
         platform.value
     )
     if not account:
@@ -444,7 +444,7 @@ async def get_account(
     current_user=Depends(get_current_user)
 ):
     """Get account by ID."""
-    account = await account_service.get(str(current_user.id), account_id)
+    account = await account_service.get(str(current_user["id"]), account_id)
     if not account:
         raise HTTPException(404, "Account not found")
     return account.model_dump()
@@ -458,7 +458,7 @@ async def update_account(
 ):
     """Update account details."""
     account = await account_service.update(
-        str(current_user.id),
+        str(current_user["id"]),
         account_id,
         data
     )
@@ -473,7 +473,7 @@ async def delete_account(
     current_user=Depends(get_current_user)
 ):
     """Remove a connected account."""
-    success = await account_service.delete(str(current_user.id), account_id)
+    success = await account_service.delete(str(current_user["id"]), account_id)
     if not success:
         raise HTTPException(404, "Account not found")
     return {"status": "deleted"}
@@ -489,7 +489,7 @@ async def switch_account(
     Sets this account as the active one for its platform.
     """
     try:
-        account = await account_service.switch(str(current_user.id), account_id)
+        account = await account_service.switch(str(current_user["id"]), account_id)
         return account.model_dump()
     except ValueError as e:
         raise HTTPException(404, str(e))
@@ -502,7 +502,7 @@ async def set_primary_account(
 ):
     """Set account as primary for its platform."""
     account = await account_service.update(
-        str(current_user.id),
+        str(current_user["id"]),
         account_id,
         AccountUpdate(is_primary=True)
     )
@@ -519,7 +519,7 @@ async def update_account_metrics(
 ):
     """Update account metrics (followers, posts, etc.)."""
     account = await account_service.update_metrics(
-        str(current_user.id),
+        str(current_user["id"]),
         account_id,
         metrics
     )

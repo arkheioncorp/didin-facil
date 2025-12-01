@@ -12,24 +12,21 @@ Autor: Didin Fácil
 Versão: 1.1.0 (com alertas e métricas)
 """
 
-import logging
-import httpx
 import asyncio
-from typing import Optional, Dict, Any, List, Callable, Awaitable
+import logging
 from dataclasses import dataclass
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any, Awaitable, Callable, Dict, List, Optional
 
+import httpx
 from api.services.instagram_session import InstagramSessionManager
-from .resilience import (
-    CircuitBreaker,
-    CircuitBreakerConfig,
-    CircuitBreakerOpenError,
-    retry_with_backoff,
-    RetryConfig
-)
-from .metrics import get_metrics_registry
+
 from .alerts import get_alert_manager
+from .metrics import get_metrics_registry
+from .resilience import (CircuitBreaker, CircuitBreakerConfig,
+                         CircuitBreakerOpenError, RetryConfig,
+                         retry_with_backoff)
 
 logger = logging.getLogger(__name__)
 
@@ -246,7 +243,8 @@ class InstagramHub:
                 
                 # Registra métrica de sucesso
                 elapsed = (asyncio.get_event_loop().time() - start_time) * 1000
-                metrics.record_request("instagram", True, elapsed)
+                metrics.record_request("instagram", "send_message")
+                metrics.record_success("instagram", "send_message", elapsed)
                 
                 return response.json()
                 
@@ -258,7 +256,8 @@ class InstagramHub:
                 
                 # Registra métrica de falha
                 elapsed = (asyncio.get_event_loop().time() - start_time) * 1000
-                metrics.record_request("instagram", False, elapsed)
+                metrics.record_request("instagram", "send_message")
+                metrics.record_failure("instagram", "send_message")
                 
                 # Alertas para mudança de estado
                 if state_before.value != "open" and state_after.value == "open":

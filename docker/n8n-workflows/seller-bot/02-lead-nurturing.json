@@ -1,0 +1,240 @@
+{
+  "name": "Seller Bot - Lead Nurturing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "didin/lead-nurture",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-lead-nurture",
+      "name": "Webhook Lead Nurture",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "lead-nurture"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json.body || $input.first().json;\nconst data = payload.data || {};\n\nreturn {\n  json: {\n    event_id: payload.event_id,\n    user_id: payload.user_id,\n    name: data.name || 'Cliente',\n    product: data.product || 'produtos',\n    search_query: data.search_query || '',\n    phone: data.phone,\n    channel: payload.channel || 'whatsapp',\n    timestamp: payload.timestamp || new Date().toISOString()\n  }\n};"
+      },
+      "id": "parse-payload",
+      "name": "Parse Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT p.id, p.name, p.current_price, p.original_price, p.store, p.url, p.image_url, ROUND(((p.original_price - p.current_price) / p.original_price * 100)::numeric, 0) as discount FROM products p WHERE p.name ILIKE '%' || $1 || '%' OR p.category ILIKE '%' || $1 || '%' ORDER BY discount DESC NULLS LAST LIMIT 3",
+        "options": {
+          "queryReplacement": "={{ $json.product }}"
+        }
+      },
+      "id": "search-products",
+      "name": "Buscar Produtos Relacionados",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [690, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const products = $input.all();\nconst userData = $('Parse Payload').first().json;\n\nif (products.length === 0) {\n  return {\n    json: {\n      ...userData,\n      has_products: false,\n      message: `Oi ${userData.name}! 👋\\n\\nVi que você estava interessado em ${userData.product}. No momento não encontrei ofertas específicas, mas posso te ajudar de outras formas!\\n\\n🔎 Quer buscar outro produto?\\n🔔 Posso criar um alerta quando aparecer!\\n\\nDigite *1* para buscar ou *2* para criar alerta.`\n    }\n  };\n}\n\nlet productList = products.map((p, i) => {\n  const item = p.json;\n  const discount = item.discount ? ` (-${item.discount}%)` : '';\n  return `*${i + 1}.* ${item.name}\\n   💰 R$ ${item.current_price}${discount}\\n   🏪 ${item.store}`;\n}).join('\\n\\n');\n\nconst message = `Oi ${userData.name}! 👋\\n\\nVi que você estava interessado em *${userData.product}*. Encontrei algumas ofertas especiais pra você! 🔥\\n\\n${productList}\\n\\n📌 *Responda com o número* para ver detalhes\\n🔔 Digite *alerta* para receber quando baixar mais`;\n\nreturn {\n  json: {\n    ...userData,\n    has_products: true,\n    products: products.map(p => p.json),\n    message: message\n  }\n};"
+      },
+      "id": "format-message",
+      "name": "Formatar Mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('Parse Payload').first().json.phone || $json.user_id }}\",\n  \"textMessage\": {\n    \"text\": \"{{ $json.message }}\"\n  }\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "send-nurture-whatsapp",
+      "name": "Enviar WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "automation_events",
+        "columns": "event_id, automation_type, user_id, channel, data, status, executed_at",
+        "options": {}
+      },
+      "id": "log-nurture-event",
+      "name": "Log Evento",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1350, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "table": "crm_contacts",
+        "columns": "last_interaction, interaction_count, lead_temperature",
+        "where": {
+          "values": [
+            {
+              "column": "external_id",
+              "value": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "update-crm-interaction",
+      "name": "Atualizar CRM",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1130, 500],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"event_id\": \"{{ $('Parse Payload').first().json.event_id }}\",\n  \"message\": \"Lead nurturing sent\",\n  \"products_found\": {{ $json.has_products }}\n}",
+        "options": {}
+      },
+      "id": "respond-nurture",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1570, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Lead Nurture": {
+      "main": [
+        [
+          {
+            "node": "Parse Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Payload": {
+      "main": [
+        [
+          {
+            "node": "Buscar Produtos Relacionados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Produtos Relacionados": {
+      "main": [
+        [
+          {
+            "node": "Formatar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Atualizar CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Log Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar CRM": {
+      "main": [
+        [
+          {
+            "node": "Log Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Evento": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "seller-bot"
+    },
+    {
+      "name": "nurturing"
+    }
+  ]
+}

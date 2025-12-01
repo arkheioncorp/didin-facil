@@ -9,24 +9,16 @@
           "value": "pt-BR"
         },
         {
-          "name": "tiktrend-user",
-          "value": "{\"state\":{\"user\":{\"id\":\"user_1764420795184\",\"email\":\"test@example.com\",\"name\":\"test\",\"hasLifetimeLicense\":true,\"licenseActivatedAt\":\"2025-11-29T12:53:15.184Z\",\"createdAt\":\"2025-11-29T12:53:15.184Z\"},\"license\":{\"isValid\":true,\"isLifetime\":true,\"activatedAt\":\"2025-11-29T12:53:15.184Z\",\"maxDevices\":2,\"activeDevices\":1},\"credits\":{\"balance\":10,\"totalPurchased\":0,\"totalUsed\":0,\"lastPurchaseAt\":null},\"isAuthenticated\":true,\"theme\":\"system\"},\"version\":0}"
-        },
-        {
-          "name": "scraper_max_products",
-          "value": "50"
-        },
-        {
-          "name": "scraper_headless",
-          "value": "true"
-        },
-        {
           "name": "tutorial_completed",
           "value": "true"
         },
         {
-          "name": "scraper_categories",
-          "value": "[\"trending\"]"
+          "name": "didin-user-v2",
+          "value": "{\"state\":{\"user\":{\"id\":\"user_1764553261022\",\"email\":\"test@example.com\",\"name\":\"test\",\"avatarUrl\":null,\"phone\":null,\"hasLifetimeLicense\":true,\"licenseActivatedAt\":\"2025-12-01T01:41:01.022Z\",\"isActive\":true,\"isEmailVerified\":true,\"language\":\"pt-BR\",\"timezone\":\"America/Sao_Paulo\",\"createdAt\":\"2025-12-01T01:41:01.022Z\",\"updatedAt\":null,\"lastLoginAt\":\"2025-12-01T01:41:01.022Z\"},\"license\":{\"id\":\"lic_1764553261022\",\"isValid\":true,\"isLifetime\":true,\"plan\":\"lifetime\",\"activatedAt\":\"2025-12-01T01:41:01.022Z\",\"expiresAt\":null,\"maxDevices\":2,\"activeDevices\":1,\"currentDeviceId\":null,\"isCurrentDeviceAuthorized\":true},\"credits\":{\"balance\":10,\"totalPurchased\":0,\"totalUsed\":0,\"lastPurchaseAt\":null,\"bonusBalance\":0,\"bonusExpiresAt\":null},\"isAuthenticated\":true,\"theme\":\"system\"},\"version\":0}"
+        },
+        {
+          "name": "onboarding_completed",
+          "value": "true"
         }
       ]
     }

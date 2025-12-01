@@ -3,18 +3,18 @@ Content Generator Routes
 Geração automática de vídeos e imagens para redes sociais
 """
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from typing import Optional, List
 import os
 from datetime import datetime
+from typing import List, Optional
 
 from api.middleware.auth import get_current_user
-from vendor.content_generator.generator import (
-    FFmpegVideoGenerator, VideoConfig, ProductData,
-    TextSlide, AspectRatio
-)
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from shared.config import settings
+from vendor.content_generator.generator import (AspectRatio,
+                                                FFmpegVideoGenerator,
+                                                ProductData, TextSlide,
+                                                VideoConfig)
 
 router = APIRouter()
 
@@ -61,7 +61,7 @@ async def generate_product_video(
     - Animações
     """
     output_dir = os.path.join(
-        settings.DATA_DIR, "generated_videos", str(current_user.id)
+        settings.DATA_DIR, "generated_videos", str(current_user["id"])
     )
     os.makedirs(output_dir, exist_ok=True)
     
@@ -107,7 +107,8 @@ async def generate_product_video(
             )
         
         # Retornar URL relativa para download
-        relative_path = f"generated_videos/{current_user.id}/product_{timestamp}.mp4"
+        user_id = current_user["id"]
+        relative_path = f"generated_videos/{user_id}/product_{timestamp}.mp4"
         
         return {
             "status": "success",
@@ -137,7 +138,7 @@ async def generate_text_video(
     - Anúncios simples
     """
     output_dir = os.path.join(
-        settings.DATA_DIR, "generated_videos", str(current_user.id)
+        settings.DATA_DIR, "generated_videos", str(current_user["id"])
     )
     os.makedirs(output_dir, exist_ok=True)
     
@@ -182,7 +183,8 @@ async def generate_text_video(
                 detail=result.get("error", "Erro ao gerar vídeo")
             )
         
-        relative_path = f"generated_videos/{current_user.id}/text_{timestamp}.mp4"
+        user_id = current_user["id"]
+        relative_path = f"generated_videos/{user_id}/text_{timestamp}.mp4"
         
         return {
             "status": "success",
@@ -211,7 +213,7 @@ async def generate_deal_alert(
     - CTA no final
     """
     output_dir = os.path.join(
-        settings.DATA_DIR, "generated_videos", str(current_user.id)
+        settings.DATA_DIR, "generated_videos", str(current_user["id"])
     )
     os.makedirs(output_dir, exist_ok=True)
     
@@ -257,7 +259,8 @@ async def generate_deal_alert(
                 detail=result.get("error", "Erro ao gerar vídeo")
             )
         
-        relative_path = f"generated_videos/{current_user.id}/deals_{timestamp}.mp4"
+        user_id = current_user["id"]
+        relative_path = f"generated_videos/{user_id}/deals_{timestamp}.mp4"
         
         return {
             "status": "success",
@@ -279,9 +282,10 @@ async def download_file(
 ):
     """Download de arquivo gerado."""
     from fastapi.responses import FileResponse
-    
+
     # Verificar se o path pertence ao usuário
-    if not path.startswith(f"generated_videos/{current_user.id}/"):
+    user_id = current_user["id"]
+    if not path.startswith(f"generated_videos/{user_id}/"):
         raise HTTPException(status_code=403, detail="Acesso negado")
     
     full_path = os.path.join(settings.DATA_DIR, path)

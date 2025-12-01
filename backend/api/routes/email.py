@@ -314,7 +314,7 @@ async def send_email(
 
     Use schedule_at para agendar envio futuro.
     """
-    result = await email_service.send_email(str(current_user.id), request)
+    result = await email_service.send_email(str(current_user["id"]), request)
 
     if not result.success:
         raise HTTPException(
@@ -340,7 +340,7 @@ async def send_batch_emails(
 
     results = []
     for email_request in emails:
-        result = await email_service.send_email(str(current_user.id), email_request)
+        result = await email_service.send_email(str(current_user["id"]), email_request)
         results.append(result)
 
     success_count = sum(1 for r in results if r.success)
@@ -379,11 +379,11 @@ async def create_template(
         "created_at": now.isoformat(),
         "updated_at": now.isoformat(),
         "usage_count": "0",
-        "user_id": str(current_user.id),
+        "user_id": str(current_user["id"]),
     }
 
     await redis.hset(f"email:template:{template_id}", mapping=template_data)
-    await redis.sadd(f"email:templates:{current_user.id}", template_id)
+    await redis.sadd(f"email:templates:{current_user['id']}", template_id)
 
     return EmailTemplateResponse(
         id=template_id,
@@ -406,7 +406,7 @@ async def list_templates(
     """Lista templates do usuário."""
     redis = await get_redis()
 
-    template_ids = await redis.smembers(f"email:templates:{current_user.id}")
+    template_ids = await redis.smembers(f"email:templates:{current_user['id']}")
     templates = []
 
     for tid in template_ids:
@@ -444,7 +444,7 @@ async def get_template(
     redis = await get_redis()
     data = await redis.hgetall(f"email:template:{template_id}")
 
-    if not data or data.get("user_id") != str(current_user.id):
+    if not data or data.get("user_id") != str(current_user["id"]):
         raise HTTPException(status_code=404, detail="Template não encontrado")
 
     return EmailTemplateResponse(
@@ -469,11 +469,11 @@ async def delete_template(
     redis = await get_redis()
     data = await redis.hgetall(f"email:template:{template_id}")
 
-    if not data or data.get("user_id") != str(current_user.id):
+    if not data or data.get("user_id") != str(current_user["id"]):
         raise HTTPException(status_code=404, detail="Template não encontrado")
 
     await redis.delete(f"email:template:{template_id}")
-    await redis.srem(f"email:templates:{current_user.id}", template_id)
+    await redis.srem(f"email:templates:{current_user['id']}", template_id)
 
     return {"status": "deleted", "template_id": template_id}
 
@@ -497,12 +497,12 @@ async def create_contact_list(
         "id": list_id,
         "name": data.name,
         "description": data.description or "",
-        "user_id": str(current_user.id),
+        "user_id": str(current_user["id"]),
         "created_at": now.isoformat(),
     }
 
     await redis.hset(f"email:list:{list_id}", mapping=list_data)
-    await redis.sadd(f"email:lists:{current_user.id}", list_id)
+    await redis.sadd(f"email:lists:{current_user['id']}", list_id)
 
     return ContactListResponse(
         id=list_id,
@@ -518,7 +518,7 @@ async def list_contact_lists(current_user: User = Depends(get_current_user)):
     """Lista todas as listas de contatos."""
     redis = await get_redis()
 
-    list_ids = await redis.smembers(f"email:lists:{current_user.id}")
+    list_ids = await redis.smembers(f"email:lists:{current_user['id']}")
     lists = []
 
     for lid in list_ids:
@@ -549,7 +549,7 @@ async def add_contact_to_list(
 
     # Verificar se lista existe e pertence ao usuário
     list_data = await redis.hgetall(f"email:list:{list_id}")
-    if not list_data or list_data.get("user_id") != str(current_user.id):
+    if not list_data or list_data.get("user_id") != str(current_user["id"]):
         raise HTTPException(status_code=404, detail="Lista não encontrada")
 
     contact_id = str(uuid.uuid4())
@@ -598,7 +598,7 @@ async def list_contacts(
 
     # Verificar se lista existe
     list_data = await redis.hgetall(f"email:list:{list_id}")
-    if not list_data or list_data.get("user_id") != str(current_user.id):
+    if not list_data or list_data.get("user_id") != str(current_user["id"]):
         raise HTTPException(status_code=404, detail="Lista não encontrada")
 
     contact_ids = await redis.smembers(f"email:list:{list_id}:contacts")
@@ -660,7 +660,7 @@ async def get_email_stats(
 
     for i in range(days):
         date = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
-        stats = await redis.hgetall(f"email:stats:{current_user.id}:{date}")
+        stats = await redis.hgetall(f"email:stats:{current_user['id']}:{date}")
 
         if stats:
             total_sent += int(stats.get("sent", 0))

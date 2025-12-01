@@ -243,7 +243,7 @@ async def list_contacts(
     source_enum = LeadSource(source) if source else None
 
     return await service.contacts.list(
-        user_id=str(user.id),
+        user_id=str(user["id"]),
         status=status_enum,
         source=source_enum,
         subscribed=subscribed,
@@ -267,7 +267,7 @@ async def create_contact(
     try:
         source = LeadSource(data.source) if data.source else LeadSource.MANUAL
         contact = await service.contacts.create(
-            user_id=str(user.id),
+            user_id=str(user["id"]),
             email=data.email,
             name=data.name,
             first_name=data.first_name,
@@ -299,7 +299,7 @@ async def get_contact_stats(
 ):
     """Retorna estatísticas de contatos."""
     service = await get_crm_service()
-    return await service.contacts.get_stats(str(user.id))
+    return await service.contacts.get_stats(str(user["id"]))
 
 
 @router.get("/contacts/{contact_id}", tags=["CRM - Contacts"])
@@ -309,7 +309,7 @@ async def get_contact(
 ):
     """Busca contato por ID."""
     service = await get_crm_service()
-    contact = await service.contacts.get(contact_id, str(user.id))
+    contact = await service.contacts.get(contact_id, str(user["id"]))
 
     if not contact:
         raise HTTPException(status_code=404, detail="Contact not found")
@@ -330,7 +330,7 @@ async def update_contact(
     if "status" in updates and updates["status"]:
         updates["status"] = ContactStatus(updates["status"])
 
-    contact = await service.contacts.update(contact_id, str(user.id), **updates)
+    contact = await service.contacts.update(contact_id, str(user["id"]), **updates)
 
     if not contact:
         raise HTTPException(status_code=404, detail="Contact not found")
@@ -345,7 +345,7 @@ async def delete_contact(
 ):
     """Deleta um contato."""
     service = await get_crm_service()
-    result = await service.contacts.delete(contact_id, str(user.id))
+    result = await service.contacts.delete(contact_id, str(user["id"]))
 
     if not result:
         raise HTTPException(status_code=404, detail="Contact not found")
@@ -361,7 +361,7 @@ async def add_contact_tag(
 ):
     """Adiciona tag ao contato."""
     service = await get_crm_service()
-    await service.contacts.add_tag(contact_id, str(user.id), tag)
+    await service.contacts.add_tag(contact_id, str(user["id"]), tag)
     return {"success": True, "message": f"Tag '{tag}' added"}
 
 
@@ -373,7 +373,7 @@ async def remove_contact_tag(
 ):
     """Remove tag do contato."""
     service = await get_crm_service()
-    await service.contacts.remove_tag(contact_id, str(user.id), tag)
+    await service.contacts.remove_tag(contact_id, str(user["id"]), tag)
     return {"success": True, "message": f"Tag '{tag}' removed"}
 
 
@@ -384,7 +384,7 @@ async def unsubscribe_contact(
 ):
     """Desinscreve contato de emails."""
     service = await get_crm_service()
-    result = await service.contacts.unsubscribe(contact_id, str(user.id))
+    result = await service.contacts.unsubscribe(contact_id, str(user["id"]))
 
     if not result:
         raise HTTPException(status_code=404, detail="Contact not found")
@@ -403,7 +403,7 @@ async def import_contacts(
     source = LeadSource(data.source) if data.source else LeadSource.IMPORT
 
     return await service.contacts.import_contacts(
-        user_id=str(user.id), contacts_data=data.contacts, source=source, tags=data.tags
+        user_id=str(user["id"]), contacts_data=data.contacts, source=source, tags=data.tags
     )
 
 
@@ -432,7 +432,7 @@ async def list_leads(
     source_enum = LeadSource(source) if source else None
 
     return await service.leads.list(
-        user_id=str(user.id),
+        user_id=str(user["id"]),
         status=status_enum,
         source=source_enum,
         temperature=temperature,
@@ -457,7 +457,7 @@ async def create_lead(
     try:
         source = LeadSource(data.source) if data.source else LeadSource.ORGANIC
         lead = await service.leads.create(
-            user_id=str(user.id),
+            user_id=str(user["id"]),
             contact_id=data.contact_id,
             title=data.title,
             source=source,
@@ -478,7 +478,7 @@ async def get_lead_stats(
 ):
     """Retorna estatísticas de leads."""
     service = await get_crm_service()
-    return await service.leads.get_stats(str(user.id))
+    return await service.leads.get_stats(str(user["id"]))
 
 
 @router.get("/leads/{lead_id}", tags=["CRM - Leads"])
@@ -488,7 +488,7 @@ async def get_lead(
 ):
     """Busca lead por ID."""
     service = await get_crm_service()
-    lead = await service.leads.get(lead_id, str(user.id))
+    lead = await service.leads.get(lead_id, str(user["id"]))
 
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -509,7 +509,7 @@ async def update_lead(
     if "status" in updates and updates["status"]:
         updates["status"] = LeadStatus(updates["status"])
 
-    lead = await service.leads.update(lead_id, str(user.id), **updates)
+    lead = await service.leads.update(lead_id, str(user["id"]), **updates)
 
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -524,7 +524,7 @@ async def delete_lead(
 ):
     """Deleta um lead."""
     service = await get_crm_service()
-    result = await service.leads.delete(lead_id, str(user.id))
+    result = await service.leads.delete(lead_id, str(user["id"]))
 
     if not result:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -539,7 +539,7 @@ async def qualify_lead(
 ):
     """Qualifica um lead."""
     service = await get_crm_service()
-    lead = await service.leads.qualify(lead_id, str(user.id))
+    lead = await service.leads.qualify(lead_id, str(user["id"]))
 
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -557,19 +557,19 @@ async def convert_lead_to_deal(
     service = await get_crm_service()
 
     # Busca lead
-    lead = await service.leads.get(lead_id, str(user.id))
+    lead = await service.leads.get(lead_id, str(user["id"]))
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
 
     # Marca como convertido
-    await service.leads.convert_to_deal(lead_id, str(user.id), data.pipeline_id or "")
+    await service.leads.convert_to_deal(lead_id, str(user["id"]), data.pipeline_id or "")
 
     # Cria deal
     deal_title = data.deal_title or lead.title
     deal_value = data.deal_value or lead.estimated_value
 
     deal = await service.deals.create(
-        user_id=str(user.id),
+        user_id=str(user["id"]),
         contact_id=lead.contact_id,
         lead_id=lead_id,
         title=deal_title,
@@ -592,7 +592,7 @@ async def mark_lead_lost(
 ):
     """Marca lead como perdido."""
     service = await get_crm_service()
-    result = await service.leads.mark_lost(lead_id, str(user.id), reason)
+    result = await service.leads.mark_lost(lead_id, str(user["id"]), reason)
 
     if not result:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -609,7 +609,7 @@ async def add_lead_score(
 ):
     """Adiciona pontos ao score do lead."""
     service = await get_crm_service()
-    lead = await service.leads.add_score(lead_id, str(user.id), points, reason)
+    lead = await service.leads.add_score(lead_id, str(user["id"]), points, reason)
 
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -644,7 +644,7 @@ async def list_deals(
     status_enum = DealStatus(status) if status else None
 
     return await service.deals.list(
-        user_id=str(user.id),
+        user_id=str(user["id"]),
         pipeline_id=pipeline_id,
         stage_id=stage_id,
         status=status_enum,
@@ -671,7 +671,7 @@ async def create_deal(
 
     try:
         deal = await service.deals.create(
-            user_id=str(user.id),
+            user_id=str(user["id"]),
             contact_id=data.contact_id,
             title=data.title,
             value=data.value or 0.0,
@@ -695,7 +695,7 @@ async def get_deal_stats(
 ):
     """Retorna estatísticas de deals."""
     service = await get_crm_service()
-    return await service.deals.get_stats(str(user.id), pipeline_id)
+    return await service.deals.get_stats(str(user["id"]), pipeline_id)
 
 
 @router.get("/deals/board/{pipeline_id}", tags=["CRM - Deals"])
@@ -707,7 +707,7 @@ async def get_pipeline_board(
     service = await get_crm_service()
 
     try:
-        return await service.deals.get_pipeline_board(str(user.id), pipeline_id)
+        return await service.deals.get_pipeline_board(str(user["id"]), pipeline_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -719,7 +719,7 @@ async def get_deal(
 ):
     """Busca deal por ID."""
     service = await get_crm_service()
-    deal = await service.deals.get(deal_id, str(user.id))
+    deal = await service.deals.get(deal_id, str(user["id"]))
 
     if not deal:
         raise HTTPException(status_code=404, detail="Deal not found")
@@ -737,7 +737,7 @@ async def update_deal(
     service = await get_crm_service()
 
     updates = data.model_dump(exclude_unset=True)
-    deal = await service.deals.update(deal_id, str(user.id), **updates)
+    deal = await service.deals.update(deal_id, str(user["id"]), **updates)
 
     if not deal:
         raise HTTPException(status_code=404, detail="Deal not found")
@@ -752,7 +752,7 @@ async def delete_deal(
 ):
     """Deleta um deal."""
     service = await get_crm_service()
-    result = await service.deals.delete(deal_id, str(user.id))
+    result = await service.deals.delete(deal_id, str(user["id"]))
 
     if not result:
         raise HTTPException(status_code=404, detail="Deal not found")
@@ -770,7 +770,7 @@ async def move_deal_stage(
     service = await get_crm_service()
 
     try:
-        deal = await service.deals.move_stage(deal_id, str(user.id), data.stage_id)
+        deal = await service.deals.move_stage(deal_id, str(user["id"]), data.stage_id)
 
         if not deal:
             raise HTTPException(status_code=404, detail="Deal not found")
@@ -790,16 +790,16 @@ async def close_deal(
     service = await get_crm_service()
 
     if data.won:
-        result = await service.deals.mark_won(deal_id, str(user.id))
+        result = await service.deals.mark_won(deal_id, str(user["id"]))
         message = "Deal marked as won"
     else:
-        result = await service.deals.mark_lost(deal_id, str(user.id), data.reason)
+        result = await service.deals.mark_lost(deal_id, str(user["id"]), data.reason)
         message = "Deal marked as lost"
 
     if not result:
         raise HTTPException(status_code=404, detail="Deal not found")
 
-    deal = await service.deals.get(deal_id, str(user.id))
+    deal = await service.deals.get(deal_id, str(user["id"]))
     return {
         "success": True,
         "message": message,
@@ -817,7 +817,7 @@ async def list_pipelines(
 ):
     """Lista pipelines do usuário."""
     service = await get_crm_service()
-    return await service.pipelines.list(str(user.id), is_active)
+    return await service.pipelines.list(str(user["id"]), is_active)
 
 
 @router.post("/pipelines", tags=["CRM - Pipelines"])
@@ -833,7 +833,7 @@ async def create_pipeline(
         stages = [s.model_dump() for s in data.stages]
 
     pipeline = await service.pipelines.create(
-        user_id=str(user.id),
+        user_id=str(user["id"]),
         name=data.name,
         stages=stages,
         description=data.description,
@@ -851,7 +851,7 @@ async def get_default_pipeline(
 ):
     """Busca ou cria pipeline padrão."""
     service = await get_crm_service()
-    pipeline = await service.pipelines.get_default(str(user.id))
+    pipeline = await service.pipelines.get_default(str(user["id"]))
     return pipeline.to_dict()
 
 
@@ -862,7 +862,7 @@ async def get_pipeline(
 ):
     """Busca pipeline por ID."""
     service = await get_crm_service()
-    pipeline = await service.pipelines.get(pipeline_id, str(user.id))
+    pipeline = await service.pipelines.get(pipeline_id, str(user["id"]))
 
     if not pipeline:
         raise HTTPException(status_code=404, detail="Pipeline not found")
@@ -880,7 +880,7 @@ async def update_pipeline(
     service = await get_crm_service()
 
     updates = data.model_dump(exclude_unset=True)
-    pipeline = await service.pipelines.update(pipeline_id, str(user.id), **updates)
+    pipeline = await service.pipelines.update(pipeline_id, str(user["id"]), **updates)
 
     if not pipeline:
         raise HTTPException(status_code=404, detail="Pipeline not found")
@@ -897,7 +897,7 @@ async def delete_pipeline(
     service = await get_crm_service()
 
     try:
-        result = await service.pipelines.delete(pipeline_id, str(user.id))
+        result = await service.pipelines.delete(pipeline_id, str(user["id"]))
 
         if not result:
             raise HTTPException(status_code=404, detail="Pipeline not found")
@@ -914,7 +914,7 @@ async def set_default_pipeline(
 ):
     """Define pipeline como padrão."""
     service = await get_crm_service()
-    await service.pipelines.set_default(pipeline_id, str(user.id))
+    await service.pipelines.set_default(pipeline_id, str(user["id"]))
     return {"success": True, "message": "Pipeline set as default"}
 
 
@@ -930,7 +930,7 @@ async def add_pipeline_stage(
 
     pipeline = await service.pipelines.add_stage(
         pipeline_id=pipeline_id,
-        user_id=str(user.id),
+        user_id=str(user["id"]),
         name=data.name,
         color=data.color or "#3B82F6",
         probability=data.probability or 0,
@@ -954,7 +954,7 @@ async def remove_pipeline_stage(
     """Remove estágio do pipeline."""
     service = await get_crm_service()
 
-    pipeline = await service.pipelines.remove_stage(pipeline_id, str(user.id), stage_id)
+    pipeline = await service.pipelines.remove_stage(pipeline_id, str(user["id"]), stage_id)
 
     if not pipeline:
         raise HTTPException(status_code=404, detail="Pipeline not found")
@@ -972,7 +972,7 @@ async def list_segments(
 ):
     """Lista segmentos do usuário."""
     service = await get_crm_service()
-    return await service.segments.list(str(user.id), segment_type)
+    return await service.segments.list(str(user["id"]), segment_type)
 
 
 @router.post("/segments", tags=["CRM - Segments"])
@@ -986,7 +986,7 @@ async def create_segment(
     conditions = [c.model_dump() for c in data.conditions]
 
     segment = await service.segments.create(
-        user_id=str(user.id),
+        user_id=str(user["id"]),
         name=data.name,
         conditions=conditions,
         segment_type=data.segment_type or "contacts",
@@ -1004,7 +1004,7 @@ async def get_segment(
 ):
     """Busca segmento por ID."""
     service = await get_crm_service()
-    segment = await service.segments.get(segment_id, str(user.id))
+    segment = await service.segments.get(segment_id, str(user["id"]))
 
     if not segment:
         raise HTTPException(status_code=404, detail="Segment not found")
@@ -1025,7 +1025,7 @@ async def update_segment(
     if "conditions" in updates:
         updates["conditions"] = [c for c in updates["conditions"]]
 
-    segment = await service.segments.update(segment_id, str(user.id), **updates)
+    segment = await service.segments.update(segment_id, str(user["id"]), **updates)
 
     if not segment:
         raise HTTPException(status_code=404, detail="Segment not found")
@@ -1040,7 +1040,7 @@ async def delete_segment(
 ):
     """Deleta um segmento."""
     service = await get_crm_service()
-    result = await service.segments.delete(segment_id, str(user.id))
+    result = await service.segments.delete(segment_id, str(user["id"]))
 
     if not result:
         raise HTTPException(status_code=404, detail="Segment not found")
@@ -1058,7 +1058,7 @@ async def get_segment_members(
     """Retorna membros do segmento."""
     service = await get_crm_service()
     return await service.segments.get_segment_members(
-        segment_id, str(user.id), page, per_page
+        segment_id, str(user["id"]), page, per_page
     )
 
 
@@ -1069,7 +1069,7 @@ async def compute_segment(
 ):
     """Recalcula contagem do segmento."""
     service = await get_crm_service()
-    count = await service.segments.compute_segment(segment_id, str(user.id))
+    count = await service.segments.compute_segment(segment_id, str(user["id"]))
     return {"success": True, "count": count}
 
 
@@ -1082,7 +1082,7 @@ async def get_crm_dashboard(
 ):
     """Retorna dados do dashboard CRM."""
     service = await get_crm_service()
-    return await service.get_dashboard(str(user.id))
+    return await service.get_dashboard(str(user["id"]))
 
 
 # ==================== QUICK ACTIONS ====================
@@ -1099,7 +1099,7 @@ async def quick_create_deal(
     try:
         source = LeadSource(data.source) if data.source else LeadSource.MANUAL
         return await service.quick_create_deal(
-            user_id=str(user.id),
+            user_id=str(user["id"]),
             email=data.email,
             deal_title=data.deal_title,
             deal_value=data.deal_value,

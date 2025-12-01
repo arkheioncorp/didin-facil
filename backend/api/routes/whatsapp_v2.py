@@ -165,7 +165,7 @@ async def create_instance(
         # Salva no banco
         query = WhatsAppInstance.__table__.insert().values(
             id=uuid.uuid4(),
-            user_id=current_user.id,
+            user_id=current_user["id"],
             name=data.instance_name,
             status="created",
             webhook_url=webhook_url,
@@ -199,7 +199,7 @@ async def list_instances(
         if not getattr(current_user, 'is_admin', False):
             user_instances = await database.fetch_all(
                 WhatsAppInstance.__table__.select().where(
-                    WhatsAppInstance.user_id == current_user.id
+                    WhatsAppInstance.user_id == current_user["id"]
                 )
             )
             user_instance_names = {inst.name for inst in user_instances}
@@ -237,7 +237,7 @@ async def get_instance(
     if not db_instance:
         raise HTTPException(status_code=404, detail="Instância não encontrada")
     
-    if db_instance.user_id != current_user.id and not getattr(current_user, 'is_admin', False):
+    if db_instance.user_id != current_user["id"] and not getattr(current_user, 'is_admin', False):
         raise HTTPException(status_code=403, detail="Não autorizado")
     
     try:
@@ -781,7 +781,7 @@ async def _verify_instance_access(instance_name: str, current_user) -> Any:
     if not db_instance:
         raise HTTPException(status_code=404, detail="Instância não encontrada")
     
-    if db_instance.user_id != current_user.id and not getattr(current_user, 'is_admin', False):
+    if db_instance.user_id != current_user["id"] and not getattr(current_user, 'is_admin', False):
         raise HTTPException(status_code=403, detail="Não autorizado")
     
     return db_instance

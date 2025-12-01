@@ -283,7 +283,7 @@ async def trigger_price_drop_alert(
                 "new_price": new_price,
                 "discount_percent": round((1 - new_price/old_price) * 100, 1),
                 "product_url": product_url,
-                "user_id": str(current_user.id),
+                "user_id": str(current_user["id"]),
                 "triggered_at": datetime.utcnow().isoformat()
             }
         )
@@ -314,7 +314,7 @@ async def trigger_new_lead(
                 "phone": phone,
                 "email": email,
                 "source": source,
-                "user_id": str(current_user.id),
+                "user_id": str(current_user["id"]),
                 "created_at": datetime.utcnow().isoformat()
             }
         )
@@ -342,7 +342,7 @@ async def trigger_post_published(
                 "platform": platform,
                 "post_id": post_id,
                 "post_url": post_url,
-                "user_id": str(current_user.id),
+                "user_id": str(current_user["id"]),
                 "published_at": datetime.utcnow().isoformat()
             }
         )

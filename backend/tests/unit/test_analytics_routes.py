@@ -15,9 +15,12 @@ from modules.analytics.social_analytics import (
 )
 
 
-class MockUser:
-    id = "user_123"
-    email = "test@example.com"
+class MockUser(dict):
+    """Mock user that supports both attribute and dict access."""
+    def __init__(self):
+        super().__init__(id="user_123", email="test@example.com")
+        self.id = "user_123"
+        self.email = "test@example.com"
 
 
 @pytest.fixture

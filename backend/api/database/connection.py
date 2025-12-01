@@ -29,9 +29,27 @@ async def close_database():
     print("Database disconnected")
 
 
-async def get_db_pool() -> Database:
-    """Get the database connection pool (for CRM and other modules)."""
-    return database
+# Global asyncpg pool for CRM and other modules requiring raw asyncpg
+_asyncpg_pool = None
+
+
+async def get_asyncpg_pool():
+    """Get or create asyncpg connection pool for CRM modules."""
+    import asyncpg
+    
+    global _asyncpg_pool
+    if _asyncpg_pool is None:
+        _asyncpg_pool = await asyncpg.create_pool(
+            settings.DATABASE_URL.replace("+asyncpg", ""),
+            min_size=2,
+            max_size=10
+        )
+    return _asyncpg_pool
+
+
+async def get_db_pool():
+    """Get the asyncpg connection pool (for CRM and other modules)."""
+    return await get_asyncpg_pool()
 
 
 async def get_db() -> Database:

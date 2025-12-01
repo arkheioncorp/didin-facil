@@ -154,9 +154,9 @@ async def purchase_credits(
             # Create PIX payment
             pix_data = await mp_service.create_pix_payment(
                 amount=round(price, 2),
-                email=current_user.email,
+                email=current_user["email"],
                 cpf=request.cpf or "",
-                name=current_user.name or request.name or "Cliente",
+                name=current_user["name"] or request.name or "Cliente",
                 external_reference=order_id,
                 description=f"{package.name} - {package.credits} créditos"
             )
@@ -164,7 +164,7 @@ async def purchase_credits(
             # Store pending transaction
             await _store_pending_purchase(
                 db=db,
-                user_id=str(current_user.id),
+                user_id=str(current_user["id"]),
                 package_id=str(package.id),
                 order_id=order_id,
                 amount=Decimal(str(price)),
@@ -190,14 +190,14 @@ async def purchase_credits(
             preference = await mp_service.create_payment(
                 title=f"{package.name} - {package.credits} Créditos",
                 price=round(price, 2),
-                user_email=current_user.email,
+                user_email=current_user["email"],
                 external_reference=order_id,
             )
             
             # Store pending transaction
             await _store_pending_purchase(
                 db=db,
-                user_id=str(current_user.id),
+                user_id=str(current_user["id"]),
                 package_id=str(package.id),
                 order_id=order_id,
                 amount=Decimal(str(price)),
@@ -228,31 +228,35 @@ async def get_credit_balance(
     db = Depends(get_db)
 ):
     """Get user's current credit balance"""
-    from sqlalchemy import select
-    from api.database.accounting_models import UserFinancialSummary
+    user_id = str(current_user.get("id") if isinstance(current_user, dict) else current_user["id"])
     
     # Get user credits from users table
-    result = await db.execute(
-        select(
-            current_user.__class__.credits_balance,
-            current_user.__class__.credits_purchased,
-            current_user.__class__.credits_used,
-        ).where(current_user.__class__.id == current_user.id)
-    )
-    row = result.fetchone()
+    query = """
+        SELECT credits_balance, credits_purchased, credits_used
+        FROM users
+        WHERE id = :user_id
+    """
+    row = await db.fetch_one(query=query, values={"user_id": user_id})
     
     # Get last purchase date
-    summary_result = await db.execute(
-        select(UserFinancialSummary.last_purchase_at)
-        .where(UserFinancialSummary.user_id == current_user.id)
-    )
-    summary = summary_result.scalar_one_or_none()
+    summary_query = """
+        SELECT last_purchase_at
+        FROM user_financial_summaries
+        WHERE user_id = :user_id
+    """
+    summary = await db.fetch_one(query=summary_query, values={"user_id": user_id})
+    
+    # Get balance values with safe access
+    balance = row["credits_balance"] if row else 0
+    purchased = row["credits_purchased"] if row else 0
+    used = row["credits_used"] if row else 0
+    last_at = summary["last_purchase_at"] if summary else None
     
     return CreditBalanceResponse(
-        balance=row.credits_balance if row else 0,
-        total_purchased=row.credits_purchased if row else 0,
-        total_used=row.credits_used if row else 0,
-        last_purchase_at=str(summary) if summary else None,
+        balance=balance,
+        total_purchased=purchased,
+        total_used=used,
+        last_purchase_at=str(last_at) if last_at else None,
     )
 
 
@@ -294,7 +298,7 @@ async def use_credits(
     # Get current user balance
     result = await db.execute(
         select(User.credits_balance, User.bonus_balance, User.bonus_expires_at)
-        .where(User.id == current_user.id)
+        .where(User.id == current_user["id"])
     )
     row = result.fetchone()
     
@@ -330,7 +334,7 @@ async def use_credits(
     
     await db.execute(
         update(User)
-        .where(User.id == current_user.id)
+        .where(User.id == current_user["id"])
         .values(
             credits_balance=new_balance,
             bonus_balance=new_bonus,
@@ -340,7 +344,7 @@ async def use_credits(
     
     # Record transaction
     transaction = FinancialTransaction(
-        user_id=current_user.id,
+        user_id=current_user["id"],
         transaction_type=TransactionType.CREDIT_USAGE.value,
         credits_amount=-request.amount,
         operation_type=request.operation,
@@ -381,7 +385,7 @@ async def add_bonus_credits(
     from datetime import datetime, timezone, timedelta
     
     # Check if current user is admin
-    if not current_user.is_admin:
+    if not current_user.get("is_admin", False):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Acesso restrito a administradores"
@@ -425,7 +429,7 @@ async def get_purchase_status(
     result = await db.execute(
         select(FinancialTransaction)
         .where(FinancialTransaction.description.contains(order_id))
-        .where(FinancialTransaction.user_id == current_user.id)
+        .where(FinancialTransaction.user_id == current_user["id"])
     )
     transaction = result.scalar_one_or_none()
     
@@ -456,7 +460,7 @@ async def get_purchase_history(
     
     result = await db.execute(
         select(FinancialTransaction)
-        .where(FinancialTransaction.user_id == current_user.id)
+        .where(FinancialTransaction.user_id == current_user["id"])
         .order_by(FinancialTransaction.created_at.desc())
         .limit(limit)
         .offset(offset)

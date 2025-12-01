@@ -96,6 +96,48 @@ class RedisManager:
         """Get keys matching pattern"""
         client = self.client
         return await client.keys(pattern)
+    
+    async def smembers(self, key: str) -> set:
+        """Get all members of a set"""
+        client = self.client
+        return await client.smembers(key)
+    
+    async def sadd(self, key: str, *values) -> int:
+        """Add one or more members to a set"""
+        client = self.client
+        return await client.sadd(key, *values)
+    
+    async def srem(self, key: str, *values) -> int:
+        """Remove one or more members from a set"""
+        client = self.client
+        return await client.srem(key, *values)
+    
+    async def sismember(self, key: str, value: str) -> bool:
+        """Check if value is a member of a set"""
+        client = self.client
+        return await client.sismember(key, value)
+    
+    async def hget(self, key: str, field: str) -> Optional[str]:
+        """Get hash field value"""
+        client = self.client
+        return await client.hget(key, field)
+    
+    async def hset(self, key: str, field: str = None, value: str = None, mapping: dict = None) -> int:
+        """Set hash field value or multiple fields from mapping"""
+        client = self.client
+        if mapping:
+            return await client.hset(key, mapping=mapping)
+        return await client.hset(key, field, value)
+    
+    async def hgetall(self, key: str) -> dict:
+        """Get all hash fields and values"""
+        client = self.client
+        return await client.hgetall(key)
+    
+    async def hdel(self, key: str, *fields: str) -> int:
+        """Delete one or more hash fields"""
+        client = self.client
+        return await client.hdel(key, *fields)
 
 
 # Global manager instance

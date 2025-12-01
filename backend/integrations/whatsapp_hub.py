@@ -14,23 +14,20 @@ Autor: Didin Fácil
 Versão: 1.2.0 (com alertas e métricas)
 """
 
+import asyncio
 import logging
-from typing import Optional, Dict, Any, List, Callable, Awaitable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-import httpx
-import asyncio
+from typing import Any, Awaitable, Callable, Dict, List, Optional
 
-from .resilience import (
-    CircuitBreaker,
-    CircuitBreakerConfig,
-    CircuitBreakerOpenError as CircuitBreakerOpen,
-    retry_with_backoff,
-    RetryConfig
-)
+import httpx
+
+from .alerts import AlertSeverity, AlertType, get_alert_manager
 from .metrics import get_metrics_registry, with_metrics
-from .alerts import get_alert_manager, AlertSeverity, AlertType
+from .resilience import CircuitBreaker, CircuitBreakerConfig
+from .resilience import CircuitBreakerOpenError as CircuitBreakerOpen
+from .resilience import RetryConfig, retry_with_backoff
 
 logger = logging.getLogger(__name__)
 
@@ -248,7 +245,8 @@ class WhatsAppHub:
                 
                 # Registra métrica de sucesso
                 elapsed = (asyncio.get_event_loop().time() - start_time) * 1000
-                metrics.record_request("whatsapp", True, elapsed)
+                metrics.record_request("whatsapp", method)
+                metrics.record_success("whatsapp", method, elapsed)
                 
                 return resp.json()
                 
@@ -260,7 +258,8 @@ class WhatsAppHub:
                 
                 # Registra métrica de falha
                 elapsed = (asyncio.get_event_loop().time() - start_time) * 1000
-                metrics.record_request("whatsapp", False, elapsed)
+                metrics.record_request("whatsapp", method)
+                metrics.record_failure("whatsapp", method)
                 
                 # Alerta se circuit breaker abriu
                 if state_before.value != "open" and state_after.value == "open":

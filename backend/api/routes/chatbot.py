@@ -54,7 +54,7 @@ async def start_chat(
     try:
         session = await typebot_client.start_chat(
             typebot_id=data.typebot_id,
-            user_id=str(current_user.id),
+            user_id=str(current_user["id"]),
             variables=data.variables,
             prefilledVariables=data.prefilled_variables
         )

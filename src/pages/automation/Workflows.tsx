@@ -327,7 +327,7 @@ export const Workflows = () => {
   const { data: workflows, isLoading: isLoadingWorkflows } = useQuery<N8nWorkflow[]>({
     queryKey: ['workflows'],
     queryFn: async (): Promise<N8nWorkflow[]> => {
-      const response = await api.get('/api/v1/automation/workflows');
+      const response = await api.get('/automation/workflows');
       return response.data as N8nWorkflow[];
     },
   });
@@ -336,7 +336,7 @@ export const Workflows = () => {
   const { data: stats } = useQuery<WorkflowStats>({
     queryKey: ['workflow-stats'],
     queryFn: async (): Promise<WorkflowStats> => {
-      const response = await api.get('/api/v1/automation/stats');
+      const response = await api.get('/automation/stats');
       return response.data as WorkflowStats;
     },
   });
@@ -345,7 +345,7 @@ export const Workflows = () => {
   const { data: executions } = useQuery<WorkflowExecution[]>({
     queryKey: ['workflow-executions'],
     queryFn: async (): Promise<WorkflowExecution[]> => {
-      const response = await api.get('/api/v1/automation/executions');
+      const response = await api.get('/automation/executions');
       return response.data as WorkflowExecution[];
     },
   });
@@ -354,7 +354,7 @@ export const Workflows = () => {
   const { data: templates } = useQuery<WorkflowTemplate[]>({
     queryKey: ['workflow-templates'],
     queryFn: async (): Promise<WorkflowTemplate[]> => {
-      const response = await api.get('/api/v1/automation/templates');
+      const response = await api.get('/automation/templates');
       return response.data as WorkflowTemplate[];
     },
   });
@@ -362,7 +362,7 @@ export const Workflows = () => {
   // Create workflow mutation
   const createMutation = useMutation({
     mutationFn: (data: typeof newWorkflow) => 
-      api.post('/api/v1/automation/workflows', data),
+      api.post('/automation/workflows', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workflows'] });
       queryClient.invalidateQueries({ queryKey: ['workflow-stats'] });
@@ -378,7 +378,7 @@ export const Workflows = () => {
   // Toggle status mutation
   const toggleMutation = useMutation({
     mutationFn: (id: string) => 
-      api.post(`/api/v1/automation/workflows/${id}/toggle`),
+      api.post(`/automation/workflows/${id}/toggle`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workflows'] });
       toast.success('Status atualizado!');
@@ -388,7 +388,7 @@ export const Workflows = () => {
   // Run workflow mutation
   const runMutation = useMutation({
     mutationFn: (id: string) => 
-      api.post(`/api/v1/automation/workflows/${id}/run`),
+      api.post(`/automation/workflows/${id}/run`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workflow-executions'] });
       toast.success('Workflow executado!');
@@ -398,7 +398,7 @@ export const Workflows = () => {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: (id: string) => 
-      api.delete(`/api/v1/automation/workflows/${id}`),
+      api.delete(`/automation/workflows/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workflows'] });
       queryClient.invalidateQueries({ queryKey: ['workflow-stats'] });

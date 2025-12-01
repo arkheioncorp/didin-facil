@@ -8,9 +8,12 @@ from fastapi import HTTPException
 from datetime import datetime, timedelta, timezone
 
 
-class MockUser:
-    id = "user_123"
-    email = "test@example.com"
+class MockUser(dict):
+    """Mock user that supports both attribute and dict access."""
+    def __init__(self):
+        super().__init__(id="user_123", email="test@example.com")
+        self.id = "user_123"
+        self.email = "test@example.com"
 
 
 class MockScheduledPost:

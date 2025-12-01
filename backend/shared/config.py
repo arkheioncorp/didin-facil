@@ -7,6 +7,7 @@ Detecta automaticamente se está rodando em Docker e usa URLs internas.
 
 import os
 from typing import Optional
+
 from pydantic_settings import BaseSettings
 
 
@@ -81,6 +82,10 @@ class Settings(BaseSettings):
     MERCADOPAGO_PUBLIC_KEY: Optional[str] = None
     MERCADOPAGO_WEBHOOK_SECRET: Optional[str] = None
     
+    # Mercado Pago Sandbox (para testes)
+    MERCADOPAGO_SANDBOX_TOKEN: Optional[str] = None
+    MERCADOPAGO_USE_SANDBOX: bool = False
+    
     # Scraper
     SCRAPER_RATE_LIMIT: int = 5  # requests per second
     SCRAPER_RETRY_COUNT: int = 3
@@ -89,6 +94,7 @@ class Settings(BaseSettings):
     # Evolution API (WhatsApp)
     EVOLUTION_API_URL: str = _URLS["evolution"]
     EVOLUTION_API_KEY: str = "429683C4C977415CAAFCCE10F7D57E11"
+    EVOLUTION_INSTANCE: str = "didin-whatsapp"
     EVOLUTION_WEBHOOK_URL: str = f"{_URLS['api']}/webhooks/evolution"
     
     # Chatwoot (Customer Support)

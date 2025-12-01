@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SearchIcon, MenuIcon } from "@/components/icons";
 import { NotificationBell } from "@/components/NotificationBell";
+import { TutorialHelpButton } from "@/components/tutorial";
 
 
 interface HeaderProps {
@@ -74,6 +75,9 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Actions */}
       <div className="flex items-center gap-1.5">
+        {/* Tutorial Help Button */}
+        <TutorialHelpButton />
+        
         {/* Notification Bell */}
         <NotificationBell />
       </div>

@@ -1,0 +1,135 @@
+{
+  "name": "Seller Bot - Deal Won Celebration",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "didin/deal-won",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-deal-won",
+      "name": "Webhook Deal Won",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "deal-won"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json.body || $input.first().json;\nconst data = payload.data || {};\n\nconst total = parseFloat(data.total) || 0;\n\nreturn {\n  json: {\n    event_id: payload.event_id,\n    user_id: payload.user_id,\n    name: data.name || 'Cliente',\n    order_id: data.order_id,\n    product_name: data.product_name,\n    total: total,\n    total_formatted: total.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}),\n    store: data.store,\n    phone: data.phone,\n    email: data.email,\n    channel: payload.channel || 'whatsapp',\n    timestamp: payload.timestamp\n  }\n};"
+      },
+      "id": "parse-deal-data",
+      "name": "Parse Deal Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.phone || $json.user_id }}\",\n  \"textMessage\": {\n    \"text\": \"🎉🎉🎉\\n\\n*PARABÉNS PELA COMPRA, {{ $json.name }}!*\\n\\nSeu pedido foi confirmado com sucesso! ✅\\n\\n📦 Pedido: #{{ $json.order_id }}\\n🛍️ {{ $json.product_name }}\\n💰 Total: {{ $json.total_formatted }}\\n🏪 Loja: {{ $json.store }}\\n\\nObrigado por usar o Didin Fácil! 💜\\n\\nVou acompanhar cada etapa e te manter informado!\\n\\n_Qualquer dúvida, é só me chamar!_\"\n  }\n}",
+        "options": {}
+      },
+      "id": "send-celebration",
+      "name": "Enviar Celebração",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "table": "crm_contacts",
+        "columns": "total_orders, lifetime_value, last_purchase_at, customer_status",
+        "where": {
+          "values": [
+            {
+              "column": "external_id",
+              "value": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "update-crm-deal",
+      "name": "Atualizar CRM",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [910, 400],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channel": "#vendas",
+        "text": "=🎉 *NOVA VENDA!*\\n\\n👤 {{ $('Parse Deal Data').first().json.name }}\\n💰 {{ $('Parse Deal Data').first().json.total_formatted }}\\n🏪 {{ $('Parse Deal Data').first().json.store }}\\n📦 {{ $('Parse Deal Data').first().json.product_name }}",
+        "otherOptions": {}
+      },
+      "id": "notify-sales-slack",
+      "name": "Notificar Vendas",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [910, 200],
+      "credentials": {
+        "slackApi": {
+          "id": "slack-didin",
+          "name": "Slack Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"event_id\": \"{{ $('Parse Deal Data').first().json.event_id }}\",\n  \"message\": \"Deal won celebration sent\",\n  \"order_id\": \"{{ $('Parse Deal Data').first().json.order_id }}\"\n}",
+        "options": {}
+      },
+      "id": "respond-deal-success",
+      "name": "Responder Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1130, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Deal Won": {
+      "main": [[{"node": "Parse Deal Data", "type": "main", "index": 0}]]
+    },
+    "Parse Deal Data": {
+      "main": [[{"node": "Enviar Celebração", "type": "main", "index": 0}]]
+    },
+    "Enviar Celebração": {
+      "main": [
+        [
+          {"node": "Notificar Vendas", "type": "main", "index": 0},
+          {"node": "Atualizar CRM", "type": "main", "index": 0}
+        ]
+      ]
+    },
+    "Notificar Vendas": {
+      "main": [[{"node": "Responder Sucesso", "type": "main", "index": 0}]]
+    },
+    "Atualizar CRM": {
+      "main": [[{"node": "Responder Sucesso", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {"executionOrder": "v1"},
+  "tags": [{"name": "seller-bot"}, {"name": "sales"}]
+}

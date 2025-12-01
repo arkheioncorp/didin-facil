@@ -282,7 +282,7 @@ export const ChatbotBuilder = () => {
   const { data: chatbots, isLoading: isLoadingChatbots } = useQuery<Chatbot[]>({
     queryKey: ['chatbots'],
     queryFn: async (): Promise<Chatbot[]> => {
-      const response = await api.get('/api/v1/chatbot/bots');
+      const response = await api.get('/chatbot/bots');
       return response.data as Chatbot[];
     },
   });
@@ -291,7 +291,7 @@ export const ChatbotBuilder = () => {
   const { data: stats } = useQuery<ChatbotStats>({
     queryKey: ['chatbot-stats'],
     queryFn: async (): Promise<ChatbotStats> => {
-      const response = await api.get('/api/v1/chatbot/stats');
+      const response = await api.get('/chatbot/stats');
       return response.data as ChatbotStats;
     },
   });
@@ -300,7 +300,7 @@ export const ChatbotBuilder = () => {
   const { data: templates } = useQuery<ChatbotTemplate[]>({
     queryKey: ['chatbot-templates'],
     queryFn: async (): Promise<ChatbotTemplate[]> => {
-      const response = await api.get('/api/v1/chatbot/templates');
+      const response = await api.get('/chatbot/templates');
       return response.data as ChatbotTemplate[];
     },
   });
@@ -308,7 +308,7 @@ export const ChatbotBuilder = () => {
   // Create chatbot mutation
   const createMutation = useMutation({
     mutationFn: (data: typeof newBot) => 
-      api.post('/api/v1/chatbot/bots', data),
+      api.post('/chatbot/bots', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chatbots'] });
       queryClient.invalidateQueries({ queryKey: ['chatbot-stats'] });
@@ -324,7 +324,7 @@ export const ChatbotBuilder = () => {
   // Toggle status mutation
   const toggleMutation = useMutation({
     mutationFn: (id: string) => 
-      api.post(`/api/v1/chatbot/bots/${id}/toggle`),
+      api.post(`/chatbot/bots/${id}/toggle`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chatbots'] });
       toast.success('Status atualizado!');
@@ -334,7 +334,7 @@ export const ChatbotBuilder = () => {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: (id: string) => 
-      api.delete(`/api/v1/chatbot/bots/${id}`),
+      api.delete(`/chatbot/bots/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chatbots'] });
       queryClient.invalidateQueries({ queryKey: ['chatbot-stats'] });

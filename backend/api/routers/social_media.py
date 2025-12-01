@@ -28,7 +28,7 @@ from backend.vendor.social_media_manager import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/social", tags=["Social Media"])
+router = APIRouter(tags=["Social Media"])
 
 
 # ==================== Schemas ====================

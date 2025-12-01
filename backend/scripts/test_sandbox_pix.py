@@ -42,19 +42,29 @@ class SandboxPixTester:
         try:
             from shared.config import settings
             
-            token = (
+            # Priorizar token de sandbox se configurado
+            sandbox_token = settings.MERCADOPAGO_SANDBOX_TOKEN
+            production_token = (
                 settings.MERCADO_PAGO_ACCESS_TOKEN or 
                 settings.MERCADOPAGO_ACCESS_TOKEN
             )
             
+            # Determinar qual token usar
+            use_sandbox = settings.MERCADOPAGO_USE_SANDBOX or bool(sandbox_token)
+            token = sandbox_token if use_sandbox and sandbox_token else production_token
+            
             if not token:
                 print("❌ Token não configurado!")
                 print("   Configure MERCADOPAGO_ACCESS_TOKEN no .env")
+                print("   Ou MERCADOPAGO_SANDBOX_TOKEN para testes")
                 return False
             
-            is_sandbox = "TEST" in token.upper()
+            is_sandbox = "TEST" in token.upper() or token == sandbox_token
             print(f"✅ Token encontrado: {token[:25]}...")
             print(f"   Ambiente: {'🧪 SANDBOX' if is_sandbox else '🚨 PRODUÇÃO'}")
+            
+            if sandbox_token and use_sandbox:
+                print("   ✓ Usando token de sandbox configurado")
             
             if not is_sandbox:
                 print("\n⚠️  ATENÇÃO: Usando token de PRODUÇÃO!")

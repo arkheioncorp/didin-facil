@@ -12,18 +12,30 @@ Features:
 - Multi-canal (WhatsApp, Instagram, TikTok)
 - Escalonamento para humano
 - Memória de contexto
+- Automações n8n integradas
 """
 
-import logging
 import json
+import logging
 import re
-from typing import Optional, Dict, Any, List, Tuple
-from datetime import datetime, timedelta
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
+
+# Import do orchestrator de automações
+try:
+    from modules.automation.n8n_orchestrator import AutomationType
+    from modules.automation.n8n_orchestrator import \
+        ChannelType as AutomationChannel
+    from modules.automation.n8n_orchestrator import get_orchestrator
+    AUTOMATION_AVAILABLE = True
+except ImportError:
+    AUTOMATION_AVAILABLE = False
+    get_orchestrator = None
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +89,9 @@ class Intent(str, Enum):
     HOW_TO_BUY = "how_to_buy"
     PAYMENT_INFO = "payment_info"
     SHIPPING_INFO = "shipping_info"
+    PURCHASE_INTEREST = "purchase_interest"
+    ALERT_CREATE = "alert_create"
+    CART_ABANDONED_CHECK = "cart_abandoned_check"
     
     # Suporte
     ORDER_STATUS = "order_status"
@@ -154,6 +169,7 @@ class BotResponse(BaseModel):
     intent_detected: Optional[Intent] = None
     confidence: float = 1.0
     generated_by: str = "bot"  # bot, ai, template, human
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ConversationContext(BaseModel):
@@ -284,7 +300,17 @@ class IntentDetector:
             r"\b(agend[ao]|marcar|horário|disponibilidade|quando)\b",
         ],
         Intent.SUBSCRIBE: [
-            r"\b(cadastr|inscrever|newsletter|notificaç|alerta|avisa)\b",
+            r"\b(cadastr|inscrever|newsletter|notificaç)\b",
+        ],
+        Intent.ALERT_CREATE: [
+            r"\b(alerta|avisa|notifica).*(preço|baixar|promoção)\b",
+            r"\b(cria|criar|quero).*(alerta|aviso)\b",
+            r"\b(quando (baixar|cair|ter promoção))\b",
+        ],
+        Intent.PURCHASE_INTEREST: [
+            r"\b(quero comprar|vou comprar|vou levar|pode mandar|como compro)\b",
+            r"\b(fecha[r]?|fechar|finalizar|comprar agora)\b",
+            r"\b(add|adicionar).*(carrinho|sacola)\b",
         ],
         Intent.AFFIRMATIVE: [
             r"^(sim|s|yes|ok|pode|isso|exato|certo|claro|bora|vamos|beleza|show|top|perfeito)[\?!\.]*$",
@@ -659,6 +685,8 @@ class ProfessionalSellerBot:
             Intent.TALK_TO_HUMAN: self._handle_human_handoff,
             Intent.SCHEDULE: self._handle_schedule,
             Intent.SUBSCRIBE: self._handle_subscribe,
+            Intent.ALERT_CREATE: self._handle_alert_create,
+            Intent.PURCHASE_INTEREST: self._handle_purchase_interest,
             Intent.AFFIRMATIVE: self._handle_affirmative,
             Intent.NEGATIVE: self._handle_negative,
             Intent.UNKNOWN: self._handle_unknown,
@@ -716,7 +744,83 @@ class ProfessionalSellerBot:
         if context.lead_temperature in [LeadTemperature.WARM, LeadTemperature.HOT]:
             await self._sync_to_crm(context)
         
+        # Disparar automações n8n baseado no contexto
+        await self._trigger_automations(message, context, analysis)
+        
         return responses
+    
+    # ========================================
+    # N8N AUTOMATION INTEGRATION
+    # ========================================
+    
+    async def _trigger_automations(
+        self,
+        message: IncomingMessage,
+        context: ConversationContext,
+        analysis: IntentAnalysis
+    ):
+        """Dispara automações n8n baseado no comportamento."""
+        if not AUTOMATION_AVAILABLE:
+            return
+
+        try:
+            orchestrator = get_orchestrator()
+
+            # Mapear canal do bot para canal de automação
+            channel_map = {
+                MessageChannel.WHATSAPP: AutomationChannel.WHATSAPP,
+                MessageChannel.INSTAGRAM: AutomationChannel.INSTAGRAM_DM,
+                MessageChannel.WEBCHAT: AutomationChannel.EMAIL,
+            }
+            automation_channel = channel_map.get(
+                message.channel, AutomationChannel.WHATSAPP
+            )
+
+            # 1. Novo usuário - disparar onboarding
+            if context.message_count == 1:
+                await orchestrator.trigger_onboarding(
+                    user_id=context.user_id,
+                    name=context.user_name or "Cliente",
+                    channel=automation_channel,
+                    phone=context.user_phone
+                )
+
+            # 2. Lead qualificado - disparar nurturing
+            is_hot = context.lead_temperature == LeadTemperature.HOT
+            high_score = context.lead_score >= 80
+            not_triggered = "lead_qualified_triggered" not in context.variables
+
+            if is_hot and high_score and not_triggered:
+                await orchestrator.trigger_lead_qualified(
+                    user_id=context.user_id,
+                    name=context.user_name or "Cliente",
+                    lead_score=context.lead_score,
+                    interested_products=context.interested_products,
+                    channel=automation_channel
+                )
+                context.variables["lead_qualified_triggered"] = True
+
+            # 3. Busca de produto - nurturing
+            is_search = analysis.intent == Intent.PRODUCT_SEARCH
+            engaged = context.message_count > 2
+            nurture_pending = "nurturing_triggered" not in context.variables
+
+            if is_search and engaged and nurture_pending:
+                product = analysis.entities.get("product", "produtos")
+                await orchestrator.trigger_automation(
+                    AutomationType.NEW_LEAD_NURTURING,
+                    user_id=context.user_id,
+                    data={
+                        "name": context.user_name or "Cliente",
+                        "product": product,
+                        "search_query": message.content
+                    },
+                    channel=automation_channel
+                )
+                context.variables["nurturing_triggered"] = True
+
+        except Exception as e:
+            logger.warning("Erro ao disparar automações: %s", e)
     
     # ========================================
     # CONTEXT MANAGEMENT
@@ -1124,23 +1228,48 @@ Acompanhe pelo site dos Correios ou da transportadora.
     ) -> List[BotResponse]:
         """Trata reclamação."""
         context.stage = ConversationStage.SUPPORT
-        
+
         # Priorizar atendimento humano para reclamações
         response = self.templates.SUPPORT["complaint_ack"].format(
             name=context.user_name or "cliente"
         )
-        
-        # Disparar n8n para notificar equipe
-        if self.n8n_client:
+
+        # Disparar n8n para notificar equipe via orquestrador
+        if AUTOMATION_AVAILABLE:
+            try:
+                orchestrator = get_orchestrator()
+                await orchestrator.trigger_complaint_alert(
+                    user_id=context.user_id,
+                    name=context.user_name or "Cliente",
+                    complaint=message.content,
+                    channel=self._map_channel(message.channel),
+                    sentiment=analysis.sentiment.value if analysis.sentiment else "unknown",
+                    priority="high" if analysis.sentiment == SentimentType.FRUSTRATED else "medium"
+                )
+            except Exception as e:
+                logger.warning("Erro ao disparar alerta de reclamação: %s", e)
+        elif self.n8n_client:
             await self._trigger_support_alert(context, message.content)
-        
+
+        is_frustrated = analysis.sentiment == SentimentType.FRUSTRATED
         return [
             BotResponse(
                 content=response,
                 intent_detected=Intent.COMPLAINT,
-                should_handoff=True if analysis.sentiment == SentimentType.FRUSTRATED else False,
+                should_handoff=is_frustrated,
             )
         ]
+
+    def _map_channel(self, channel: MessageChannel) -> "AutomationChannel":
+        """Mapeia canal de mensagem para canal de automação."""
+        if not AUTOMATION_AVAILABLE:
+            return None
+        channel_map = {
+            MessageChannel.WHATSAPP: AutomationChannel.WHATSAPP,
+            MessageChannel.INSTAGRAM: AutomationChannel.INSTAGRAM_DM,
+            MessageChannel.WEBCHAT: AutomationChannel.EMAIL,
+        }
+        return channel_map.get(channel, AutomationChannel.WHATSAPP)
     
     async def _handle_refund(
         self,
@@ -1182,12 +1311,27 @@ Precisa de ajuda com alguma loja específica?
     ) -> List[BotResponse]:
         """Escala para atendente humano."""
         context.stage = ConversationStage.HUMAN_HANDOFF
-        
+
+        # Disparar automação de handoff
+        if AUTOMATION_AVAILABLE:
+            try:
+                orchestrator = get_orchestrator()
+                await orchestrator.trigger_human_handoff(
+                    user_id=context.user_id,
+                    name=context.user_name or "Cliente",
+                    reason="user_request",
+                    context_summary=self._summarize_context(context),
+                    channel=self._map_channel(message.channel),
+                    lead_score=context.lead_score
+                )
+            except Exception as e:
+                logger.warning("Erro ao disparar handoff: %s", e)
+
         response = self.templates.SUPPORT["handoff"].format(
             wait_time="5 minutos",
             position=1
         )
-        
+
         return [
             BotResponse(
                 content=response,
@@ -1196,6 +1340,19 @@ Precisa de ajuda com alguma loja específica?
                 handoff_reason="user_request"
             )
         ]
+
+    def _summarize_context(self, context: ConversationContext) -> str:
+        """Resume o contexto para o atendente."""
+        summary_parts = []
+        if context.user_name:
+            summary_parts.append(f"Cliente: {context.user_name}")
+        if context.interested_products:
+            products = ", ".join(context.interested_products[:3])
+            summary_parts.append(f"Interesse: {products}")
+        if context.lead_temperature:
+            summary_parts.append(f"Temperatura: {context.lead_temperature.value}")
+        summary_parts.append(f"Mensagens: {context.message_count}")
+        return " | ".join(summary_parts) if summary_parts else "Novo contato"
     
     async def _handle_schedule(
         self,
@@ -1295,7 +1452,221 @@ Digite seu e-mail para se cadastrar!
                 quick_replies=["Ver menu", "Buscar produto", "Falar com atendente"]
             )
         ]
-    
+
+    async def _handle_alert_create(
+        self,
+        message: IncomingMessage,
+        context: ConversationContext,
+        analysis: IntentAnalysis
+    ) -> List[BotResponse]:
+        """Cria alerta de preço para produto."""
+        # Verificar se há produto específico na mensagem
+        product_mentioned = analysis.entities.get("product")
+        target_price = analysis.entities.get("price")
+
+        if product_mentioned:
+            # Disparar automação n8n para criar alerta
+            if AUTOMATION_AVAILABLE:
+                try:
+                    orchestrator = get_orchestrator()
+                    await orchestrator.trigger_automation(
+                        AutomationType.PRICE_DROP_ALERT,
+                        user_id=context.user_id,
+                        data={
+                            "user_name": context.user_name,
+                            "user_email": context.user_email,
+                            "product_query": product_mentioned,
+                            "target_price": target_price,
+                            "channel": context.channel.value,
+                        }
+                    )
+                except Exception as e:
+                    logger.warning("Erro ao disparar alerta: %s", e)
+
+            price_text = ""
+            if target_price:
+                price_text = f"Preço alvo: R$ {target_price:,.2f}"
+
+            response = f"""
+🔔 *Alerta de Preço Criado!*
+
+Produto: *{product_mentioned}*
+{price_text}
+
+Vou te avisar assim que encontrar uma oferta boa!
+
+📱 Você receberá notificações por:
+• WhatsApp
+• E-mail (se cadastrado)
+• Push notification
+
+Quer criar mais algum alerta?
+"""
+            return [
+                BotResponse(
+                    content=response,
+                    intent_detected=Intent.ALERT_CREATE,
+                    quick_replies=[
+                        "Criar outro alerta",
+                        "Ver meus alertas",
+                        "Menu principal"
+                    ]
+                )
+            ]
+
+        # Sem produto específico, pedir informações
+        return [
+            BotResponse(
+                content="""
+🔔 *Criar Alerta de Preço*
+
+Para criar um alerta, me diga:
+1️⃣ Qual produto você quer monitorar?
+2️⃣ Qual preço máximo deseja pagar? (opcional)
+
+Exemplo: "Avise quando iPhone 15 baixar para R$ 5000"
+""",
+                intent_detected=Intent.ALERT_CREATE,
+                quick_replies=["iPhone", "Samsung Galaxy", "Notebook"]
+            )
+        ]
+
+    async def _handle_purchase_interest(
+        self,
+        message: IncomingMessage,
+        context: ConversationContext,
+        analysis: IntentAnalysis
+    ) -> List[BotResponse]:
+        """Trata intenção de compra - lead quente!"""
+        # Atualizar temperatura do lead para HOT
+        context.lead_temperature = LeadTemperature.HOT
+        context.lead_score = min(100, context.lead_score + 30)
+
+        # Capturar produto de interesse
+        product = analysis.entities.get("product")
+        if product and product not in context.interested_products:
+            context.interested_products.append(product)
+
+        # Disparar automação para lead qualificado
+        if AUTOMATION_AVAILABLE:
+            try:
+                orchestrator = get_orchestrator()
+                await orchestrator.trigger_lead_qualified(
+                    user_id=context.user_id,
+                    name=context.user_name or "Cliente",
+                    lead_score=context.lead_score,
+                    interested_products=context.interested_products,
+                    channel=self._map_channel(message.channel)
+                )
+            except Exception as e:
+                logger.warning("Erro ao disparar lead qualificado: %s", e)
+
+        # Sincronizar com CRM (criar deal)
+        await self._sync_to_crm(context)
+
+        response = """
+🎯 *Excelente escolha!*
+
+Você está perto de fazer um ótimo negócio! 💪
+
+Posso te ajudar a:
+• 💰 Encontrar o melhor preço disponível
+• 🏪 Comparar lojas confiáveis
+• 📊 Ver histórico de preços
+• 🔔 Criar alerta para queda de preço
+
+O que prefere?
+"""
+        return [
+            BotResponse(
+                content=response,
+                intent_detected=Intent.PURCHASE_INTEREST,
+                quick_replies=[
+                    "Ver melhor preço",
+                    "Comparar lojas",
+                    "Criar alerta"
+                ],
+                metadata={"lead_hot": True}
+            )
+        ]
+
+    async def _handle_cart_abandoned_check(
+        self,
+        message: IncomingMessage,
+        context: ConversationContext,
+        analysis: IntentAnalysis
+    ) -> List[BotResponse]:
+        """Trata verificação de carrinho abandonado."""
+        # Buscar carrinhos abandonados do usuário (mock)
+        abandoned_carts = await self._get_abandoned_carts(context.user_id)
+
+        if abandoned_carts:
+            # Disparar automação de recuperação
+            if AUTOMATION_AVAILABLE:
+                try:
+                    orchestrator = get_orchestrator()
+                    await orchestrator.trigger_automation(
+                        AutomationType.CART_ABANDONED,
+                        user_id=context.user_id,
+                        data={
+                            "user_name": context.user_name,
+                            "channel": context.channel.value,
+                            "abandoned_items": abandoned_carts,
+                        }
+                    )
+                except Exception as e:
+                    logger.warning("Erro ao disparar cart abandoned: %s", e)
+
+            # Formatar lista de itens abandonados
+            items_text = "\n".join([
+                f"• {item['name']} - R$ {item['price']:,.2f}"
+                for item in abandoned_carts[:5]
+            ])
+
+            response = f"""
+🛒 *Seus Itens Salvos*
+
+Encontrei alguns produtos que você mostrou interesse:
+
+{items_text}
+
+Quer que eu verifique se algum deles baixou de preço? 📉
+"""
+            return [
+                BotResponse(
+                    content=response,
+                    intent_detected=Intent.CART_ABANDONED_CHECK,
+                    quick_replies=[
+                        "Verificar preços",
+                        "Criar alertas",
+                        "Limpar lista"
+                    ]
+                )
+            ]
+
+        return [
+            BotResponse(
+                content="""
+🛒 *Nenhum item salvo*
+
+Você não tem produtos salvos no momento.
+
+Quer buscar algo? Me diga o que procura!
+""",
+                intent_detected=Intent.CART_ABANDONED_CHECK,
+                quick_replies=["Buscar produto", "Ver ofertas", "Menu"]
+            )
+        ]
+
+    async def _get_abandoned_carts(self, user_id: str) -> List[Dict]:
+        """Busca carrinhos abandonados do usuário."""
+        # TODO: Implementar busca real no banco de dados
+        # Por enquanto retorna mock para demonstração
+        return [
+            {"name": "iPhone 15 Pro 256GB", "price": 7499.00},
+            {"name": "AirPods Pro 2", "price": 1799.00},
+        ]
+
     # ========================================
     # AI ENRICHMENT
     # ========================================

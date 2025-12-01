@@ -131,7 +131,7 @@ async def get_my_subscription(current_user=Depends(get_current_user)):
     """
     Obtém assinatura atual do usuário.
     """
-    subscription = await subscription_service.get_subscription(str(current_user.id))
+    subscription = await subscription_service.get_subscription(str(current_user["id"]))
     
     return SubscriptionResponse(
         id=subscription.id,
@@ -149,7 +149,7 @@ async def get_usage(current_user=Depends(get_current_user)):
     """
     Obtém uso atual de todas as features.
     """
-    user_id = str(current_user.id)
+    user_id = str(current_user["id"])
     subscription = await subscription_service.get_subscription(user_id)
     plan_features = await subscription_service.get_plan_features(subscription.plan)
     
@@ -178,7 +178,7 @@ async def check_feature_access(
     Verifica se usuário pode usar uma feature específica.
     """
     can_use = await subscription_service.can_use_feature(
-        str(current_user.id),
+        str(current_user["id"]),
         feature
     )
     
@@ -226,6 +226,7 @@ async def upgrade_subscription(
     )
     
     # Criar preference no MercadoPago
+    user_id = current_user["id"]
     if MP_AVAILABLE and sdk:
         try:
             preference_data = {
@@ -247,11 +248,11 @@ async def upgrade_subscription(
                     "pending": f"{settings.FRONTEND_URL}/subscription/pending",
                 },
                 "auto_return": "approved",
-                "external_reference": f"{current_user.id}:{plan.value}:{cycle.value}",
+                "external_reference": f"{user_id}:{plan.value}:{cycle.value}",
                 "notification_url": f"{settings.API_URL}/webhooks/mercadopago",
                 "statement_descriptor": "DIDIN FACIL",
                 "metadata": {
-                    "user_id": str(current_user.id),
+                    "user_id": str(user_id),
                     "plan": plan.value,
                     "billing_cycle": cycle.value,
                 },
@@ -274,7 +275,7 @@ async def upgrade_subscription(
     
     # Fallback ou modo desenvolvimento: upgrade direto
     subscription = await subscription_service.upgrade_plan(
-        str(current_user.id),
+        str(current_user["id"]),
         plan,
         cycle
     )
@@ -297,7 +298,7 @@ async def cancel_subscription(current_user=Depends(get_current_user)):
     
     Mantém acesso até o final do período pago.
     """
-    user_id = str(current_user.id)
+    user_id = str(current_user["id"])
     subscription = await subscription_service.cancel_subscription(user_id)
     
     return {

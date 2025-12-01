@@ -1261,7 +1261,7 @@ export const Settings: React.FC = () => {
         </Card>
 
         {/* Pacotes de Créditos IA */}
-        <Card className="border-l-4 border-l-purple-500/50">
+        <Card className="border-l-4 border-l-purple-500/50" data-testid="settings-credits-section">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               🤖 {tFunc("settings.license.credits.title")}
@@ -1271,10 +1271,10 @@ export const Settings: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg border border-purple-200 dark:border-purple-900">
+            <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-lg border border-purple-200 dark:border-purple-900" data-testid="settings-credits-balance">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">{tFunc("settings.license.credits.your_credits")}:</span>
-                <span className="text-3xl font-bold text-tiktrend-primary">{licenseConfig.credits}</span>
+                <span className="text-3xl font-bold text-tiktrend-primary" data-testid="settings-credits-value">{licenseConfig.credits}</span>
               </div>
               <div className="text-xs text-muted-foreground mt-2 space-y-1">
                 <p>• {tFunc("settings.license.credits.usage.simple")}</p>
@@ -1283,30 +1283,31 @@ export const Settings: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
-              {creditPacks.map((pack) => (
+            <div className="grid gap-4 md:grid-cols-3" data-testid="settings-credit-packs">
+              {creditPacks.map((pack, index) => (
                 <Card
                   key={pack.name}
+                  data-testid={`settings-credit-pack-${index}`}
                   className={`relative overflow-hidden transition-all hover:shadow-lg ${pack.recommended ? "ring-2 ring-tiktrend-primary ring-offset-2" : ""}`}
                 >
                   {pack.recommended && pack.badge && (
-                    <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-tiktrend-primary text-xs px-3">
+                    <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-tiktrend-primary text-xs px-3" data-testid="recommended-badge">
                       ⭐ {pack.badge}
                     </Badge>
                   )}
                   <CardHeader className="pb-2 pt-6">
-                    <CardTitle className="text-lg text-center">{pack.name}</CardTitle>
+                    <CardTitle className="text-lg text-center" data-testid="pack-name">{pack.name}</CardTitle>
                     <div className="flex items-baseline justify-center">
-                      <span className="text-3xl font-bold">{pack.credits}</span>
+                      <span className="text-3xl font-bold" data-testid="pack-credits">{pack.credits}</span>
                       <span className="text-muted-foreground text-sm ml-1">créditos</span>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="text-center mb-4">
-                      <span className="text-2xl font-bold">{pack.price}</span>
+                      <span className="text-2xl font-bold" data-testid="pack-price">{pack.price}</span>
                       <p className="text-xs text-muted-foreground">{pack.perCredit}{tFunc("settings.license.credits.per_credit")}</p>
                     </div>
-                    <Button className="w-full" variant={pack.recommended ? "tiktrend" : "outline"}>
+                    <Button className="w-full" variant={pack.recommended ? "tiktrend" : "outline"} data-testid="buy-pack-button">
                       {tFunc("settings.license.credits.buy")}
                     </Button>
                   </CardContent>

@@ -1,0 +1,307 @@
+{
+  "name": "Seller Bot - New User Welcome",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "didin/new-user",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-new-user",
+      "name": "Webhook New User",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "new-user-welcome"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validar payload\nconst payload = $input.first().json.body || $input.first().json;\n\nconst required = ['user_id', 'data'];\nfor (const field of required) {\n  if (!payload[field]) {\n    throw new Error(`Campo obrigatório ausente: ${field}`);\n  }\n}\n\nconst data = payload.data;\nconst name = data.name || 'Cliente';\nconst phone = data.phone;\nconst email = data.email;\nconst channel = payload.channel || 'whatsapp';\n\n// Formatar telefone brasileiro\nlet formattedPhone = phone;\nif (phone && !phone.startsWith('55')) {\n  formattedPhone = '55' + phone.replace(/\\D/g, '');\n}\n\nreturn {\n  json: {\n    event_id: payload.event_id,\n    user_id: payload.user_id,\n    name: name,\n    phone: formattedPhone,\n    email: email,\n    channel: channel,\n    timestamp: payload.timestamp || new Date().toISOString(),\n    source: data.source || 'seller_bot'\n  }\n};"
+      },
+      "id": "validate-data",
+      "name": "Validar Dados",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-phone",
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-phone",
+      "name": "Tem Telefone?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.phone }}\",\n  \"textMessage\": {\n    \"text\": \"Olá {{ $json.name }}! 🎉\\n\\nBem-vindo ao *Didin Fácil*!\\n\\nSou seu assistente virtual e vou te ajudar a encontrar os melhores produtos com os melhores preços. 💰\\n\\n🔎 O que posso fazer por você:\\n• Comparar preços entre lojas\\n• Criar alertas de preço\\n• Recomendar ofertas\\n• Acompanhar seus pedidos\\n\\nO que você está procurando hoje?\\n\\n_Digite o nome do produto ou escolha uma opção:_\\n\\n*1* - Buscar produto\\n*2* - Ver ofertas do dia\\n*3* - Meus alertas\\n*4* - Falar com atendente\"\n  }\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "send-whatsapp-welcome",
+      "name": "Enviar WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [910, 200]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "automation_events",
+        "columns": "event_id, automation_type, user_id, channel, data, status, executed_at",
+        "options": {}
+      },
+      "id": "log-event",
+      "name": "Registrar Evento",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1130, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-email",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-email",
+      "name": "Tem Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [690, 500]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@didinfacil.com.br",
+        "toEmail": "={{ $json.email }}",
+        "subject": "Bem-vindo ao Didin Fácil! 🎉",
+        "emailType": "html",
+        "html": "<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; }\n    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; }\n    .header h1 { color: white; margin: 0; }\n    .content { padding: 30px; background: #f9f9f9; }\n    .feature { display: flex; align-items: center; margin: 15px 0; }\n    .feature-icon { font-size: 24px; margin-right: 15px; }\n    .cta { background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }\n    .footer { padding: 20px; text-align: center; font-size: 12px; color: #666; }\n  </style>\n</head>\n<body>\n  <div class=\"header\">\n    <h1>🎉 Bem-vindo ao Didin Fácil!</h1>\n  </div>\n  <div class=\"content\">\n    <p>Olá <strong>{{ $json.name }}</strong>,</p>\n    <p>Ficamos muito felizes em ter você conosco! O Didin Fácil é o seu comparador de preços inteligente.</p>\n    \n    <h3>O que você pode fazer:</h3>\n    <div class=\"feature\"><span class=\"feature-icon\">🔎</span> Comparar preços de milhares de lojas</div>\n    <div class=\"feature\"><span class=\"feature-icon\">🔔</span> Criar alertas quando o preço baixar</div>\n    <div class=\"feature\"><span class=\"feature-icon\">💰</span> Economizar em todas as suas compras</div>\n    <div class=\"feature\"><span class=\"feature-icon\">📱</span> Receber ofertas personalizadas</div>\n    \n    <a href=\"https://didinfacil.com.br\" class=\"cta\">Começar a Economizar</a>\n  </div>\n  <div class=\"footer\">\n    <p>Didin Fácil - Compare preços, economize sempre!</p>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-email-welcome",
+      "name": "Enviar Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [910, 500],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-didin",
+          "name": "SMTP Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"event_id\": \"{{ $('Validar Dados').item.json.event_id }}\",\n  \"message\": \"Welcome message sent\",\n  \"channels_used\": [\n    {{ $('Enviar WhatsApp').isExecuted ? '\"whatsapp\"' : '' }}\n    {{ $('Enviar Email').isExecuted ? ', \"email\"' : '' }}\n  ]\n}",
+        "options": {}
+      },
+      "id": "respond-success",
+      "name": "Responder Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1350, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "crm_contacts",
+        "columns": "external_id, name, phone, email, source, lead_score, created_at",
+        "options": {
+          "onConflict": "external_id"
+        }
+      },
+      "id": "upsert-crm",
+      "name": "Criar/Atualizar CRM",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [910, 350],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook New User": {
+      "main": [
+        [
+          {
+            "node": "Validar Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Dados": {
+      "main": [
+        [
+          {
+            "node": "Tem Telefone?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Tem Email?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Criar/Atualizar CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem Telefone?": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem Email?": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Enviar Email": {
+      "main": [
+        [
+          {
+            "node": "Registrar Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar/Atualizar CRM": {
+      "main": [
+        [
+          {
+            "node": "Registrar Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Evento": {
+      "main": [
+        [
+          {
+            "node": "Responder Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [
+    {
+      "name": "seller-bot",
+      "id": "seller-bot"
+    },
+    {
+      "name": "onboarding",
+      "id": "onboarding"
+    }
+  ]
+}

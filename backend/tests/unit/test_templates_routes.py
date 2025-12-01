@@ -2,20 +2,20 @@
 Unit tests for Content Templates Routes
 """
 
-import pytest
-from unittest.mock import AsyncMock, patch
-from datetime import datetime
 import json
+from datetime import datetime
+from unittest.mock import AsyncMock, patch
+from uuid import uuid4
 
-
-class MockUser:
-    id = "user_123"
-    email = "test@example.com"
+import pytest
 
 
 @pytest.fixture
 def mock_current_user():
-    return MockUser()
+    return {
+        "id": str(uuid4()),
+        "email": "test@example.com"
+    }
 
 
 @pytest.fixture
@@ -40,7 +40,8 @@ class TestTemplateService:
     
     @pytest.mark.asyncio
     async def test_create_template(self, mock_current_user, mock_redis):
-        from api.routes.templates import template_service, TemplateCreate, TemplatePlatform, TemplateCategory
+        from api.routes.templates import (TemplateCategory, TemplateCreate,
+                                          TemplatePlatform, template_service)
         
         with patch("api.routes.templates.redis_client", mock_redis):
             data = TemplateCreate(
@@ -53,7 +54,7 @@ class TestTemplateService:
                 variables=[]
             )
             
-            template = await template_service.create(str(mock_current_user.id), data)
+            template = await template_service.create(mock_current_user["id"], data)
             
             assert template.name == "Test Template"
             assert template.platform == "instagram"
@@ -83,7 +84,7 @@ class TestTemplateService:
         }
         
         with patch("api.routes.templates.redis_client", mock_redis):
-            template = await template_service.get(str(mock_current_user.id), "template-123")
+            template = await template_service.get(mock_current_user["id"], "template-123")
             
             assert template is not None
             assert template.id == "template-123"
@@ -98,7 +99,7 @@ class TestTemplateService:
         mock_redis.keys.return_value = []
         
         with patch("api.routes.templates.redis_client", mock_redis):
-            template = await template_service.get(str(mock_current_user.id), "nonexistent")
+            template = await template_service.get(mock_current_user["id"], "nonexistent")
             assert template is None
     
     @pytest.mark.asyncio
@@ -139,7 +140,7 @@ class TestTemplateService:
         mock_redis.keys.return_value = []
         
         with patch("api.routes.templates.redis_client", mock_redis):
-            templates = await template_service.list(str(mock_current_user.id))
+            templates = await template_service.list(mock_current_user["id"])
             
             assert len(templates) == 2
             # Should be sorted by usage_count (descending)
@@ -147,7 +148,7 @@ class TestTemplateService:
     
     @pytest.mark.asyncio
     async def test_update_template(self, mock_current_user, mock_redis):
-        from api.routes.templates import template_service, TemplateUpdate
+        from api.routes.templates import TemplateUpdate, template_service
         
         mock_redis.hgetall.return_value = {
             "id": "template-123",
@@ -167,7 +168,7 @@ class TestTemplateService:
         with patch("api.routes.templates.redis_client", mock_redis):
             update_data = TemplateUpdate(name="New Name", is_public=True)
             await template_service.update(
-                str(mock_current_user.id),
+                mock_current_user["id"],
                 "template-123",
                 update_data
             )
@@ -181,7 +182,7 @@ class TestTemplateService:
         mock_redis.delete.return_value = 1
         
         with patch("api.routes.templates.redis_client", mock_redis):
-            result = await template_service.delete(str(mock_current_user.id), "template-123")
+            result = await template_service.delete(mock_current_user["id"], "template-123")
             
             assert result is True
             mock_redis.delete.assert_called()
@@ -208,7 +209,7 @@ class TestTemplateService:
         
         with patch("api.routes.templates.redis_client", mock_redis):
             result = await template_service.render(
-                str(mock_current_user.id),
+                mock_current_user["id"],
                 "template-123",
                 {"product_name": "Smartphone XYZ", "price": "999.90"},
                 include_hashtags=True
@@ -240,7 +241,7 @@ class TestTemplateService:
         
         with patch("api.routes.templates.redis_client", mock_redis):
             result = await template_service.render(
-                str(mock_current_user.id),
+                mock_current_user["id"],
                 "template-123",
                 {"name": "World"},
                 include_hashtags=False
@@ -270,13 +271,13 @@ class TestTemplateService:
         
         with patch("api.routes.templates.redis_client", mock_redis):
             cloned = await template_service.clone(
-                str(mock_current_user.id),
+                mock_current_user["id"],
                 "original-123",
                 "My Clone"
             )
             
             assert cloned.name == "My Clone"
-            assert cloned.user_id == str(mock_current_user.id)
+            assert cloned.user_id == mock_current_user["id"]
             assert cloned.is_public is False  # Clones are private by default
 
 
@@ -303,7 +304,8 @@ class TestTemplateRoutes:
     
     @pytest.mark.asyncio
     async def test_get_default_templates(self):
-        from api.routes.templates import get_default_templates, DEFAULT_TEMPLATES
+        from api.routes.templates import (DEFAULT_TEMPLATES,
+                                          get_default_templates)
         
         result = await get_default_templates()
         
@@ -335,8 +337,9 @@ class TestTemplateValidation:
     """Tests for template validation"""
     
     def test_template_create_validation(self):
-        from api.routes.templates import TemplateCreate, TemplatePlatform, TemplateCategory
-        
+        from api.routes.templates import (TemplateCategory, TemplateCreate,
+                                          TemplatePlatform)
+
         # Valid template
         template = TemplateCreate(
             name="Valid Template",
@@ -347,7 +350,8 @@ class TestTemplateValidation:
         assert template.name == "Valid Template"
     
     def test_template_name_too_long(self):
-        from api.routes.templates import TemplateCreate, TemplatePlatform, TemplateCategory
+        from api.routes.templates import (TemplateCategory, TemplateCreate,
+                                          TemplatePlatform)
         from pydantic import ValidationError
         
         with pytest.raises(ValidationError):
@@ -359,7 +363,8 @@ class TestTemplateValidation:
             )
     
     def test_template_caption_too_long(self):
-        from api.routes.templates import TemplateCreate, TemplatePlatform, TemplateCategory
+        from api.routes.templates import (TemplateCategory, TemplateCreate,
+                                          TemplatePlatform)
         from pydantic import ValidationError
         
         with pytest.raises(ValidationError):
@@ -371,7 +376,8 @@ class TestTemplateValidation:
             )
     
     def test_template_too_many_hashtags(self):
-        from api.routes.templates import TemplateCreate, TemplatePlatform, TemplateCategory
+        from api.routes.templates import (TemplateCategory, TemplateCreate,
+                                          TemplatePlatform)
         from pydantic import ValidationError
         
         with pytest.raises(ValidationError):

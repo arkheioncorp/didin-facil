@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { NotificationsProvider } from "@/hooks/use-notifications";
+import { TutorialProvider } from "@/components/tutorial";
 import { analytics } from "@/lib/analytics";
 
 // Lazy load pages for code-splitting
@@ -35,7 +36,10 @@ const Contacts = lazy(() => import("@/pages/crm/Contacts"));
 const MetricsPage = lazy(() => import("@/pages/admin/Metrics"));
 const FinancialDashboard = lazy(() => import("@/pages/admin/Financial"));
 const AnalyticsDashboard = lazy(() => import("@/pages/analytics/AnalyticsDashboard"));
+const WhatsAppAnalytics = lazy(() => import("@/pages/analytics/WhatsAppAnalytics"));
 const ContentTemplates = lazy(() => import("@/pages/templates/ContentTemplates"));
+const Templates = lazy(() => import("@/pages/templates/Templates"));
+const SocialAnalytics = lazy(() => import("@/pages/admin/SocialAnalytics"));
 const MultiAccountManager = lazy(() => import("@/pages/accounts/MultiAccountManager"));
 const APIDocumentation = lazy(() => import("@/pages/docs/APIDocumentation"));
 const Checkout = lazy(() => import("@/pages/Checkout"));
@@ -59,22 +63,23 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system">
       <NotificationsProvider>
-        <ErrorBoundary>
-          <BrowserRouter>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                {/* Public Legal Pages (no auth required) */}
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/cookies" element={<Cookies />} />
-                <Route path="/acceptable-use" element={<AcceptableUse />} />
+        <TutorialProvider>
+          <ErrorBoundary>
+            <BrowserRouter>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* Public Legal Pages (no auth required) */}
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/cookies" element={<Cookies />} />
+                  <Route path="/acceptable-use" element={<AcceptableUse />} />
 
-                {/* Auth routes (no layout) */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Login />} />
-                <Route path="/subscription" element={<Subscription />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/setup" element={<SetupWizard />} />
+                  {/* Auth routes (no layout) */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Login />} />
+                  <Route path="/subscription" element={<Subscription />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/setup" element={<SetupWizard />} />
 
                 {/* App routes (with layout) */}
                 <Route element={<ProtectedRoute />}>
@@ -94,6 +99,7 @@ function App() {
                       <Route path="instagram" element={<InstagramAutomation />} />
                       <Route path="tiktok" element={<TikTokAutomation />} />
                       <Route path="youtube" element={<YouTubeAutomation />} />
+                      <Route path="templates" element={<Templates />} />
                     </Route>
 
                     {/* Automation Routes */}
@@ -116,6 +122,8 @@ function App() {
                       <Route path="metrics" element={<MetricsPage />} />
                       <Route path="financial" element={<FinancialDashboard />} />
                       <Route path="analytics" element={<AnalyticsDashboard />} />
+                      <Route path="social-analytics" element={<SocialAnalytics />} />
+                      <Route path="whatsapp-analytics" element={<WhatsAppAnalytics />} />
                       <Route path="templates" element={<ContentTemplates />} />
                       <Route path="accounts" element={<MultiAccountManager />} />
                       <Route path="docs" element={<APIDocumentation />} />
@@ -130,9 +138,10 @@ function App() {
           </BrowserRouter>
         </ErrorBoundary>
         <Toaster />
-      </NotificationsProvider>
-    </ThemeProvider>
-  );
+      </TutorialProvider>
+    </NotificationsProvider>
+  </ThemeProvider>
+);
 }
 
 export default App;

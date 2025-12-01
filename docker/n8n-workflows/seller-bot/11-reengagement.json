@@ -1,0 +1,142 @@
+{
+  "name": "Seller Bot - Reengagement Campaign",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "didin/reengagement",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-reengagement",
+      "name": "Webhook Reengagement",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "reengagement"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json.body || $input.first().json;\nconst data = payload.data || {};\n\nreturn {\n  json: {\n    event_id: payload.event_id,\n    user_id: payload.user_id,\n    name: data.name || 'Cliente',\n    days_inactive: data.days_inactive || 30,\n    last_product_viewed: data.last_product_viewed,\n    phone: data.phone,\n    channel: payload.channel || 'whatsapp',\n    timestamp: payload.timestamp\n  }\n};"
+      },
+      "id": "parse-reengagement-data",
+      "name": "Parse Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT p.name, p.current_price, p.store, p.url, ROUND(((p.original_price - p.current_price) / NULLIF(p.original_price, 0) * 100)::numeric, 0) as discount FROM products p WHERE p.is_featured = true OR discount > 20 ORDER BY discount DESC NULLS LAST LIMIT 3"
+      },
+      "id": "get-trending-offers",
+      "name": "Buscar Ofertas em Alta",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [690, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const userData = $('Parse Data').first().json;\nconst products = $input.all();\n\nlet offersText = '';\nif (products.length > 0) {\n  offersText = products.map((p, i) => {\n    const item = p.json;\n    return `🔥 ${item.name} - R$ ${item.current_price} (${item.discount}% OFF)`;\n  }).join('\\n');\n}\n\nlet message = '';\n\nif (userData.days_inactive >= 30) {\n  message = `Oi ${userData.name}! 👋\\n\\nSenti sua falta! Faz um tempinho que você não aparece... 😊\\n\\nSeparei ofertas incríveis pra você:\\n\\n${offersText}\\n\\n🎁 *Bônus de volta:* Use VOLTEI15 e ganhe 15% OFF!\\n\\nQuer ver mais ofertas?`;\n} else {\n  message = `Oi ${userData.name}! 😊\\n\\nTemos novidades! Confira as ofertas mais quentes:\\n\\n${offersText}\\n\\nQuer que eu busque algo específico?`;\n}\n\nreturn {\n  json: {\n    ...userData,\n    message: message,\n    offers_count: products.length\n  }\n};"
+      },
+      "id": "format-reengagement",
+      "name": "Formatar Mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.phone || $json.user_id }}\",\n  \"textMessage\": {\n    \"text\": \"{{ $json.message }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "send-reengagement",
+      "name": "Enviar Reengajamento",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "table": "crm_contacts",
+        "columns": "last_reengagement_at, reengagement_count",
+        "where": {
+          "values": [
+            {
+              "column": "external_id",
+              "value": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "log-reengagement",
+      "name": "Registrar Tentativa",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1350, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"event_id\": \"{{ $('Parse Data').first().json.event_id }}\",\n  \"message\": \"Reengagement campaign sent\",\n  \"days_inactive\": {{ $('Parse Data').first().json.days_inactive }}\n}",
+        "options": {}
+      },
+      "id": "respond-reengagement-success",
+      "name": "Responder Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1570, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Reengagement": {
+      "main": [[{"node": "Parse Data", "type": "main", "index": 0}]]
+    },
+    "Parse Data": {
+      "main": [[{"node": "Buscar Ofertas em Alta", "type": "main", "index": 0}]]
+    },
+    "Buscar Ofertas em Alta": {
+      "main": [[{"node": "Formatar Mensagem", "type": "main", "index": 0}]]
+    },
+    "Formatar Mensagem": {
+      "main": [[{"node": "Enviar Reengajamento", "type": "main", "index": 0}]]
+    },
+    "Enviar Reengajamento": {
+      "main": [[{"node": "Registrar Tentativa", "type": "main", "index": 0}]]
+    },
+    "Registrar Tentativa": {
+      "main": [[{"node": "Responder Sucesso", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {"executionOrder": "v1"},
+  "tags": [{"name": "seller-bot"}, {"name": "reengagement"}]
+}

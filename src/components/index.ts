@@ -5,4 +5,5 @@ export * from "./product";
 export * from "./providers";
 export * from "./setup";
 export * from "./auth";
+export * from "./tutorial";
 

@@ -3,33 +3,45 @@ TikTrend Finder - API Gateway
 FastAPI application entry point
 """
 
+import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from .routes import (
-    auth, products, copy, license, webhooks, bot,
-    whatsapp, chatwoot, instagram, tiktok, youtube, content, scheduler,
-    integrations, social_auth, metrics, status_webhooks,
-    analytics, templates, accounts, api_docs, marketplaces,
-    analytics_social, chatbot, automation, template_library,
-    email, campaigns, crm, seller_bot,
-    accounting, credits, checkout, users, favorites,  # New financial routes + favorites
-    hub_health  # Hub monitoring & health checks
-)
-from .routers import crm_advanced  # CRM Advanced Services
-from .middleware.ratelimit import RateLimitMiddleware
-from .middleware.security import SecurityHeadersMiddleware
-from .middleware.metrics import MetricsMiddleware
-from .database.connection import init_database, close_database
-from .utils.security import security_monitor
-from .utils.integrity import IntegrityChecker
 from shared.config import settings
+from shared.redis import close_redis, init_redis
 from shared.sentry import sentry
 from shared.storage import storage
-import os
-import logging
+
+from .database.connection import close_database, init_database
+from .middleware.metrics import MetricsMiddleware
+from .middleware.ratelimit import RateLimitMiddleware
+from .middleware.security import SecurityHeadersMiddleware
+from .routers import crm_advanced  # CRM Advanced Services
+from .routes import hub_health  # Hub monitoring & health checks
+from .routes import whatsapp_analytics  # WhatsApp Analytics API
+from .routes import whatsapp_chatbot  # WhatsApp Chatbot routes
+from .routes import whatsapp_v2  # WhatsApp Hub V2 routes
+from .routes import whatsapp_webhook  # WhatsApp Real Webhook (Evolution API)
+from .routes import (accounting, accounts,  # New financial routes + favorites
+                     analytics, analytics_social, api_docs, auth, automation,
+                     automation_dashboard, bot, campaigns, chatbot, chatwoot,
+                     checkout, content, copy, credits, crm, email, favorites,
+                     instagram, integrations, license, marketplaces, metrics,
+                     products, scheduler, scraper, seller_bot, social_auth,
+                     status_webhooks, template_library, templates, tiktok,
+                     users, webhooks, whatsapp, youtube)
+from .utils.integrity import IntegrityChecker
+from .utils.security import security_monitor
+
+# Automation scheduler imports
+try:
+    from modules.automation import (get_orchestrator, start_scheduler,
+                                    stop_scheduler)
+    SCHEDULER_AVAILABLE = True
+except ImportError:
+    SCHEDULER_AVAILABLE = False
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -61,6 +73,8 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info(f"🚀 Starting TikTrend API (env: {settings.ENVIRONMENT})")
     await init_database()
+    await init_redis()
+    logger.info("🔴 Redis initialized")
     
     # Log storage status
     if storage.is_configured:
@@ -68,11 +82,30 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("⚠️ Cloudflare R2 storage disabled (not configured)")
     
+    # Start automation scheduler
+    if SCHEDULER_AVAILABLE:
+        try:
+            orchestrator = get_orchestrator()
+            await start_scheduler(orchestrator)
+            logger.info("🤖 Automation scheduler started")
+        except Exception as e:
+            logger.warning(f"⚠️ Automation scheduler failed to start: {e}")
+    
     yield
     
     # Shutdown
     logger.info("🛑 Shutting down TikTrend API")
+    
+    # Stop automation scheduler
+    if SCHEDULER_AVAILABLE:
+        try:
+            await stop_scheduler()
+            logger.info("🤖 Automation scheduler stopped")
+        except Exception as e:
+            logger.warning(f"⚠️ Error stopping scheduler: {e}")
+    
     await close_database()
+    await close_redis()
     security_monitor.stop()
     
     # Flush Sentry before exit
@@ -111,22 +144,23 @@ app.include_router(users.router, prefix="/users", tags=["Users"])
 app.include_router(products.router, prefix="/products", tags=["Products"])
 app.include_router(favorites.router, prefix="/favorites", tags=["Favorites"])
 app.include_router(copy.router, prefix="/copy", tags=["AI Copy Generation"])
-app.include_router(license.router, prefix="/license", tags=["License Management"])
+app.include_router(license.router, prefix="/license", tags=["License"])
 app.include_router(webhooks.router, prefix="/webhooks", tags=["Webhooks"])
 app.include_router(bot.router, tags=["Seller Bot (Premium)"])
-app.include_router(whatsapp.router, prefix="/whatsapp", tags=["WhatsApp Automation"])
-app.include_router(chatwoot.router, prefix="/chatwoot", tags=["Customer Support"])
-app.include_router(instagram.router, prefix="/instagram", tags=["Instagram Automation"])
-app.include_router(tiktok.router, prefix="/tiktok", tags=["TikTok Automation"])
-app.include_router(youtube.router, prefix="/youtube", tags=["YouTube Automation"])
-app.include_router(content.router, prefix="/content", tags=["Content Generator"])
+app.include_router(whatsapp.router, prefix="/whatsapp", tags=["WhatsApp"])
+app.include_router(chatwoot.router, prefix="/chatwoot", tags=["Support"])
+app.include_router(instagram.router, prefix="/instagram", tags=["Instagram"])
+app.include_router(tiktok.router, prefix="/tiktok", tags=["TikTok"])
+app.include_router(youtube.router, prefix="/youtube", tags=["YouTube"])
+app.include_router(content.router, prefix="/content", tags=["Content"])
+app.include_router(scraper.router, prefix="/scraper", tags=["Scraper"])
 app.include_router(
-    scheduler.router, prefix="/scheduler", tags=["Post Scheduler"]
+    scheduler.router, prefix="/scheduler", tags=["Scheduler"]
 )
 app.include_router(
     integrations.router,
     prefix="/integrations",
-    tags=["n8n & Typebot Integrations"]
+    tags=["n8n & Typebot"]
 )
 app.include_router(
     social_auth.router,
@@ -190,6 +224,11 @@ app.include_router(
     tags=["Automation (n8n)"]
 )
 app.include_router(
+    automation_dashboard.router,
+    prefix="/automation/dashboard",
+    tags=["Automation Dashboard"]
+)
+app.include_router(
     template_library.router,
     prefix="/templates/library",
     tags=["Template Library"]
@@ -239,6 +278,34 @@ app.include_router(
 app.include_router(
     hub_health.router,
     tags=["Hub Monitoring"]
+)
+
+# WhatsApp Hub V2 (Evolution API Integration)
+app.include_router(
+    whatsapp_v2.router,
+    prefix="/api",
+    tags=["WhatsApp Hub V2"]
+)
+
+# WhatsApp Chatbot (Bot Logic)
+app.include_router(
+    whatsapp_chatbot.router,
+    prefix="/api",
+    tags=["WhatsApp Chatbot"]
+)
+
+# WhatsApp Real Webhook (Evolution API Integration)
+app.include_router(
+    whatsapp_webhook.router,
+    prefix="/api",
+    tags=["WhatsApp Webhook"]
+)
+
+# WhatsApp Analytics API
+app.include_router(
+    whatsapp_analytics.router,
+    prefix="/api",
+    tags=["WhatsApp Analytics"]
 )
 
 

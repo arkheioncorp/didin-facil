@@ -18,8 +18,10 @@ import { useToast } from "@/hooks/use-toast";
 import { ProductsIcon, ExportIcon, StarIcon, TrendingIcon } from "@/components/icons";
 import { useFavoritesStore } from "@/stores";
 import { VirtualizedGrid } from "@/components/product/VirtualizedGrid";
-import { ProductActionsPanel } from "@/components/product/ProductActionsPanel";
+import { ProductActionsPanel } from "@/components/product";
 import { ProductHistoryChart } from "@/components/product/ProductHistoryChart";
+import { BulkSelectionBar } from "@/components/product/bulk";
+import { useBulkActionsStore, useProductSelection } from "@/stores/bulkActionsStore";
 import { analytics } from "@/lib/analytics";
 import { cn, formatCurrency, formatNumber } from "@/lib/utils";
 import { Grid3X3, List, X, Heart, Download, RefreshCw, Info, ExternalLink, BarChart3 } from "lucide-react";
@@ -374,6 +376,10 @@ export const Products: React.FC = () => {
   const { isFavorite, addFavorite: addToFavorites, removeFavorite: removeFromFavorites } = useFavoritesStore();
   const { toast } = useToast();
   
+  // Bulk actions store for advanced multi-product actions
+  const { selectProduct, deselectProduct, deselectAll } = useBulkActionsStore();
+  const { selectedProducts: bulkSelectedProducts } = useProductSelection();
+  
   // State
   const [products, setProducts] = React.useState<Product[]>([]);
   const [categories, setCategories] = React.useState<CategoryInfo[]>(DEFAULT_CATEGORIES);
@@ -710,8 +716,19 @@ export const Products: React.FC = () => {
     updateSearchParams({ page: String(newPage) });
   };
 
-  // Bulk selection handlers
+  // Bulk selection handlers - sync with global store
   const handleSelectProduct = (productId: string, checked: boolean) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    // Sync with global bulk actions store
+    if (checked) {
+      selectProduct(product);
+    } else {
+      deselectProduct(productId);
+    }
+    
+    // Keep local state in sync
     setSelectedProducts(prev => {
       const newSet = new Set(prev);
       if (checked) {
@@ -725,8 +742,12 @@ export const Products: React.FC = () => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
+      // Add all to global store - select one by one
+      products.forEach(p => selectProduct(p));
       setSelectedProducts(new Set(products.map(p => p.id)));
     } else {
+      // Clear global store
+      deselectAll();
       setSelectedProducts(new Set());
     }
   };
@@ -855,6 +876,19 @@ export const Products: React.FC = () => {
           </div>
         </Card>
       </div>
+
+      {/* Advanced Bulk Selection Bar */}
+      <BulkSelectionBar 
+        totalProducts={products.length}
+        onBulkAction={(actionId) => {
+          console.log(`Executing bulk action: ${actionId} on ${bulkSelectedProducts.length} products`);
+          // Analytics tracking
+          analytics.track('export_performed', { 
+            format: actionId, 
+            count: bulkSelectedProducts.length 
+          });
+        }} 
+      />
 
       {/* Results Count */}
       <div className="flex items-center justify-between">

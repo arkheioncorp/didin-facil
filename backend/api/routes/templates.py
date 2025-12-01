@@ -445,7 +445,7 @@ async def list_templates(
     - **include_public**: Include public templates from community
     """
     templates = await template_service.list(
-        str(current_user.id),
+        str(current_user["id"]),
         platform,
         category,
         include_public
@@ -459,7 +459,7 @@ async def create_template(
     current_user=Depends(get_current_user)
 ):
     """Create a new template."""
-    template = await template_service.create(str(current_user.id), data)
+    template = await template_service.create(str(current_user["id"]), data)
     return template.model_dump()
 
 
@@ -486,7 +486,7 @@ async def get_template(
     current_user=Depends(get_current_user)
 ):
     """Get template by ID."""
-    template = await template_service.get(str(current_user.id), template_id)
+    template = await template_service.get(str(current_user["id"]), template_id)
     if not template:
         raise HTTPException(404, "Template not found")
     return template.model_dump()
@@ -500,7 +500,7 @@ async def update_template(
 ):
     """Update a template."""
     template = await template_service.update(
-        str(current_user.id),
+        str(current_user["id"]),
         template_id,
         data
     )
@@ -515,7 +515,7 @@ async def delete_template(
     current_user=Depends(get_current_user)
 ):
     """Delete a template."""
-    success = await template_service.delete(str(current_user.id), template_id)
+    success = await template_service.delete(str(current_user["id"]), template_id)
     if not success:
         raise HTTPException(404, "Template not found")
     return {"status": "deleted"}
@@ -534,7 +534,7 @@ async def render_template(
     """
     try:
         result = await template_service.render(
-            str(current_user.id),
+            str(current_user["id"]),
             template_id,
             request.variables,
             request.include_hashtags
@@ -553,7 +553,7 @@ async def clone_template(
     """Clone a template (public or own) to your library."""
     try:
         template = await template_service.clone(
-            str(current_user.id),
+            str(current_user["id"]),
             template_id,
             new_name
         )

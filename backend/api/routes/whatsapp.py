@@ -68,7 +68,7 @@ async def create_instance(
         # Save instance to DB
         query = WhatsAppInstance.__table__.insert().values(
             id=uuid.uuid4(),
-            user_id=current_user.id,
+            user_id=current_user["id"],
             name=data.instance_name,
             status="created",
             webhook_url=webhook_url,
@@ -311,7 +311,7 @@ async def get_instance_status(
         raise HTTPException(status_code=404, detail="Instance not found")
     
     # Check ownership
-    if instance.user_id != current_user.id:
+    if instance.user_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     from shared.redis import get_redis
@@ -356,7 +356,7 @@ async def force_reconnect(
     if not instance:
         raise HTTPException(status_code=404, detail="Instance not found")
 
-    if instance.user_id != current_user.id:
+    if instance.user_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     # Try to reconnect via Hub
@@ -399,7 +399,7 @@ async def list_messages(
         raise HTTPException(status_code=404, detail="Instance not found")
 
     # Check ownership
-    if instance.user_id != current_user.id and not current_user.is_admin:
+    if instance.user_id != current_user["id"] and not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     # Fetch messages

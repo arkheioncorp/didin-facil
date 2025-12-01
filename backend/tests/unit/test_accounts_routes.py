@@ -9,8 +9,17 @@ import json
 
 
 class MockUser:
-    id = "user_123"
-    email = "test@example.com"
+    """Mock user that supports both attribute and subscript access"""
+    def __init__(self):
+        self.id = "user_123"
+        self.email = "test@example.com"
+        self._data = {"id": "user_123", "email": "test@example.com"}
+    
+    def __getitem__(self, key):
+        return self._data[key]
+    
+    def __contains__(self, key):
+        return key in self._data
 
 
 @pytest.fixture

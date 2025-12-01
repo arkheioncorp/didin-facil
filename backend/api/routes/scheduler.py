@@ -71,7 +71,7 @@ async def schedule_post(
         )
     
     post = ScheduledPost(
-        user_id=str(current_user.id),
+        user_id=str(current_user["id"]),
         platform=platform,
         scheduled_time=data.scheduled_time,
         content_type=data.content_type,
@@ -129,7 +129,7 @@ async def schedule_post_with_file(
     
     # Salvar arquivo
     upload_dir = os.path.join(
-        settings.DATA_DIR, "scheduled_uploads", str(current_user.id)
+        settings.DATA_DIR, "scheduled_uploads", str(current_user["id"])
     )
     os.makedirs(upload_dir, exist_ok=True)
     
@@ -143,7 +143,7 @@ async def schedule_post_with_file(
     hashtag_list = [h.strip() for h in hashtags.split(",") if h.strip()]
     
     post = ScheduledPost(
-        user_id=str(current_user.id),
+        user_id=str(current_user["id"]),
         platform=platform_enum,
         scheduled_time=scheduled_dt,
         content_type=content_type,
@@ -182,7 +182,7 @@ async def list_scheduled_posts(
             )
     
     posts = await scheduler.get_user_posts(
-        user_id=str(current_user.id),
+        user_id=str(current_user["id"]),
         status=status_filter,
         limit=limit
     )
@@ -211,7 +211,7 @@ async def cancel_post(
     current_user=Depends(get_current_user)
 ):
     """Cancela um post agendado."""
-    success = await scheduler.cancel(post_id, str(current_user.id))
+    success = await scheduler.cancel(post_id, str(current_user["id"]))
     
     if not success:
         raise HTTPException(
@@ -225,7 +225,7 @@ async def cancel_post(
 @router.get("/stats")
 async def get_scheduler_stats(current_user=Depends(get_current_user)):
     """Retorna estatísticas do agendador."""
-    posts = await scheduler.get_user_posts(str(current_user.id), limit=1000)
+    posts = await scheduler.get_user_posts(str(current_user["id"]), limit=1000)
     
     stats = {
         "total": len(posts),
@@ -275,7 +275,7 @@ async def get_dlq_posts(
     # Filtrar apenas posts do usuário atual (admin vê todos)
     user_posts = [
         p for p in posts 
-        if p.user_id == str(current_user.id) or getattr(current_user, 'is_admin', False)
+        if p.user_id == str(current_user["id"]) or getattr(current_user, 'is_admin', False)
     ]
     
     return [
@@ -327,7 +327,7 @@ async def get_dlq_stats(
     # Filtrar por usuário
     user_posts = [
         p for p in posts 
-        if p.user_id == str(current_user.id) or getattr(current_user, 'is_admin', False)
+        if p.user_id == str(current_user["id"]) or getattr(current_user, 'is_admin', False)
     ]
     
     # Calcular estatísticas
@@ -377,7 +377,7 @@ async def retry_dlq_post(
     
     post = ScheduledPost.model_validate_json(data)
     
-    if post.user_id != str(current_user.id) and not getattr(current_user, 'is_admin', False):
+    if post.user_id != str(current_user["id"]) and not getattr(current_user, 'is_admin', False):
         raise HTTPException(status_code=403, detail="Não autorizado")
     
     success = await scheduler.retry_dlq_post(post_id)
@@ -421,7 +421,7 @@ async def retry_all_dlq_posts(
             
             # Verificar permissão
             is_admin = getattr(current_user, 'is_admin', False)
-            if post.user_id != str(current_user.id) and not is_admin:
+            if post.user_id != str(current_user["id"]) and not is_admin:
                 error_count += 1
                 continue
             
@@ -466,7 +466,7 @@ async def delete_all_dlq_posts(
             
             # Verificar permissão
             is_admin = getattr(current_user, 'is_admin', False)
-            if post.user_id != str(current_user.id) and not is_admin:
+            if post.user_id != str(current_user["id"]) and not is_admin:
                 error_count += 1
                 continue
             
@@ -500,7 +500,7 @@ async def remove_from_dlq(
     
     post = ScheduledPost.model_validate_json(data)
     
-    if post.user_id != str(current_user.id) and not getattr(current_user, 'is_admin', False):
+    if post.user_id != str(current_user["id"]) and not getattr(current_user, 'is_admin', False):
         raise HTTPException(status_code=403, detail="Não autorizado")
     
     # Remover da DLQ e do Redis

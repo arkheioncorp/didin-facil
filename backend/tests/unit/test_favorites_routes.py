@@ -14,7 +14,7 @@ from uuid import uuid4
 @pytest.fixture
 def mock_user():
     """Mock de usuário autenticado."""
-    return {"id": "user-123", "email": "test@example.com"}
+    return {"id": str(uuid4()), "email": "test@example.com"}
 
 
 @pytest.fixture
@@ -31,8 +31,8 @@ def mock_db():
 def favorite_data():
     """Dados de favorito."""
     return {
-        "product_id": "prod-123",
-        "list_id": "list-1",
+        "product_id": str(uuid4()),
+        "list_id": str(uuid4()),
         "notes": "Great product!",
     }
 
@@ -69,11 +69,17 @@ class TestGetFavorites:
     async def test_get_favorites_with_products(self, mock_user, mock_db):
         """Testa listagem de favoritos com produtos."""
         now = datetime.now(timezone.utc)
+        fav_id_1 = str(uuid4())
+        fav_id_2 = str(uuid4())
+        prod_id_1 = str(uuid4())
+        prod_id_2 = str(uuid4())
+        list_id_1 = str(uuid4())
+        
         mock_db.fetch_all = AsyncMock(
             return_value=[
                 {
-                    "id": "fav-1",
-                    "product_id": "prod-1",
+                    "id": fav_id_1,
+                    "product_id": prod_id_1,
                     "list_id": None,
                     "notes": "Nice!",
                     "added_at": now,
@@ -90,9 +96,9 @@ class TestGetFavorites:
                     "is_trending": True,
                 },
                 {
-                    "id": "fav-2",
-                    "product_id": "prod-2",
-                    "list_id": "list-1",
+                    "id": fav_id_2,
+                    "product_id": prod_id_2,
+                    "list_id": list_id_1,
                     "notes": None,
                     "added_at": now,
                     "product_title": None,  # Produto não encontrado
@@ -125,12 +131,13 @@ class TestGetFavorites:
     async def test_get_favorites_with_list_filter(self, mock_user, mock_db):
         """Testa listagem com filtro de lista."""
         mock_db.fetch_all = AsyncMock(return_value=[])
+        list_id = str(uuid4())
 
         with patch("api.routes.favorites.database", mock_db), \
              patch("api.routes.favorites.get_current_user", return_value=mock_user):
             from api.routes.favorites import get_favorites
 
-            result = await get_favorites("list-1", 100, 0, mock_user)
+            result = await get_favorites(list_id, 100, 0, mock_user)
 
             assert result == []
             # Verificar que query inclui list_id
@@ -164,7 +171,7 @@ class TestAddFavorite:
     @pytest.mark.asyncio
     async def test_add_favorite_already_exists(self, mock_user, mock_db, favorite_data):
         """Testa adição de favorito já existente."""
-        mock_db.fetch_one = AsyncMock(return_value={"id": "existing-fav"})
+        mock_db.fetch_one = AsyncMock(return_value={"id": str(uuid4())})
 
         with patch("api.routes.favorites.database", mock_db), \
              patch("api.routes.favorites.get_current_user", return_value=mock_user):
@@ -188,7 +195,8 @@ class TestAddFavorite:
              patch("api.routes.favorites.get_current_user", return_value=mock_user):
             from api.routes.favorites import add_favorite, FavoriteCreate
 
-            request = FavoriteCreate(product_id="prod-123")
+            # product_id must be a valid UUID
+            request = FavoriteCreate(product_id=str(uuid4()))
             result = await add_favorite(request, mock_user)
 
             assert result.list_id is None
@@ -210,7 +218,7 @@ class TestRemoveFavorite:
              patch("api.routes.favorites.get_current_user", return_value=mock_user):
             from api.routes.favorites import remove_favorite
 
-            result = await remove_favorite("prod-123", mock_user)
+            result = await remove_favorite(str(uuid4()), mock_user)
 
             assert result is None
             mock_db.execute.assert_called_once()
@@ -226,7 +234,7 @@ class TestRemoveFavorite:
             from fastapi import HTTPException
 
             with pytest.raises(HTTPException) as exc_info:
-                await remove_favorite("prod-999", mock_user)
+                await remove_favorite(str(uuid4()), mock_user)
 
             assert exc_info.value.status_code == 404
             assert "not found" in exc_info.value.detail
@@ -244,7 +252,8 @@ class TestFavoriteLists:
         mock_db.fetch_all = AsyncMock(return_value=[])
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
+             patch("api.routes.favorites.get_current_user",
+                   return_value=mock_user):
             from api.routes.favorites import get_favorite_lists
 
             result = await get_favorite_lists(mock_user)
@@ -255,10 +264,13 @@ class TestFavoriteLists:
     async def test_get_favorite_lists_with_data(self, mock_user, mock_db):
         """Testa listagem de listas com dados."""
         now = datetime.now(timezone.utc)
+        list_id_1 = str(uuid4())
+        list_id_2 = str(uuid4())
+        
         mock_db.fetch_all = AsyncMock(
             return_value=[
                 {
-                    "id": "list-1",
+                    "id": list_id_1,
                     "name": "Wish List",
                     "description": "My wishes",
                     "color": "#FF0000",
@@ -267,7 +279,7 @@ class TestFavoriteLists:
                     "created_at": now,
                 },
                 {
-                    "id": "list-2",
+                    "id": list_id_2,
                     "name": "To Buy",
                     "description": None,
                     "color": None,
@@ -279,7 +291,8 @@ class TestFavoriteLists:
         )
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
+             patch("api.routes.favorites.get_current_user",
+                   return_value=mock_user):
             from api.routes.favorites import get_favorite_lists
 
             result = await get_favorite_lists(mock_user)
@@ -324,12 +337,14 @@ class TestFavoriteLists:
     async def test_delete_favorite_list_success(self, mock_user, mock_db):
         """Testa remoção de lista com sucesso."""
         mock_db.execute = AsyncMock(return_value=1)
+        list_id = str(uuid4())
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
+             patch("api.routes.favorites.get_current_user",
+                   return_value=mock_user):
             from api.routes.favorites import delete_favorite_list
 
-            result = await delete_favorite_list("list-1", mock_user)
+            result = await delete_favorite_list(list_id, mock_user)
 
             assert result is None
             # Deve chamar execute 2 vezes: update + delete
@@ -340,14 +355,16 @@ class TestFavoriteLists:
         """Testa remoção de lista não encontrada."""
         # Primeiro execute (update) retorna ok, segundo (delete) retorna 0
         mock_db.execute = AsyncMock(side_effect=[1, 0])
+        list_id = str(uuid4())
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
+             patch("api.routes.favorites.get_current_user",
+                   return_value=mock_user):
             from api.routes.favorites import delete_favorite_list
             from fastapi import HTTPException
 
             with pytest.raises(HTTPException) as exc_info:
-                await delete_favorite_list("list-999", mock_user)
+                await delete_favorite_list(list_id, mock_user)
 
             assert exc_info.value.status_code == 404
 
@@ -362,12 +379,13 @@ class TestSchemas:
         """Testa schema de ProductInfo."""
         from api.routes.favorites import ProductInfo
 
+        product_id = str(uuid4())
         product = ProductInfo(
-            id="prod-1",
+            id=product_id,
             title="Test Product",
             price=99.90,
         )
-        assert product.id == "prod-1"
+        assert product.id == product_id
         assert product.currency == "BRL"
         assert product.is_trending is False
 
@@ -375,8 +393,9 @@ class TestSchemas:
         """Testa schema de FavoriteCreate."""
         from api.routes.favorites import FavoriteCreate
 
-        fav = FavoriteCreate(product_id="prod-1")
-        assert fav.product_id == "prod-1"
+        product_id = str(uuid4())
+        fav = FavoriteCreate(product_id=product_id)
+        assert fav.product_id == product_id
         assert fav.list_id is None
         assert fav.notes is None
 
@@ -413,8 +432,9 @@ class TestSchemas:
         from api.routes.favorites import FavoriteListResponse
 
         now = datetime.now(timezone.utc)
+        list_id = str(uuid4())
         lst = FavoriteListResponse(
-            id="list-1",
+            id=list_id,
             name="My List",
             created_at=now,
         )
@@ -448,11 +468,13 @@ class TestEdgeCases:
     async def test_product_with_null_values(self, mock_user, mock_db):
         """Testa produto com valores nulos."""
         now = datetime.now(timezone.utc)
+        fav_id = str(uuid4())
+        product_id = str(uuid4())
         mock_db.fetch_all = AsyncMock(
             return_value=[
                 {
-                    "id": "fav-1",
-                    "product_id": "prod-1",
+                    "id": fav_id,
+                    "product_id": product_id,
                     "list_id": None,
                     "notes": None,
                     "added_at": now,
@@ -472,7 +494,8 @@ class TestEdgeCases:
         )
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
+             patch("api.routes.favorites.get_current_user",
+                   return_value=mock_user):
             from api.routes.favorites import get_favorites
 
             result = await get_favorites(None, 100, 0, mock_user)

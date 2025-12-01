@@ -1,26 +1,17 @@
 """
 Testes para o módulo de subscription/planos.
+Atualizado para os novos schemas (FeatureLimit, PlanFeatures, Subscription, UsageRecord).
 """
-import pytest
-from unittest.mock import AsyncMock
+import json
 from datetime import datetime, timedelta
 from decimal import Decimal
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from modules.subscription.plans import (
-    PlanTier,
-    FeatureLimit,
-    PlanFeatures,
-    SubscriptionService,
-    Subscription,
-    UsageRecord,
-)
-
-# Alias para compatibilidade com testes existentes
-PlanLimits = FeatureLimit
-SubscriptionPlan = PlanFeatures
-SubscriptionManager = SubscriptionService
-UserSubscription = Subscription
-FeatureUsage = UsageRecord
+import pytest
+from modules.subscription.plans import (PLANS, BillingCycle, FeatureCategory,
+                                        FeatureLimit, PlanFeatures, PlanTier,
+                                        Subscription, SubscriptionService,
+                                        SubscriptionStatus, UsageRecord)
 
 
 class TestPlanTier:
@@ -35,7 +26,6 @@ class TestPlanTier:
     
     def test_plan_tier_comparison(self):
         """Testa comparação entre tiers."""
-        # FREE < STARTER < BUSINESS < ENTERPRISE
         tier_order = [
             PlanTier.FREE,
             PlanTier.STARTER,
@@ -48,411 +38,637 @@ class TestPlanTier:
             assert tier.value != next_tier.value
 
 
-class TestPlanLimits:
-    """Testes para limites de plano."""
+class TestBillingCycle:
+    """Testes para o enum BillingCycle."""
     
-    def test_free_plan_limits(self):
-        """Testa limites do plano FREE."""
-        limits = PlanLimits(
-            max_whatsapp_accounts=1,
-            max_posts_per_month=10,
-            max_leads=100,
-            has_chatbot=False,
-            has_ai_content=False,
-            has_advanced_analytics=False,
-            has_api_access=False,
-            has_white_label=False,
-            support_level="community",
-        )
-        
-        assert limits.max_whatsapp_accounts == 1
-        assert limits.max_posts_per_month == 10
-        assert limits.has_chatbot is False
-    
-    def test_enterprise_plan_limits(self):
-        """Testa limites do plano ENTERPRISE (ilimitado)."""
-        limits = PlanLimits(
-            max_whatsapp_accounts=-1,  # -1 = ilimitado
-            max_posts_per_month=-1,
-            max_leads=-1,
-            has_chatbot=True,
-            has_ai_content=True,
-            has_advanced_analytics=True,
-            has_api_access=True,
-            has_white_label=True,
-            support_level="dedicated",
-        )
-        
-        assert limits.max_whatsapp_accounts == -1
-        assert limits.has_white_label is True
-        assert limits.support_level == "dedicated"
+    def test_billing_cycle_values(self):
+        """Testa valores dos ciclos de cobrança."""
+        assert BillingCycle.MONTHLY.value == "monthly"
+        assert BillingCycle.YEARLY.value == "yearly"
+        assert BillingCycle.LIFETIME.value == "lifetime"
 
 
-class TestSubscriptionPlan:
-    """Testes para plano de assinatura."""
+class TestFeatureCategory:
+    """Testes para o enum FeatureCategory."""
+    
+    def test_feature_category_values(self):
+        """Testa valores das categorias de features."""
+        assert FeatureCategory.COMPARISON.value == "comparison"
+        assert FeatureCategory.SOCIAL_MEDIA.value == "social_media"
+        assert FeatureCategory.WHATSAPP.value == "whatsapp"
+        assert FeatureCategory.CHATBOT.value == "chatbot"
+        assert FeatureCategory.CRM.value == "crm"
+        assert FeatureCategory.ANALYTICS.value == "analytics"
+        assert FeatureCategory.SUPPORT.value == "support"
+
+
+class TestFeatureLimit:
+    """Testes para limites de features."""
+    
+    def test_feature_limit_creation(self):
+        """Testa criação de FeatureLimit."""
+        limit = FeatureLimit(
+            feature="price_searches",
+            category=FeatureCategory.COMPARISON,
+            limit=50,
+            description="Buscas de preço/mês",
+        )
+        
+        assert limit.feature == "price_searches"
+        assert limit.category == FeatureCategory.COMPARISON
+        assert limit.limit == 50
+        assert limit.description == "Buscas de preço/mês"
+    
+    def test_unlimited_feature(self):
+        """Testa feature ilimitada (-1)."""
+        limit = FeatureLimit(
+            feature="price_searches",
+            category=FeatureCategory.COMPARISON,
+            limit=-1,
+            description="Buscas ilimitadas",
+        )
+        
+        assert limit.limit == -1
+
+
+class TestPlanFeatures:
+    """Testes para features de um plano."""
     
     @pytest.fixture
-    def starter_plan(self):
-        """Plano STARTER de exemplo."""
-        return SubscriptionPlan(
+    def starter_features(self):
+        """Features do plano STARTER."""
+        return PlanFeatures(
             tier=PlanTier.STARTER,
-            name="Starter",
-            description="Plano para pequenos negócios",
-            price_monthly=Decimal("97.00"),
-            price_yearly=Decimal("970.00"),
-            limits=PlanLimits(
-                max_whatsapp_accounts=3,
-                max_posts_per_month=100,
-                max_leads=1000,
-                has_chatbot=True,
-                has_ai_content=False,
-                has_advanced_analytics=False,
-                has_api_access=False,
-                has_white_label=False,
-                support_level="email",
-            ),
-            features=[
-                "3 contas WhatsApp",
-                "100 posts/mês",
-                "1.000 leads",
-                "Chatbot básico",
-            ],
+            features={
+                "price_searches": FeatureLimit(
+                    "price_searches", FeatureCategory.COMPARISON, 500, "Buscas/mês"
+                ),
+                "social_posts": FeatureLimit(
+                    "social_posts", FeatureCategory.SOCIAL_MEDIA, 100, "Posts/mês"
+                ),
+                "whatsapp_instances": FeatureLimit(
+                    "whatsapp_instances", FeatureCategory.WHATSAPP, 3, "WhatsApp"
+                ),
+            }
         )
-    
-    def test_plan_creation(self, starter_plan):
-        """Testa criação de plano."""
-        assert starter_plan.tier == PlanTier.STARTER
-        assert starter_plan.price_monthly == Decimal("97.00")
-        assert len(starter_plan.features) == 4
-    
-    def test_yearly_discount(self, starter_plan):
-        """Testa desconto anual."""
-        monthly_total = starter_plan.price_monthly * 12
-        yearly_price = starter_plan.price_yearly
-        
-        # Deve haver desconto
-        assert yearly_price < monthly_total
-        
-        # Calcula desconto
-        discount = ((monthly_total - yearly_price) / monthly_total) * 100
-        assert discount > 0  # Tem desconto
-    
-    def test_plan_has_feature(self, starter_plan):
-        """Testa verificação de feature."""
-        assert starter_plan.limits.has_chatbot is True
-        assert starter_plan.limits.has_ai_content is False
-
-
-class TestSubscriptionManager:
-    """Testes para gerenciador de assinaturas."""
     
     @pytest.fixture
-    def manager(self):
-        """Cria manager para testes."""
-        return SubscriptionManager()
-    
-    @pytest.fixture
-    def mock_db(self):
-        """Mock do banco de dados."""
-        return AsyncMock()
-    
-    def test_get_all_plans(self, manager):
-        """Testa obtenção de todos os planos."""
-        plans = manager.get_all_plans()
-        
-        assert len(plans) >= 3  # Pelo menos FREE, STARTER, BUSINESS
-        assert any(p.tier == PlanTier.FREE for p in plans)
-    
-    def test_get_plan_by_tier(self, manager):
-        """Testa obtenção de plano por tier."""
-        plan = manager.get_plan(PlanTier.STARTER)
-        
-        assert plan is not None
-        assert plan.tier == PlanTier.STARTER
-    
-    @pytest.mark.asyncio
-    async def test_check_feature_access_allowed(self, manager):
-        """Testa acesso a feature permitida."""
-        subscription = UserSubscription(
-            user_id="user-123",
-            plan_tier=PlanTier.BUSINESS,
-            status="active",
-            started_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(days=30),
+    def business_features(self):
+        """Features do plano BUSINESS com recursos ilimitados."""
+        return PlanFeatures(
+            tier=PlanTier.BUSINESS,
+            features={
+                "price_searches": FeatureLimit(
+                    "price_searches", FeatureCategory.COMPARISON, -1, "Ilimitado"
+                ),
+                "social_posts": FeatureLimit(
+                    "social_posts", FeatureCategory.SOCIAL_MEDIA, -1, "Ilimitado"
+                ),
+            }
         )
-        
-        # BUSINESS tem chatbot
-        has_access = manager.check_feature_access(subscription, "chatbot")
-        assert has_access is True
     
-    @pytest.mark.asyncio
-    async def test_check_feature_access_denied(self, manager):
-        """Testa acesso a feature negada."""
-        subscription = UserSubscription(
-            user_id="user-123",
-            plan_tier=PlanTier.FREE,
-            status="active",
-            started_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(days=30),
-        )
-        
-        # FREE não tem white_label
-        has_access = manager.check_feature_access(subscription, "white_label")
-        assert has_access is False
+    def test_get_limit(self, starter_features):
+        """Testa obter limite de feature."""
+        assert starter_features.get_limit("price_searches") == 500
+        assert starter_features.get_limit("social_posts") == 100
+        assert starter_features.get_limit("unknown_feature") == 0
     
-    @pytest.mark.asyncio
-    async def test_check_limit_within_bounds(self, manager):
-        """Testa verificação de limite dentro do permitido."""
-        usage = FeatureUsage(
-            feature="posts",
-            current_usage=50,
-            max_allowed=100,
-        )
-        
-        within_limit = manager.check_limit(usage)
-        assert within_limit is True
+    def test_can_use_within_limit(self, starter_features):
+        """Testa verificação de uso dentro do limite."""
+        assert starter_features.can_use("price_searches", 0) is True
+        assert starter_features.can_use("price_searches", 499) is True
+        assert starter_features.can_use("social_posts", 50) is True
     
-    @pytest.mark.asyncio
-    async def test_check_limit_exceeded(self, manager):
-        """Testa verificação de limite excedido."""
-        usage = FeatureUsage(
-            feature="posts",
-            current_usage=100,
-            max_allowed=100,
-        )
-        
-        within_limit = manager.check_limit(usage)
-        assert within_limit is False
+    def test_can_use_at_limit(self, starter_features):
+        """Testa verificação de uso no limite."""
+        assert starter_features.can_use("price_searches", 500) is False
+        assert starter_features.can_use("social_posts", 100) is False
     
-    @pytest.mark.asyncio
-    async def test_check_unlimited_resource(self, manager):
-        """Testa verificação de recurso ilimitado."""
-        usage = FeatureUsage(
-            feature="posts",
-            current_usage=999999,
-            max_allowed=-1,  # Ilimitado
-        )
-        
-        within_limit = manager.check_limit(usage)
-        assert within_limit is True
+    def test_can_use_unlimited(self, business_features):
+        """Testa uso ilimitado (-1)."""
+        assert business_features.can_use("price_searches", 999999) is True
+        assert business_features.can_use("social_posts", 1000000) is True
     
-    def test_compare_plans(self, manager):
-        """Testa comparação entre planos."""
-        free_plan = manager.get_plan(PlanTier.FREE)
-        starter_plan = manager.get_plan(PlanTier.STARTER)
-        
-        comparison = manager.compare_plans(free_plan, starter_plan)
-        
-        assert "upgrades" in comparison
-        assert len(comparison["upgrades"]) > 0
-    
-    def test_calculate_upgrade_price(self, manager):
-        """Testa cálculo de preço de upgrade."""
-        # Upgrade de FREE para STARTER
-        price = manager.calculate_upgrade_price(
-            current_tier=PlanTier.FREE,
-            target_tier=PlanTier.STARTER,
-            billing_cycle="monthly",
-        )
-        
-        starter_plan = manager.get_plan(PlanTier.STARTER)
-        assert price == starter_plan.price_monthly
-    
-    def test_calculate_prorated_upgrade(self, manager):
-        """Testa cálculo de upgrade pro-rata."""
-        # Usuário no meio do ciclo
-        days_remaining = 15
-        days_in_cycle = 30
-        
-        price = manager.calculate_prorated_upgrade(
-            current_tier=PlanTier.STARTER,
-            target_tier=PlanTier.BUSINESS,
-            days_remaining=days_remaining,
-            days_in_cycle=days_in_cycle,
-        )
-        
-        # Deve ser proporcional
-        assert price > 0
-        
-        business_plan = manager.get_plan(PlanTier.BUSINESS)
-        starter_plan = manager.get_plan(PlanTier.STARTER)
-        
-        # Diferença de preço
-        diff = business_plan.price_monthly - starter_plan.price_monthly
-        prorated = diff * (days_remaining / days_in_cycle)
-        
-        assert abs(price - prorated) < Decimal("0.01")
+    def test_can_use_unknown_feature(self, starter_features):
+        """Testa uso de feature não existente (limite 0)."""
+        assert starter_features.can_use("unknown_feature", 0) is False
+        assert starter_features.can_use("unknown_feature", 1) is False
 
 
-class TestUserSubscription:
-    """Testes para assinatura do usuário."""
+class TestPLANS:
+    """Testes para a constante PLANS."""
+    
+    def test_plans_has_all_tiers(self):
+        """Testa que todos os tiers estão definidos."""
+        assert PlanTier.FREE in PLANS
+        assert PlanTier.STARTER in PLANS
+        assert PlanTier.BUSINESS in PLANS
+        assert PlanTier.ENTERPRISE in PLANS
+    
+    def test_free_plan_structure(self):
+        """Testa estrutura do plano FREE."""
+        free = PLANS[PlanTier.FREE]
+        
+        assert free["name"] == "Free"
+        assert free["price_monthly"] == Decimal("0")
+        assert "features" in free
+        assert "highlights" in free
+    
+    def test_starter_plan_pricing(self):
+        """Testa preços do plano STARTER."""
+        starter = PLANS[PlanTier.STARTER]
+        
+        assert starter["price_monthly"] == Decimal("97.00")
+        assert starter["price_yearly"] == Decimal("970.00")
+        # Desconto anual
+        assert starter["price_yearly"] < starter["price_monthly"] * 12
+    
+    def test_business_plan_features(self):
+        """Testa features do plano BUSINESS."""
+        business = PLANS[PlanTier.BUSINESS]
+        
+        # BUSINESS tem tudo ilimitado
+        assert business["features"]["price_searches"].limit == -1
+        assert business["features"]["social_posts"].limit == -1
+
+
+class TestSubscription:
+    """Testes para modelo Subscription."""
     
     @pytest.fixture
     def active_subscription(self):
-        """Assinatura ativa."""
-        return UserSubscription(
+        """Subscription ativa."""
+        return Subscription(
+            id="sub-123",
             user_id="user-123",
-            plan_tier=PlanTier.BUSINESS,
-            status="active",
-            started_at=datetime.utcnow() - timedelta(days=15),
-            expires_at=datetime.utcnow() + timedelta(days=15),
-            payment_method="credit_card",
-            auto_renew=True,
+            plan=PlanTier.BUSINESS,
+            status=SubscriptionStatus.ACTIVE,
+            billing_cycle=BillingCycle.MONTHLY,
+            created_at=datetime.utcnow() - timedelta(days=15),
+            current_period_start=datetime.utcnow() - timedelta(days=15),
+            current_period_end=datetime.utcnow() + timedelta(days=15),
         )
     
     @pytest.fixture
-    def expired_subscription(self):
-        """Assinatura expirada."""
-        return UserSubscription(
+    def trial_subscription(self):
+        """Subscription em trial."""
+        return Subscription(
+            id="sub-456",
             user_id="user-456",
-            plan_tier=PlanTier.STARTER,
-            status="expired",
-            started_at=datetime.utcnow() - timedelta(days=45),
-            expires_at=datetime.utcnow() - timedelta(days=15),
-            payment_method="pix",
-            auto_renew=False,
+            plan=PlanTier.STARTER,
+            status=SubscriptionStatus.TRIAL,
+            billing_cycle=BillingCycle.MONTHLY,
+            created_at=datetime.utcnow(),
+            current_period_start=datetime.utcnow(),
+            current_period_end=datetime.utcnow() + timedelta(days=14),
+            trial_ends_at=datetime.utcnow() + timedelta(days=14),
         )
     
-    def test_subscription_is_active(self, active_subscription):
-        """Testa verificação de assinatura ativa."""
-        assert active_subscription.is_active() is True
+    def test_subscription_creation(self, active_subscription):
+        """Testa criação de subscription."""
+        assert active_subscription.id == "sub-123"
+        assert active_subscription.user_id == "user-123"
+        assert active_subscription.plan == PlanTier.BUSINESS
+        assert active_subscription.status == SubscriptionStatus.ACTIVE
     
-    def test_subscription_is_expired(self, expired_subscription):
-        """Testa verificação de assinatura expirada."""
-        assert expired_subscription.is_active() is False
-    
-    def test_days_until_expiration(self, active_subscription):
-        """Testa cálculo de dias até expiração."""
-        days = active_subscription.days_until_expiration()
+    def test_subscription_with_mercadopago(self):
+        """Testa subscription com integração MercadoPago."""
+        sub = Subscription(
+            id="sub-789",
+            user_id="user-789",
+            plan=PlanTier.STARTER,
+            status=SubscriptionStatus.ACTIVE,
+            billing_cycle=BillingCycle.MONTHLY,
+            created_at=datetime.utcnow(),
+            current_period_start=datetime.utcnow(),
+            current_period_end=datetime.utcnow() + timedelta(days=30),
+            mercadopago_subscription_id="MP-SUB-123456",
+            last_payment_at=datetime.utcnow(),
+            next_payment_at=datetime.utcnow() + timedelta(days=30),
+        )
         
-        assert days > 0
-        assert days <= 15
+        assert sub.mercadopago_subscription_id == "MP-SUB-123456"
     
-    def test_days_until_expiration_expired(self, expired_subscription):
-        """Testa dias até expiração para assinatura expirada."""
-        days = expired_subscription.days_until_expiration()
+    def test_subscription_usage_tracking(self, active_subscription):
+        """Testa rastreamento de uso na subscription."""
+        active_subscription.usage = {
+            "price_searches": 45,
+            "social_posts": 12,
+        }
         
-        assert days < 0
+        assert active_subscription.usage["price_searches"] == 45
+        assert active_subscription.usage["social_posts"] == 12
     
-    def test_subscription_needs_renewal(self, active_subscription, expired_subscription):
-        """Testa verificação de necessidade de renovação."""
-        # Com auto_renew = True e expirando em breve
-        active_subscription.expires_at = datetime.utcnow() + timedelta(days=3)
-        assert active_subscription.needs_renewal_reminder() is True
-        
-        # Já expirada
-        assert expired_subscription.needs_renewal_reminder() is True
+    def test_subscription_statuses(self):
+        """Testa todos os status de subscription."""
+        assert SubscriptionStatus.ACTIVE.value == "active"
+        assert SubscriptionStatus.TRIAL.value == "trial"
+        assert SubscriptionStatus.PAST_DUE.value == "past_due"
+        assert SubscriptionStatus.CANCELED.value == "canceled"
+        assert SubscriptionStatus.EXPIRED.value == "expired"
 
 
-class TestFeatureUsage:
-    """Testes para uso de features."""
+class TestUsageRecord:
+    """Testes para modelo UsageRecord."""
     
-    def test_usage_percentage(self):
-        """Testa cálculo de porcentagem de uso."""
-        usage = FeatureUsage(
-            feature="posts",
-            current_usage=50,
-            max_allowed=100,
+    def test_usage_record_creation(self):
+        """Testa criação de UsageRecord."""
+        now = datetime.utcnow()
+        record = UsageRecord(
+            user_id="user-123",
+            feature="price_searches",
+            count=50,
+            period_start=now - timedelta(days=15),
+            period_end=now + timedelta(days=15),
         )
         
-        assert usage.usage_percentage() == 50.0
+        assert record.user_id == "user-123"
+        assert record.feature == "price_searches"
+        assert record.count == 50
     
-    def test_usage_percentage_exceeded(self):
-        """Testa porcentagem quando excedido."""
-        usage = FeatureUsage(
-            feature="posts",
-            current_usage=150,
-            max_allowed=100,
-        )
+    def test_usage_record_multiple_features(self):
+        """Testa múltiplos registros de uso."""
+        now = datetime.utcnow()
+        records = [
+            UsageRecord(
+                user_id="user-123",
+                feature="price_searches",
+                count=50,
+                period_start=now,
+                period_end=now + timedelta(days=30),
+            ),
+            UsageRecord(
+                user_id="user-123",
+                feature="social_posts",
+                count=25,
+                period_start=now,
+                period_end=now + timedelta(days=30),
+            ),
+        ]
         
-        assert usage.usage_percentage() == 150.0
-    
-    def test_remaining_usage(self):
-        """Testa cálculo de uso restante."""
-        usage = FeatureUsage(
-            feature="leads",
-            current_usage=700,
-            max_allowed=1000,
-        )
-        
-        assert usage.remaining() == 300
-    
-    def test_remaining_unlimited(self):
-        """Testa uso restante para recurso ilimitado."""
-        usage = FeatureUsage(
-            feature="posts",
-            current_usage=5000,
-            max_allowed=-1,
-        )
-        
-        assert usage.remaining() == float('inf')
-    
-    def test_is_near_limit(self):
-        """Testa detecção de proximidade do limite."""
-        usage = FeatureUsage(
-            feature="leads",
-            current_usage=850,
-            max_allowed=1000,
-        )
-        
-        # 85% - perto do limite (threshold padrão 80%)
-        assert usage.is_near_limit() is True
-    
-    def test_is_not_near_limit(self):
-        """Testa quando não está perto do limite."""
-        usage = FeatureUsage(
-            feature="leads",
-            current_usage=500,
-            max_allowed=1000,
-        )
-        
-        assert usage.is_near_limit() is False
+        assert len(records) == 2
+        assert records[0].feature != records[1].feature
 
 
-class TestBillingCalculations:
-    """Testes para cálculos de billing."""
+class TestSubscriptionService:
+    """Testes para SubscriptionService."""
     
     @pytest.fixture
-    def manager(self):
-        return SubscriptionManager()
+    def service(self):
+        """Cria service para testes."""
+        return SubscriptionService()
     
-    def test_monthly_billing(self, manager):
-        """Testa billing mensal."""
-        plan = manager.get_plan(PlanTier.STARTER)
-        
-        total = manager.calculate_billing(
-            plan=plan,
-            billing_cycle="monthly",
-            months=1,
-        )
-        
-        assert total == plan.price_monthly
+    @pytest.fixture
+    def mock_redis(self):
+        """Mock do Redis."""
+        redis = AsyncMock()
+        redis.get = AsyncMock(return_value=None)
+        redis.set = AsyncMock(return_value=True)
+        redis.incrby = AsyncMock(return_value=1)
+        redis.expire = AsyncMock(return_value=True)
+        return redis
     
-    def test_yearly_billing_with_discount(self, manager):
-        """Testa billing anual com desconto."""
-        plan = manager.get_plan(PlanTier.BUSINESS)
+    @pytest.mark.asyncio
+    async def test_get_subscription_default_free(self, service, mock_redis):
+        """Testa que retorna FREE por padrão."""
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            subscription = await service.get_subscription("new-user")
+            
+            assert subscription.plan == PlanTier.FREE
+            assert subscription.status == SubscriptionStatus.ACTIVE
+    
+    @pytest.mark.asyncio
+    async def test_get_subscription_from_cache(self, service, mock_redis):
+        """Testa obter subscription do cache."""
+        cached_data = json.dumps({
+            "id": "sub-cached",
+            "user_id": "user-cached",
+            "plan": "starter",
+            "status": "active",
+            "billing_cycle": "monthly",
+            "created_at": datetime.utcnow().isoformat(),
+            "current_period_start": datetime.utcnow().isoformat(),
+            "current_period_end": (datetime.utcnow() + timedelta(days=30)).isoformat(),
+            "usage": {},
+        })
+        mock_redis.get = AsyncMock(return_value=cached_data)
         
-        total = manager.calculate_billing(
-            plan=plan,
-            billing_cycle="yearly",
-            months=12,
-        )
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            subscription = await service.get_subscription("user-cached")
+            
+            assert subscription.id == "sub-cached"
+            assert subscription.plan == PlanTier.STARTER
+    
+    @pytest.mark.asyncio
+    async def test_get_plan_features(self, service):
+        """Testa obter features de um plano."""
+        features = await service.get_plan_features(PlanTier.STARTER)
+        
+        assert features.tier == PlanTier.STARTER
+        assert "price_searches" in features.features
+        assert "whatsapp_instances" in features.features
+    
+    @pytest.mark.asyncio
+    async def test_get_plan_features_free(self, service):
+        """Testa features do plano FREE."""
+        features = await service.get_plan_features(PlanTier.FREE)
+        
+        assert features.tier == PlanTier.FREE
+        # FREE tem limites menores
+        assert features.get_limit("price_searches") == 50
+    
+    @pytest.mark.asyncio
+    async def test_get_usage(self, service, mock_redis):
+        """Testa obter uso atual."""
+        mock_redis.get = AsyncMock(return_value="25")
+        
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            usage = await service.get_usage("user-123", "price_searches")
+            
+            assert usage == 25
+    
+    @pytest.mark.asyncio
+    async def test_get_usage_no_data(self, service, mock_redis):
+        """Testa obter uso quando não há dados."""
+        mock_redis.get = AsyncMock(return_value=None)
+        
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            usage = await service.get_usage("user-123", "price_searches")
+            
+            assert usage == 0
+    
+    @pytest.mark.asyncio
+    async def test_increment_usage(self, service, mock_redis):
+        """Testa incrementar uso."""
+        mock_redis.incrby = AsyncMock(return_value=26)
+        
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            new_value = await service.increment_usage("user-123", "price_searches", 1)
+            
+            assert new_value == 26
+            mock_redis.incrby.assert_called_once()
+    
+    @pytest.mark.asyncio
+    async def test_can_use_feature_allowed(self, service, mock_redis):
+        """Testa verificação de feature permitida."""
+        # Primeira chamada é subscription (None = FREE), segunda é usage
+        mock_redis.get = AsyncMock(side_effect=[None, "10"])
+        
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            can_use = await service.can_use_feature("user-123", "price_searches")
+            
+            # FREE tem limite de 50, uso é 10
+            assert can_use is True
+    
+    @pytest.mark.asyncio
+    async def test_can_use_feature_at_limit(self, service, mock_redis):
+        """Testa verificação de feature no limite."""
+        # Primeira chamada é subscription (None = FREE), segunda é usage
+        mock_redis.get = AsyncMock(side_effect=[None, "50"])
+        
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            can_use = await service.can_use_feature("user-123", "price_searches")
+            
+            # FREE tem limite de 50
+            assert can_use is False
+    
+    @pytest.mark.asyncio
+    async def test_can_use_feature_with_increment(self, service, mock_redis):
+        """Testa verificação com incremento."""
+        # Primeira chamada é subscription (None = FREE), segunda é usage
+        mock_redis.get = AsyncMock(side_effect=[None, "10"])
+        mock_redis.incrby = AsyncMock(return_value=11)
+        
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            can_use = await service.can_use_feature(
+                "user-123", "price_searches", increment=1
+            )
+            
+            assert can_use is True
+            mock_redis.incrby.assert_called_once()
+    
+    @pytest.mark.asyncio
+    async def test_upgrade_plan(self, service, mock_redis):
+        """Testa upgrade de plano."""
+        mock_redis.get = AsyncMock(return_value=None)
+        
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            subscription = await service.upgrade_plan(
+                "user-123", PlanTier.STARTER, BillingCycle.MONTHLY
+            )
+            
+            assert subscription.plan == PlanTier.STARTER
+            assert subscription.billing_cycle == BillingCycle.MONTHLY
+    
+    @pytest.mark.asyncio
+    async def test_upgrade_plan_yearly(self, service, mock_redis):
+        """Testa upgrade de plano anual."""
+        mock_redis.get = AsyncMock(return_value=None)
+        
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            subscription = await service.upgrade_plan(
+                "user-123", PlanTier.BUSINESS, BillingCycle.YEARLY
+            )
+            
+            assert subscription.plan == PlanTier.BUSINESS
+            assert subscription.billing_cycle == BillingCycle.YEARLY
+            # Período de 365 dias
+            days_diff = (subscription.current_period_end - subscription.current_period_start).days
+            assert days_diff >= 364  # ~365 dias
+    
+    @pytest.mark.asyncio
+    async def test_cancel_subscription(self, service, mock_redis):
+        """Testa cancelamento de subscription."""
+        mock_redis.get = AsyncMock(return_value=None)
+        
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            subscription = await service.cancel_subscription("user-123")
+            
+            assert subscription.status == SubscriptionStatus.CANCELED
+            assert subscription.canceled_at is not None
+    
+    def test_get_price_monthly(self, service):
+        """Testa obter preço mensal."""
+        price = service.get_price(PlanTier.STARTER, BillingCycle.MONTHLY)
+        
+        assert price == Decimal("97.00")
+    
+    def test_get_price_yearly(self, service):
+        """Testa obter preço anual."""
+        price = service.get_price(PlanTier.STARTER, BillingCycle.YEARLY)
+        
+        assert price == Decimal("970.00")
+    
+    def test_get_price_free(self, service):
+        """Testa preço do plano FREE."""
+        price = service.get_price(PlanTier.FREE, BillingCycle.MONTHLY)
+        
+        assert price == Decimal("0")
+    
+    def test_get_plan_info(self, service):
+        """Testa obter informações do plano."""
+        info = service.get_plan_info(PlanTier.BUSINESS)
+        
+        assert info["name"] == "Business"
+        assert "features" in info
+        assert "highlights" in info
+    
+    def test_list_plans(self, service):
+        """Testa listar planos."""
+        plans = service.list_plans()
+        
+        assert len(plans) >= 3
+        tiers = [p["tier"] for p in plans]
+        assert "free" in tiers
+        assert "starter" in tiers
+        assert "business" in tiers
+    
+    def test_list_plans_structure(self, service):
+        """Testa estrutura da lista de planos."""
+        plans = service.list_plans()
+        
+        for plan in plans:
+            assert "tier" in plan
+            assert "name" in plan
+            assert "description" in plan
+            assert "price_monthly" in plan
+            assert "price_yearly" in plan
+            assert "highlights" in plan
+
+
+class TestPricingCalculations:
+    """Testes para cálculos de preço."""
+    
+    @pytest.fixture
+    def service(self):
+        return SubscriptionService()
+    
+    def test_yearly_discount_starter(self, service):
+        """Testa desconto anual no STARTER."""
+        monthly = service.get_price(PlanTier.STARTER, BillingCycle.MONTHLY)
+        yearly = service.get_price(PlanTier.STARTER, BillingCycle.YEARLY)
         
         # Anual deve ser menor que 12x mensal
-        monthly_total = plan.price_monthly * 12
-        assert total < monthly_total
+        assert yearly < monthly * 12
+        
+        # ~2 meses grátis
+        discount_months = (monthly * 12 - yearly) / monthly
+        assert discount_months >= 1.5  # Pelo menos 1.5 meses de desconto
     
-    def test_trial_period(self, manager):
-        """Testa período de trial."""
-        trial = manager.create_trial(
-            user_id="user-new",
-            plan_tier=PlanTier.BUSINESS,
-            trial_days=14,
-        )
+    def test_yearly_discount_business(self, service):
+        """Testa desconto anual no BUSINESS."""
+        monthly = service.get_price(PlanTier.BUSINESS, BillingCycle.MONTHLY)
+        yearly = service.get_price(PlanTier.BUSINESS, BillingCycle.YEARLY)
         
-        assert trial.status == "trial"
-        assert trial.plan_tier == PlanTier.BUSINESS
+        assert yearly < monthly * 12
+    
+    def test_price_progression(self, service):
+        """Testa progressão de preços entre planos."""
+        free = service.get_price(PlanTier.FREE, BillingCycle.MONTHLY)
+        starter = service.get_price(PlanTier.STARTER, BillingCycle.MONTHLY)
+        business = service.get_price(PlanTier.BUSINESS, BillingCycle.MONTHLY)
         
-        # Trial expira em 14 dias
-        days = trial.days_until_expiration()
-        assert 13 <= days <= 14
+        assert free == Decimal("0")
+        assert starter > free
+        assert business > starter
+
+
+class TestFeatureLimitsPerPlan:
+    """Testes para limites de features por plano."""
+    
+    @pytest.fixture
+    def service(self):
+        return SubscriptionService()
+    
+    @pytest.mark.asyncio
+    async def test_free_plan_limits(self, service):
+        """Testa limites do plano FREE."""
+        features = await service.get_plan_features(PlanTier.FREE)
+        
+        assert features.get_limit("price_searches") == 50
+        assert features.get_limit("price_alerts") == 5
+        assert features.get_limit("social_posts") == 10
+        assert features.get_limit("whatsapp_instances") == 1
+        assert features.get_limit("chatbot_flows") == 0  # FREE não tem chatbot
+    
+    @pytest.mark.asyncio
+    async def test_starter_plan_limits(self, service):
+        """Testa limites do plano STARTER."""
+        features = await service.get_plan_features(PlanTier.STARTER)
+        
+        assert features.get_limit("price_searches") == 500
+        assert features.get_limit("social_posts") == 100
+        assert features.get_limit("whatsapp_instances") == 3
+        assert features.get_limit("chatbot_flows") == 5
+    
+    @pytest.mark.asyncio
+    async def test_business_plan_unlimited(self, service):
+        """Testa recursos ilimitados do plano BUSINESS."""
+        features = await service.get_plan_features(PlanTier.BUSINESS)
+        
+        # -1 significa ilimitado
+        assert features.get_limit("price_searches") == -1
+        assert features.get_limit("social_posts") == -1
+        assert features.get_limit("whatsapp_instances") == -1
+        assert features.get_limit("chatbot_flows") == -1
+    
+    @pytest.mark.asyncio
+    async def test_feature_access_progression(self, service):
+        """Testa progressão de acesso a features."""
+        free = await service.get_plan_features(PlanTier.FREE)
+        starter = await service.get_plan_features(PlanTier.STARTER)
+        business = await service.get_plan_features(PlanTier.BUSINESS)
+        
+        # Cada plano deve ter mais que o anterior
+        assert free.get_limit("price_searches") < starter.get_limit("price_searches")
+        # Business é ilimitado, então só verificar que é diferente
+        assert starter.get_limit("price_searches") != business.get_limit("price_searches")
+
+
+class TestSubscriptionIntegration:
+    """Testes de integração do sistema de subscription."""
+    
+    @pytest.fixture
+    def service(self):
+        return SubscriptionService()
+    
+    @pytest.fixture
+    def mock_redis(self):
+        redis = AsyncMock()
+        redis.get = AsyncMock(return_value=None)
+        redis.set = AsyncMock(return_value=True)
+        redis.incrby = AsyncMock(side_effect=lambda k, v: v)
+        redis.expire = AsyncMock(return_value=True)
+        return redis
+    
+    @pytest.mark.asyncio
+    async def test_new_user_flow(self, service, mock_redis):
+        """Testa fluxo de novo usuário."""
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            # Novo usuário começa com FREE
+            sub = await service.get_subscription("new-user")
+            assert sub.plan == PlanTier.FREE
+            
+            # Pode usar features do FREE
+            can_use = await service.can_use_feature("new-user", "price_searches")
+            assert can_use is True
+    
+    @pytest.mark.asyncio
+    async def test_upgrade_flow(self, service, mock_redis):
+        """Testa fluxo de upgrade."""
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            # Upgrade para STARTER
+            sub = await service.upgrade_plan("user-123", PlanTier.STARTER)
+            
+            assert sub.plan == PlanTier.STARTER
+            assert sub.status != SubscriptionStatus.CANCELED
+    
+    @pytest.mark.asyncio
+    async def test_cancellation_flow(self, service, mock_redis):
+        """Testa fluxo de cancelamento."""
+        with patch.object(service, '_get_redis', return_value=mock_redis):
+            # Cancelar subscription
+            sub = await service.cancel_subscription("user-123")
+            
+            assert sub.status == SubscriptionStatus.CANCELED
+            assert sub.canceled_at is not None

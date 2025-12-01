@@ -1,0 +1,201 @@
+{
+  "name": "Seller Bot - Price Drop Alert",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "didin/price-drop",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-price-drop",
+      "name": "Webhook Price Drop",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "price-drop-alert"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json.body || $input.first().json;\nconst data = payload.data || {};\n\nconst oldPrice = parseFloat(data.old_price) || 0;\nconst newPrice = parseFloat(data.new_price) || 0;\nconst discount = data.discount || Math.round((1 - newPrice / oldPrice) * 100);\nconst savings = oldPrice - newPrice;\n\nreturn {\n  json: {\n    event_id: payload.event_id,\n    user_id: payload.user_id,\n    name: data.name || 'Cliente',\n    product_name: data.product_name,\n    product_url: data.product_url,\n    product_image: data.product_image,\n    old_price: oldPrice,\n    new_price: newPrice,\n    discount: discount,\n    savings: savings,\n    old_price_formatted: oldPrice.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}),\n    new_price_formatted: newPrice.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}),\n    savings_formatted: savings.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}),\n    phone: data.phone,\n    channel: payload.channel || 'whatsapp',\n    priority: payload.priority || 'urgent',\n    timestamp: payload.timestamp\n  }\n};"
+      },
+      "id": "parse-price-data",
+      "name": "Parse Price Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\n// Emojis baseados no desconto\nlet emoji = '💰';\nlet urgency = '';\n\nif (data.discount >= 50) {\n  emoji = '🔥🔥🔥';\n  urgency = '*MEGA OFERTA!* ';\n} else if (data.discount >= 30) {\n  emoji = '🔥🔥';\n  urgency = '*OFERTA IMPERDÍVEL!* ';\n} else if (data.discount >= 15) {\n  emoji = '🔥';\n  urgency = '*BOA OFERTA!* ';\n}\n\nconst message = `${emoji} *ALERTA DE PREÇO!* ${emoji}\\n\\n${urgency}O produto que você estava de olho baixou de preço!\\n\\n📦 *${data.product_name}*\\n\\n~~${data.old_price_formatted}~~\\n💰 *${data.new_price_formatted}*\\n\\n💸 Economia: ${data.savings_formatted} (*${data.discount}% OFF*)\\n\\n⚡ Corra! Preços podem mudar a qualquer momento.\\n\\n👉 ${data.product_url}\\n\\n_Responda *COMPRAR* para saber como adquirir!_`;\n\nconst shortMessage = `🔥 ${data.product_name} baixou ${data.discount}%! De ${data.old_price_formatted} por ${data.new_price_formatted}. ${data.product_url}`;\n\nreturn {\n  json: {\n    ...data,\n    message: message,\n    short_message: shortMessage\n  }\n};"
+      },
+      "id": "format-price-message",
+      "name": "Formatar Mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.phone || $json.user_id }}\",\n  \"textMessage\": {\n    \"text\": \"{{ $json.message }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "send-price-alert",
+      "name": "Enviar Alerta WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "price_alert_notifications",
+        "columns": "user_id, product_name, old_price, new_price, discount, notified_at, channel",
+        "options": {}
+      },
+      "id": "log-price-notification",
+      "name": "Registrar Notificação",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1130, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "table": "price_alerts",
+        "columns": "notified, notified_at, notified_price",
+        "where": {
+          "values": [
+            {
+              "column": "user_id",
+              "value": "={{ $json.user_id }}"
+            },
+            {
+              "column": "product_name",
+              "operator": "ILIKE",
+              "value": "={{ '%' + $json.product_name + '%' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "update-alert-status",
+      "name": "Marcar Alerta Notificado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1130, 500],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"event_id\": \"{{ $('Parse Price Data').first().json.event_id }}\",\n  \"message\": \"Price drop alert sent\",\n  \"discount\": {{ $('Parse Price Data').first().json.discount }},\n  \"savings\": {{ $('Parse Price Data').first().json.savings }}\n}",
+        "options": {}
+      },
+      "id": "respond-price-success",
+      "name": "Responder Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1350, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Price Drop": {
+      "main": [
+        [
+          {
+            "node": "Parse Price Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Price Data": {
+      "main": [
+        [
+          {
+            "node": "Formatar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Enviar Alerta WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Alerta WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Registrar Notificação",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Marcar Alerta Notificado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Notificação": {
+      "main": [
+        [
+          {
+            "node": "Responder Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "seller-bot"
+    },
+    {
+      "name": "price-alert"
+    }
+  ]
+}

@@ -34,6 +34,7 @@ export { Contacts } from "./crm/Contacts";
 
 // Analytics
 export { default as AnalyticsDashboard } from "./analytics/AnalyticsDashboard";
+export { default as WhatsAppAnalytics } from "./analytics/WhatsAppAnalytics";
 
 // Templates
 export { default as ContentTemplates } from "./templates/ContentTemplates";

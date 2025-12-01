@@ -62,7 +62,7 @@ async def get_dashboard_overview(
         raise HTTPException(status_code=400, detail="Período inválido")
     
     overview = await analytics_service.get_dashboard_overview(
-        str(current_user.id),
+        str(current_user["id"]),
         metric_period
     )
     
@@ -109,7 +109,7 @@ async def get_platform_analytics(
         raise HTTPException(status_code=400, detail="Plataforma ou período inválido")
     
     analytics = await analytics_service.get_platform_analytics(
-        str(current_user.id),
+        str(current_user["id"]),
         platform_enum,
         metric_period
     )
@@ -168,7 +168,7 @@ async def get_engagement_trend(
         raise HTTPException(status_code=400, detail="Período inválido")
     
     trend = await analytics_service.get_engagement_trend(
-        str(current_user.id),
+        str(current_user["id"]),
         metric_period,
         granularity
     )
@@ -192,7 +192,7 @@ async def get_followers_trend(
         raise HTTPException(status_code=400, detail="Período ou plataforma inválido")
     
     trend = await analytics_service.get_followers_trend(
-        str(current_user.id),
+        str(current_user["id"]),
         metric_period,
         platform_enum
     )
@@ -222,7 +222,7 @@ async def get_best_posting_times(
         raise HTTPException(status_code=400, detail="Período ou plataforma inválido")
     
     best_times = await analytics_service.get_best_posting_times(
-        str(current_user.id),
+        str(current_user["id"]),
         metric_period,
         platform_enum
     )
@@ -248,7 +248,7 @@ async def get_top_posts(
         raise HTTPException(status_code=400, detail="Período ou plataforma inválido")
     
     top_posts = await analytics_service.get_top_posts(
-        str(current_user.id),
+        str(current_user["id"]),
         metric_period,
         platform_enum,
         limit,
@@ -280,7 +280,7 @@ async def compare_periods(
         raise HTTPException(status_code=400, detail="Período ou plataforma inválido")
     
     comparison = await analytics_service.compare_periods(
-        str(current_user.id),
+        str(current_user["id"]),
         p1,
         p2,
         platform_enum
@@ -303,7 +303,7 @@ async def get_scheduler_stats(
         raise HTTPException(status_code=400, detail="Período inválido")
     
     stats = await analytics_service.get_scheduler_stats(
-        str(current_user.id),
+        str(current_user["id"]),
         metric_period
     )
     
@@ -341,7 +341,7 @@ async def export_report(
         raise HTTPException(status_code=400, detail="Período inválido")
     
     data = await analytics_service.export_report(
-        str(current_user.id),
+        str(current_user["id"]),
         metric_period,
         format
     )

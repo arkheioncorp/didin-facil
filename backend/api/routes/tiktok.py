@@ -60,7 +60,7 @@ async def create_session(
     """
     try:
         session = await session_manager.save_session(
-            user_id=str(current_user.id),
+            user_id=str(current_user["id"]),
             account_name=data.account_name,
             cookies=data.cookies,
             metadata={"source": "manual_import"}
@@ -84,7 +84,7 @@ async def create_session(
 @router.get("/sessions")
 async def list_sessions(current_user=Depends(get_current_user)):
     """Lista sessões TikTok do usuário."""
-    sessions = await session_manager.list_sessions(str(current_user.id))
+    sessions = await session_manager.list_sessions(str(current_user["id"]))
     
     return {
         "sessions": [
@@ -109,7 +109,7 @@ async def get_session(
 ):
     """Obtém detalhes de uma sessão específica."""
     health = await session_manager.get_session_health(
-        str(current_user.id),
+        str(current_user["id"]),
         account_name
     )
     
@@ -126,7 +126,7 @@ async def backup_session(
 ):
     """Cria backup manual da sessão."""
     success = await session_manager.backup_session(
-        str(current_user.id),
+        str(current_user["id"]),
         account_name
     )
     
@@ -146,7 +146,7 @@ async def restore_session(
 ):
     """Restaura sessão do backup mais recente."""
     session = await session_manager.restore_session(
-        str(current_user.id),
+        str(current_user["id"]),
         account_name
     )
     
@@ -175,7 +175,7 @@ async def update_cookies(
     Cria backup da sessão antiga automaticamente.
     """
     success = await session_manager.update_cookies(
-        str(current_user.id),
+        str(current_user["id"]),
         account_name,
         cookies
     )
@@ -197,7 +197,7 @@ async def delete_session(
 ):
     """Remove sessão (opcionalmente mantém backups)."""
     success = await session_manager.delete_session(
-        str(current_user.id),
+        str(current_user["id"]),
         account_name,
         keep_backups=keep_backups
     )
@@ -234,7 +234,7 @@ async def upload_video(
     sessions_dir = os.path.join(settings.DATA_DIR, "tiktok_sessions")
     cookies_file = os.path.join(
         sessions_dir, 
-        f"{current_user.id}_{account_name}.json"
+        f"{current_user['id']}_{account_name}.json"
     )
     
     if not os.path.exists(cookies_file):

@@ -34,7 +34,7 @@ from modules.crm import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/crm/advanced", tags=["CRM Advanced"])
+router = APIRouter(prefix="/crm/advanced", tags=["CRM Advanced"])
 
 
 # ==================== Schemas ====================

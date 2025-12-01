@@ -17,7 +17,7 @@ from backend.vendor.email import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/email", tags=["Email Marketing"])
+router = APIRouter(tags=["Email Marketing"])
 
 
 # ==================== Schemas ====================

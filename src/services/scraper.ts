@@ -14,8 +14,8 @@ async function safeInvoke<T>(cmd: string, args?: Record<string, unknown>): Promi
   throw new Error(`Tauri command "${cmd}" not available in browser mode`);
 }
 
-// API base URL for browser mode
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
+// API base URL for browser mode - usa VITE_API_URL do .env
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Default scraper status for browser mode
 const defaultScraperStatus: ScraperStatus = {
@@ -36,7 +36,7 @@ export async function startScraper(config: ScraperConfig): Promise<ScraperStatus
     }
     
     // Browser mode: call backend API
-    const response = await fetch(`${API_BASE_URL}/api/v1/scraper/start`, {
+    const response = await fetch(`${API_BASE_URL}/scraper/start`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ export async function getScraperStatus(): Promise<ScraperStatus> {
     }
     
     // Browser mode: call backend API
-    const response = await fetch(`${API_BASE_URL}/api/v1/scraper/status`, {
+    const response = await fetch(`${API_BASE_URL}/scraper/status`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
       }
@@ -87,7 +87,7 @@ export async function stopScraper(): Promise<boolean> {
     }
     
     // Browser mode: call backend API
-    const response = await fetch(`${API_BASE_URL}/api/v1/scraper/stop`, {
+    const response = await fetch(`${API_BASE_URL}/scraper/stop`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
@@ -108,7 +108,7 @@ export async function testProxy(proxy: string): Promise<boolean> {
     }
     
     // Browser mode: call backend API
-    const response = await fetch(`${API_BASE_URL}/api/v1/scraper/test-proxy`, {
+    const response = await fetch(`${API_BASE_URL}/scraper/test-proxy`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -131,7 +131,7 @@ export async function syncProducts(): Promise<number> {
     }
     
     // Browser mode: call backend API
-    const response = await fetch(`${API_BASE_URL}/api/v1/scraper/sync`, {
+    const response = await fetch(`${API_BASE_URL}/scraper/sync`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
@@ -158,7 +158,7 @@ export async function updateSelectors(selectors: string[]): Promise<void> {
     }
     
     // Browser mode: call backend API
-    await fetch(`${API_BASE_URL}/api/v1/scraper/selectors`, {
+    await fetch(`${API_BASE_URL}/scraper/selectors`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -180,7 +180,7 @@ export async function fetchJob(): Promise<any | null> {
     }
     
     // Browser mode: call backend API
-    const response = await fetch(`${API_BASE_URL}/api/v1/scraper/job`, {
+    const response = await fetch(`${API_BASE_URL}/scraper/job`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
       }
@@ -189,7 +189,7 @@ export async function fetchJob(): Promise<any | null> {
     if (!response.ok) {
       return null;
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error("Error fetching job:", error);

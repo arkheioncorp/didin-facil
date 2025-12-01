@@ -1,4 +1,3 @@
-import { invoke } from "@tauri-apps/api/core";
 import { api } from "@/lib/api";
 import type { FavoriteItem, FavoriteList, FavoriteWithProduct } from "@/types";
 
@@ -6,6 +5,15 @@ import type { FavoriteItem, FavoriteList, FavoriteWithProduct } from "@/types";
 const isTauri = (): boolean => {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 };
+
+// Safe invoke wrapper for Tauri commands
+async function safeInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
+  if (isTauri()) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<T>(cmd, args);
+  }
+  throw new Error(`Tauri command "${cmd}" not available in browser mode`);
+}
 
 export async function addFavorite(
   productId: string,
@@ -29,7 +37,7 @@ export async function addFavorite(
   }
 
   try {
-    return await invoke<FavoriteItem>("add_favorite", { productId, listId, notes });
+    return await safeInvoke<FavoriteItem>("add_favorite", { productId, listId, notes });
   } catch (error) {
     console.error("Error adding favorite:", error);
     throw error;
@@ -44,7 +52,7 @@ export async function removeFavorite(productId: string): Promise<boolean> {
   }
 
   try {
-    return await invoke<boolean>("remove_favorite", { productId });
+    return await safeInvoke<boolean>("remove_favorite", { productId });
   } catch (error) {
     console.error("Error removing favorite:", error);
     throw error;
@@ -106,7 +114,7 @@ export async function getFavorites(listId?: string): Promise<FavoriteWithProduct
   }
   
   try {
-    return await invoke<FavoriteWithProduct[]>("get_favorites", { listId });
+    return await safeInvoke<FavoriteWithProduct[]>("get_favorites", { listId });
   } catch (error) {
     console.error("Error getting favorites:", error);
     throw error;
@@ -120,7 +128,7 @@ export async function createFavoriteList(
   icon?: string
 ): Promise<FavoriteList> {
   try {
-    return await invoke<FavoriteList>("create_favorite_list", { name, description, color, icon });
+    return await safeInvoke<FavoriteList>("create_favorite_list", { name, description, color, icon });
   } catch (error) {
     console.error("Error creating favorite list:", error);
     throw error;
@@ -129,7 +137,7 @@ export async function createFavoriteList(
 
 export async function getFavoriteLists(): Promise<FavoriteList[]> {
   try {
-    return await invoke<FavoriteList[]>("get_favorite_lists");
+    return await safeInvoke<FavoriteList[]>("get_favorite_lists");
   } catch (error) {
     console.error("Error getting favorite lists:", error);
     throw error;
@@ -138,7 +146,7 @@ export async function getFavoriteLists(): Promise<FavoriteList[]> {
 
 export async function deleteFavoriteList(listId: string): Promise<boolean> {
   try {
-    return await invoke<boolean>("delete_favorite_list", { listId });
+    return await safeInvoke<boolean>("delete_favorite_list", { listId });
   } catch (error) {
     console.error("Error deleting favorite list:", error);
     throw error;

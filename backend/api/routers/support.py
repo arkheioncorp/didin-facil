@@ -20,7 +20,7 @@ from backend.vendor.integrations.chatwoot import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/support", tags=["Support"])
+router = APIRouter(tags=["Support"])
 
 # Webhook handler global
 webhook_handler = ChatwootWebhookHandler()

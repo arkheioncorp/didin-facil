@@ -101,6 +101,24 @@ export const YouTubeAutomation = () => {
     }
   };
 
+  const handleDeleteAccount = async (accountName: string) => {
+    try {
+      await api.delete(`/youtube/accounts/${accountName}`);
+      toast({ title: "Canal removido" });
+      fetchAccounts();
+      if (selectedAccount === accountName) {
+        setSelectedAccount("");
+      }
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { detail?: string } } };
+      toast({ 
+        title: "Erro ao remover canal", 
+        description: err.response?.data?.detail,
+        variant: "destructive" 
+      });
+    }
+  };
+
   const handleAuth = async () => {
     if (!authForm.accountName) {
       toast({ title: "Digite um nome para a conta", variant: "destructive" });
@@ -320,7 +338,12 @@ export const YouTubeAutomation = () => {
                           <CheckCircle2 className="h-5 w-5 text-green-500" />
                           <span className="font-medium">{account.account_name}</span>
                         </div>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteAccount(account.account_name)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

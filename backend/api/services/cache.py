@@ -7,8 +7,8 @@ not created/closed per operation. This avoids connection leaks and improves
 performance.
 """
 
-import json
 import hashlib
+import json
 from typing import Any, Optional
 
 from api.services.redis import get_redis_pool
@@ -88,6 +88,28 @@ class CacheService:
         
         return await redis_client.incrby(full_key, amount)
     
+    async def increment(self, key: str, amount: int = 1) -> int:
+        """Increment counter (alias for incr)"""
+        return await self.incr(key, amount)
+    
+    async def sadd(self, key: str, *values) -> int:
+        """Add values to a set"""
+        redis_client = await get_redis_pool()
+        full_key = f"{self.prefix}{key}"
+        return await redis_client.sadd(full_key, *values)
+    
+    async def smembers(self, key: str) -> set:
+        """Get all members of a set"""
+        redis_client = await get_redis_pool()
+        full_key = f"{self.prefix}{key}"
+        return await redis_client.smembers(full_key)
+    
+    async def scard(self, key: str) -> int:
+        """Get count of members in a set"""
+        redis_client = await get_redis_pool()
+        full_key = f"{self.prefix}{key}"
+        return await redis_client.scard(full_key)
+
     async def get_or_set(self, key: str, factory, ttl: int = 3600) -> Any:
         """Get value from cache or compute and cache it"""
         value = await self.get(key)

@@ -15,7 +15,7 @@ from backend.vendor.crm.leads import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/crm", tags=["CRM"])
+router = APIRouter(tags=["CRM"])
 
 # Manager global (em produção, usar dependency injection com banco)
 _manager: Optional[LeadManager] = None

@@ -412,16 +412,16 @@ _n8n_client: Optional[N8nClient] = None
 def get_n8n_client() -> N8nClient:
     """
     Obtém instância singleton do cliente n8n.
-    
+
     Returns:
         N8nClient configurado
     """
     global _n8n_client
-    
+
     if _n8n_client is None:
         _n8n_client = N8nClient(
-            base_url=getattr(settings, 'N8N_URL', 'http://localhost:5678'),
+            api_url=getattr(settings, 'N8N_URL', 'http://localhost:5678'),
             api_key=getattr(settings, 'N8N_API_KEY', None),
         )
-    
+
     return _n8n_client

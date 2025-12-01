@@ -220,50 +220,43 @@ class TestGetBalance:
     @pytest.mark.asyncio
     async def test_get_balance_success(self, mock_user, mock_db):
         """Deve retornar saldo do usuário"""
-        # Mock do resultado da query de usuário
-        user_row = MagicMock()
-        user_row.credits_balance = 500
-        user_row.credits_purchased = 1000
-        user_row.credits_used = 500
+        # Mock do resultado da query de usuário (db.fetch_one retorna dict-like)
+        user_row = {
+            "credits_balance": 500,
+            "credits_purchased": 1000,
+            "credits_used": 500
+        }
         
         # Mock do resultado da query de resumo
-        summary_result = MagicMock()
-        summary_result.scalar_one_or_none.return_value = datetime(2024, 1, 1)
+        summary_row = {"last_purchase_at": datetime(2024, 1, 1)}
         
-        # Configurar db.execute para retornar os mocks em sequência
-        mock_db.execute.side_effect = [
-            MagicMock(fetchone=MagicMock(return_value=user_row)),
-            summary_result
-        ]
+        # Configurar db.fetch_one para retornar os mocks em sequência
+        mock_db.fetch_one = AsyncMock(side_effect=[user_row, summary_row])
         
-        # Patch select para evitar erro do SQLAlchemy com MagicMock
-        with patch("sqlalchemy.select") as mock_select:
-            from api.routes.credits import get_credit_balance
-            
-            response = await get_credit_balance(current_user=mock_user, db=mock_db)
-            
-            assert response.balance == 500
-            assert response.total_purchased == 1000
-            assert response.last_purchase_at == str(datetime(2024, 1, 1))
+        from api.routes.credits import get_credit_balance
+        
+        response = await get_credit_balance(current_user=mock_user, db=mock_db)
+        
+        assert response.balance == 500
+        assert response.total_purchased == 1000
+        assert response.last_purchase_at == str(datetime(2024, 1, 1))
 
     @pytest.mark.asyncio
     async def test_get_balance_no_data(self, mock_user, mock_db):
         """Deve retornar zeros se não houver dados"""
-        # Configurar db.execute para retornar None
-        mock_db.execute.side_effect = [
-            MagicMock(fetchone=MagicMock(return_value=None)),
-            MagicMock(scalar_one_or_none=MagicMock(return_value=None))
-        ]
+        # Configurar db.fetch_one para retornar None
+        mock_db.fetch_one = AsyncMock(side_effect=[None, None])
         
-        # Patch select para evitar erro do SQLAlchemy com MagicMock
-        with patch("sqlalchemy.select") as mock_select:
-            from api.routes.credits import get_credit_balance
-            
-            response = await get_credit_balance(current_user=mock_user, db=mock_db)
-            
-            assert response.balance == 0
-            assert response.total_purchased == 0
-            assert response.last_purchase_at is None
+        from api.routes.credits import get_credit_balance
+        
+        response = await get_credit_balance(
+            current_user=mock_user, db=mock_db
+        )
+        
+        assert response.balance == 0
+        assert response.total_purchased == 0
+        assert response.last_purchase_at is None
+
 
 # ============================================
 # TESTS: Get Status & History

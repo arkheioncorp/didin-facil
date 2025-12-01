@@ -1,0 +1,265 @@
+{
+  "name": "Seller Bot - Post Purchase Thank You",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "didin/post-purchase",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-post-purchase",
+      "name": "Webhook Post Purchase",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "post-purchase"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json.body || $input.first().json;\nconst data = payload.data || {};\n\nconst total = parseFloat(data.total) || 0;\n\nreturn {\n  json: {\n    event_id: payload.event_id,\n    user_id: payload.user_id,\n    name: data.name || 'Cliente',\n    order_id: data.order_id || 'N/A',\n    product_name: data.product_name,\n    product_image: data.product_image,\n    total: total,\n    total_formatted: total.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}),\n    store: data.store,\n    estimated_delivery: data.estimated_delivery || '5-7 dias úteis',\n    phone: data.phone,\n    email: data.email,\n    channel: payload.channel || 'whatsapp',\n    timestamp: payload.timestamp\n  }\n};"
+      },
+      "id": "parse-purchase-data",
+      "name": "Parse Purchase Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\n// Mensagem de agradecimento\nconst message = `🎉 *Parabéns pela compra, ${data.name}!*\\n\\nObrigado por usar o Didin Fácil para encontrar a melhor oferta! 🙏\\n\\n📦 *Pedido:* #${data.order_id}\\n🛍️ *Produto:* ${data.product_name}\\n💰 *Total:* ${data.total_formatted}\\n🏪 *Loja:* ${data.store}\\n🚚 *Previsão:* ${data.estimated_delivery}\\n\\n📲 *Dica:* Acompanhe seu pedido diretamente no site da loja.\\n\\n❓ *Precisa de ajuda?*\\nDigite *AJUDA* que te auxilio!\\n\\n⭐ Não esqueça de avaliar sua experiência!`;\n\n// Calcular data para pedir review (7 dias)\nconst reviewDate = new Date();\nreviewDate.setDate(reviewDate.getDate() + 7);\n\nreturn {\n  json: {\n    ...data,\n    message: message,\n    review_request_date: reviewDate.toISOString()\n  }\n};"
+      },
+      "id": "format-thank-you",
+      "name": "Formatar Agradecimento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.phone || $json.user_id }}\",\n  \"textMessage\": {\n    \"text\": \"{{ $json.message }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "send-thank-you",
+      "name": "Enviar Agradecimento",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "orders",
+        "columns": "user_id, order_id, product_name, total, store, created_at",
+        "options": {
+          "onConflict": "order_id"
+        }
+      },
+      "id": "save-order",
+      "name": "Salvar Pedido",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [910, 500],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "scheduled_automations",
+        "columns": "automation_type, user_id, scheduled_for, data, status",
+        "options": {}
+      },
+      "id": "schedule-review-request",
+      "name": "Agendar Review Request",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1130, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "scheduled_automations",
+        "columns": "automation_type, user_id, scheduled_for, data, status",
+        "options": {}
+      },
+      "id": "schedule-cross-sell",
+      "name": "Agendar Cross-Sell",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1130, 500],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "table": "crm_contacts",
+        "columns": "lifetime_value, total_orders, last_purchase_at",
+        "where": {
+          "values": [
+            {
+              "column": "external_id",
+              "value": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "update-crm-purchase",
+      "name": "Atualizar CRM",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1350, 400],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-didin",
+          "name": "PostgreSQL Didin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"event_id\": \"{{ $('Parse Purchase Data').first().json.event_id }}\",\n  \"message\": \"Post-purchase thank you sent\",\n  \"order_id\": \"{{ $('Parse Purchase Data').first().json.order_id }}\",\n  \"scheduled\": {\n    \"review_request\": \"{{ $('Formatar Agradecimento').first().json.review_request_date }}\",\n    \"cross_sell\": \"3 days\"\n  }\n}",
+        "options": {}
+      },
+      "id": "respond-purchase-success",
+      "name": "Responder Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1570, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Post Purchase": {
+      "main": [
+        [
+          {
+            "node": "Parse Purchase Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Purchase Data": {
+      "main": [
+        [
+          {
+            "node": "Formatar Agradecimento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Agradecimento": {
+      "main": [
+        [
+          {
+            "node": "Enviar Agradecimento",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Salvar Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Agradecimento": {
+      "main": [
+        [
+          {
+            "node": "Agendar Review Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Agendar Cross-Sell",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Pedido": {
+      "main": [
+        [
+          {
+            "node": "Atualizar CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendar Review Request": {
+      "main": [
+        [
+          {
+            "node": "Responder Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar CRM": {
+      "main": [
+        [
+          {
+            "node": "Responder Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "seller-bot"
+    },
+    {
+      "name": "post-purchase"
+    }
+  ]
+}
