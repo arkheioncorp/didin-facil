@@ -548,11 +548,15 @@ class TestDashboardMetrics:
         """Test getting dashboard metrics"""
         service = AccountingService(mock_db)
         
-        # Mock all the scalar returns
-        mock_db.execute = AsyncMock()
-        mock_scalar_result = MagicMock()
-        mock_scalar_result.scalar.return_value = Decimal("1000.00")
-        mock_db.execute.return_value = mock_scalar_result
+        # Mock fetch_one to return different values for each query
+        mock_db.fetch_one = AsyncMock(side_effect=[
+            {"total": "1000.00"},  # total_revenue
+            {"total": "100.00"},  # total_costs
+            {"total": "50.00"},   # openai_costs
+            {"total": 500},       # credits_sold
+            {"total": 400},       # credits_consumed
+            {"total": 10}         # transactions_count
+        ])
         
         result = await service.get_dashboard_metrics(days=30)
         
@@ -567,10 +571,8 @@ class TestDashboardMetrics:
         """Test dashboard metrics with no data"""
         service = AccountingService(mock_db)
         
-        # Mock returns None/0
-        mock_scalar_result = MagicMock()
-        mock_scalar_result.scalar.return_value = None
-        mock_db.execute = AsyncMock(return_value=mock_scalar_result)
+        # Mock returns None
+        mock_db.fetch_one = AsyncMock(return_value=None)
         
         result = await service.get_dashboard_metrics(days=7)
         
@@ -587,16 +589,15 @@ class TestRevenueByDay:
         """Test getting revenue by day"""
         service = AccountingService(mock_db)
         
-        # Mock fetchall
-        mock_row = MagicMock()
-        mock_row.date = "2024-01-15"
-        mock_row.revenue = Decimal("100.00")
-        mock_row.costs = Decimal("10.00")
-        mock_row.transactions = 5
-        
-        mock_result = MagicMock()
-        mock_result.fetchall.return_value = [mock_row]
-        mock_db.execute = AsyncMock(return_value=mock_result)
+        # Mock fetch_all with dict-like rows
+        mock_db.fetch_all = AsyncMock(return_value=[
+            {
+                "date": "2024-01-15",
+                "revenue": Decimal("100.00"),
+                "costs": Decimal("10.00"),
+                "transactions": 5
+            }
+        ])
         
         result = await service.get_revenue_by_day(days=30)
         
@@ -610,9 +611,7 @@ class TestRevenueByDay:
         """Test revenue by day with no data"""
         service = AccountingService(mock_db)
         
-        mock_result = MagicMock()
-        mock_result.fetchall.return_value = []
-        mock_db.execute = AsyncMock(return_value=mock_result)
+        mock_db.fetch_all = AsyncMock(return_value=[])
         
         result = await service.get_revenue_by_day(days=7)
         
@@ -627,17 +626,10 @@ class TestOperationsBreakdown:
         """Test getting operations breakdown"""
         service = AccountingService(mock_db)
         
-        mock_row1 = MagicMock()
-        mock_row1.operation_type = "copy_generation"
-        mock_row1.count = 50
-        
-        mock_row2 = MagicMock()
-        mock_row2.operation_type = "trend_analysis"
-        mock_row2.count = 20
-        
-        mock_result = MagicMock()
-        mock_result.fetchall.return_value = [mock_row1, mock_row2]
-        mock_db.execute = AsyncMock(return_value=mock_result)
+        mock_db.fetch_all = AsyncMock(return_value=[
+            {"operation_type": "copy_generation", "count": 50},
+            {"operation_type": "trend_analysis", "count": 20}
+        ])
         
         result = await service.get_operations_breakdown(days=30)
         
@@ -649,13 +641,13 @@ class TestOperationsBreakdown:
         """Test operations breakdown with no data"""
         service = AccountingService(mock_db)
         
-        mock_result = MagicMock()
-        mock_result.fetchall.return_value = []
-        mock_db.execute = AsyncMock(return_value=mock_result)
+        mock_db.fetch_all = AsyncMock(return_value=[])
         
         result = await service.get_operations_breakdown(days=7)
         
-        assert result == {}
+        # Returns default structure with zeros
+        assert result["copy_generation"] == 0
+        assert result["trend_analysis"] == 0
 
 
 class TestTopUsers:
@@ -666,19 +658,16 @@ class TestTopUsers:
         """Test getting top spending users"""
         service = AccountingService(mock_db)
         
-        mock_user = MagicMock()
-        mock_user.user_id = uuid4()
-        mock_user.total_spent = Decimal("500.00")
-        mock_user.total_credits_purchased = 2000
-        mock_user.total_credits_used = 1500
-        mock_user.purchase_count = 10
-        mock_user.lifetime_profit = Decimal("450.00")
-        
-        mock_result = MagicMock()
-        mock_scalars = MagicMock()
-        mock_scalars.all.return_value = [mock_user]
-        mock_result.scalars.return_value = mock_scalars
-        mock_db.execute = AsyncMock(return_value=mock_result)
+        mock_db.fetch_all = AsyncMock(return_value=[
+            {
+                "user_id": str(uuid4()),
+                "total_spent": Decimal("500.00"),
+                "total_credits_purchased": 2000,
+                "total_credits_used": 1500,
+                "purchase_count": 10,
+                "lifetime_profit": Decimal("450.00")
+            }
+        ])
         
         result = await service.get_top_users(limit=10)
         
@@ -695,16 +684,15 @@ class TestPackageSalesStats:
         """Test getting package sales stats"""
         service = AccountingService(mock_db)
         
-        mock_row = MagicMock()
-        mock_row.name = "Pro"
-        mock_row.slug = "pro"
-        mock_row.sales = 25
-        mock_row.revenue = Decimal("622.50")
-        mock_row.credits = 3750
-        
-        mock_result = MagicMock()
-        mock_result.fetchall.return_value = [mock_row]
-        mock_db.execute = AsyncMock(return_value=mock_result)
+        mock_db.fetch_all = AsyncMock(return_value=[
+            {
+                "name": "Pro",
+                "slug": "pro",
+                "sales": 25,
+                "revenue": Decimal("622.50"),
+                "credits": 3750
+            }
+        ])
         
         result = await service.get_package_sales_stats(days=30)
         
@@ -803,9 +791,14 @@ class TestEdgeCasesAccounting:
         """Test dashboard metrics with custom period"""
         service = AccountingService(mock_db)
         
-        mock_scalar_result = MagicMock()
-        mock_scalar_result.scalar.return_value = Decimal("500.00")
-        mock_db.execute = AsyncMock(return_value=mock_scalar_result)
+        mock_db.fetch_one = AsyncMock(side_effect=[
+            {"total": "500.00"},
+            {"total": "50.00"},
+            {"total": "25.00"},
+            {"total": 250},
+            {"total": 200},
+            {"total": 5}
+        ])
         
         result = await service.get_dashboard_metrics(days=90)
         

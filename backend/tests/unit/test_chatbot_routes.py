@@ -3,11 +3,11 @@ Testes para Chatbot Routes - api/routes/chatbot.py
 Cobertura: start_chat, send_message, get_chat_session, list_typebots,
            get_typebot, get_typebot_results, list_templates, get_template, webhook
 """
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
-from fastapi.testclient import TestClient
-from fastapi import FastAPI
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 # ============================================
 # SETUP
@@ -81,7 +81,7 @@ class TestStartChat:
         
         with patch("api.routes.chatbot.get_current_user", return_value=mock_user):
             with patch("api.routes.chatbot.typebot_client", mock_client):
-                from api.routes.chatbot import start_chat, StartChatRequest
+                from api.routes.chatbot import StartChatRequest, start_chat
                 
                 request = StartChatRequest(
                     typebot_id="tb-123",
@@ -107,7 +107,7 @@ class TestStartChat:
         
         with patch("api.routes.chatbot.get_current_user", return_value=mock_user):
             with patch("api.routes.chatbot.typebot_client", mock_client):
-                from api.routes.chatbot import start_chat, StartChatRequest
+                from api.routes.chatbot import StartChatRequest, start_chat
                 
                 request = StartChatRequest(typebot_id="tb-123")
                 
@@ -143,7 +143,7 @@ class TestSendMessage:
         
         with patch("api.routes.chatbot.get_current_user", return_value=mock_user):
             with patch("api.routes.chatbot.typebot_client", mock_client):
-                from api.routes.chatbot import send_message, SendMessageRequest
+                from api.routes.chatbot import SendMessageRequest, send_message
                 
                 request = SendMessageRequest(
                     session_id="session-abc",
@@ -168,7 +168,7 @@ class TestSendMessage:
         
         with patch("api.routes.chatbot.get_current_user", return_value=mock_user):
             with patch("api.routes.chatbot.typebot_client", mock_client):
-                from api.routes.chatbot import send_message, SendMessageRequest
+                from api.routes.chatbot import SendMessageRequest, send_message
                 
                 request = SendMessageRequest(session_id="session-abc", message="Hi")
                 
@@ -433,7 +433,11 @@ class TestTemplates:
                 
                 response = await list_chatbot_templates()
                 
-                assert "templates" in response
+                # API returns list directly, not wrapped in {templates: []}
+                assert isinstance(response, list)
+                assert len(response) == 1
+                assert response[0]["id"] == "welcome"
+                assert response[0]["name"] == "Welcome Bot"
     
     @pytest.mark.asyncio
     async def test_get_template_success(self):
