@@ -29,7 +29,26 @@ import {
   XCircle,
 } from "lucide-react";
 
-// Tipos
+// Tipos - Estrutura retornada pelo backend
+interface BackendQuotaInfo {
+  daily_limit?: number;
+  used?: number;
+  remaining?: number;
+  percentage_used?: number;
+}
+
+interface BackendQuotaResponse {
+  quota?: BackendQuotaInfo;
+  operations?: Record<string, number>;
+  estimates?: {
+    uploads_remaining?: number;
+    updates_remaining?: number;
+  };
+  reset_time?: string;
+  date?: string;
+}
+
+// Tipos normalizados para uso no componente
 interface QuotaInfo {
   used: number;
   limit: number;
@@ -55,6 +74,60 @@ interface QuotaData {
   quota: QuotaInfo;
   history: QuotaHistory[];
   alerts: QuotaAlert[];
+}
+
+// Helper para normalizar resposta do backend
+function normalizeQuotaData(response: BackendQuotaResponse): QuotaData {
+  const backendQuota = response.quota || {};
+  const now = new Date();
+  
+  // Calcular reset_at (meia-noite PST = 08:00 UTC do próximo dia)
+  const tomorrow = new Date(now);
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+  tomorrow.setUTCHours(8, 0, 0, 0);
+  
+  const quota: QuotaInfo = {
+    used: backendQuota.used ?? 0,
+    limit: backendQuota.daily_limit ?? 10000,
+    percentage: backendQuota.percentage_used ?? 0,
+    reset_at: tomorrow.toISOString(),
+    last_updated: now.toISOString(),
+  };
+
+  // Converter operations para history
+  const history: QuotaHistory[] = [];
+  if (response.operations) {
+    for (const [operation, cost] of Object.entries(response.operations)) {
+      if (typeof cost === 'number' && cost > 0) {
+        history.push({
+          timestamp: now.toISOString(),
+          used: cost,
+          operation,
+          cost,
+        });
+      }
+    }
+  }
+
+  // Gerar alertas baseados no uso
+  const alerts: QuotaAlert[] = [];
+  const percentage = quota.percentage;
+  
+  if (percentage >= 90) {
+    alerts.push({
+      level: "critical",
+      message: "Quota quase esgotada! Apenas " + (quota.limit - quota.used) + " unidades restantes.",
+      timestamp: now.toISOString(),
+    });
+  } else if (percentage >= 75) {
+    alerts.push({
+      level: "warning",
+      message: "Uso de quota acima de 75%. Considere otimizar operações.",
+      timestamp: now.toISOString(),
+    });
+  }
+
+  return { quota, history, alerts };
 }
 
 // Config de custos de operação YouTube
@@ -169,8 +242,10 @@ export const YouTubeQuotaWidget: React.FC<{
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get<QuotaData>("/youtube/quota");
-      setData(response.data);
+      const response = await api.get<BackendQuotaResponse>("/youtube/quota");
+      // Normalizar resposta do backend para estrutura esperada
+      const normalizedData = normalizeQuotaData(response.data);
+      setData(normalizedData);
     } catch (err) {
       console.error("Erro ao carregar quota:", err);
       setError("Não foi possível carregar dados de quota");
@@ -196,12 +271,12 @@ export const YouTubeQuotaWidget: React.FC<{
     );
   }
 
-  if (error || !data) {
+  if (error || !data || !data.quota) {
     return (
       <Card className={className}>
         <CardContent className="p-6 text-center">
           <XCircle className="h-8 w-8 mx-auto text-red-500 mb-2" />
-          <p className="text-sm text-muted-foreground">{error}</p>
+          <p className="text-sm text-muted-foreground">{error || "Dados não disponíveis"}</p>
           <Button variant="ghost" size="sm" onClick={loadQuota} className="mt-2">
             <RefreshCw className="h-4 w-4 mr-1" />
             Tentar novamente
@@ -211,9 +286,9 @@ export const YouTubeQuotaWidget: React.FC<{
     );
   }
 
-  const { quota, history, alerts } = data;
-  const isWarning = quota.percentage >= 75;
-  const isCritical = quota.percentage >= 90;
+  const { quota, history = [], alerts = [] } = data;
+  const isWarning = (quota.percentage ?? 0) >= 75;
+  const isCritical = (quota.percentage ?? 0) >= 90;
 
   // Versão compacta para dashboard
   if (compact) {
@@ -244,9 +319,9 @@ export const YouTubeQuotaWidget: React.FC<{
                     <CheckCircle2 className="h-5 w-5 text-green-500" />
                   )}
                 </div>
-                <QuotaProgressBar percentage={quota.percentage} />
+                <QuotaProgressBar percentage={quota.percentage ?? 0} />
                 <p className="text-xs text-muted-foreground mt-2">
-                  {quota.used.toLocaleString()} / {quota.limit.toLocaleString()} unidades
+                  {(quota.used ?? 0).toLocaleString()} / {(quota.limit ?? 10000).toLocaleString()} unidades
                 </p>
               </CardContent>
             </Card>
@@ -254,14 +329,14 @@ export const YouTubeQuotaWidget: React.FC<{
           <TooltipContent side="bottom" className="max-w-xs">
             <p>
               Reset em:{" "}
-              {formatDistanceToNow(parseISO(quota.reset_at), {
+              {quota.reset_at ? formatDistanceToNow(parseISO(quota.reset_at), {
                 locale: ptBR,
                 addSuffix: true,
-              })}
+              }) : "N/A"}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Última atualização:{" "}
-              {format(parseISO(quota.last_updated), "HH:mm", { locale: ptBR })}
+              {quota.last_updated ? format(parseISO(quota.last_updated), "HH:mm", { locale: ptBR }) : "N/A"}
             </p>
           </TooltipContent>
         </Tooltip>
@@ -297,10 +372,10 @@ export const YouTubeQuotaWidget: React.FC<{
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Uso atual</span>
             <span className="font-mono font-medium">
-              {quota.used.toLocaleString()} / {quota.limit.toLocaleString()}
+              {(quota.used ?? 0).toLocaleString()} / {(quota.limit ?? 10000).toLocaleString()}
             </span>
           </div>
-          <QuotaProgressBar percentage={quota.percentage} />
+          <QuotaProgressBar percentage={quota.percentage ?? 0} />
         </div>
 
         {/* Info de reset */}
@@ -310,10 +385,10 @@ export const YouTubeQuotaWidget: React.FC<{
             Reset da quota
           </div>
           <span>
-            {formatDistanceToNow(parseISO(quota.reset_at), {
+            {quota.reset_at ? formatDistanceToNow(parseISO(quota.reset_at), {
               locale: ptBR,
               addSuffix: true,
-            })}
+            }) : "N/A"}
           </span>
         </div>
 
@@ -324,7 +399,7 @@ export const YouTubeQuotaWidget: React.FC<{
               Uploads disponíveis
             </span>
             <Badge variant={isCritical ? "destructive" : isWarning ? "outline" : "default"}>
-              ~{Math.floor((quota.limit - quota.used) / 1600)} vídeos
+              ~{Math.floor(((quota.limit ?? 10000) - (quota.used ?? 0)) / 1600)} vídeos
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
@@ -333,7 +408,7 @@ export const YouTubeQuotaWidget: React.FC<{
         </div>
 
         {/* Alertas */}
-        {alerts.length > 0 && (
+        {alerts && alerts.length > 0 && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-1">
               <AlertTriangle className="h-4 w-4" />
@@ -348,7 +423,7 @@ export const YouTubeQuotaWidget: React.FC<{
         )}
 
         {/* Histórico recente */}
-        {history.length > 0 && (
+        {history && history.length > 0 && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-1">
               <BarChart3 className="h-4 w-4" />

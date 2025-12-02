@@ -5,11 +5,13 @@ use crate::models::*;
 use crate::scraper::TikTokScraper;
 use crate::ScraperState;
 use chrono::Utc;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use std::fs;
 use sysinfo::{Disks, Networks, System};
 use tauri::{command, AppHandle, Manager, State};
+use ts_rs::TS;
 
 const API_URL: &str = "http://localhost:8000";
 
@@ -788,4 +790,492 @@ fn export_to_csv(products: &[Product]) -> Result<String, String> {
     }
 
     Ok(csv)
+}
+
+// ==================================================
+// SUBSCRIPTION COMMANDS (SaaS Híbrido)
+// ==================================================
+
+/// Validate subscription with API and cache locally for offline use
+#[command]
+pub async fn validate_subscription(
+    app: AppHandle,
+    auth_token: Option<String>,
+) -> Result<SubscriptionValidation, String> {
+    log::info!("Validating subscription...");
+
+    let hwid = get_hardware_id();
+    let app_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let db_path = app_dir.join("tiktrend.db");
+    let cache_path = app_dir.join("subscription_cache.json");
+
+    let client = reqwest::Client::new();
+    
+    // Build request with auth token if available
+    let mut request = client.post(format!("{}/subscription/validate", API_URL));
+    
+    if let Some(token) = auth_token {
+        request = request.header("Authorization", format!("Bearer {}", token));
+    }
+
+    let api_payload = json!({
+        "hwid": hwid,
+        "app_version": env!("CARGO_PKG_VERSION"),
+    });
+
+    match request.json(&api_payload).send().await {
+        Ok(response) => {
+            if response.status().is_success() {
+                let api_response: serde_json::Value = response
+                    .json()
+                    .await
+                    .map_err(|e| format!("Failed to parse API response: {}", e))?;
+
+                // Parse subscription from API response
+                let subscription = parse_subscription_from_api(&api_response)?;
+                
+                // Cache subscription for offline use
+                let cached = CachedSubscription {
+                    subscription: subscription.clone(),
+                    cached_at: Utc::now().to_rfc3339(),
+                    valid_until: calculate_cache_validity(&subscription),
+                    last_sync: Utc::now().to_rfc3339(),
+                };
+                
+                // Save to file
+                if let Ok(json) = serde_json::to_string_pretty(&cached) {
+                    let _ = fs::write(&cache_path, json);
+                }
+                
+                // Also update database
+                let _ = database::save_subscription_cache(&db_path, &cached);
+
+                Ok(SubscriptionValidation {
+                    is_valid: true,
+                    subscription: Some(subscription),
+                    reason: None,
+                    message: Some("Subscription validated successfully".to_string()),
+                })
+            } else if response.status() == reqwest::StatusCode::UNAUTHORIZED {
+                // Invalid token - clear cache and return invalid
+                let _ = fs::remove_file(&cache_path);
+                
+                Ok(SubscriptionValidation {
+                    is_valid: false,
+                    subscription: None,
+                    reason: Some("unauthorized".to_string()),
+                    message: Some("Authentication required".to_string()),
+                })
+            } else if response.status() == reqwest::StatusCode::PAYMENT_REQUIRED {
+                // Subscription expired or payment issue
+                Ok(SubscriptionValidation {
+                    is_valid: false,
+                    subscription: None,
+                    reason: Some("payment_required".to_string()),
+                    message: Some("Subscription payment required".to_string()),
+                })
+            } else {
+                log::warn!("Subscription API error: {}", response.status());
+                // Try cached subscription
+                try_cached_subscription(&cache_path, &db_path)
+            }
+        }
+        Err(e) => {
+            log::warn!("Subscription API connection failed: {}", e);
+            // Offline mode - try cached subscription
+            try_cached_subscription(&cache_path, &db_path)
+        }
+    }
+}
+
+/// Get cached subscription (for offline mode)
+#[command]
+pub async fn get_cached_subscription(app: AppHandle) -> Result<Option<CachedSubscription>, String> {
+    let app_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let cache_path = app_dir.join("subscription_cache.json");
+    
+    if cache_path.exists() {
+        let content = fs::read_to_string(&cache_path)
+            .map_err(|e| format!("Failed to read cache: {}", e))?;
+        let cached: CachedSubscription = serde_json::from_str(&content)
+            .map_err(|e| format!("Failed to parse cache: {}", e))?;
+        
+        // Check if cache is still valid
+        if is_cache_valid(&cached) {
+            return Ok(Some(cached));
+        }
+    }
+    
+    Ok(None)
+}
+
+/// Check if user can use a specific feature
+#[command]
+pub async fn check_feature_access(
+    app: AppHandle,
+    feature: String,
+) -> Result<FeatureAccessResult, String> {
+    let app_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let cache_path = app_dir.join("subscription_cache.json");
+    
+    // Load cached subscription
+    let cached = if cache_path.exists() {
+        let content = fs::read_to_string(&cache_path)
+            .map_err(|e| format!("Failed to read cache: {}", e))?;
+        serde_json::from_str::<CachedSubscription>(&content).ok()
+    } else {
+        None
+    };
+    
+    match cached {
+        Some(c) if is_cache_valid(&c) => {
+            let has_access = check_subscription_feature(&c.subscription, &feature);
+            let limit = get_feature_limit(&c.subscription, &feature);
+            
+            Ok(FeatureAccessResult {
+                feature,
+                has_access,
+                limit,
+                current_usage: 0, // Would need to track locally
+                plan_required: get_required_plan_for_feature(&feature),
+            })
+        }
+        _ => {
+            // No valid subscription - FREE plan features only
+            let has_access = is_free_feature(&feature);
+            Ok(FeatureAccessResult {
+                feature,
+                has_access,
+                limit: get_free_limit(&feature),
+                current_usage: 0,
+                plan_required: if has_access { None } else { Some("starter".to_string()) },
+            })
+        }
+    }
+}
+
+/// Get current execution mode
+#[command]
+pub async fn get_execution_mode(app: AppHandle) -> Result<ExecutionMode, String> {
+    let app_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let cache_path = app_dir.join("subscription_cache.json");
+    
+    if cache_path.exists() {
+        let content = fs::read_to_string(&cache_path)
+            .map_err(|e| format!("Failed to read cache: {}", e))?;
+        if let Ok(cached) = serde_json::from_str::<CachedSubscription>(&content) {
+            if is_cache_valid(&cached) {
+                return Ok(cached.subscription.execution_mode);
+            }
+        }
+    }
+    
+    // Default to web_only for free/unknown
+    Ok(ExecutionMode::WebOnly)
+}
+
+/// Check if offline mode is allowed
+#[command]
+pub async fn can_work_offline(app: AppHandle) -> Result<OfflineStatus, String> {
+    let app_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let cache_path = app_dir.join("subscription_cache.json");
+    
+    if !cache_path.exists() {
+        return Ok(OfflineStatus {
+            allowed: false,
+            days_remaining: 0,
+            reason: Some("No cached subscription".to_string()),
+        });
+    }
+    
+    let content = fs::read_to_string(&cache_path)
+        .map_err(|e| format!("Failed to read cache: {}", e))?;
+    let cached: CachedSubscription = serde_json::from_str(&content)
+        .map_err(|e| format!("Failed to parse cache: {}", e))?;
+    
+    // Check if subscription allows offline mode
+    if !cached.subscription.features.offline_mode {
+        return Ok(OfflineStatus {
+            allowed: false,
+            days_remaining: 0,
+            reason: Some("Plan does not support offline mode".to_string()),
+        });
+    }
+    
+    // Check how many offline days remaining
+    let cached_at = chrono::DateTime::parse_from_rfc3339(&cached.cached_at)
+        .map_err(|e| format!("Invalid cached_at: {}", e))?;
+    let days_offline = (Utc::now().signed_duration_since(cached_at.with_timezone(&Utc))).num_days();
+    let days_remaining = cached.subscription.offline_days_allowed as i64 - days_offline;
+    
+    if days_remaining <= 0 {
+        return Ok(OfflineStatus {
+            allowed: false,
+            days_remaining: 0,
+            reason: Some("Offline period expired. Please connect to sync.".to_string()),
+        });
+    }
+    
+    Ok(OfflineStatus {
+        allowed: true,
+        days_remaining: days_remaining as i32,
+        reason: None,
+    })
+}
+
+// ==================================================
+// SUBSCRIPTION HELPER TYPES
+// ==================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "../src/types/tauri-bindings.ts")]
+pub struct FeatureAccessResult {
+    pub feature: String,
+    pub has_access: bool,
+    pub limit: Option<i32>,
+    pub current_usage: i32,
+    pub plan_required: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "../src/types/tauri-bindings.ts")]
+pub struct OfflineStatus {
+    pub allowed: bool,
+    pub days_remaining: i32,
+    pub reason: Option<String>,
+}
+
+// ==================================================
+// SUBSCRIPTION HELPER FUNCTIONS
+// ==================================================
+
+fn parse_subscription_from_api(response: &serde_json::Value) -> Result<Subscription, String> {
+    let plan_tier = match response["planTier"].as_str().unwrap_or("free") {
+        "starter" => PlanTier::Starter,
+        "business" => PlanTier::Business,
+        "enterprise" => PlanTier::Enterprise,
+        _ => PlanTier::Free,
+    };
+    
+    let execution_mode = match response["executionMode"].as_str().unwrap_or("web_only") {
+        "hybrid" => ExecutionMode::Hybrid,
+        "local_first" => ExecutionMode::LocalFirst,
+        _ => ExecutionMode::WebOnly,
+    };
+    
+    let status = match response["status"].as_str().unwrap_or("active") {
+        "trialing" => SubscriptionStatus::Trialing,
+        "past_due" => SubscriptionStatus::PastDue,
+        "canceled" => SubscriptionStatus::Canceled,
+        "expired" => SubscriptionStatus::Expired,
+        _ => SubscriptionStatus::Active,
+    };
+    
+    // Parse marketplaces
+    let marketplaces: Vec<MarketplaceAccess> = response["marketplaces"]
+        .as_array()
+        .map(|arr| {
+            arr.iter().filter_map(|v| {
+                match v.as_str()? {
+                    "tiktok" => Some(MarketplaceAccess::Tiktok),
+                    "aliexpress" => Some(MarketplaceAccess::Aliexpress),
+                    "shopee" => Some(MarketplaceAccess::Shopee),
+                    "amazon" => Some(MarketplaceAccess::Amazon),
+                    "mercadolivre" => Some(MarketplaceAccess::Mercadolivre),
+                    _ => None,
+                }
+            }).collect()
+        })
+        .unwrap_or_else(|| vec![MarketplaceAccess::Tiktok]);
+    
+    // Parse limits
+    let limits_obj = &response["limits"];
+    let limits = SubscriptionLimits {
+        price_searches: limits_obj["price_searches"].as_i64().unwrap_or(50) as i32,
+        favorites: limits_obj["favorites"].as_i64().unwrap_or(20) as i32,
+        whatsapp_messages: limits_obj["whatsapp_messages"].as_i64().unwrap_or(0) as i32,
+        api_calls: limits_obj["api_calls"].as_i64().unwrap_or(0) as i32,
+        crm_leads: limits_obj["crm_leads"].as_i64().unwrap_or(0) as i32,
+        chatbot_flows: limits_obj["chatbot_flows"].as_i64().unwrap_or(0) as i32,
+        social_posts: limits_obj["social_posts"].as_i64().unwrap_or(0) as i32,
+    };
+    
+    // Parse features
+    let features_obj = &response["features"];
+    let features = SubscriptionFeatures {
+        chatbot_ai: features_obj["chatbot_ai"].as_bool().unwrap_or(false),
+        analytics_advanced: features_obj["analytics_advanced"].as_bool().unwrap_or(false),
+        analytics_export: features_obj["analytics_export"].as_bool().unwrap_or(false),
+        crm_automation: features_obj["crm_automation"].as_bool().unwrap_or(false),
+        api_access: features_obj["api_access"].as_bool().unwrap_or(false),
+        offline_mode: features_obj["offline_mode"].as_bool().unwrap_or(false),
+        hybrid_sync: features_obj["hybrid_sync"].as_bool().unwrap_or(false),
+        priority_support: features_obj["priority_support"].as_bool().unwrap_or(false),
+    };
+    
+    Ok(Subscription {
+        id: response["id"].as_str().unwrap_or("").to_string(),
+        user_id: response["userId"].as_str().unwrap_or("").to_string(),
+        plan_tier,
+        status,
+        execution_mode,
+        billing_cycle: response["billingCycle"].as_str().unwrap_or("monthly").to_string(),
+        current_period_start: response["currentPeriodStart"].as_str().unwrap_or("").to_string(),
+        current_period_end: response["currentPeriodEnd"].as_str().unwrap_or("").to_string(),
+        marketplaces,
+        limits,
+        features,
+        cached_at: Utc::now().to_rfc3339(),
+        offline_days_allowed: response["offlineDays"].as_i64().unwrap_or(0) as i32,
+        grace_period_days: response["gracePeriodDays"].as_i64().unwrap_or(3) as i32,
+    })
+}
+
+fn calculate_cache_validity(subscription: &Subscription) -> String {
+    let days = match subscription.plan_tier {
+        PlanTier::Enterprise => 30,
+        PlanTier::Business => 14,
+        PlanTier::Starter => 7,
+        PlanTier::Free => 1,
+    };
+    
+    Utc::now()
+        .checked_add_signed(chrono::Duration::days(days))
+        .unwrap_or_else(Utc::now)
+        .to_rfc3339()
+}
+
+fn is_cache_valid(cached: &CachedSubscription) -> bool {
+    if let Ok(valid_until) = chrono::DateTime::parse_from_rfc3339(&cached.valid_until) {
+        return Utc::now() < valid_until.with_timezone(&Utc);
+    }
+    false
+}
+
+fn try_cached_subscription(
+    cache_path: &std::path::Path,
+    db_path: &std::path::Path,
+) -> Result<SubscriptionValidation, String> {
+    // Try file cache first
+    if cache_path.exists() {
+        if let Ok(content) = fs::read_to_string(cache_path) {
+            if let Ok(cached) = serde_json::from_str::<CachedSubscription>(&content) {
+                if is_cache_valid(&cached) {
+                    return Ok(SubscriptionValidation {
+                        is_valid: true,
+                        subscription: Some(cached.subscription),
+                        reason: Some("offline_cached".to_string()),
+                        message: Some("Using cached subscription (offline mode)".to_string()),
+                    });
+                }
+            }
+        }
+    }
+    
+    // Try database cache
+    if let Ok(Some(cached)) = database::get_subscription_cache(db_path) {
+        if is_cache_valid(&cached) {
+            return Ok(SubscriptionValidation {
+                is_valid: true,
+                subscription: Some(cached.subscription),
+                reason: Some("offline_db_cached".to_string()),
+                message: Some("Using database cached subscription".to_string()),
+            });
+        }
+    }
+    
+    // No valid cache - return free tier fallback
+    Ok(SubscriptionValidation {
+        is_valid: true,
+        subscription: Some(create_free_subscription()),
+        reason: Some("offline_free_fallback".to_string()),
+        message: Some("Offline - using free tier. Connect to sync subscription.".to_string()),
+    })
+}
+
+fn create_free_subscription() -> Subscription {
+    Subscription {
+        id: "free".to_string(),
+        user_id: "offline".to_string(),
+        plan_tier: PlanTier::Free,
+        status: SubscriptionStatus::Active,
+        execution_mode: ExecutionMode::WebOnly,
+        billing_cycle: "none".to_string(),
+        current_period_start: Utc::now().to_rfc3339(),
+        current_period_end: Utc::now()
+            .checked_add_signed(chrono::Duration::days(365))
+            .unwrap()
+            .to_rfc3339(),
+        marketplaces: vec![MarketplaceAccess::Tiktok],
+        limits: SubscriptionLimits {
+            price_searches: 50,
+            favorites: 20,
+            whatsapp_messages: 0,
+            api_calls: 0,
+            crm_leads: 0,
+            chatbot_flows: 0,
+            social_posts: 0,
+        },
+        features: SubscriptionFeatures::default(),
+        cached_at: Utc::now().to_rfc3339(),
+        offline_days_allowed: 0,
+        grace_period_days: 3,
+    }
+}
+
+fn check_subscription_feature(subscription: &Subscription, feature: &str) -> bool {
+    match feature {
+        "chatbot_ai" => subscription.features.chatbot_ai,
+        "analytics_advanced" => subscription.features.analytics_advanced,
+        "analytics_export" => subscription.features.analytics_export,
+        "crm_automation" => subscription.features.crm_automation,
+        "api_access" => subscription.features.api_access,
+        "offline_mode" => subscription.features.offline_mode,
+        "hybrid_sync" => subscription.features.hybrid_sync,
+        "priority_support" => subscription.features.priority_support,
+        // Metered features - check limits
+        "price_searches" => subscription.limits.price_searches > 0,
+        "favorites" => subscription.limits.favorites > 0,
+        "whatsapp_messages" => subscription.limits.whatsapp_messages > 0,
+        "api_calls" => subscription.limits.api_calls > 0,
+        _ => false,
+    }
+}
+
+fn get_feature_limit(subscription: &Subscription, feature: &str) -> Option<i32> {
+    match feature {
+        "price_searches" => Some(subscription.limits.price_searches),
+        "favorites" => Some(subscription.limits.favorites),
+        "whatsapp_messages" => Some(subscription.limits.whatsapp_messages),
+        "api_calls" => Some(subscription.limits.api_calls),
+        "crm_leads" => Some(subscription.limits.crm_leads),
+        "chatbot_flows" => Some(subscription.limits.chatbot_flows),
+        "social_posts" => Some(subscription.limits.social_posts),
+        _ => None,
+    }
+}
+
+fn get_required_plan_for_feature(feature: &str) -> Option<String> {
+    match feature {
+        "chatbot_ai" | "crm_automation" | "api_access" => Some("business".to_string()),
+        "analytics_advanced" | "analytics_export" | "offline_mode" | "hybrid_sync" => {
+            Some("starter".to_string())
+        }
+        "priority_support" => Some("enterprise".to_string()),
+        _ => None,
+    }
+}
+
+fn is_free_feature(feature: &str) -> bool {
+    matches!(feature, "price_searches" | "favorites" | "analytics_basic")
+}
+
+fn get_free_limit(feature: &str) -> Option<i32> {
+    match feature {
+        "price_searches" => Some(50),
+        "favorites" => Some(20),
+        _ => Some(0),
+    }
 }

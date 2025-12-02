@@ -830,7 +830,10 @@ export const Coleta: React.FC = () => {
             isActive={isRunning}
             currentUrl={browserState.url}
             screenshot={browserState.screenshot}
-            status={browserState.status}
+            status={statusMessage}
+            productsFound={productsFound}
+            progress={progress}
+            logs={logs}
           />
         </TabsContent>
 

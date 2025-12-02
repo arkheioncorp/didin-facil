@@ -121,6 +121,11 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: Optional[str] = None
     GOOGLE_API_KEY: Optional[str] = None  # Para YouTube Data API
     
+    # TikTok Shop API (Partner Center)
+    TIKTOK_SHOP_APP_KEY: Optional[str] = None
+    TIKTOK_SHOP_APP_SECRET: Optional[str] = None
+    TIKTOK_SHOP_SERVICE_ID: Optional[str] = None
+    
     # Instagram Credentials
     INSTAGRAM_USERNAME: Optional[str] = None
     INSTAGRAM_PASSWORD: Optional[str] = None

@@ -9,7 +9,7 @@ import shutil
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from api.middleware.auth import get_current_user
+from api.middleware.auth import get_current_user, get_current_user_optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 from shared.config import settings
@@ -86,8 +86,11 @@ async def init_auth(
 
 
 @router.get("/accounts")
-async def list_accounts(current_user=Depends(get_current_user)):
-    """Lista contas YouTube autenticadas do usuário."""
+async def list_accounts(current_user: Optional[dict] = Depends(get_current_user_optional)):
+    """Lista contas YouTube autenticadas do usuário. Funciona em modo trial."""
+    if not current_user:
+        return {"accounts": []}
+    
     tokens_dir = os.path.join(settings.DATA_DIR, "youtube_tokens")
     
     if not os.path.exists(tokens_dir):
@@ -357,13 +360,33 @@ async def _check_quota_alerts(user_id: str, current_usage: int):
 
 
 @router.get("/quota")
-async def get_quota_status(current_user=Depends(get_current_user)):
+async def get_quota_status(
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
     """
     Retorna status atual da quota do YouTube.
+    Funciona em modo trial.
     
     A quota do YouTube é de 10.000 unidades por dia.
     Upload de vídeo consome ~1.600 unidades.
     """
+    if not current_user:
+        return {
+            "quota": {
+                "daily_limit": YOUTUBE_DAILY_QUOTA,
+                "used": 0,
+                "remaining": YOUTUBE_DAILY_QUOTA,
+                "percentage_used": 0
+            },
+            "operations": {},
+            "estimates": {
+                "uploads_remaining": YOUTUBE_DAILY_QUOTA // QUOTA_COSTS["upload"],
+                "updates_remaining": YOUTUBE_DAILY_QUOTA // QUOTA_COSTS["update"]
+            },
+            "reset_time": "00:00 PST (Pacific Time)",
+            "date": datetime.now().strftime("%Y-%m-%d")
+        }
+    
     import json
     
     redis = await get_redis()

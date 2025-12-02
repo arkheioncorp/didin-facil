@@ -13,6 +13,7 @@ import { analytics } from "@/lib/analytics";
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Search = lazy(() => import("@/pages/Search"));
 const Products = lazy(() => import("@/pages/Products"));
+const ProductsV2 = lazy(() => import("@/pages/ProductsRefactored")); // Performance optimized version
 const Coleta = lazy(() => import("@/pages/Coleta"));
 const Favorites = lazy(() => import("@/pages/Favorites"));
 const Copy = lazy(() => import("@/pages/Copy"));
@@ -87,6 +88,7 @@ function App() {
                     <Route index element={<Dashboard />} />
                     <Route path="search" element={<Search />} />
                     <Route path="products" element={<Products />} />
+                    <Route path="products-v2" element={<ProductsV2 />} />
                     <Route path="coleta" element={<Coleta />} />
                     <Route path="favorites" element={<Favorites />} />
                     <Route path="copy" element={<Copy />} />

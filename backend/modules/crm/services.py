@@ -10,20 +10,17 @@ Responsabilidades:
 - Cálculo de scores
 """
 
-from typing import Optional, List, Dict, Any, Tuple
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
 
-from .models import (
-    Contact, ContactStatus, Lead, LeadStatus, LeadSource,
-    Deal, DealStatus, Pipeline, PipelineStage, Activity, ActivityType,
-    Tag, Segment, SegmentCondition, SegmentOperator
-)
-from .repository import (
-    ContactRepository, LeadRepository, DealRepository,
-    PipelineRepository, ActivityRepository, TagRepository,
-    SegmentRepository
-)
+from .models import (Activity, ActivityType, Contact, ContactStatus, Deal,
+                     DealStatus, Lead, LeadSource, LeadStatus, Pipeline,
+                     PipelineStage, Segment, SegmentCondition, SegmentOperator,
+                     Tag)
+from .repository import (ActivityRepository, ContactRepository, DealRepository,
+                         LeadRepository, PipelineRepository, SegmentRepository,
+                         TagRepository)
 
 logger = logging.getLogger(__name__)
 
@@ -1557,6 +1554,18 @@ class CRMService:
             }
         }
     
+    async def get_activities(
+        self,
+        user_id: str,
+        limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        """Retorna atividades recentes."""
+        activities, _ = await self.activity_repo.list_for_entity(
+            user_id=user_id,
+            limit=limit
+        )
+        return [a.to_dict() for a in activities]
+
     async def quick_create_deal(
         self,
         user_id: str,

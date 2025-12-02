@@ -2,6 +2,149 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+// ==================================================
+// SUBSCRIPTION & PLAN MODELS (SaaS Híbrido)
+// ==================================================
+
+/// Plan tier enum
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+#[ts(export, export_to = "../src/types/tauri-bindings.ts")]
+pub enum PlanTier {
+    Free,
+    Starter,
+    Business,
+    Enterprise,
+}
+
+impl Default for PlanTier {
+    fn default() -> Self {
+        PlanTier::Free
+    }
+}
+
+/// Execution mode enum
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+#[ts(export, export_to = "../src/types/tauri-bindings.ts")]
+pub enum ExecutionMode {
+    WebOnly,
+    Hybrid,
+    LocalFirst,
+}
+
+impl Default for ExecutionMode {
+    fn default() -> Self {
+        ExecutionMode::WebOnly
+    }
+}
+
+/// Subscription status enum
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+#[ts(export, export_to = "../src/types/tauri-bindings.ts")]
+pub enum SubscriptionStatus {
+    Active,
+    Trialing,
+    PastDue,
+    Canceled,
+    Expired,
+}
+
+impl Default for SubscriptionStatus {
+    fn default() -> Self {
+        SubscriptionStatus::Active
+    }
+}
+
+/// Marketplace access enum
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+#[ts(export, export_to = "../src/types/tauri-bindings.ts")]
+pub enum MarketplaceAccess {
+    Tiktok,
+    Aliexpress,
+    Shopee,
+    Amazon,
+    Mercadolivre,
+}
+
+/// Full subscription info returned from API validation
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "../src/types/tauri-bindings.ts")]
+pub struct Subscription {
+    pub id: String,
+    pub user_id: String,
+    pub plan_tier: PlanTier,
+    pub status: SubscriptionStatus,
+    pub execution_mode: ExecutionMode,
+    pub billing_cycle: String,
+    pub current_period_start: String,
+    pub current_period_end: String,
+    pub marketplaces: Vec<MarketplaceAccess>,
+    pub limits: SubscriptionLimits,
+    pub features: SubscriptionFeatures,
+    pub cached_at: String,
+    pub offline_days_allowed: i32,
+    pub grace_period_days: i32,
+}
+
+/// Subscription limits (metered features)
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "../src/types/tauri-bindings.ts")]
+pub struct SubscriptionLimits {
+    pub price_searches: i32,
+    pub favorites: i32,
+    pub whatsapp_messages: i32,
+    pub api_calls: i32,
+    pub crm_leads: i32,
+    pub chatbot_flows: i32,
+    pub social_posts: i32,
+}
+
+/// Subscription features (boolean toggles)
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "../src/types/tauri-bindings.ts")]
+pub struct SubscriptionFeatures {
+    pub chatbot_ai: bool,
+    pub analytics_advanced: bool,
+    pub analytics_export: bool,
+    pub crm_automation: bool,
+    pub api_access: bool,
+    pub offline_mode: bool,
+    pub hybrid_sync: bool,
+    pub priority_support: bool,
+}
+
+/// Cached subscription data for offline validation
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "../src/types/tauri-bindings.ts")]
+pub struct CachedSubscription {
+    pub subscription: Subscription,
+    pub cached_at: String,
+    pub valid_until: String,
+    pub last_sync: String,
+}
+
+/// Validation result from API
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "../src/types/tauri-bindings.ts")]
+pub struct SubscriptionValidation {
+    pub is_valid: bool,
+    pub subscription: Option<Subscription>,
+    pub reason: Option<String>,
+    pub message: Option<String>,
+}
+
+// ==================================================
+// LEGACY LICENSE MODEL (backwards compatibility)
+// ==================================================
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "../src/types/tauri-bindings.ts")]

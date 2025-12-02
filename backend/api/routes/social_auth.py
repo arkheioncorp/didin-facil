@@ -3,16 +3,16 @@ Social Media Authentication Routes
 Autenticação OAuth centralizada para múltiplas plataformas
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
-from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta, timezone
+import hashlib
 import json
 import secrets
-import hashlib
-import httpx
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional
 
+import httpx
 from api.middleware.auth import get_current_user
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from pydantic import BaseModel
 from shared.config import settings
 from shared.redis import get_redis
 
@@ -99,6 +99,22 @@ PLATFORM_CONFIGS = {
         "scopes": ["user.info.basic", "video.upload"],
         "client_id_env": "TIKTOK_CLIENT_KEY",
         "client_secret_env": "TIKTOK_CLIENT_SECRET",
+    },
+    "tiktok_shop": {
+        "auth_url": "https://services.tiktokshop.com/open/authorize",
+        "token_url": "https://auth.tiktok-shops.com/api/v2/token/get",
+        "refresh_url": "https://auth.tiktok-shops.com/api/v2/token/refresh",
+        "scopes": [
+            "product.read",
+            "product.write", 
+            "order.read",
+            "order.write",
+            "shop.read",
+            "inventory.read",
+            "inventory.write"
+        ],
+        "client_id_env": "TIKTOK_SHOP_APP_KEY",
+        "client_secret_env": "TIKTOK_SHOP_APP_SECRET",
     },
     "youtube": {
         "auth_url": "https://accounts.google.com/o/oauth2/v2/auth",

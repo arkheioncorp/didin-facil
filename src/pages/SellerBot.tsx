@@ -1,5 +1,4 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
+import React, { useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Square,
@@ -23,6 +22,10 @@ import {
   Youtube,
   Video,
   Smartphone,
+  Play,
+  StopCircle,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,17 +40,33 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BrowserViewer } from "@/components/scraper/BrowserViewer";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { useWebSocket, type WebSocketNotification } from "@/services/websocket";
+
+import { api } from "@/lib/api";
 
 // ============================================
-// Types
+// Types - Automação Browser (/bot)
 // ============================================
 
-interface Task {
+interface BotTask {
   id: string;
   task_type: string;
   state: "queued" | "running" | "completed" | "failed" | "cancelled";
@@ -59,7 +78,7 @@ interface Task {
   logs: string[];
 }
 
-interface QueueStats {
+interface BotQueueStats {
   total_queued: number;
   total_running: number;
   total_completed: number;
@@ -67,7 +86,7 @@ interface QueueStats {
   by_task_type: Record<string, number>;
 }
 
-interface Profile {
+interface BotProfile {
   id: string;
   name: string;
   is_logged_in: boolean;
@@ -76,79 +95,25 @@ interface Profile {
 }
 
 // ============================================
-// API Response Types
+// API Functions - Automação Browser (/bot)
 // ============================================
 
-interface ConversationsResponse {
-  conversations: Array<{
-    conversation_id: string;
-    channel: string;
-    is_active: boolean;
-    last_interaction: string;
-    search_history?: string[];
-  }>;
-}
-
-interface StatsResponse {
-  active_conversations: number;
-  total_conversations: number;
-  handoffs_today: number;
-  top_intents?: Array<{ name: string; count: number }>;
-}
-
-interface ConfigResponse {
-  chatwoot_enabled?: boolean;
-  evolution_enabled?: boolean;
-}
-
-interface MessageResponse {
-  message_id?: string;
-  response?: { text?: string };
-}
-
-// ============================================
-// API Functions
-// ============================================
-
-import { api } from "@/lib/api";
-
-async function fetchTasks(): Promise<Task[]> {
+async function fetchBotTasks(): Promise<BotTask[]> {
   try {
-    const response = await api.get<ConversationsResponse>("/seller-bot/conversations");
-    // Adaptar conversas para formato de tasks
-    const conversations = response.data.conversations || [];
-    return conversations.map((conv) => ({
-      id: conv.conversation_id,
-      task_type: conv.channel === "whatsapp" ? "reply_messages" : "manage_orders",
-      state: conv.is_active ? "running" : "completed",
-      created_at: conv.last_interaction,
-      started_at: conv.last_interaction,
-      completed_at: conv.is_active ? undefined : conv.last_interaction,
-      screenshots: [],
-      logs: conv.search_history || [],
-    }));
+    const response = await api.get<BotTask[]>("/bot/tasks");
+    return response.data;
   } catch (error) {
-    console.error("Failed to fetch tasks:", error);
+    console.error("Failed to fetch bot tasks:", error);
     return [];
   }
 }
 
-async function fetchStats(): Promise<QueueStats> {
+async function fetchBotStats(): Promise<BotQueueStats> {
   try {
-    const response = await api.get<StatsResponse>("/seller-bot/stats");
-    const data = response.data;
-    return {
-      total_queued: 0,
-      total_running: data.active_conversations || 0,
-      total_completed: data.total_conversations - (data.active_conversations || 0),
-      total_failed: data.handoffs_today || 0,
-      by_task_type: data.top_intents?.reduce((acc: Record<string, number>, intent) => {
-        acc[intent.name || "unknown"] = intent.count || 0;
-        return acc;
-      }, {}) || {},
-    };
+    const response = await api.get<BotQueueStats>("/bot/stats");
+    return response.data;
   } catch (error) {
-    console.error("Failed to fetch stats:", error);
+    console.error("Failed to fetch bot stats:", error);
     return {
       total_queued: 0,
       total_running: 0,
@@ -159,85 +124,53 @@ async function fetchStats(): Promise<QueueStats> {
   }
 }
 
-async function fetchProfiles(): Promise<Profile[]> {
+async function fetchBotProfiles(): Promise<BotProfile[]> {
   try {
-    // Para SellerBot, profiles são as integrações configuradas
-    const response = await api.get<ConfigResponse>("/seller-bot/config");
-    const config = response.data;
-    const profiles: Profile[] = [];
-    
-    if (config.chatwoot_enabled) {
-      profiles.push({
-        id: "chatwoot",
-        name: "Chatwoot",
-        is_logged_in: true,
-        created_at: new Date().toISOString(),
-      });
-    }
-    if (config.evolution_enabled) {
-      profiles.push({
-        id: "evolution",
-        name: "Evolution API (WhatsApp)",
-        is_logged_in: true,
-        created_at: new Date().toISOString(),
-      });
-    }
-    return profiles;
+    const response = await api.get<BotProfile[]>("/bot/profiles");
+    return response.data;
   } catch (error) {
-    console.error("Failed to fetch profiles:", error);
+    console.error("Failed to fetch bot profiles:", error);
     return [];
   }
 }
 
-async function createTask(data: { task_type: string; task_data?: Record<string, unknown> }): Promise<Task> {
-  try {
-    // Enviar mensagem direta através do seller-bot
-    const response = await api.post<MessageResponse>("/seller-bot/message", {
-      channel: data.task_data?.channel || "webchat",
-      sender_id: data.task_data?.sender_id || "system",
-      sender_name: "TikTrend Bot",
-      content: data.task_data?.content || "",
-    });
-    return {
-      id: response.data.message_id || crypto.randomUUID(),
-      task_type: data.task_type,
-      state: "completed",
-      created_at: new Date().toISOString(),
-      completed_at: new Date().toISOString(),
-      screenshots: [],
-      logs: [response.data.response?.text || "Tarefa executada"],
-    };
-  } catch (error) {
-    console.error("Failed to create task:", error);
-    throw error;
-  }
+async function createBotTask(data: { 
+  task_type: string; 
+  task_description?: string;
+  task_data?: Record<string, unknown>;
+  priority?: string;
+}): Promise<BotTask> {
+  const response = await api.post<BotTask>("/bot/tasks", data);
+  return response.data;
 }
 
-async function cancelTask(taskId: string): Promise<void> {
-  try {
-    await api.post(`/seller-bot/conversations/${taskId}/close`);
-  } catch (error) {
-    console.error("Failed to cancel task:", error);
-  }
+async function cancelBotTask(taskId: string): Promise<void> {
+  await api.delete(`/bot/tasks/${taskId}`);
 }
 
-async function createProfile(data: { name: string; clone_from_system: boolean }): Promise<Profile> {
-  try {
-    // Profiles são gerenciados via configuração do bot
-    await api.post("/seller-bot/config", {
-      name: data.name,
-      clone_from_system: data.clone_from_system,
-    });
-    return {
-      id: crypto.randomUUID(),
-      name: data.name,
-      is_logged_in: true,
-      created_at: new Date().toISOString(),
-    };
-  } catch (error) {
-    console.error("Failed to create profile:", error);
-    throw error;
-  }
+async function createBotProfile(data: { 
+  name: string; 
+  clone_from_system: boolean;
+}): Promise<BotProfile> {
+  const response = await api.post<BotProfile>("/bot/profiles", data);
+  return response.data;
+}
+
+async function deleteBotProfile(profileId: string): Promise<void> {
+  await api.delete(`/bot/profiles/${profileId}`);
+}
+
+async function verifyBotProfile(profileId: string): Promise<{ is_logged_in: boolean }> {
+  const response = await api.post<{ is_logged_in: boolean }>(`/bot/profiles/${profileId}/verify`);
+  return response.data;
+}
+
+async function startBotWorker(): Promise<void> {
+  await api.post("/bot/start");
+}
+
+async function stopBotWorker(): Promise<void> {
+  await api.post("/bot/stop");
 }
 
 // ============================================
@@ -254,36 +187,52 @@ const TaskTypeIcon: React.FC<{ type: string }> = ({ type }) => {
       return <MessageSquare className="h-4 w-4" />;
     case "analytics":
       return <BarChart3 className="h-4 w-4" />;
+    case "instagram_post":
+      return <Instagram className="h-4 w-4" />;
+    case "tiktok_upload":
+      return <Video className="h-4 w-4" />;
+    case "youtube_upload":
+      return <Youtube className="h-4 w-4" />;
+    case "whatsapp_message":
+      return <Smartphone className="h-4 w-4" />;
     default:
       return <Settings className="h-4 w-4" />;
   }
 };
 
-const TaskStatusBadge: React.FC<{ state: Task["state"] }> = ({ state }) => {
-  const variants: Record<Task["state"], { variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode }> = {
-    queued: { variant: "secondary", icon: <Clock className="h-3 w-3" /> },
-    running: { variant: "default", icon: <Loader2 className="h-3 w-3 animate-spin" /> },
-    completed: { variant: "outline", icon: <CheckCircle2 className="h-3 w-3 text-green-500" /> },
-    failed: { variant: "destructive", icon: <XCircle className="h-3 w-3" /> },
-    cancelled: { variant: "secondary", icon: <Square className="h-3 w-3" /> },
+const TaskStatusBadge: React.FC<{ state: BotTask["state"] }> = ({ state }) => {
+  const variants: Record<BotTask["state"], { 
+    variant: "default" | "secondary" | "destructive" | "outline"; 
+    icon: React.ReactNode;
+    label: string;
+  }> = {
+    queued: { variant: "secondary", icon: <Clock className="h-3 w-3" />, label: "Na Fila" },
+    running: { variant: "default", icon: <Loader2 className="h-3 w-3 animate-spin" />, label: "Executando" },
+    completed: { variant: "outline", icon: <CheckCircle2 className="h-3 w-3 text-green-500" />, label: "Concluída" },
+    failed: { variant: "destructive", icon: <XCircle className="h-3 w-3" />, label: "Falhou" },
+    cancelled: { variant: "secondary", icon: <Square className="h-3 w-3" />, label: "Cancelada" },
   };
 
-  const { variant, icon } = variants[state];
+  const { variant, icon, label } = variants[state];
 
   return (
     <Badge variant={variant} className="gap-1">
       {icon}
-      {state.charAt(0).toUpperCase() + state.slice(1)}
+      {label}
     </Badge>
   );
 };
 
-const TaskCard: React.FC<{ task: Task; onCancel: () => void }> = ({ task, onCancel }) => {
+const TaskCard: React.FC<{ task: BotTask; onCancel: () => void }> = ({ task, onCancel }) => {
   const taskTypeLabels: Record<string, string> = {
     post_product: "Publicar Produto",
     manage_orders: "Gerenciar Pedidos",
     reply_messages: "Responder Mensagens",
     analytics: "Extrair Analytics",
+    instagram_post: "Postar no Instagram",
+    tiktok_upload: "Upload TikTok",
+    youtube_upload: "Upload YouTube",
+    whatsapp_message: "Mensagem WhatsApp",
   };
 
   return (
@@ -299,7 +248,7 @@ const TaskCard: React.FC<{ task: Task; onCancel: () => void }> = ({ task, onCanc
           <div className="flex items-center gap-2">
             <TaskStatusBadge state={task.state} />
             {(task.state === "queued" || task.state === "running") && (
-              <Button variant="ghost" size="icon" onClick={onCancel}>
+              <Button variant="ghost" size="icon" onClick={onCancel} title="Cancelar">
                 <Square className="h-4 w-4" />
               </Button>
             )}
@@ -310,12 +259,18 @@ const TaskCard: React.FC<{ task: Task; onCancel: () => void }> = ({ task, onCanc
         <div className="text-xs text-muted-foreground space-y-1">
           <p>ID: {task.id.slice(0, 8)}...</p>
           <p>Criado: {new Date(task.created_at).toLocaleString("pt-BR")}</p>
+          {task.started_at && (
+            <p>Iniciado: {new Date(task.started_at).toLocaleString("pt-BR")}</p>
+          )}
+          {task.completed_at && (
+            <p>Concluído: {new Date(task.completed_at).toLocaleString("pt-BR")}</p>
+          )}
           {task.error_message && (
             <p className="text-destructive">Erro: {task.error_message}</p>
           )}
         </div>
         {task.logs.length > 0 && (
-          <ScrollArea className="h-24 mt-2 rounded border p-2">
+          <ScrollArea className="h-24 mt-2 rounded border p-2 bg-muted/50">
             {task.logs.map((log, i) => (
               <p key={i} className="text-xs font-mono">{log}</p>
             ))}
@@ -334,7 +289,9 @@ const QuickActionCard: React.FC<{
   disabled?: boolean;
 }> = ({ title, description, icon, onClick, disabled }) => (
   <Card
-    className={`cursor-pointer transition-all hover:border-primary ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+    className={`cursor-pointer transition-all hover:border-primary hover:shadow-md ${
+      disabled ? "opacity-50 cursor-not-allowed" : ""
+    }`}
     onClick={disabled ? undefined : onClick}
   >
     <CardHeader className="pb-2">
@@ -356,11 +313,22 @@ const QuickActionCard: React.FC<{
 // ============================================
 
 export const SellerBot: React.FC = () => {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  // WebSocket connection for real-time updates
+  const { isConnected: wsConnected, notifications } = useWebSocket({ 
+    autoConnect: true 
+  });
+  
+  // Dialog states
   const [isNewProfileOpen, setIsNewProfileOpen] = React.useState(false);
   const [newProfileName, setNewProfileName] = React.useState("");
   const [cloneFromSystem, setCloneFromSystem] = React.useState(true);
+  const [profileToDelete, setProfileToDelete] = React.useState<string | null>(null);
+  const [profileToView, setProfileToView] = React.useState<BotProfile | null>(null);
+  
+  // Browser viewer state
   const [browserViewerData, setBrowserViewerData] = React.useState<{
     isActive: boolean;
     currentUrl?: string;
@@ -368,55 +336,181 @@ export const SellerBot: React.FC = () => {
     status?: string;
   }>({ isActive: false });
 
-  // Queries
-  const { data: tasks = [], isLoading: tasksLoading } = useQuery({
+  // ============================================
+  // WebSocket Event Handlers
+  // ============================================
+  
+  // Handle real-time bot notifications
+  const handleBotNotification = useCallback(
+    (notification: WebSocketNotification) => {
+      const botEvents = [
+        "bot_task_started",
+        "bot_task_completed", 
+        "bot_task_failed",
+        "bot_task_progress",
+        "bot_stats_update",
+        "bot_screenshot",
+        "bot_worker_started",
+        "bot_worker_stopped",
+      ];
+      
+      if (botEvents.includes(notification.type)) {
+        // Invalidate queries to refresh data
+        queryClient.invalidateQueries({ queryKey: ["bot-tasks"] });
+        queryClient.invalidateQueries({ queryKey: ["bot-stats"] });
+        
+        // Update browser viewer if screenshot
+        if (notification.type === "bot_screenshot" && notification.data) {
+          setBrowserViewerData((prev) => ({
+            ...prev,
+            screenshot: notification.data?.screenshot as string,
+            status: notification.data?.status as string,
+          }));
+        }
+        
+        // Show toast for important events
+        if (notification.type === "bot_task_completed") {
+          toast({
+            title: "Tarefa Concluída!",
+            description: notification.message,
+          });
+        } else if (notification.type === "bot_task_failed") {
+          toast({
+            title: "Tarefa Falhou",
+            description: notification.message,
+            variant: "destructive",
+          });
+        }
+      }
+    },
+    [queryClient, toast]
+  );
+  
+  // Subscribe to bot notifications
+  useEffect(() => {
+    const latestNotification = notifications[0];
+    if (latestNotification) {
+      handleBotNotification(latestNotification);
+    }
+  }, [notifications, handleBotNotification]);
+
+  // ============================================
+  // Queries - Automação Browser (with WebSocket fallback)
+  // ============================================
+  
+  // Reduce polling interval when WebSocket is connected
+  const pollingInterval = wsConnected ? 30000 : 3000; // 30s vs 3s
+  
+  const { data: botTasks = [], isLoading: botTasksLoading } = useQuery({
     queryKey: ["bot-tasks"],
-    queryFn: fetchTasks,
-    refetchInterval: 3000,
+    queryFn: fetchBotTasks,
+    refetchInterval: pollingInterval,
   });
 
-  const { data: stats } = useQuery({
+  const { data: botStats } = useQuery({
     queryKey: ["bot-stats"],
-    queryFn: fetchStats,
-    refetchInterval: 5000,
+    queryFn: fetchBotStats,
+    refetchInterval: pollingInterval,
   });
 
-  const { data: profiles = [] } = useQuery({
+  const { data: botProfiles = [], isLoading: profilesLoading } = useQuery({
     queryKey: ["bot-profiles"],
-    queryFn: fetchProfiles,
+    queryFn: fetchBotProfiles,
   });
 
-  // Mutations
+  // ============================================
+  // Mutations - Automação Browser
+  // ============================================
+
   const createTaskMutation = useMutation({
-    mutationFn: createTask,
+    mutationFn: createBotTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bot-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["bot-stats"] });
+      toast({ title: "Tarefa criada!", description: "A tarefa foi adicionada à fila." });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Erro ao criar tarefa", 
+        description: error.message,
+        variant: "destructive" 
+      });
     },
   });
 
   const cancelTaskMutation = useMutation({
-    mutationFn: cancelTask,
+    mutationFn: cancelBotTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bot-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["bot-stats"] });
+      toast({ title: "Tarefa cancelada" });
     },
   });
 
   const createProfileMutation = useMutation({
-    mutationFn: createProfile,
+    mutationFn: createBotProfile,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bot-profiles"] });
       setIsNewProfileOpen(false);
       setNewProfileName("");
+      toast({ title: "Perfil criado!", description: "O perfil foi criado com sucesso." });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Erro ao criar perfil", 
+        description: error.message,
+        variant: "destructive" 
+      });
     },
   });
 
+  const deleteProfileMutation = useMutation({
+    mutationFn: deleteBotProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bot-profiles"] });
+      setProfileToDelete(null);
+      toast({ title: "Perfil deletado" });
+    },
+  });
+
+  const verifyProfileMutation = useMutation({
+    mutationFn: verifyBotProfile,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["bot-profiles"] });
+      toast({ 
+        title: data.is_logged_in ? "Perfil verificado!" : "Login necessário",
+        description: data.is_logged_in 
+          ? "O perfil está logado corretamente." 
+          : "Por favor, faça login no navegador.",
+        variant: data.is_logged_in ? "default" : "destructive",
+      });
+    },
+  });
+
+  const startBotMutation = useMutation({
+    mutationFn: startBotWorker,
+    onSuccess: () => {
+      toast({ title: "Bot iniciado!", description: "O worker está processando tarefas." });
+    },
+  });
+
+  const stopBotMutation = useMutation({
+    mutationFn: stopBotWorker,
+    onSuccess: () => {
+      toast({ title: "Bot parado" });
+    },
+  });
+
+  // ============================================
   // Handlers
+  // ============================================
+
   const handleQuickAction = (taskType: string) => {
     createTaskMutation.mutate({ task_type: taskType });
     setBrowserViewerData({ isActive: true, status: "Iniciando..." });
   };
 
-  const runningTask = tasks.find((t) => t.state === "running");
+  const runningTask = botTasks.find((t) => t.state === "running");
 
   return (
     <div className="space-y-6">
@@ -425,15 +519,48 @@ export const SellerBot: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Crown className="h-6 w-6 text-yellow-500" />
-            {t("seller_bot.title")}
+            Seller Bot
           </h1>
           <p className="text-muted-foreground">
-            {t("seller_bot.subtitle")}
+            Automação Premium para Central do Vendedor TikTok Shop
           </p>
         </div>
-        <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/50">
-          {t("seller_bot.premium_badge")}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {/* WebSocket Status Indicator */}
+          <Badge 
+            variant="outline" 
+            className={wsConnected 
+              ? "bg-green-500/10 text-green-600 border-green-500/50" 
+              : "bg-gray-500/10 text-gray-500 border-gray-500/50"
+            }
+            title={wsConnected ? "Tempo real ativo" : "Polling mode (reconectando...)"}
+          >
+            {wsConnected ? <Wifi className="h-3 w-3 mr-1" /> : <WifiOff className="h-3 w-3 mr-1" />}
+            {wsConnected ? "Live" : "Offline"}
+          </Badge>
+          
+          <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/50">
+            Premium R$149,90/mês
+          </Badge>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => startBotMutation.mutate()}
+            disabled={startBotMutation.isPending}
+          >
+            <Play className="h-4 w-4 mr-1" />
+            Iniciar
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => stopBotMutation.mutate()}
+            disabled={stopBotMutation.isPending}
+          >
+            <StopCircle className="h-4 w-4 mr-1" />
+            Parar
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -441,25 +568,25 @@ export const SellerBot: React.FC = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Na Fila</CardDescription>
-            <CardTitle className="text-2xl">{stats?.total_queued || 0}</CardTitle>
+            <CardTitle className="text-2xl">{botStats?.total_queued || 0}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Executando</CardDescription>
-            <CardTitle className="text-2xl text-blue-500">{stats?.total_running || 0}</CardTitle>
+            <CardTitle className="text-2xl text-blue-500">{botStats?.total_running || 0}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Concluídas</CardDescription>
-            <CardTitle className="text-2xl text-green-500">{stats?.total_completed || 0}</CardTitle>
+            <CardTitle className="text-2xl text-green-500">{botStats?.total_completed || 0}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Falhas</CardDescription>
-            <CardTitle className="text-2xl text-destructive">{stats?.total_failed || 0}</CardTitle>
+            <CardTitle className="text-2xl text-destructive">{botStats?.total_failed || 0}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -468,8 +595,8 @@ export const SellerBot: React.FC = () => {
       <Tabs defaultValue="actions" className="space-y-4">
         <TabsList>
           <TabsTrigger value="actions">Ações Rápidas</TabsTrigger>
-          <TabsTrigger value="tasks">Tarefas ({tasks.length})</TabsTrigger>
-          <TabsTrigger value="profiles">Perfis ({profiles.length})</TabsTrigger>
+          <TabsTrigger value="tasks">Tarefas ({botTasks.length})</TabsTrigger>
+          <TabsTrigger value="profiles">Perfis ({botProfiles.length})</TabsTrigger>
         </TabsList>
 
         {/* Quick Actions Tab */}
@@ -554,6 +681,9 @@ export const SellerBot: React.FC = () => {
                   currentUrl={browserViewerData.currentUrl}
                   screenshot={browserViewerData.screenshot}
                   status={browserViewerData.status || runningTask?.logs.slice(-1)[0]}
+                  productsFound={0}
+                  progress={0}
+                  logs={runningTask?.logs || []}
                 />
               </CardContent>
             </Card>
@@ -577,11 +707,11 @@ export const SellerBot: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent>
-              {tasksLoading ? (
+              {botTasksLoading ? (
                 <div className="flex justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
-              ) : tasks.length === 0 ? (
+              ) : botTasks.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>Nenhuma tarefa executada ainda</p>
@@ -589,7 +719,7 @@ export const SellerBot: React.FC = () => {
                 </div>
               ) : (
                 <ScrollArea className="h-[400px]">
-                  {tasks.map((task) => (
+                  {botTasks.map((task) => (
                     <TaskCard
                       key={task.id}
                       task={task}
@@ -648,27 +778,32 @@ export const SellerBot: React.FC = () => {
                         </Label>
                       </div>
                     </div>
-                    <Button
-                      className="w-full"
-                      onClick={() => createProfileMutation.mutate({
-                        name: newProfileName,
-                        clone_from_system: cloneFromSystem,
-                      })}
-                      disabled={!newProfileName || createProfileMutation.isPending}
-                    >
-                      {createProfileMutation.isPending ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Chrome className="h-4 w-4 mr-2" />
-                      )}
-                      Criar Perfil
-                    </Button>
+                    <DialogFooter>
+                      <Button
+                        onClick={() => createProfileMutation.mutate({
+                          name: newProfileName,
+                          clone_from_system: cloneFromSystem,
+                        })}
+                        disabled={!newProfileName || createProfileMutation.isPending}
+                      >
+                        {createProfileMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Chrome className="h-4 w-4 mr-2" />
+                        )}
+                        Criar Perfil
+                      </Button>
+                    </DialogFooter>
                   </DialogContent>
                 </Dialog>
               </div>
             </CardHeader>
             <CardContent>
-              {profiles.length === 0 ? (
+              {profilesLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : botProfiles.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Chrome className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>Nenhum perfil criado</p>
@@ -676,7 +811,7 @@ export const SellerBot: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {profiles.map((profile) => (
+                  {botProfiles.map((profile) => (
                     <Card key={profile.id}>
                       <CardHeader className="py-3">
                         <div className="flex items-center justify-between">
@@ -686,6 +821,9 @@ export const SellerBot: React.FC = () => {
                               <CardTitle className="text-sm">{profile.name}</CardTitle>
                               <CardDescription className="text-xs">
                                 Criado em {new Date(profile.created_at).toLocaleDateString("pt-BR")}
+                                {profile.last_used_at && (
+                                  <> · Último uso: {new Date(profile.last_used_at).toLocaleDateString("pt-BR")}</>
+                                )}
                               </CardDescription>
                             </div>
                           </div>
@@ -693,12 +831,91 @@ export const SellerBot: React.FC = () => {
                             <Badge variant={profile.is_logged_in ? "default" : "secondary"}>
                               {profile.is_logged_in ? "Logado" : "Não Logado"}
                             </Badge>
-                            <Button variant="ghost" size="icon">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon">
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
+                            
+                            {/* View Profile */}
+                            <Dialog open={profileToView?.id === profile.id} onOpenChange={(open) => !open && setProfileToView(null)}>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => setProfileToView(profile)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Detalhes do Perfil</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4 py-4">
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <Label className="text-muted-foreground">ID</Label>
+                                      <p className="font-mono">{profile.id}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Nome</Label>
+                                      <p>{profile.name}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Status</Label>
+                                      <p>{profile.is_logged_in ? "✅ Logado" : "❌ Não logado"}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-muted-foreground">Criado em</Label>
+                                      <p>{new Date(profile.created_at).toLocaleString("pt-BR")}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                <DialogFooter>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => verifyProfileMutation.mutate(profile.id)}
+                                    disabled={verifyProfileMutation.isPending}
+                                  >
+                                    {verifyProfileMutation.isPending ? (
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                      <RefreshCw className="h-4 w-4 mr-2" />
+                                    )}
+                                    Verificar Login
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                            
+                            {/* Delete Profile */}
+                            <AlertDialog open={profileToDelete === profile.id} onOpenChange={(open) => !open && setProfileToDelete(null)}>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => setProfileToDelete(profile.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Deletar perfil?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Isso irá remover permanentemente o perfil &quot;{profile.name}&quot; e todos os dados de sessão salvos.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteProfileMutation.mutate(profile.id)}
+                                    className="bg-destructive text-destructive-foreground"
+                                  >
+                                    {deleteProfileMutation.isPending ? (
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : null}
+                                    Deletar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </div>
                       </CardHeader>

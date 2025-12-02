@@ -185,9 +185,15 @@ CREATE TABLE IF NOT EXISTS copy_history (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     product_id UUID REFERENCES products(id) ON DELETE SET NULL,
+    product_title VARCHAR(500),
+    copy_type VARCHAR(50) NOT NULL DEFAULT 'ad',
     platform VARCHAR(50),
     tone VARCHAR(50),
     copy_text TEXT NOT NULL,
+    word_count INTEGER DEFAULT 0,
+    character_count INTEGER DEFAULT 0,
+    cached BOOLEAN DEFAULT FALSE,
+    credits_used INTEGER DEFAULT 1,
     metadata JSONB DEFAULT '{}',
     is_favorite BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -196,6 +202,69 @@ CREATE TABLE IF NOT EXISTS copy_history (
 CREATE INDEX idx_copy_history_user_id ON copy_history(user_id);
 CREATE INDEX idx_copy_history_product_id ON copy_history(product_id);
 CREATE INDEX idx_copy_history_created_at ON copy_history(created_at DESC);
+CREATE INDEX idx_copy_history_copy_type ON copy_history(copy_type);
+
+-- ===========================================
+-- User Copy Preferences Table
+-- ===========================================
+CREATE TABLE IF NOT EXISTS user_copy_preferences (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    
+    -- Preferências de geração
+    default_copy_type VARCHAR(50) DEFAULT 'tiktok_hook',
+    default_tone VARCHAR(50) DEFAULT 'urgent',
+    default_platform VARCHAR(50) DEFAULT 'instagram',
+    default_language VARCHAR(10) DEFAULT 'pt-BR',
+    include_emoji BOOLEAN DEFAULT TRUE,
+    include_hashtags BOOLEAN DEFAULT TRUE,
+    
+    -- Configurações de cache
+    prefer_cached BOOLEAN DEFAULT TRUE,
+    cache_ttl_hours INTEGER DEFAULT 24,
+    
+    -- Limites e quotas personalizados
+    max_copies_per_day INTEGER DEFAULT 50,
+    
+    -- Templates favoritos (IDs)
+    favorite_template_ids TEXT[] DEFAULT '{}',
+    
+    -- Histórico de uso (analytics)
+    total_copies_generated INTEGER DEFAULT 0,
+    last_copy_generated_at TIMESTAMP,
+    most_used_copy_type VARCHAR(50),
+    most_used_tone VARCHAR(50),
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_user_copy_prefs_user ON user_copy_preferences(user_id);
+
+-- ===========================================
+-- User Saved Templates Table
+-- ===========================================
+CREATE TABLE IF NOT EXISTS user_saved_templates (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    platform VARCHAR(50) DEFAULT 'all',
+    category VARCHAR(50) DEFAULT 'custom',
+    caption_template TEXT NOT NULL,
+    hashtags TEXT[] DEFAULT '{}',
+    variables JSONB DEFAULT '[]',
+    
+    is_public BOOLEAN DEFAULT FALSE,
+    usage_count INTEGER DEFAULT 0,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_user_saved_templates_user ON user_saved_templates(user_id);
+CREATE INDEX idx_user_saved_templates_public ON user_saved_templates(is_public) WHERE is_public = TRUE;
 
 -- ===========================================
 -- Payments Table

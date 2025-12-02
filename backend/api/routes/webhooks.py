@@ -3,18 +3,18 @@ Webhooks Routes
 Mercado Pago payment webhooks and other integrations
 """
 
-import hmac
 import hashlib
+import hmac
 import json
-
-from fastapi import APIRouter, Request, HTTPException, status, Header
-from pydantic import BaseModel
 from typing import Optional
 
-from api.services.mercadopago import MercadoPagoService
 from api.services.license import LicenseService
+from api.services.mercadopago import MercadoPagoService
+from fastapi import APIRouter, Header, HTTPException, Request, status
+from modules.subscription import (BillingCycle, PlanTier, SubscriptionService,
+                                  SubscriptionStatus)
+from pydantic import BaseModel
 from shared.config import settings
-
 
 router = APIRouter()
 
@@ -167,47 +167,67 @@ async def handle_subscription_event(
 ):
     """
     Handle subscription events.
-    Note: With lifetime license model, subscriptions are deprecated.
-    This handler is kept for backwards compatibility only.
+    Updates user subscription status based on MP events.
     """
     preapproval_id = data.get("id")
 
     if not preapproval_id:
         return
 
-    subscription = await mp_service.get_subscription(preapproval_id)
+    subscription_mp = await mp_service.get_subscription(preapproval_id)
+    external_reference = subscription_mp.get("external_reference")
+    
+    if not external_reference:
+        return
 
-    if action == "created":
-        # New subscription created (legacy)
-        await mp_service.log_event("subscription_created", subscription)
+    # Parse external_reference (user_id:plan:cycle)
+    parts = external_reference.split(":")
+    user_id = parts[0]
+    plan_tier = None
+    billing_cycle = None
+    
+    if len(parts) >= 3:
+        try:
+            plan_tier = PlanTier(parts[1])
+            billing_cycle = BillingCycle(parts[2])
+        except ValueError:
+            pass
 
-    elif action == "updated":
-        # Subscription updated (legacy - convert to lifetime if possible)
-        status_value = subscription.get("status")
-
-        if status_value == "authorized":
-            user_email = subscription.get("payer_email")
-
-            if user_email:
-                existing = await license_service.get_license_by_email(
-                    user_email
-                )
-
-                if not existing:
-                    # Convert old subscription to lifetime license
-                    await license_service.create_license(
-                        email=user_email,
-                        plan="lifetime",
-                        duration_days=-1  # Lifetime = no expiration
-                    )
-
-        await mp_service.log_event("subscription_updated", subscription)
-
-    elif action == "cancelled":
-        # Subscription cancelled (legacy - lifetime licenses don't expire)
-        await mp_service.log_event("subscription_cancelled", subscription)
+    status_mp = subscription_mp.get("status")
+    
+    subscription_service = SubscriptionService()
+    
+    # Map MP status to internal status
+    status_map = {
+        "authorized": SubscriptionStatus.ACTIVE,
+        "paused": SubscriptionStatus.PAST_DUE,
+        "cancelled": SubscriptionStatus.CANCELED,
+        "pending": SubscriptionStatus.INCOMPLETE
+    }
+    
+    new_status = status_map.get(status_mp, SubscriptionStatus.INCOMPLETE)
+    
+    try:
+        subscription = await subscription_service.get_subscription(user_id)
+        subscription.status = new_status
         
-        await mp_service.log_event("subscription_cancelled", subscription)
+        if plan_tier:
+            subscription.plan = plan_tier
+        if billing_cycle:
+            subscription.billing_cycle = billing_cycle
+        
+        if new_status == SubscriptionStatus.CANCELED:
+            from datetime import datetime
+            subscription.canceled_at = datetime.utcnow()
+            
+        await subscription_service._cache_subscription(subscription)
+        await mp_service.log_event("subscription_updated", subscription_mp)
+        
+    except Exception as e:
+        await mp_service.log_event(
+            "subscription_update_error",
+            {"error": str(e)}
+        )
 
 
 async def handle_subscription_payment(
@@ -222,25 +242,41 @@ async def handle_subscription_payment(
     if not payment_id:
         return
     
-    payment = await mp_service.get_authorized_payment(payment_id)
+    payment = await mp_service.get_payment(payment_id)
     
     if action == "created" and payment.get("status") == "approved":
         # Recurring payment successful
-        preapproval_id = payment.get("preapproval_id")
-        subscription = await mp_service.get_subscription(preapproval_id)
+        external_reference = payment.get("external_reference")
         
-        user_email = subscription.get("payer_email")
-        
-        if user_email:
-            license_info = await license_service.get_license_by_email(user_email)
-            if license_info:
-                await license_service.extend_license(
-                    license_id=license_info["id"],
-                    days=30,
-                    payment_id=str(payment_id)
+        if external_reference:
+            user_id = external_reference
+            subscription_service = SubscriptionService()
+            
+            try:
+                subscription = await subscription_service.get_subscription(
+                    user_id
                 )
-        
-        await mp_service.log_event("subscription_payment", payment)
+                
+                # Extend subscription
+                from datetime import datetime, timedelta
+                
+                now = datetime.utcnow()
+                # If current period end is in the future, add to it.
+                # Else start from now.
+                start_date = max(now, subscription.current_period_end)
+                subscription.current_period_end = (
+                    start_date + timedelta(days=30)
+                )
+                subscription.status = SubscriptionStatus.ACTIVE
+                
+                await subscription_service._cache_subscription(subscription)
+                await mp_service.log_event("subscription_renewed", payment)
+                
+            except Exception as e:
+                await mp_service.log_event(
+                    "subscription_renewal_error",
+                    {"error": str(e)}
+                )
 
 
 def verify_mercadopago_signature(

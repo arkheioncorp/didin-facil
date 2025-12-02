@@ -10,23 +10,17 @@ Features:
 - Dashboard e métricas
 """
 
-from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Body
-from pydantic import BaseModel, EmailStr, Field
-
-from api.middleware.auth import get_current_user
-from api.database.models import User
 from api.database.connection import get_db_pool
-from modules.crm import (
-    CRMService,
-    ContactStatus,
-    LeadSource,
-    LeadStatus,
-    DealStatus,
-)
+from api.database.models import User
+from api.middleware.auth import get_current_user, get_current_user_optional
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from modules.crm import (ContactStatus, CRMService, DealStatus, LeadSource,
+                         LeadStatus)
+from pydantic import BaseModel, EmailStr, Field
 
 router = APIRouter()
 
@@ -233,9 +227,13 @@ async def list_contacts(
     per_page: int = Query(50, ge=1, le=100),
     order_by: str = "created_at",
     order_dir: str = "DESC",
-    user: User = Depends(get_current_user),
+    user: Optional[User] = Depends(get_current_user_optional),
 ):
-    """Lista contatos com filtros e paginação."""
+    """Lista contatos com filtros e paginação. Funciona em modo trial."""
+    # Return empty list if not authenticated (trial mode)
+    if not user:
+        return {"contacts": [], "total": 0, "page": 1, "per_page": 50}
+    
     service = await get_crm_service()
 
     tag_list = tags.split(",") if tags else None
@@ -295,9 +293,18 @@ async def create_contact(
 
 @router.get("/contacts/stats", tags=["CRM - Contacts"])
 async def get_contact_stats(
-    user: User = Depends(get_current_user),
+    user: Optional[User] = Depends(get_current_user_optional),
 ):
-    """Retorna estatísticas de contatos."""
+    """Retorna estatísticas de contatos. Funciona em modo trial."""
+    if not user:
+        return {
+            "total": 0,
+            "active": 0,
+            "inactive": 0,
+            "subscribed": 0,
+            "by_source": {},
+            "by_status": {}
+        }
     service = await get_crm_service()
     return await service.contacts.get_stats(str(user["id"]))
 
@@ -962,6 +969,55 @@ async def remove_pipeline_stage(
     return pipeline.to_dict()
 
 
+@router.get("/pipelines/{pipeline_id}/metrics", tags=["CRM - Pipelines"])
+async def get_pipeline_metrics(
+    pipeline_id: str,
+    user: User = Depends(get_current_user),
+):
+    """Retorna métricas detalhadas do pipeline."""
+    service = await get_crm_service()
+
+    # Verify access
+    pipeline = await service.pipelines.get(pipeline_id, str(user["id"]))
+    if not pipeline:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+
+    # Get overall stats
+    stats = await service.deals.get_stats(str(user["id"]), pipeline_id)
+
+    # Get board data for per-stage calculations
+    board = await service.deals.get_pipeline_board(str(user["id"]), pipeline_id)
+    deals = board.get("deals", [])
+
+    # Calculate per-stage metrics
+    stage_metrics = []
+    for stage in pipeline.stages:
+        stage_deals = [d for d in deals if d.get("stage_id") == stage.id]
+        stage_value = sum(d.get("value", 0) for d in stage_deals)
+        weighted_value = sum(
+            d.get("value", 0) * stage.probability / 100
+            for d in stage_deals
+        )
+
+        stage_metrics.append({
+            "stage_id": stage.id,
+            "stage_name": stage.name,
+            "stage_color": stage.color,
+            "deal_count": len(stage_deals),
+            "total_value": stage_value,
+            "weighted_value": weighted_value,
+            "probability": stage.probability,
+        })
+
+    return {
+        **stats,
+        "pipeline_id": pipeline_id,
+        "pipeline_name": pipeline.name,
+        "stage_metrics": stage_metrics,
+        "total_weighted_value": sum(m["weighted_value"] for m in stage_metrics),
+    }
+
+
 # ==================== SEGMENTS ====================
 
 
@@ -1083,6 +1139,17 @@ async def get_crm_dashboard(
     """Retorna dados do dashboard CRM."""
     service = await get_crm_service()
     return await service.get_dashboard(str(user["id"]))
+
+
+@router.get("/activities", tags=["CRM - Dashboard"])
+async def get_crm_activities(
+    limit: int = Query(10, ge=1, le=50),
+    user: User = Depends(get_current_user),
+):
+    """Retorna atividades recentes."""
+    service = await get_crm_service()
+    activities = await service.get_activities(str(user["id"]), limit)
+    return {"activities": activities}
 
 
 # ==================== QUICK ACTIONS ====================

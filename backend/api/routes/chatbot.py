@@ -5,9 +5,9 @@ Endpoints para integração com Typebot e gerenciamento de chatbots.
 """
 
 import uuid
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from api.database.connection import database
 from api.middleware.auth import get_current_user, get_current_user_optional
 from fastapi import APIRouter, Depends, HTTPException, Request
 from integrations.typebot import TypebotClient, TypebotWebhookHandler
@@ -16,9 +16,6 @@ from pydantic import BaseModel
 router = APIRouter()
 typebot_client = TypebotClient()
 webhook_handler = TypebotWebhookHandler()
-
-# In-memory storage for chatbots (will be replaced with database later)
-chatbots_db: Dict[str, Dict[str, Any]] = {}
 
 
 # ============================================
@@ -215,9 +212,24 @@ async def list_chatbots(
 ):
     """
     Lista todos os chatbots do usuário.
+    Funciona em modo trial (sem autenticação).
     """
-    # Return all chatbots from in-memory storage
-    return list(chatbots_db.values())
+    # If not authenticated, return empty list (trial mode)
+    if not current_user:
+        return []
+    
+    rows = await database.fetch_all(
+        """
+        SELECT id, user_id, name, description, typebot_id, status, channels,
+               total_sessions, total_messages, completion_rate,
+               created_at, updated_at
+        FROM chatbots
+        WHERE user_id = :user_id
+        ORDER BY created_at DESC
+        """,
+        {"user_id": current_user["id"]}
+    )
+    return [dict(row) for row in rows]
 
 
 @router.post("/bots")
@@ -227,26 +239,38 @@ async def create_chatbot(
 ):
     """
     Cria um novo chatbot.
+    Requer autenticação em produção.
     """
+    # Require authentication to create chatbots
+    if not current_user:
+        raise HTTPException(
+            status_code=401,
+            detail="Faça login para criar chatbots"
+        )
+    
     chatbot_id = str(uuid.uuid4())
-    typebot_id = str(uuid.uuid4())  # Mock typebot ID
-    
-    chatbot = {
-        "id": chatbot_id,
-        "name": data.name,
-        "description": data.description,
-        "typebot_id": typebot_id,
-        "status": "draft",
-        "channels": data.channels,
-        "total_sessions": 0,
-        "total_messages": 0,
-        "completion_rate": 0,
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat(),
-    }
-    
-    chatbots_db[chatbot_id] = chatbot
-    return chatbot
+
+    # Insert into database
+    await database.execute(
+        """
+        INSERT INTO chatbots (id, user_id, name, description, status, channels)
+        VALUES (:id, :user_id, :name, :description, 'draft', :channels)
+        """,
+        {
+            "id": chatbot_id,
+            "user_id": current_user["id"],
+            "name": data.name,
+            "description": data.description,
+            "channels": data.channels
+        }
+    )
+
+    # Fetch and return created chatbot
+    chatbot = await database.fetch_one(
+        "SELECT * FROM chatbots WHERE id = :id",
+        {"id": chatbot_id}
+    )
+    return dict(chatbot)
 
 
 @router.post("/bots/{bot_id}/toggle")
@@ -256,20 +280,40 @@ async def toggle_chatbot(
 ):
     """
     Alterna o status do chatbot (active/paused).
+    Requer autenticação.
     """
-    if bot_id not in chatbots_db:
-        raise HTTPException(status_code=404, detail="Chatbot não encontrado")
+    if not current_user:
+        raise HTTPException(
+            status_code=401,
+            detail="Faça login para alterar status de chatbots"
+        )
     
-    chatbot = chatbots_db[bot_id]
-    
-    # Toggle between active and paused
-    if chatbot["status"] == "active":
-        chatbot["status"] = "paused"
-    else:
-        chatbot["status"] = "active"
-    
-    chatbot["updated_at"] = datetime.utcnow().isoformat()
-    return chatbot
+    # Verify ownership
+    chatbot = await database.fetch_one(
+        "SELECT * FROM chatbots WHERE id = :id AND user_id = :user_id",
+        {"id": bot_id, "user_id": current_user["id"]}
+    )
+
+    if not chatbot:
+        raise HTTPException(
+            status_code=404,
+            detail="Chatbot não encontrado"
+        )
+
+    # Toggle status
+    new_status = "paused" if chatbot["status"] == "active" else "active"
+
+    await database.execute(
+        "UPDATE chatbots SET status = :status WHERE id = :id",
+        {"status": new_status, "id": bot_id}
+    )
+
+    # Return updated chatbot
+    updated = await database.fetch_one(
+        "SELECT * FROM chatbots WHERE id = :id",
+        {"id": bot_id}
+    )
+    return dict(updated)
 
 
 @router.delete("/bots/{bot_id}")
@@ -279,11 +323,32 @@ async def delete_chatbot(
 ):
     """
     Remove um chatbot.
+    Requer autenticação.
     """
-    if bot_id not in chatbots_db:
-        raise HTTPException(status_code=404, detail="Chatbot não encontrado")
+    if not current_user:
+        raise HTTPException(
+            status_code=401,
+            detail="Faça login para remover chatbots"
+        )
     
-    del chatbots_db[bot_id]
+    # Verify ownership before delete
+    chatbot = await database.fetch_one(
+        "SELECT id FROM chatbots WHERE id = :id AND user_id = :user_id",
+        {"id": bot_id, "user_id": current_user["id"]}
+    )
+
+    if not chatbot:
+        raise HTTPException(
+            status_code=404,
+            detail="Chatbot não encontrado"
+        )
+
+    # Delete from database
+    await database.execute(
+        "DELETE FROM chatbots WHERE id = :id",
+        {"id": bot_id}
+    )
+
     return {"status": "deleted", "id": bot_id}
 
 
@@ -293,38 +358,54 @@ async def get_chatbot_stats(
 ):
     """
     Retorna estatísticas gerais dos chatbots.
+    Funciona em modo trial (sem autenticação).
     """
-    total_chatbots = len(chatbots_db)
-    active_chatbots = sum(1 for bot in chatbots_db.values() if bot["status"] == "active")
-    
-    # Calculate aggregated stats
-    total_sessions_today = sum(bot.get("total_sessions", 0) for bot in chatbots_db.values())
-    total_messages_today = sum(bot.get("total_messages", 0) for bot in chatbots_db.values())
-    
-    # Calculate average completion rate
-    completion_rates = [bot.get("completion_rate", 0) for bot in chatbots_db.values()]
-    avg_completion_rate = sum(completion_rates) / len(completion_rates) if completion_rates else 0
-    
-    # Get popular flows (mock data for now)
-    popular_flows = [
-        {
-            "name": bot["name"],
-            "sessions": bot.get("total_sessions", 0),
-            "completion_rate": bot.get("completion_rate", 0)
+    # If not authenticated, return empty stats (trial mode)
+    if not current_user:
+        return {
+            "total_chatbots": 0,
+            "active_chatbots": 0,
+            "total_sessions_today": 0,
+            "total_messages_today": 0,
+            "avg_completion_rate": 0,
+            "popular_flows": []
         }
-        for bot in sorted(
-            chatbots_db.values(),
-            key=lambda x: x.get("total_sessions", 0),
-            reverse=True
-        )[:5]
-    ]
     
+    # Get aggregate stats from database
+    stats = await database.fetch_one(
+        """
+        SELECT
+            COUNT(*) as total_chatbots,
+            COUNT(*) FILTER (WHERE status = 'active') as active_chatbots,
+            COALESCE(SUM(total_sessions), 0) as total_sessions_today,
+            COALESCE(SUM(total_messages), 0) as total_messages_today,
+            COALESCE(AVG(completion_rate), 0) as avg_completion_rate
+        FROM chatbots
+        WHERE user_id = :user_id
+        """,
+        {"user_id": current_user["id"]}
+    )
+
+    # Get popular flows (top 5 by sessions)
+    popular_flows_rows = await database.fetch_all(
+        """
+        SELECT name, total_sessions as sessions, completion_rate
+        FROM chatbots
+        WHERE user_id = :user_id
+        ORDER BY total_sessions DESC
+        LIMIT 5
+        """,
+        {"user_id": current_user["id"]}
+    )
+
+    popular_flows = [dict(row) for row in popular_flows_rows]
+
     return {
-        "total_chatbots": total_chatbots,
-        "active_chatbots": active_chatbots,
-        "total_sessions_today": total_sessions_today,
-        "total_messages_today": total_messages_today,
-        "avg_completion_rate": round(avg_completion_rate, 1),
+        "total_chatbots": stats["total_chatbots"],
+        "active_chatbots": stats["active_chatbots"],
+        "total_sessions_today": stats["total_sessions_today"],
+        "total_messages_today": stats["total_messages_today"],
+        "avg_completion_rate": round(float(stats["avg_completion_rate"]), 1),
         "popular_flows": popular_flows
     }
 

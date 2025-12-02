@@ -192,6 +192,61 @@ export interface License {
 
 export type LicensePlan = 'free' | 'lifetime' | 'trial';
 
+// ============================================
+// SUBSCRIPTION TYPES (SaaS Híbrido)
+// ============================================
+
+export type PlanTier = 'free' | 'starter' | 'business' | 'enterprise';
+export type BillingCycle = 'monthly' | 'yearly';
+export type ExecutionMode = 'web_only' | 'hybrid' | 'local_first';
+export type SubscriptionStatus = 'active' | 'trialing' | 'past_due' | 'canceled' | 'expired';
+export type MarketplaceAccess = 'tiktok' | 'shopee' | 'amazon' | 'mercado_livre' | 'hotmart' | 'aliexpress';
+
+export interface Subscription {
+  id: string;
+  plan: PlanTier;
+  status: SubscriptionStatus;
+  billingCycle: BillingCycle;
+  executionMode: ExecutionMode;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  marketplaces: MarketplaceAccess[];
+  limits: Record<string, number>;
+  features: Record<string, boolean>;
+}
+
+export interface PlanInfo {
+  tier: PlanTier;
+  name: string;
+  description: string;
+  priceMonthly: number;
+  priceYearly: number;
+  executionModes: ExecutionMode[];
+  marketplaces: MarketplaceAccess[];
+  scraperPriority: string;
+  limits: Record<string, number>;
+  features: Record<string, boolean>;
+  highlights: string[];
+  offlineDays: number;
+}
+
+export interface UsageStats {
+  feature: string;
+  current: number;
+  limit: number;
+  percentage: number;
+  isUnlimited: boolean;
+  resetsAt: string;
+}
+
+export interface SubscriptionWithPlan {
+  subscription: Subscription;
+  plan: PlanInfo;
+  usage: UsageStats[];
+}
+
+// ============================================
+
 export interface Credits {
   balance: number;
   totalPurchased: number;
@@ -417,4 +472,47 @@ export interface Setting {
 export interface FavoriteWithProduct {
   favorite: FavoriteItem;
   product: Product;
+}
+
+// Subscription Types (SaaS Hybrid)
+export type PlanTier = 'free' | 'starter' | 'business' | 'enterprise';
+export type BillingCycle = 'monthly' | 'yearly';
+export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'incomplete' | 'incomplete_expired' | 'trialing' | 'unpaid';
+export type ExecutionMode = 'web_only' | 'local_only' | 'hybrid';
+
+export interface Subscription {
+  id: string;
+  plan: PlanTier;
+  status: SubscriptionStatus;
+  billingCycle: BillingCycle;
+  executionMode: ExecutionMode;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  canceledAt?: string | null;
+  marketplaces: string[];
+  limits: Record<string, number>;
+  features: Record<string, boolean>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata?: Record<string, any>;
+}
+
+export interface PlanInfo {
+  tier: PlanTier;
+  name: string;
+  description: string;
+  priceMonthly: number;
+  priceYearly: number;
+  features: Record<string, boolean>;
+  limits: Record<string, number>;
+  executionModes: ExecutionMode[];
+  marketplaces: string[];
+}
+
+export interface UsageStats {
+  feature: string;
+  current: number;
+  limit: number;
+  percentage: number;
+  isUnlimited: boolean;
+  resetsAt?: string;
 }

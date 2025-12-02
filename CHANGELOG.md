@@ -8,6 +8,26 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ## [Unreleased]
 
 ### Adicionado
+
+#### 🤖 Seller Bot - Refatoração Completa (v2.0.0)
+- **WebSocket Real-time**: Notificações em tempo real para tarefas do bot (`bot_task_started`, `bot_task_completed`, `bot_task_failed`, `bot_worker_started`, `bot_worker_stopped`)
+- **Redis Context Store**: Contextos de conversa persistidos em Redis com TTL de 30 minutos (`backend/modules/chatbot/context_store.py`)
+- **Instagram Webhook Completo**: Processamento de mensagens de texto, mídia, postbacks e reações do Instagram
+- **Prometheus Metrics**: Métricas `bot_task_created_total`, `bot_profile_created_total`, `bot_started_total`, `bot_stopped_total`
+- **Documentação**: `docs/technical/SELLER_BOT_ARCHITECTURE.md` e `docs/technical/ADR-007-SELLER_BOT_REFACTORING.md`
+
+### Modificado
+- **Frontend SellerBot.tsx**: Refatoração completa (~900 linhas) com separação clara de APIs `/bot/*` e `/seller-bot/*`
+- **Polling otimizado**: Reduzido de 3s para 15s com fallback, 30s quando WebSocket conectado
+- **bot.py**: Adicionado notificações WebSocket e métricas Prometheus em todos os endpoints
+- **seller_bot.py**: Webhook Instagram completo com processamento de mensagens
+
+### Corrigido
+- **API Confusion**: Frontend agora usa corretamente `/bot/*` para automação e `/seller-bot/*` para chatbot IA
+- **Context Loss**: Contextos não são mais perdidos em restart (persistidos em Redis)
+
+---
+
 - **📊 Analytics Dashboard**: Dashboard completo com métricas de engajamento, crescimento de seguidores, performance de conteúdo e comparação entre plataformas (backend/api/routes/analytics.py)
 - **📝 Templates de Conteúdo**: Sistema de templates reutilizáveis para posts, hashtags e descrições com suporte a variáveis dinâmicas (backend/api/routes/templates.py)
 - **👥 Multi-Account Management**: Gerenciamento de múltiplas contas sociais (Instagram, TikTok, YouTube) com métricas individuais e troca rápida de conta ativa (backend/api/routes/accounts.py)

@@ -3,31 +3,19 @@ Tests for api/routes/seller_bot.py
 Professional Seller Bot API routes testing
 """
 
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timezone
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+from api.routes.seller_bot import (BotConfigRequest, BotStatsResponse,
+                                   ConversationResponse, DirectMessageRequest,
+                                   WebhookPayload, chatwoot_webhook,
+                                   close_conversation, evolution_webhook,
+                                   get_bot, get_bot_stats, get_channel_router,
+                                   get_conversation, handoff_conversation,
+                                   instagram_webhook, list_conversations,
+                                   router, send_direct_message)
 from fastapi import HTTPException
-
-from api.routes.seller_bot import (
-    router,
-    chatwoot_webhook,
-    evolution_webhook,
-    instagram_webhook,
-    send_direct_message,
-    list_conversations,
-    get_conversation,
-    handoff_conversation,
-    close_conversation,
-    get_bot_stats,
-    get_bot,
-    get_channel_router,
-    WebhookPayload,
-    DirectMessageRequest,
-    ConversationResponse,
-    BotStatsResponse,
-    BotConfigRequest,
-)
-
 
 # ==================== FIXTURES ====================
 
@@ -340,14 +328,51 @@ class TestInstagramWebhook:
 
     @pytest.mark.asyncio
     async def test_instagram_message_received(self):
-        """Test Instagram message webhook."""
+        """Test Instagram message webhook with valid Instagram payload."""
+        mock_request = MagicMock()
+        mock_request.query_params = {}
+        # Valid Instagram webhook payload structure
+        mock_request.json = AsyncMock(return_value={
+            "object": "instagram",
+            "entry": [
+                {
+                    "id": "123456789",
+                    "time": 1234567890,
+                    "messaging": [
+                        {
+                            "sender": {"id": "987654321"},
+                            "recipient": {"id": "123456789"},
+                            "timestamp": 1234567890,
+                            "message": {
+                                "mid": "msg_123",
+                                "text": "Hello"
+                            }
+                        }
+                    ]
+                }
+            ]
+        })
+
+        with patch('api.routes.seller_bot.get_bot') as mock_get_bot:
+            mock_bot_instance = MagicMock()
+            mock_bot_instance.process_message = AsyncMock(return_value=[])
+            mock_get_bot.return_value = mock_bot_instance
+
+            response = await instagram_webhook(request=mock_request)
+
+            assert response["status"] == "processed"
+
+    @pytest.mark.asyncio
+    async def test_instagram_invalid_payload(self):
+        """Test Instagram webhook with invalid payload."""
         mock_request = MagicMock()
         mock_request.query_params = {}
         mock_request.json = AsyncMock(return_value={"entry": []})
 
         response = await instagram_webhook(request=mock_request)
 
-        assert response["status"] == "received"
+        # Should be ignored because no "object": "instagram"
+        assert response["status"] == "ignored"
 
 
 # ==================== DIRECT MESSAGE TESTS ====================

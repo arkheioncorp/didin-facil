@@ -38,6 +38,15 @@ class NotificationType:
     QUOTA_WARNING = "quota_warning"
     ERROR = "error"
     INFO = "info"
+    # Bot automation notifications
+    BOT_TASK_STARTED = "bot_task_started"
+    BOT_TASK_COMPLETED = "bot_task_completed"
+    BOT_TASK_FAILED = "bot_task_failed"
+    BOT_TASK_PROGRESS = "bot_task_progress"
+    BOT_STATS_UPDATE = "bot_stats_update"
+    BOT_SCREENSHOT = "bot_screenshot"
+    BOT_WORKER_STARTED = "bot_worker_started"
+    BOT_WORKER_STOPPED = "bot_worker_stopped"
 
 
 class WebSocketNotification(BaseModel):

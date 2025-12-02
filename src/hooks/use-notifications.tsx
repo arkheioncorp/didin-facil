@@ -150,7 +150,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
       // Fetch WhatsApp status
       const waResponse = await api
-        .get<{ status: string }>("/whatsapp/status")
+        .get<{ status: string }>("/whatsapp/instances/default/status")
         .catch(() => null);
       if (waResponse?.data?.status && waResponse.data.status !== "connected") {
         addNotification({

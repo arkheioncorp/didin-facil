@@ -13,13 +13,13 @@ Funcionalidades:
 - Gerenciar fluxos via API
 """
 
-from typing import Optional, Dict, Any, List
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-import httpx
-import logging
+from typing import Any, Dict, List, Optional
 
+import httpx
 from shared.config import settings
 
 logger = logging.getLogger(__name__)
@@ -378,6 +378,9 @@ DIDIN_TYPEBOT_TEMPLATES = {
     "welcome_flow": {
         "name": "Boas-vindas Didin Fácil",
         "description": "Fluxo de onboarding para novos usuários",
+        "category": "engagement",
+        "preview_url": "",
+        "tags": ["onboarding", "bem-vindo", "introdução"],
         "blocks": [
             {"type": "text", "content": "👋 Olá! Bem-vindo ao Didin Fácil!"},
             {"type": "text", "content": "Sou o assistente virtual e vou te ajudar a economizar."},
@@ -392,6 +395,9 @@ DIDIN_TYPEBOT_TEMPLATES = {
     "price_alert_flow": {
         "name": "Alerta de Preços",
         "description": "Fluxo para configurar alertas de preço",
+        "category": "sales",
+        "preview_url": "",
+        "tags": ["alertas", "preço", "monitoramento"],
         "blocks": [
             {"type": "text", "content": "🔔 Vamos configurar seu alerta de preço!"},
             {"type": "input", "content": "Qual produto você quer monitorar?", "variable": "product_name"},
@@ -402,6 +408,9 @@ DIDIN_TYPEBOT_TEMPLATES = {
     "support_flow": {
         "name": "Suporte ao Cliente",
         "description": "Fluxo de atendimento e FAQ",
+        "category": "support",
+        "preview_url": "",
+        "tags": ["suporte", "ajuda", "FAQ"],
         "blocks": [
             {"type": "text", "content": "💬 Como posso te ajudar?"},
             {"type": "choice", "content": "Escolha uma opção:", "options": [
@@ -410,6 +419,52 @@ DIDIN_TYPEBOT_TEMPLATES = {
                 "💳 Dúvidas sobre pagamento",
                 "👤 Falar com atendente"
             ]}
+        ]
+    },
+    "lead_capture_flow": {
+        "name": "Captura de Leads",
+        "description": "Coletar informações de potenciais clientes",
+        "category": "sales",
+        "preview_url": "",
+        "tags": ["leads", "cadastro", "conversão"],
+        "blocks": [
+            {"type": "text", "content": "📋 Vamos cadastrar você para receber ofertas exclusivas!"},
+            {"type": "input", "content": "Qual é o seu nome?", "variable": "name"},
+            {"type": "input", "content": "Qual é o seu email?", "variable": "email"},
+            {"type": "input", "content": "Qual é o seu telefone?", "variable": "phone"},
+            {"type": "choice", "content": "Qual categoria de produtos te interessa mais?", "options": [
+                "📱 Eletrônicos",
+                "👗 Moda e Vestuário",
+                "🏠 Casa e Decoração",
+                "🎮 Games e Entretenimento",
+                "📚 Livros e Educação"
+            ], "variable": "interest"},
+            {"type": "text", "content": "Perfeito, {{name}}! Você vai receber nossas melhores ofertas de {{interest}} no email {{email}}. 🎉"}
+        ]
+    },
+    "product_recommendation_flow": {
+        "name": "Recomendação de Produtos",
+        "description": "Ajudar clientes a encontrar o produto ideal",
+        "category": "sales",
+        "preview_url": "",
+        "tags": ["recomendação", "vendas", "produto"],
+        "blocks": [
+            {"type": "text", "content": "🛍️ Vou te ajudar a encontrar o produto perfeito!"},
+            {"type": "choice", "content": "Qual tipo de produto você procura?", "options": [
+                "📱 Smartphone",
+                "💻 Notebook",
+                "🎧 Fones de Ouvido",
+                "⌚ Smart Watch",
+                "📷 Câmera"
+            ], "variable": "product_type"},
+            {"type": "choice", "content": "Qual é o seu orçamento?", "options": [
+                "💰 Até R$ 500",
+                "💵 R$ 500 - R$ 1.500",
+                "💸 R$ 1.500 - R$ 3.000",
+                "💎 Acima de R$ 3.000"
+            ], "variable": "budget"},
+            {"type": "text", "content": "Ótimo! Estou buscando os melhores {{product_type}} dentro do seu orçamento..."},
+            {"type": "text", "content": "Encontrei 3 opções perfeitas para você! Clique abaixo para ver:"}
         ]
     }
 }

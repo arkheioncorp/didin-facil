@@ -1,4 +1,4 @@
-export { CopyAIModal } from "./CopyAIModal";
+export { CopyAIModal } from "@/components/copy";
 export { WhatsAppModal } from "./WhatsAppModal";
 export { ScheduleModal } from "./ScheduleModal";
 export { InstagramModal } from "./InstagramModal";

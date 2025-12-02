@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { 
   Card, 
   CardContent, 
@@ -67,7 +68,13 @@ const createMockCredits = (): Credits => ({
 
 export const Profile: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { user, license, credits, logout, updateUser } = useUserStore();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
   
   // Use real data or mock for demo
   const currentUser = user || createMockUser();
@@ -217,7 +224,7 @@ export const Profile: React.FC = () => {
 
                 <Separator />
 
-                <Button variant="outline" className="w-full" onClick={logout}>
+                <Button variant="outline" className="w-full" onClick={handleLogout}>
                   Sair da conta
                 </Button>
               </CardContent>

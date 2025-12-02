@@ -11,3 +11,4 @@ export * from "./social";
 export * from "./whatsapp";
 export * from "./credits";
 export * from "./accounting";
+export * from "./tiktokShop";

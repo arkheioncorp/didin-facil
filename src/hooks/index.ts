@@ -12,6 +12,22 @@ export {
 } from "./use-notifications";
 export type { Notification, NotificationType } from "./use-notifications";
 
+// Re-export debounce hooks
+export { useDebounce, useDebouncedCallback, useDebounceImmediate } from "./use-debounce";
+
+// Re-export products page hook
+export { useProductsPage, SORT_OPTIONS } from "./useProductsPage";
+
+// Re-export subscription hooks
+export { useSubscription, usePlanAccess, useMarketplaceAccess } from "./useSubscription";
+export { 
+  useFeatureGate, 
+  useMultiFeatureGate, 
+  useUsageAlerts, 
+  useFeatureAction,
+  getFeatureDisplayName,
+  FEATURE_DISPLAY_NAMES,
+} from "./useFeatureGate";
 
 // Query keys
 export const queryKeys = {

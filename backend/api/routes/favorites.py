@@ -1,20 +1,24 @@
 """
 Favorites Routes
 User favorites management API
+
+Performance optimizations:
+- Cache favorites list for 5 minutes
+- Cache invalidation on add/remove
 """
 
-from typing import Optional, List, Union
 from datetime import datetime, timezone
+from typing import List, Optional, Union
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from api.database.connection import database
+from api.middleware.auth import get_current_user
+from api.services.cache import CacheService
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
-from api.middleware.auth import get_current_user
-from api.database.connection import database
-
-
 router = APIRouter()
+cache = CacheService()
 
 
 def to_uuid(value: Union[str, UUID, "asyncpg.pgproto.pgproto.UUID"]) -> UUID:
@@ -199,8 +203,14 @@ async def get_favorites(
     offset: int = Query(0, ge=0),
     user: dict = Depends(get_current_user),
 ):
-    """Get user's favorites with product info"""
+    """Get user's favorites with product info (cached for 5 minutes)"""
     user_id = to_uuid(user["id"])
+    
+    # Check cache first
+    cache_key = f"favorites:{user['id']}:{list_id or 'all'}:{limit}:{offset}"
+    cached = await cache.get(cache_key)
+    if cached:
+        return [FavoriteResponse(**f) for f in cached]
 
     # Build query
     if list_id:
@@ -292,6 +302,9 @@ async def get_favorites(
             product=product,
         ))
 
+    # Cache the result for 5 minutes
+    await cache.set(cache_key, [f.model_dump() for f in favorites], ttl=300)
+
     return favorites
 
 
@@ -306,6 +319,9 @@ async def add_favorite(
     user_id = to_uuid(user["id"])
     product_uuid = to_uuid(request.product_id)
     favorite_id = uuid.uuid4()
+    
+    # Invalidate cache when adding
+    await cache.delete_pattern(f"favorites:{user['id']}:*")
     now = datetime.now(timezone.utc)
 
     # Check if already favorited
@@ -370,6 +386,9 @@ async def remove_favorite(
     """Remove a product from favorites"""
     user_id = to_uuid(user["id"])
     product_uuid = to_uuid(product_id)
+    
+    # Invalidate cache before delete
+    await cache.delete_pattern(f"favorites:{user['id']}:*")
 
     result = await database.execute(
         query="DELETE FROM favorites WHERE user_id = :user_id AND product_id = :product_id",

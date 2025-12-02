@@ -3,8 +3,8 @@ Scraper Orchestration Service
 Manages scraping jobs and product data
 """
 
-import uuid
 import json
+import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -127,36 +127,85 @@ class ScraperOrchestrator:
         page: int = 1,
         per_page: int = 20
     ) -> dict:
-        """Search products by keyword"""
+        """
+        Search products by keyword using full-text search.
         
-        search_term = f"%{query}%"
-        
-        # Get total count
-        count_result = await self.db.fetch_one(
-            """
-            SELECT COUNT(*) as total FROM products 
-            WHERE (title ILIKE :query OR description ILIKE :query) 
-            AND deleted_at IS NULL
-            """,
-            {"query": search_term}
-        )
-        total = count_result["total"] if count_result else 0
-        
-        # Get products
-        results = await self.db.fetch_all(
-            """
-            SELECT * FROM products 
-            WHERE (title ILIKE :query OR description ILIKE :query) 
-            AND deleted_at IS NULL
-            ORDER BY sales_count DESC
-            LIMIT :limit OFFSET :offset
-            """,
-            {
-                "query": search_term,
-                "limit": per_page,
-                "offset": (page - 1) * per_page
-            }
-        )
+        Uses PostgreSQL's tsvector for efficient search with Portuguese stemming.
+        Falls back to ILIKE if full-text search fails.
+        """
+        # Use full-text search with Portuguese stemming for better performance
+        # This uses the idx_products_fulltext GIN index
+        try:
+            # Get total count with full-text search
+            count_result = await self.db.fetch_one(
+                """
+                SELECT COUNT(*) as total FROM products 
+                WHERE to_tsvector('portuguese', 
+                    COALESCE(title, '') || ' ' || COALESCE(description, '')
+                ) @@ plainto_tsquery('portuguese', :query)
+                AND deleted_at IS NULL
+                """,
+                {"query": query}
+            )
+            total = count_result["total"] if count_result else 0
+            
+            # Get products with relevance ranking
+            results = await self.db.fetch_all(
+                """
+                SELECT id, tiktok_id, title, description, price, original_price,
+                       currency, category, subcategory, seller_name, seller_rating,
+                       product_rating, reviews_count, sales_count, sales_7d, sales_30d,
+                       commission_rate, image_url, images, video_url, product_url,
+                       affiliate_url, has_free_shipping, is_trending, is_on_sale,
+                       in_stock, collected_at, updated_at,
+                       ts_rank(
+                           to_tsvector('portuguese', 
+                               COALESCE(title, '') || ' ' || COALESCE(description, '')
+                           ),
+                           plainto_tsquery('portuguese', :query)
+                       ) as relevance
+                FROM products 
+                WHERE to_tsvector('portuguese', 
+                    COALESCE(title, '') || ' ' || COALESCE(description, '')
+                ) @@ plainto_tsquery('portuguese', :query)
+                AND deleted_at IS NULL
+                ORDER BY relevance DESC, sales_count DESC
+                LIMIT :limit OFFSET :offset
+                """,
+                {
+                    "query": query,
+                    "limit": per_page,
+                    "offset": (page - 1) * per_page
+                }
+            )
+        except Exception:
+            # Fallback to ILIKE if full-text search fails
+            search_term = f"%{query}%"
+            
+            count_result = await self.db.fetch_one(
+                """
+                SELECT COUNT(*) as total FROM products 
+                WHERE (title ILIKE :query OR description ILIKE :query) 
+                AND deleted_at IS NULL
+                """,
+                {"query": search_term}
+            )
+            total = count_result["total"] if count_result else 0
+            
+            results = await self.db.fetch_all(
+                """
+                SELECT * FROM products 
+                WHERE (title ILIKE :query OR description ILIKE :query) 
+                AND deleted_at IS NULL
+                ORDER BY sales_count DESC
+                LIMIT :limit OFFSET :offset
+                """,
+                {
+                    "query": search_term,
+                    "limit": per_page,
+                    "offset": (page - 1) * per_page
+                }
+            )
         
         products = [format_product(r) for r in results]
         

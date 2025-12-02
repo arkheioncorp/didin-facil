@@ -3,17 +3,17 @@ AI Copy Generation Routes
 OpenAI proxy with credits management
 """
 
-from typing import Optional, List
+import json
 from datetime import datetime
-
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from typing import List, Optional
 
 from api.middleware.auth import get_current_user
-from api.middleware.quota import check_credits, deduct_credits, InsufficientCreditsError, CREDIT_COSTS
-from api.services.openai import OpenAIService
+from api.middleware.quota import (CREDIT_COSTS, InsufficientCreditsError,
+                                  check_credits, deduct_credits)
 from api.services.cache import CacheService
-
+from api.services.openai import OpenAIService
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 
 router = APIRouter()
 
@@ -103,16 +103,25 @@ async def generate_copy(
         tone=request.tone,
         platform=request.platform
     )
-    
+
     cached_copy = await cache.get(cache_key)
     if cached_copy:
+        # Salvar no histórico mesmo se cached (para analytics)
+        await openai_service.save_to_history(
+            user_id=user["id"],
+            product_id=request.product_id,
+            product_title=request.product_title,
+            copy_result=cached_copy,
+            cached=True,
+            credits_used=0
+        )
         return CopyResponse(
             **cached_copy,
             cached=True,
             credits_used=0,
             credits_remaining=credits_info["balance"]
         )
-    
+
     # Generate copy with OpenAI
     copy_result = await openai_service.generate_copy(
         product_title=request.product_title,
@@ -128,21 +137,23 @@ async def generate_copy(
         include_hashtags=request.include_hashtags,
         custom_instructions=request.custom_instructions
     )
-    
+
     # Deduct credits
     deduct_result = await deduct_credits(user["id"], "copy")
-    
+
     # Cache the result
     await cache.set(cache_key, copy_result, ttl=86400)  # 24 hours
-    
+
     # Save to history
     await openai_service.save_to_history(
         user_id=user["id"],
         product_id=request.product_id,
         product_title=request.product_title,
-        copy_result=copy_result
+        copy_result=copy_result,
+        cached=False,
+        credits_used=deduct_result["cost"]
     )
-    
+
     return CopyResponse(
         **copy_result,
         cached=False,
@@ -268,3 +279,273 @@ async def apply_template(
             status_code=400,
             detail=f"Missing variable: {e}"
         )
+
+
+# =============================================================================
+# PREFERENCES ENDPOINTS
+# =============================================================================
+
+
+class UserCopyPreferences(BaseModel):
+    """User copy preferences"""
+    default_copy_type: Optional[str] = None
+    default_tone: Optional[str] = None
+    default_platform: Optional[str] = None
+    default_language: Optional[str] = None
+    include_emoji: Optional[bool] = None
+    include_hashtags: Optional[bool] = None
+
+
+class PreferencesResponse(BaseModel):
+    """Preferences response"""
+    default_copy_type: str
+    default_tone: str
+    default_platform: str
+    default_language: str
+    include_emoji: bool
+    include_hashtags: bool
+    total_copies_generated: int
+    most_used_copy_type: Optional[str] = None
+    most_used_tone: Optional[str] = None
+
+
+@router.get("/preferences", response_model=PreferencesResponse)
+async def get_user_preferences(user: dict = Depends(get_current_user)):
+    """Get user's copy generation preferences"""
+    openai_service = OpenAIService()
+    prefs = await openai_service.get_user_preferences(user["id"])
+    return PreferencesResponse(**prefs)
+
+
+@router.put("/preferences", response_model=PreferencesResponse)
+async def update_user_preferences(
+    preferences: UserCopyPreferences,
+    user: dict = Depends(get_current_user),
+):
+    """Update user's copy generation preferences"""
+    openai_service = OpenAIService()
+    updated = await openai_service.update_user_preferences(
+        user["id"],
+        preferences.model_dump(exclude_none=True)
+    )
+    return PreferencesResponse(**updated)
+
+
+# =============================================================================
+# STATS ENDPOINTS
+# =============================================================================
+
+
+class CopyStats(BaseModel):
+    """Copy generation statistics"""
+    total_copies: int
+    total_credits_used: int
+    cached_copies: int
+    copy_types_used: int
+    platforms_used: int
+    last_generated: Optional[str] = None
+    cache_hit_rate: float = 0.0
+
+
+@router.get("/stats", response_model=CopyStats)
+async def get_copy_stats(user: dict = Depends(get_current_user)):
+    """Get user's copy generation statistics"""
+    openai_service = OpenAIService()
+    stats = await openai_service.get_history_stats(user["id"])
+
+    total = stats.get("total_copies", 0) or 0
+    cached = stats.get("cached_copies", 0) or 0
+    cache_rate = (cached / total * 100) if total > 0 else 0.0
+
+    return CopyStats(
+        total_copies=total,
+        total_credits_used=stats.get("total_credits_used", 0) or 0,
+        cached_copies=cached,
+        copy_types_used=stats.get("copy_types_used", 0) or 0,
+        platforms_used=stats.get("platforms_used", 0) or 0,
+        last_generated=str(stats["last_generated"]) if stats.get("last_generated") else None,
+        cache_hit_rate=round(cache_rate, 2)
+    )
+
+
+# =============================================================================
+# INVALIDATE CACHE
+# =============================================================================
+
+
+@router.delete("/cache/{product_id}")
+async def invalidate_product_cache(
+    product_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """
+    Invalidate cache for a specific product.
+    Use when product details change.
+    """
+    cache = CacheService()
+
+    # Deletar todas as variações de cache para este produto
+    deleted = await cache.delete_pattern(f"copy:*{product_id}*")
+
+    return {
+        "message": f"Cache invalidado para produto {product_id}",
+        "keys_deleted": deleted
+    }
+
+
+# =============================================================================
+# USER SAVED TEMPLATES
+# =============================================================================
+
+
+class SavedTemplateCreate(BaseModel):
+    """Create saved template request"""
+    name: str
+    caption_template: str
+    hashtags: Optional[list[str]] = None  # Array de hashtags
+    variables: Optional[dict] = None
+    copy_type: Optional[str] = None
+
+
+class SavedTemplateResponse(BaseModel):
+    """Saved template response"""
+    id: str  # UUID como string
+    name: str
+    caption_template: str
+    hashtags: Optional[list[str]] = None  # Array de strings
+    variables: Optional[dict] = None
+    copy_type: Optional[str] = None
+    created_at: str
+    times_used: int = 0
+
+
+@router.post("/templates/user", response_model=SavedTemplateResponse, status_code=201)
+async def save_user_template(
+    template: SavedTemplateCreate,
+    user: dict = Depends(get_current_user),
+):
+    """
+    Save a custom template for the user.
+    This is called when user clicks "Salvar como Template" in the frontend.
+    """
+    from api.database.connection import get_db_pool
+    
+    pool = await get_db_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            """
+            INSERT INTO user_saved_templates 
+                (user_id, name, caption_template, hashtags, variables, copy_type)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id, name, caption_template, hashtags, variables, copy_type,
+                      created_at, usage_count
+            """,
+            user["id"],
+            template.name,
+            template.caption_template,
+            template.hashtags,
+            json.dumps(template.variables) if template.variables else None,
+            template.copy_type
+        )
+        
+        return SavedTemplateResponse(
+            id=str(row["id"]),
+            name=row["name"],
+            caption_template=row["caption_template"],
+            hashtags=list(row["hashtags"]) if row["hashtags"] else None,
+            variables=json.loads(row["variables"]) if row["variables"] else None,
+            copy_type=row["copy_type"],
+            created_at=str(row["created_at"]),
+            times_used=row["usage_count"]
+        )
+
+
+@router.get("/templates/user", response_model=list[SavedTemplateResponse])
+async def list_user_templates(user: dict = Depends(get_current_user)):
+    """List all saved templates for the user"""
+    from api.database.connection import get_db_pool
+    
+    pool = await get_db_pool()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            """
+            SELECT id, name, caption_template, hashtags, variables, copy_type,
+                   created_at, usage_count
+            FROM user_saved_templates
+            WHERE user_id = $1
+            ORDER BY usage_count DESC, created_at DESC
+            """,
+            user["id"]
+        )
+        
+        return [
+            SavedTemplateResponse(
+                id=str(row["id"]),
+                name=row["name"],
+                caption_template=row["caption_template"],
+                hashtags=list(row["hashtags"]) if row["hashtags"] else None,
+                variables=json.loads(row["variables"]) if row["variables"] else None,
+                copy_type=row["copy_type"],
+                created_at=str(row["created_at"]),
+                times_used=row["usage_count"]
+            )
+            for row in rows
+        ]
+
+
+@router.delete("/templates/user/{template_id}")
+async def delete_user_template(
+    template_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Delete a saved template"""
+    from api.database.connection import get_db_pool
+    
+    pool = await get_db_pool()
+    async with pool.acquire() as conn:
+        result = await conn.execute(
+            """
+            DELETE FROM user_saved_templates
+            WHERE id = $1 AND user_id = $2
+            """,
+            template_id,
+            user["id"]
+        )
+        
+        if result == "DELETE 0":
+            raise HTTPException(
+                status_code=404,
+                detail="Template não encontrado"
+            )
+        
+        return {"message": "Template deletado com sucesso"}
+
+
+@router.put("/templates/user/{template_id}/use")
+async def increment_template_use(
+    template_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Increment the usage counter for a template"""
+    from api.database.connection import get_db_pool
+    
+    pool = await get_db_pool()
+    async with pool.acquire() as conn:
+        result = await conn.execute(
+            """
+            UPDATE user_saved_templates
+            SET usage_count = usage_count + 1
+            WHERE id = $1 AND user_id = $2
+            """,
+            template_id,
+            user["id"]
+        )
+        
+        if result == "UPDATE 0":
+            raise HTTPException(
+                status_code=404,
+                detail="Template não encontrado"
+            )
+        
+        return {"message": "Uso do template registrado"}
+

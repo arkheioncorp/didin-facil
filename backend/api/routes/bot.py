@@ -5,40 +5,103 @@
 # Endpoints para controle do bot de automação.
 # Requer licença Premium (R$149,90/mês)
 
+import logging
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    Depends,
-    HTTPException,
-    status,
-)
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-# Adiciona o diretório pai ao path para imports
+logger = logging.getLogger(__name__)
+
+# Adiciona o diretório pai ao path para imports relativos
+# Necessário para imports do seller_bot quando executado como módulo
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+# ruff: noqa: E402 - Imports após manipulação de sys.path
 from api.middleware.auth import get_current_user
+from api.routes.websocket_notifications import (NotificationType,
+                                                publish_notification)
 from api.services.license import LicenseService
+# Import do sistema de métricas existente
+from integrations.metrics import HubMetricsRegistry
 from seller_bot import TaskQueueManager
 from seller_bot.profiles import ProfileManager
 from seller_bot.queue.models import TaskPriority, TaskState
-from seller_bot.tasks import (
-    AnalyticsTask,
-    ManageOrdersTask,
-    PostProductTask,
-    ReplyMessagesTask,
-)
+from seller_bot.tasks import (AnalyticsTask, ManageOrdersTask, PostProductTask,
+                              ReplyMessagesTask)
 
 router = APIRouter(prefix="/bot", tags=["Seller Bot"])
 
 # Instâncias globais (em produção, usar dependency injection)
 _queue_manager: Optional[TaskQueueManager] = None
 _profile_manager: Optional[ProfileManager] = None
+
+
+# ============================================
+# Prometheus Metrics
+# ============================================
+
+# Registry de métricas para o Bot
+_metrics = HubMetricsRegistry.get_instance()
+
+# Nomes das métricas
+BOT_HUB = "seller_bot"
+
+
+def record_task_created(task_type: str):
+    """Registra criação de tarefa."""
+    _metrics.record_request(BOT_HUB, f"task_create_{task_type}")
+
+
+def record_task_completed(task_type: str, duration_ms: float):
+    """Registra tarefa concluída com sucesso."""
+    _metrics.record_success(BOT_HUB, f"task_{task_type}", duration_ms)
+
+
+def record_task_failed(task_type: str, error: str):
+    """Registra falha em tarefa."""
+    _metrics.record_failure(BOT_HUB, f"task_{task_type}", error)
+
+
+def record_profile_operation(operation: str):
+    """Registra operação de perfil."""
+    _metrics.record_request(BOT_HUB, f"profile_{operation}")
+
+
+def record_api_latency(endpoint: str, duration_ms: float):
+    """Registra latência de endpoint."""
+    _metrics.record_success(BOT_HUB, endpoint, duration_ms)
+
+
+# ============================================
+# WebSocket Helpers
+# ============================================
+
+
+async def notify_task_update(
+    task_id: str,
+    notification_type: str,
+    title: str,
+    message: str,
+    user_id: Optional[str] = None,
+    data: Optional[dict] = None,
+):
+    """Envia notificação de atualização de tarefa via WebSocket"""
+    try:
+        await publish_notification(
+            notification_type=notification_type,
+            title=title,
+            message=message,
+            user_id=user_id,
+            platform="bot",
+            data={"task_id": task_id, **(data or {})},
+        )
+    except Exception as e:
+        logger.warning(f"Failed to send WebSocket notification: {e}")
 
 
 # ============================================
@@ -196,11 +259,15 @@ async def start_task(
     - reply_messages: Responder mensagens
     - analytics: Extrair métricas
     """
+    start_time = time.time()
     user_id = user.get("id", user.get("email", "unknown"))
     description = request.task_description
 
     if not description:
         description = _build_task_description(request)
+
+    # Registrar métrica de criação
+    record_task_created(request.task_type)
 
     # Enfileirar tarefa
     task = await queue.enqueue(
@@ -209,6 +276,20 @@ async def start_task(
         task_description=description,
         task_data=request.task_data,
         priority=request.priority,
+    )
+
+    # Registrar latência do endpoint
+    duration_ms = (time.time() - start_time) * 1000
+    record_api_latency("task_create", duration_ms)
+
+    # Notificar via WebSocket
+    await notify_task_update(
+        task_id=task.id,
+        notification_type=NotificationType.BOT_TASK_STARTED,
+        title="Tarefa Iniciada",
+        message=f"Tarefa {request.task_type} adicionada à fila",
+        user_id=user_id,
+        data={"task_type": request.task_type, "state": task.state.value},
     )
 
     return TaskResponse(
@@ -366,7 +447,11 @@ async def create_profile(
 
     Se clone_from_system=True, clona cookies do Chrome do sistema.
     """
+    start_time = time.time()
     user_id = user.get("id", user.get("email", "unknown"))
+
+    # Registrar métrica
+    record_profile_operation("create")
 
     clone_from = None
     if request.clone_from_system:
@@ -383,6 +468,9 @@ async def create_profile(
         clone_from=clone_from,
     )
 
+    # Registrar latência
+    record_api_latency("profile_create", (time.time() - start_time) * 1000)
+
     return ProfileResponse(
         id=profile.id,
         name=profile.name,
@@ -398,8 +486,14 @@ async def list_profiles(
     user: dict = Depends(verify_premium_access),
 ):
     """Lista todos os perfis do usuário"""
+    start_time = time.time()
     user_id = user.get("id", user.get("email", "unknown"))
+
+    record_profile_operation("list")
+
     user_profiles = profiles.get_user_profiles(user_id)
+
+    record_api_latency("profile_list", (time.time() - start_time) * 1000)
 
     return [
         ProfileResponse(
@@ -420,6 +514,8 @@ async def delete_profile(
     user: dict = Depends(verify_premium_access),
 ):
     """Deleta um perfil"""
+    record_profile_operation("delete")
+
     success = profiles.delete_profile(profile_id)
 
     if not success:
@@ -471,7 +567,18 @@ async def start_bot(
     user: dict = Depends(verify_premium_access),
 ):
     """Inicia o worker do bot"""
+    user_id = user.get("id", user.get("email", "unknown"))
     background_tasks.add_task(queue.start)
+
+    # Notificar via WebSocket
+    await notify_task_update(
+        task_id="worker",
+        notification_type=NotificationType.BOT_WORKER_STARTED,
+        title="Bot Iniciado",
+        message="O worker está processando tarefas",
+        user_id=user_id,
+    )
+
     return {"message": "Bot iniciado", "status": "running"}
 
 
@@ -481,5 +588,16 @@ async def stop_bot(
     user: dict = Depends(verify_premium_access),
 ):
     """Para o worker do bot"""
+    user_id = user.get("id", user.get("email", "unknown"))
     await queue.stop()
+
+    # Notificar via WebSocket
+    await notify_task_update(
+        task_id="worker",
+        notification_type=NotificationType.BOT_WORKER_STOPPED,
+        title="Bot Parado",
+        message="O worker foi interrompido",
+        user_id=user_id,
+    )
+
     return {"message": "Bot parado", "status": "stopped"}

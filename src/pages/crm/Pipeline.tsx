@@ -1,11 +1,12 @@
 /**
  * Pipeline de Vendas - Kanban Board
  * 
- * Visualização Kanban interativa do funil de vendas com:
- * - Múltiplos pipelines selecionáveis
- * - Colunas representando estágios
- * - Cards de deals draggáveis
- * - Métricas por estágio
+ * CRM sales pipeline with drag-and-drop Kanban interface.
+ * Features:
+ * - Multiple pipelines support
+ * - Stage-based deal organization
+ * - Real-time metrics
+ * - Drag & drop with optimistic updates
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -26,155 +27,44 @@ import {
   Filter, Search, RefreshCw, Settings, BarChart3
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { api } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
 
-// Types
-interface PipelineStage {
-  id: string;
-  name: string;
-  order: number;
-  color: string;
-  probability: number;
-  deal_ids: string[];
-}
+// Import new API hooks and types  
+import { usePipelines, usePipeline, usePipelineMetrics } from "./hooks/usePipeline";
+import { useDeals, useMoveDeal, useCreateDeal, useUpdateDeal, useDeleteDeal, useWinDeal, useLoseDeal } from "./hooks/useDeals";
+import type { Pipeline as PipelineType, Deal, PipelineStage } from "@/lib/api/crm";
+import { formatCurrency, getTagColor, calculateDaysInStage } from "@/lib/api/crm";
 
-interface Pipeline {
-  id: string;
-  name: string;
-  description: string;
-  stages: PipelineStage[];
-  is_default: boolean;
-  deal_count: number;
-  total_value: number;
-}
+// ==================== UTILITY FUNCTIONS ====================
 
-interface Deal {
-  id: string;
-  title: string;
-  value: number;
-  stage_id: string;
-  pipeline_id: string;
-  lead_id: string;
-  probability: number;
-  expected_close_date: string | null;
-  status: "open" | "won" | "lost";
-  contact: {
-    id: string;
-    name: string;
-    email: string;
-    company?: string;
-    avatar?: string;
-  };
-  tags: string[];
-  created_at: string;
-  updated_at: string;
-  days_in_stage: number;
-}
-
-// Mock data para demonstração
-const mockPipelines: Pipeline[] = [
-  {
-    id: "pip_1",
-    name: "Pipeline Principal",
-    description: "Funil de vendas padrão",
-    is_default: true,
-    deal_count: 25,
-    total_value: 150000,
-    stages: [
-      { id: "stg_1", name: "Qualificação", order: 0, color: "#6366f1", probability: 10, deal_ids: [] },
-      { id: "stg_2", name: "Proposta", order: 1, color: "#8b5cf6", probability: 30, deal_ids: [] },
-      { id: "stg_3", name: "Negociação", order: 2, color: "#a855f7", probability: 60, deal_ids: [] },
-      { id: "stg_4", name: "Fechamento", order: 3, color: "#d946ef", probability: 90, deal_ids: [] },
-    ]
-  },
-  {
-    id: "pip_2", 
-    name: "Pipeline Enterprise",
-    description: "Para grandes contas",
-    is_default: false,
-    deal_count: 8,
-    total_value: 500000,
-    stages: [
-      { id: "stg_e1", name: "Descoberta", order: 0, color: "#0ea5e9", probability: 5, deal_ids: [] },
-      { id: "stg_e2", name: "Apresentação", order: 1, color: "#06b6d4", probability: 20, deal_ids: [] },
-      { id: "stg_e3", name: "POC", order: 2, color: "#14b8a6", probability: 50, deal_ids: [] },
-      { id: "stg_e4", name: "Contrato", order: 3, color: "#10b981", probability: 80, deal_ids: [] },
-      { id: "stg_e5", name: "Legal", order: 4, color: "#22c55e", probability: 95, deal_ids: [] },
-    ]
-  }
-];
-
-const mockDeals: Deal[] = [
-  {
-    id: "deal_1", title: "E-commerce Premium", value: 25000, stage_id: "stg_1", pipeline_id: "pip_1",
-    lead_id: "lead_1", probability: 10, expected_close_date: "2025-01-15", status: "open",
-    contact: { id: "c1", name: "Maria Santos", email: "maria@empresa.com", company: "TechShop Ltda" },
-    tags: ["Urgente", "Enterprise"], created_at: "2024-11-20", updated_at: "2024-11-26", days_in_stage: 3
-  },
-  {
-    id: "deal_2", title: "Dropshipping Starter", value: 5000, stage_id: "stg_1", pipeline_id: "pip_1",
-    lead_id: "lead_2", probability: 15, expected_close_date: "2025-01-10", status: "open",
-    contact: { id: "c2", name: "João Silva", email: "joao@loja.com", company: "Loja Virtual ME" },
-    tags: ["Novo"], created_at: "2024-11-25", updated_at: "2024-11-26", days_in_stage: 1
-  },
-  {
-    id: "deal_3", title: "Marketplace Integration", value: 45000, stage_id: "stg_2", pipeline_id: "pip_1",
-    lead_id: "lead_3", probability: 35, expected_close_date: "2025-02-01", status: "open",
-    contact: { id: "c3", name: "Ana Costa", email: "ana@market.com", company: "Super Market SA" },
-    tags: ["Hot Lead"], created_at: "2024-11-15", updated_at: "2024-11-26", days_in_stage: 5
-  },
-  {
-    id: "deal_4", title: "Sistema de Preços", value: 15000, stage_id: "stg_2", pipeline_id: "pip_1",
-    lead_id: "lead_4", probability: 40, expected_close_date: "2025-01-20", status: "open",
-    contact: { id: "c4", name: "Pedro Lima", email: "pedro@varejo.com", company: "Varejo Express" },
-    tags: [], created_at: "2024-11-18", updated_at: "2024-11-24", days_in_stage: 4
-  },
-  {
-    id: "deal_5", title: "Automação WhatsApp", value: 35000, stage_id: "stg_3", pipeline_id: "pip_1",
-    lead_id: "lead_5", probability: 65, expected_close_date: "2024-12-20", status: "open",
-    contact: { id: "c5", name: "Carla Ferreira", email: "carla@atacado.com", company: "Atacadão Digital" },
-    tags: ["Urgente", "Hot Lead"], created_at: "2024-11-10", updated_at: "2024-11-26", days_in_stage: 2
-  },
-  {
-    id: "deal_6", title: "Contrato Anual Pro", value: 28000, stage_id: "stg_4", pipeline_id: "pip_1",
-    lead_id: "lead_6", probability: 90, expected_close_date: "2024-11-30", status: "open",
-    contact: { id: "c6", name: "Roberto Mendes", email: "roberto@megastore.com", company: "MegaStore" },
-    tags: ["VIP"], created_at: "2024-11-01", updated_at: "2024-11-26", days_in_stage: 1
-  },
-];
-
-// Utility functions
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL"
-  }).format(value);
+/**
+ * Filter deals belonging to a specific stage
+ */
+const getDealsByStage = (deals: Deal[], stageId: string): Deal[] => {
+  return deals.filter(deal => deal.stage_id === stageId);
 };
 
-const getTagColor = (tag: string): string => {
-  const colors: Record<string, string> = {
-    "Urgente": "bg-red-500/20 text-red-400 border-red-500/30",
-    "Hot Lead": "bg-orange-500/20 text-orange-400 border-orange-500/30",
-    "Enterprise": "bg-purple-500/20 text-purple-400 border-purple-500/30",
-    "VIP": "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    "Novo": "bg-green-500/20 text-green-400 border-green-500/30",
-  };
-  return colors[tag] || "bg-muted text-muted-foreground border-border";
-};
+// ==================== SUB-COMPONENTS ====================
 
-// Components
-const DealCard = ({ 
-  deal, 
+/**
+ * DealCard Component
+ */
+const DealCard = ({
+  deal,
   onDragStart,
   onEdit,
-  onView 
-}: { 
+  onView,
+  onWin,
+  onLose
+}: {
   deal: Deal;
   onDragStart: (e: React.DragEvent, deal: Deal) => void;
   onEdit: (deal: Deal) => void;
   onView: (deal: Deal) => void;
+  onWin: (id: string) => void;
+  onLose: (id: string) => void;
 }) => {
+  const daysInStage = calculateDaysInStage(deal);
+
   return (
     <div
       draggable
@@ -201,10 +91,10 @@ const DealCard = ({
               <Edit className="mr-2 h-4 w-4" /> Editar
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-green-500">
+            <DropdownMenuItem className="text-green-500" onClick={() => onWin(deal.id)}>
               <CheckCircle2 className="mr-2 h-4 w-4" /> Marcar como ganho
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-red-500">
+            <DropdownMenuItem className="text-red-500" onClick={() => onLose(deal.id)}>
               <XCircle className="mr-2 h-4 w-4" /> Marcar como perdido
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -256,11 +146,11 @@ const DealCard = ({
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                <span>{deal.days_in_stage}d</span>
+                <span>{daysInStage}d</span>
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{deal.days_in_stage} dias neste estágio</p>
+              <p>{daysInStage} dias neste estágio</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -284,6 +174,9 @@ const DealCard = ({
   );
 };
 
+/**
+ * StageColumn Component
+ */
 const StageColumn = ({
   stage,
   deals,
@@ -292,6 +185,8 @@ const StageColumn = ({
   onDragStart,
   onEditDeal,
   onViewDeal,
+  onWinDeal,
+  onLoseDeal,
   onAddDeal
 }: {
   stage: PipelineStage;
@@ -301,6 +196,8 @@ const StageColumn = ({
   onDragStart: (e: React.DragEvent, deal: Deal) => void;
   onEditDeal: (deal: Deal) => void;
   onViewDeal: (deal: Deal) => void;
+  onWinDeal: (id: string) => void;
+  onLoseDeal: (id: string) => void;
   onAddDeal: (stageId: string) => void;
 }) => {
   const stageValue = deals.reduce((sum, deal) => sum + deal.value, 0);
@@ -316,8 +213,8 @@ const StageColumn = ({
       <div className="p-3 border-b border-border/50">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div 
-              className="w-3 h-3 rounded-full" 
+            <div
+              className="w-3 h-3 rounded-full"
               style={{ backgroundColor: stage.color }}
             />
             <h3 className="font-semibold text-sm">{stage.name}</h3>
@@ -350,12 +247,14 @@ const StageColumn = ({
             </div>
           ) : (
             deals.map(deal => (
-              <DealCard 
-                key={deal.id} 
+              <DealCard
+                key={deal.id}
                 deal={deal}
                 onDragStart={onDragStart}
                 onEdit={onEditDeal}
                 onView={onViewDeal}
+                onWin={onWinDeal}
+                onLose={onLoseDeal}
               />
             ))
           )}
@@ -365,20 +264,16 @@ const StageColumn = ({
   );
 };
 
-export const Pipeline = () => {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [pipelines, setPipelines] = useState<Pipeline[]>([]);
-  const [selectedPipeline, setSelectedPipeline] = useState<Pipeline | null>(null);
-  const [deals, setDeals] = useState<Deal[]>([]);
+// ==================== MAIN COMPONENT ====================
+
+const PipelinePage = () => {
+  const [selectedPipelineId, setSelectedPipelineId] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
   const [draggedDeal, setDraggedDeal] = useState<Deal | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
-  
-  // Estados para modais de edição/criação
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [currentStageId, setCurrentStageId] = useState<string>("");
   const [dealForm, setDealForm] = useState({
     title: "",
@@ -389,18 +284,27 @@ export const Pipeline = () => {
     description: "",
   });
 
-  // Load data
+  // React Query hooks (replacing all mock data!)
+  const { data: pipelines, isLoading: loadingPipelines } = usePipelines();
+  const { data: pipeline, isLoading: loadingPipeline } = usePipeline(selectedPipelineId);
+  const { data: deals = [], isLoading: loadingDeals } = useDeals({ pipeline_id: selectedPipelineId });
+  const { data: metrics } = usePipelineMetrics(selectedPipelineId);
+
+  // Mutations
+  const moveDeal = useMoveDeal();
+  const createDeal = useCreateDeal();
+  const updateDeal = useUpdateDeal();
+  const deleteDeal = useDeleteDeal();
+  const winDeal = useWinDeal();
+  const loseDeal = useLoseDeal();
+
+  // Auto-select first pipeline
   useEffect(() => {
-    const loadData = async () => {
-      // Simular chamada API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setPipelines(mockPipelines);
-      setSelectedPipeline(mockPipelines[0]);
-      setDeals(mockDeals);
-      setLoading(false);
-    };
-    loadData();
-  }, []);
+    if (pipelines && pipelines.length > 0 && !selectedPipelineId) {
+      const defaultPipeline = pipelines.find(p => p.is_default) || pipelines[0];
+      setSelectedPipelineId(defaultPipeline.id);
+    }
+  }, [pipelines, selectedPipelineId]);
 
   // Drag handlers
   const handleDragStart = useCallback((e: React.DragEvent, deal: Deal) => {
@@ -417,13 +321,10 @@ export const Pipeline = () => {
     e.preventDefault();
     if (!draggedDeal) return;
 
-    setDeals(prev => prev.map(deal => 
-      deal.id === draggedDeal.id 
-        ? { ...deal, stage_id: stageId, days_in_stage: 0 }
-        : deal
-    ));
+    // Call API to move deal (with optimistic update!)
+    moveDeal.mutate({ id: draggedDeal.id, stage_id: stageId });
     setDraggedDeal(null);
-  }, [draggedDeal]);
+  }, [draggedDeal, moveDeal]);
 
   // Actions
   const handleViewDeal = (deal: Deal) => {
@@ -439,7 +340,7 @@ export const Pipeline = () => {
       contact_name: deal.contact.name,
       contact_email: deal.contact.email,
       expected_close_date: deal.expected_close_date || "",
-      description: "",
+      description: deal.description || "",
     });
     setEditDialogOpen(true);
   };
@@ -458,99 +359,52 @@ export const Pipeline = () => {
   };
 
   const handleSaveDeal = async () => {
-    try {
-      if (editDialogOpen && selectedDeal) {
-        // Editar deal existente
-        await api.patch(`/crm/deals/${selectedDeal.id}`, {
+    if (editDialogOpen && selectedDeal) {
+      // Update existing deal
+      updateDeal.mutate({
+        id: selectedDeal.id,
+        data: {
           title: dealForm.title,
           value: dealForm.value,
-          expected_close_date: dealForm.expected_close_date || null,
-        });
-        
-        setDeals(prev => prev.map(d => 
-          d.id === selectedDeal.id
-            ? { ...d, title: dealForm.title, value: dealForm.value, expected_close_date: dealForm.expected_close_date }
-            : d
-        ));
-        
-        toast({
-          title: "Deal atualizado!",
-          description: `"${dealForm.title}" foi atualizado com sucesso.`,
-        });
-      } else if (createDialogOpen) {
-        // Criar novo deal
-        const response = await api.post<{ id?: string; contact_id?: string }>("/crm/deals", {
-          title: dealForm.title,
-          value: dealForm.value,
-          contact_email: dealForm.contact_email,
-          contact_name: dealForm.contact_name,
-          pipeline_id: selectedPipeline?.id,
-          stage_id: currentStageId,
-          expected_close_date: dealForm.expected_close_date || null,
-        });
-        
-        const newDeal: Deal = {
-          id: response.data.id || `deal_${Date.now()}`,
-          title: dealForm.title,
-          value: dealForm.value,
-          stage_id: currentStageId,
-          pipeline_id: selectedPipeline?.id || "",
-          lead_id: "",
-          probability: selectedPipeline?.stages.find(s => s.id === currentStageId)?.probability || 0,
-          expected_close_date: dealForm.expected_close_date,
-          status: "open",
-          contact: {
-            id: response.data.contact_id || `contact_${Date.now()}`,
-            name: dealForm.contact_name,
-            email: dealForm.contact_email,
-          },
-          tags: [],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          days_in_stage: 0,
-        };
-        
-        setDeals(prev => [...prev, newDeal]);
-        
-        toast({
-          title: "Deal criado!",
-          description: `"${dealForm.title}" foi adicionado ao pipeline.`,
-        });
-      }
-      
-      setEditDialogOpen(false);
-      setCreateDialogOpen(false);
-      setSelectedDeal(null);
-    } catch (error) {
-      console.error("Error saving deal:", error);
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar o deal. Tente novamente.",
-        variant: "destructive",
+          expected_close_date: dealForm.expected_close_date || undefined,
+        }
+      }, {
+        onSuccess: () => {
+          setEditDialogOpen(false);
+          setSelectedDeal(null);
+        }
+      });
+    } else if (createDialogOpen) {
+      // Create new deal
+      createDeal.mutate({
+        title: dealForm.title,
+        value: dealForm.value,
+        contact_email: dealForm.contact_email,
+        contact_name: dealForm.contact_name,
+        pipeline_id: selectedPipelineId,
+        stage_id: currentStageId,
+        expected_close_date: dealForm.expected_close_date || undefined,
+      }, {
+        onSuccess: () => {
+          setCreateDialogOpen(false);
+        }
       });
     }
   };
 
-  // Filter deals by pipeline and search
+  // Filter deals by search
   const filteredDeals = deals.filter(deal => {
-    if (selectedPipeline && deal.pipeline_id !== selectedPipeline.id) return false;
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      return (
-        deal.title.toLowerCase().includes(term) ||
-        deal.contact.name.toLowerCase().includes(term) ||
-        deal.contact.company?.toLowerCase().includes(term)
-      );
-    }
-    return true;
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return (
+      deal.title.toLowerCase().includes(term) ||
+      deal.contact.name.toLowerCase().includes(term) ||
+      deal.contact.company?.toLowerCase().includes(term)
+    );
   });
 
-  // Get deals per stage
-  const getDealsByStage = (stageId: string) => 
-    filteredDeals.filter(deal => deal.stage_id === stageId);
-
   // Loading state
-  if (loading) {
+  if (loadingPipelines || (selectedPipelineId && loadingPipeline)) {
     return (
       <div className="space-y-6 p-6">
         <div className="flex justify-between items-center">
@@ -562,6 +416,14 @@ export const Pipeline = () => {
             <Skeleton key={i} className="flex-shrink-0 w-72 h-96" />
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (!pipeline) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-muted-foreground">Nenhum pipeline disponível</p>
       </div>
     );
   }
@@ -584,7 +446,7 @@ export const Pipeline = () => {
             <Button variant="outline" size="sm">
               <Settings className="h-4 w-4 mr-2" /> Configurar
             </Button>
-            <Button size="sm">
+            <Button size="sm" onClick={() => handleAddDeal(pipeline.stages[0]?.id || "")}>
               <Plus className="h-4 w-4 mr-2" /> Novo Deal
             </Button>
           </div>
@@ -593,21 +455,18 @@ export const Pipeline = () => {
         {/* Filters */}
         <div className="flex items-center gap-4">
           <Select
-            value={selectedPipeline?.id}
-            onValueChange={(value) => {
-              const pipeline = pipelines.find(p => p.id === value);
-              setSelectedPipeline(pipeline || null);
-            }}
+            value={selectedPipelineId}
+            onValueChange={setSelectedPipelineId}
           >
             <SelectTrigger className="w-60">
               <SelectValue placeholder="Selecione um pipeline" />
             </SelectTrigger>
             <SelectContent>
-              {pipelines.map(pipeline => (
-                <SelectItem key={pipeline.id} value={pipeline.id}>
+              {pipelines?.map(p => (
+                <SelectItem key={p.id} value={p.id}>
                   <div className="flex items-center justify-between w-full">
-                    <span>{pipeline.name}</span>
-                    {pipeline.is_default && (
+                    <span>{p.name}</span>
+                    {p.is_default && (
                       <Badge variant="secondary" className="ml-2 text-xs">Padrão</Badge>
                     )}
                   </div>
@@ -636,51 +495,51 @@ export const Pipeline = () => {
         </div>
 
         {/* Pipeline Summary */}
-        {selectedPipeline && (
-          <div className="flex items-center gap-6 mt-4 text-sm">
-            <div>
-              <span className="text-muted-foreground">Total de deals:</span>{" "}
-              <span className="font-semibold">{filteredDeals.length}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Valor total:</span>{" "}
-              <span className="font-semibold">
-                {formatCurrency(filteredDeals.reduce((sum, d) => sum + d.value, 0))}
-              </span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Valor ponderado:</span>{" "}
-              <span className="font-semibold text-green-500">
-                {formatCurrency(
-                  filteredDeals.reduce((sum, d) => {
-                    const stage = selectedPipeline.stages.find(s => s.id === d.stage_id);
-                    return sum + (d.value * (stage?.probability || 0) / 100);
-                  }, 0)
-                )}
-              </span>
-            </div>
+        <div className="flex items-center gap-6 mt-4 text-sm">
+          <div>
+            <span className="text-muted-foreground">Total de deals:</span>{" "}
+            <span className="font-semibold">{filteredDeals.length}</span>
           </div>
-        )}
+          <div>
+            <span className="text-muted-foreground">Valor total:</span>{" "}
+            <span className="font-semibold">
+              {formatCurrency(filteredDeals.reduce((sum, d) => sum + d.value, 0))}
+            </span>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Valor ponderado:</span>{" "}
+            <span className="font-semibold text-green-500">
+              {formatCurrency(
+                filteredDeals.reduce((sum, d) => {
+                  const stage = pipeline.stages.find(s => s.id === d.stage_id);
+                  return sum + (d.value * (stage?.probability || 0) / 100);
+                }, 0)
+              )}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Kanban Board */}
       <div className="flex-1 overflow-x-auto p-4">
         <div className="flex gap-4 h-full">
-          {selectedPipeline?.stages.map(stage => (
+          {pipeline.stages.map(stage => (
             <StageColumn
               key={stage.id}
               stage={stage}
-              deals={getDealsByStage(stage.id)}
+              deals={getDealsByStage(filteredDeals, stage.id)}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onDragStart={handleDragStart}
               onEditDeal={handleEditDeal}
               onViewDeal={handleViewDeal}
+              onWinDeal={(id) => winDeal.mutate(id)}
+              onLoseDeal={(id) => loseDeal.mutate({ id })}
               onAddDeal={handleAddDeal}
             />
           ))}
 
-          {/* Coluna de Won/Lost */}
+          {/* Won/Lost Summary */}
           <div className="flex-shrink-0 w-72 space-y-4">
             <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
@@ -710,7 +569,7 @@ export const Pipeline = () => {
         </div>
       </div>
 
-      {/* View Deal Dialog */}
+      {/* View Deal Dialog (simplified) */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -718,19 +577,6 @@ export const Pipeline = () => {
           </DialogHeader>
           {selectedDeal && (
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={selectedDeal.contact.avatar} />
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    {selectedDeal.contact.name.split(" ").map(n => n[0]).join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold">{selectedDeal.contact.name}</p>
-                  <p className="text-sm text-muted-foreground">{selectedDeal.contact.company}</p>
-                </div>
-              </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Valor</p>
@@ -740,45 +586,13 @@ export const Pipeline = () => {
                   <p className="text-sm text-muted-foreground">Probabilidade</p>
                   <p className="text-lg font-semibold">{selectedDeal.probability}%</p>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Data prevista</p>
-                  <p className="font-medium">
-                    {selectedDeal.expected_close_date 
-                      ? new Date(selectedDeal.expected_close_date).toLocaleDateString("pt-BR")
-                      : "-"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Dias no estágio</p>
-                  <p className="font-medium">{selectedDeal.days_in_stage} dias</p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {selectedDeal.tags.map(tag => (
-                  <Badge key={tag} variant="outline" className={getTagColor(tag)}>
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" className="flex-1">
-                  <Phone className="h-4 w-4 mr-2" /> Ligar
-                </Button>
-                <Button variant="outline" className="flex-1">
-                  <Mail className="h-4 w-4 mr-2" /> Email
-                </Button>
-                <Button className="flex-1">
-                  <Edit className="h-4 w-4 mr-2" /> Editar
-                </Button>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Modal de Edição/Criação de Deal */}
+      {/* Create/Edit Deal Dialog (simplified) */}
       <Dialog open={editDialogOpen || createDialogOpen} onOpenChange={(open) => {
         if (!open) {
           setEditDialogOpen(false);
@@ -792,85 +606,73 @@ export const Pipeline = () => {
               {editDialogOpen ? "Editar Deal" : "Novo Deal"}
             </DialogTitle>
             <DialogDescription>
-              {editDialogOpen 
+              {editDialogOpen
                 ? "Atualize as informações do deal abaixo."
                 : "Preencha as informações para criar um novo deal."}
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="deal-title">Título do Deal *</Label>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Título</Label>
               <Input
-                id="deal-title"
-                placeholder="Ex: Proposta para Cliente ABC"
+                id="title"
                 value={dealForm.title}
-                onChange={(e) => setDealForm(prev => ({ ...prev, title: e.target.value }))}
+                onChange={(e) => setDealForm({ ...dealForm, title: e.target.value })}
+                placeholder="Nome do deal"
               />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="deal-value">Valor (R$) *</Label>
+            <div>
+              <Label htmlFor="value">Valor (R$)</Label>
               <Input
-                id="deal-value"
+                id="value"
                 type="number"
-                placeholder="0,00"
                 value={dealForm.value}
-                onChange={(e) => setDealForm(prev => ({ ...prev, value: parseFloat(e.target.value) || 0 }))}
+                onChange={(e) => setDealForm({ ...dealForm, value: parseFloat(e.target.value) || 0 })}
+                placeholder="0.00"
               />
             </div>
-            
-            {createDialogOpen && (
+            {!editDialogOpen && (
               <>
-                <div className="space-y-2">
-                  <Label htmlFor="contact-name">Nome do Contato *</Label>
+                <div>
+                  <Label htmlFor="contact_name">Nome do Contato</Label>
                   <Input
-                    id="contact-name"
-                    placeholder="Nome completo"
+                    id="contact_name"
                     value={dealForm.contact_name}
-                    onChange={(e) => setDealForm(prev => ({ ...prev, contact_name: e.target.value }))}
+                    onChange={(e) => setDealForm({ ...dealForm, contact_name: e.target.value })}
+                    placeholder="João Silva"
                   />
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="contact-email">Email do Contato *</Label>
+                <div>
+                  <Label htmlFor="contact_email">Email do Contato</Label>
                   <Input
-                    id="contact-email"
+                    id="contact_email"
                     type="email"
-                    placeholder="email@exemplo.com"
                     value={dealForm.contact_email}
-                    onChange={(e) => setDealForm(prev => ({ ...prev, contact_email: e.target.value }))}
+                    onChange={(e) => setDealForm({ ...dealForm, contact_email: e.target.value })}
+                    placeholder="joao@empresa.com"
                   />
                 </div>
               </>
             )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="expected-date">Data Prevista de Fechamento</Label>
+            <div>
+              <Label htmlFor="expected_close_date">Previsão de Fechamento</Label>
               <Input
-                id="expected-date"
+                id="expected_close_date"
                 type="date"
                 value={dealForm.expected_close_date}
-                onChange={(e) => setDealForm(prev => ({ ...prev, expected_close_date: e.target.value }))}
+                onChange={(e) => setDealForm({ ...dealForm, expected_close_date: e.target.value })}
               />
             </div>
           </div>
-          
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditDialogOpen(false);
-                setCreateDialogOpen(false);
-              }}
-            >
+            <Button variant="outline" onClick={() => {
+              setEditDialogOpen(false);
+              setCreateDialogOpen(false);
+            }}>
               Cancelar
             </Button>
-            <Button 
-              onClick={handleSaveDeal}
-              disabled={!dealForm.title || !dealForm.value || (createDialogOpen && (!dealForm.contact_name || !dealForm.contact_email))}
-            >
-              {editDialogOpen ? "Salvar Alterações" : "Criar Deal"}
+            <Button onClick={handleSaveDeal}>
+              {editDialogOpen ? "Salvar" : "Criar Deal"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -879,4 +681,5 @@ export const Pipeline = () => {
   );
 };
 
-export default Pipeline;
+// Export as default for lazy loading
+export default PipelinePage;

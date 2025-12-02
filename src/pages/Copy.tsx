@@ -50,6 +50,8 @@ import { COPY_TYPES, COPY_TONES } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import { generateCopy, getCopyHistory, getFavorites } from "@/lib/tauri";
 import { api } from "@/lib/api";
+import { saveUserTemplate } from "@/services/copy";
+import { CopyPreferencesDialog, UserSavedTemplates } from "@/components/copy";
 import type { FavoriteWithProduct, CopyHistory } from "@/types";
 import type { CopyType, CopyTone } from "@/types";
 import { analytics } from "@/lib/analytics";
@@ -696,17 +698,13 @@ export const Copy: React.FC = () => {
     try {
       // Extrair variáveis do template (padrão {{variavel}})
       const variableMatches = state.generatedCopy.match(/\{\{([^}]+)\}\}/g) || [];
-      const variables = variableMatches.map(v => v.replace(/[{}]/g, '').trim());
+      const variablesList = variableMatches.map(v => v.replace(/[{}]/g, '').trim());
 
-      await api.post('/templates', {
+      await saveUserTemplate({
         name: `Copy ${state.selectedType} - ${new Date().toLocaleDateString('pt-BR')}`,
-        description: `Template gerado automaticamente de ${state.selectedType}`,
-        platform: state.selectedPlatform || 'all',
-        category: state.selectedType || 'custom',
-        caption_template: state.generatedCopy,
-        hashtags: [],
-        variables: variables,
-        is_public: false,
+        captionTemplate: state.generatedCopy,
+        copyType: state.selectedType || 'custom',
+        variables: variablesList.length > 0 ? { variables: variablesList } : undefined,
       });
 
       toast({
@@ -905,17 +903,20 @@ export const Copy: React.FC = () => {
             </div>
             {t("copy_ai.title")}
           </h1>
-          {!showOnboarding && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowOnboarding(true)}
-              className="text-xs text-muted-foreground"
-            >
-              <Lightbulb className="h-4 w-4 mr-1" />
-              Ver tutorial
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            <CopyPreferencesDialog />
+            {!showOnboarding && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowOnboarding(true)}
+                className="text-xs text-muted-foreground"
+              >
+                <Lightbulb className="h-4 w-4 mr-1" />
+                Ver tutorial
+              </Button>
+            )}
+          </div>
         </div>
         <p className="text-muted-foreground">
           {t("copy_ai.subtitle")}
@@ -1277,6 +1278,33 @@ export const Copy: React.FC = () => {
         {/* TAB: TEMPLATES */}
         {/* ================================================================== */}
         <TabsContent value="templates" className="space-y-6">
+          {/* User Saved Templates */}
+          <UserSavedTemplates
+            onSelectTemplate={(template) => {
+              setState((prev) => ({
+                ...prev,
+                generatedCopy: template.captionTemplate,
+              }));
+              setActiveTab("generate");
+              toast({
+                title: "📋 Template carregado!",
+                description: "O template foi aplicado ao editor.",
+              });
+            }}
+          />
+
+          {/* Divider */}
+          <div className="relative py-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Templates pré-definidos
+              </span>
+            </div>
+          </div>
+
           {/* Search */}
           <div className="flex gap-4">
             <div className="relative flex-1">

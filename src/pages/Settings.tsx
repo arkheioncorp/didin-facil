@@ -11,7 +11,7 @@ import {
   ChartIcon,
   StarIcon
 } from "@/components/icons";
-import { HelpCircle, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { HelpCircle, CheckCircle2, XCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useUserStore } from "@/stores";
 import type {
   AppSettings,
@@ -22,7 +22,7 @@ import type {
   CopyType,
   CopyTone
 } from "@/types";
-import { whatsappService, youtubeService, tiktokService } from "@/services";
+import { whatsappService, youtubeService, tiktokService, tiktokShopService } from "@/services";
 
 // Check if running in Tauri
 const isTauri = (): boolean => {
@@ -154,6 +154,22 @@ export const Settings: React.FC = () => {
   const [youtubeAccounts, setYoutubeAccounts] = React.useState<string[]>([]);
   const [tiktokAccounts, setTiktokAccounts] = React.useState<string[]>([]);
 
+  // TikTok Shop States
+  const [tiktokShopConfig, setTiktokShopConfig] = React.useState({
+    appKey: "",
+    appSecret: "",
+    serviceId: "",
+  });
+  const [tiktokShopStatus, setTiktokShopStatus] = React.useState<"connected" | "disconnected" | "connecting">("disconnected");
+  const [tiktokShopAuthCode, setTiktokShopAuthCode] = React.useState("");
+  const [showTiktokShopAuthModal, setShowTiktokShopAuthModal] = React.useState(false);
+  const [tiktokShopInfo, setTiktokShopInfo] = React.useState<{
+    shopName?: string;
+    productsCount?: number;
+    lastSync?: string;
+  } | null>(null);
+  const [isSyncingProducts, setIsSyncingProducts] = React.useState(false);
+
   // Polling ref
   const pollInterval = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -161,9 +177,31 @@ export const Settings: React.FC = () => {
   React.useEffect(() => {
     checkWhatsappStatus();
     fetchConnectedAccounts();
+    checkTiktokShopStatus();
     return () => stopPolling();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Check TikTok Shop status
+  const checkTiktokShopStatus = async () => {
+    try {
+      const status = await tiktokShopService.getStatus();
+      if (status.connected) {
+        setTiktokShopStatus("connected");
+        setTiktokShopInfo({
+          shopName: status.seller_name || "Loja TikTok Shop",
+          productsCount: status.product_count || 0,
+          lastSync: status.last_sync || undefined,
+        });
+      } else {
+        setTiktokShopStatus("disconnected");
+        setTiktokShopInfo(null);
+      }
+    } catch (error) {
+      // User may not be authenticated or no connection
+      setTiktokShopStatus("disconnected");
+    }
+  };
 
   const fetchConnectedAccounts = async () => {
     try {
@@ -319,6 +357,151 @@ export const Settings: React.FC = () => {
       console.error("Error disconnecting WhatsApp:", error);
     }
   };
+
+  // TikTok Shop Functions
+  const handleSaveTiktokShopConfig = async () => {
+    if (!tiktokShopConfig.appKey || !tiktokShopConfig.appSecret) {
+      setSaveMessage("Preencha App Key e App Secret");
+      return;
+    }
+    
+    try {
+      // Salvar no localStorage para uso local
+      localStorage.setItem("tiktok_shop_config", JSON.stringify(tiktokShopConfig));
+      setSaveMessage("Credenciais TikTok Shop salvas!");
+      setTimeout(() => setSaveMessage(null), 3000);
+    } catch (error) {
+      console.error("Error saving TikTok Shop config:", error);
+      setSaveMessage("Erro ao salvar configurações");
+    }
+  };
+
+  const handleTiktokShopAuth = async () => {
+    if (!tiktokShopConfig.appKey) {
+      setSaveMessage("Preencha o App Key primeiro");
+      return;
+    }
+    
+    try {
+      const { auth_url } = await tiktokShopService.getAuthUrl({
+        appKey: tiktokShopConfig.appKey,
+        appSecret: tiktokShopConfig.appSecret,
+        serviceId: tiktokShopConfig.serviceId || undefined,
+      });
+      
+      // Abrir em nova janela
+      window.open(auth_url, "_blank", "width=800,height=700");
+    } catch (error) {
+      console.error("Error getting auth URL:", error);
+      // Fallback: gerar URL localmente
+      const redirectUri = "https://oauth.pstmn.io/v1/callback";
+      const state = `local_${Date.now()}`;
+      const params = new URLSearchParams({
+        app_key: tiktokShopConfig.appKey,
+        redirect_uri: redirectUri,
+        state: state,
+      });
+      if (tiktokShopConfig.serviceId) {
+        params.append("service_id", tiktokShopConfig.serviceId);
+      }
+      const authUrl = `https://services.tiktokshop.com/open/authorize?${params.toString()}`;
+      window.open(authUrl, "_blank", "width=800,height=700");
+    }
+  };
+
+  const handleTiktokShopAuthCodeSubmit = async () => {
+    if (!tiktokShopAuthCode) {
+      setSaveMessage("Cole o código de autorização");
+      return;
+    }
+    
+    if (!tiktokShopConfig.appKey || !tiktokShopConfig.appSecret) {
+      setSaveMessage("Preencha as credenciais primeiro");
+      return;
+    }
+    
+    setTiktokShopStatus("connecting");
+    
+    try {
+      const result = await tiktokShopService.saveToken(
+        {
+          appKey: tiktokShopConfig.appKey,
+          appSecret: tiktokShopConfig.appSecret,
+        },
+        tiktokShopAuthCode
+      );
+      
+      if (result.success) {
+        setTiktokShopStatus("connected");
+        setShowTiktokShopAuthModal(false);
+        setTiktokShopAuthCode("");
+        setSaveMessage("🎉 TikTok Shop conectado com sucesso!");
+        
+        // Atualizar info da loja
+        if (result.connection) {
+          setTiktokShopInfo({
+            shopName: result.connection.shopName || "Loja TikTok Shop",
+            productsCount: 0,
+          });
+        }
+        
+        // Recarregar status
+        await checkTiktokShopStatus();
+      } else {
+        throw new Error(result.message || "Falha na autenticação");
+      }
+    } catch (error) {
+      console.error("Error authenticating TikTok Shop:", error);
+      setTiktokShopStatus("disconnected");
+      setSaveMessage(error instanceof Error ? error.message : "Erro na autenticação. Verifique o código.");
+    }
+  };
+
+  const handleTiktokShopDisconnect = async () => {
+    try {
+      await tiktokShopService.disconnect();
+      setTiktokShopStatus("disconnected");
+      setTiktokShopInfo(null);
+      setSaveMessage("TikTok Shop desconectado");
+    } catch (error) {
+      console.error("Error disconnecting TikTok Shop:", error);
+      setSaveMessage("Erro ao desconectar");
+    }
+  };
+
+  const handleTiktokShopSyncProducts = async () => {
+    setIsSyncingProducts(true);
+    try {
+      const result = await tiktokShopService.syncProducts();
+      if (result.success) {
+        setSaveMessage(`✅ ${result.synced} produtos sincronizados!`);
+        setTiktokShopInfo(prev => ({
+          ...prev,
+          productsCount: result.total,
+          lastSync: new Date().toISOString(),
+        }));
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      console.error("Error syncing products:", error);
+      setSaveMessage(error instanceof Error ? error.message : "Erro ao sincronizar produtos");
+    } finally {
+      setIsSyncingProducts(false);
+    }
+  };
+
+  // Carregar config do TikTok Shop do localStorage
+  React.useEffect(() => {
+    const saved = localStorage.getItem("tiktok_shop_config");
+    if (saved) {
+      try {
+        setTiktokShopConfig(JSON.parse(saved));
+      } catch {
+        // Ignore
+      }
+    }
+  }, []);
 
   // ==========================================================================
   // Render Tabs
@@ -502,6 +685,200 @@ export const Settings: React.FC = () => {
           >
             + {tFunc("settings.integrations.tiktok.add_account")}
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* TikTok Shop API */}
+      <Card className={`lg:col-span-2 border-l-4 ${tiktokShopStatus === "connected" ? "border-l-pink-500" : "border-l-gray-300"}`}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <span>🛒</span> TikTok Shop API
+            {tiktokShopStatus === "connected" && (
+              <Badge variant="tiktrend" className="ml-2">
+                <CheckCircle2 className="h-3 w-3 mr-1" /> Conectado
+              </Badge>
+            )}
+          </CardTitle>
+          <CardDescription>
+            Conecte sua loja TikTok Shop para acessar produtos com preços reais.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* PASSO 1: URL de Callback */}
+          <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <h4 className="font-semibold text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
+              <span>📋</span> Passo 1: Copie esta URL e cole no TikTok Shop Partner Center
+            </h4>
+            <div className="flex gap-2 items-center">
+              <Input
+                readOnly
+                value="https://oauth.pstmn.io/v1/callback"
+                className="font-mono text-sm bg-white dark:bg-gray-900"
+              />
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText("https://oauth.pstmn.io/v1/callback");
+                  setSaveMessage("URL copiada!");
+                  setTimeout(() => setSaveMessage(null), 2000);
+                }}
+              >
+                📋 Copiar
+              </Button>
+            </div>
+            <p className="text-xs text-amber-700 dark:text-amber-300 mt-2">
+              Cole esta URL no campo "URL de redirecionamento" do TikTok Shop e clique em Salvar.
+            </p>
+          </div>
+
+          {/* PASSO 2: Credenciais */}
+          <div className="p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-3 flex items-center gap-2">
+              <span>🔑</span> Passo 2: Cole suas credenciais do TikTok Shop
+            </h4>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">App Key</label>
+                <Input
+                  placeholder="6i9mmlirelm47"
+                  value={tiktokShopConfig.appKey}
+                  onChange={(e) => setTiktokShopConfig({...tiktokShopConfig, appKey: e.target.value})}
+                  className="font-mono text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">App Secret</label>
+                <Input
+                  type="password"
+                  placeholder="Seu App Secret"
+                  value={tiktokShopConfig.appSecret}
+                  onChange={(e) => setTiktokShopConfig({...tiktokShopConfig, appSecret: e.target.value})}
+                  className="font-mono text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Service ID</label>
+                <Input
+                  placeholder="7578781076102563592"
+                  value={tiktokShopConfig.serviceId}
+                  onChange={(e) => setTiktokShopConfig({...tiktokShopConfig, serviceId: e.target.value})}
+                  className="font-mono text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* PASSO 3: Autorizar e Conectar */}
+          <div className="p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg">
+            <h4 className="font-semibold text-green-800 dark:text-green-200 mb-3 flex items-center gap-2">
+              <span>🔐</span> Passo 3: Autorize e conecte
+            </h4>
+            
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Button onClick={handleSaveTiktokShopConfig} variant="outline">
+                  💾 Salvar Credenciais
+                </Button>
+                <Button 
+                  onClick={handleTiktokShopAuth}
+                  disabled={!tiktokShopConfig.appKey || !tiktokShopConfig.appSecret}
+                  className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600"
+                >
+                  🚀 Abrir TikTok Shop para Autorizar
+                </Button>
+              </div>
+
+              {/* Campo para colar código */}
+              <div className="pt-3 border-t border-green-200 dark:border-green-700">
+                <p className="text-sm font-medium text-green-800 dark:text-green-200 mb-2">
+                  Após autorizar, a URL terá um código. Copie o valor após "code=" e cole aqui:
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Cole o código aqui (ex: ROW_xxxx)"
+                    value={tiktokShopAuthCode}
+                    onChange={(e) => setTiktokShopAuthCode(e.target.value)}
+                    className="font-mono"
+                  />
+                  <Button 
+                    onClick={handleTiktokShopAuthCodeSubmit}
+                    disabled={tiktokShopStatus === "connecting" || !tiktokShopAuthCode}
+                    className="min-w-[120px]"
+                  >
+                    {tiktokShopStatus === "connecting" ? "Conectando..." : "✓ Conectar"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {tiktokShopStatus === "connected" && (
+            <div className="p-4 bg-green-100 dark:bg-green-900/50 border-2 border-green-500 rounded-lg space-y-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-bold text-green-800 dark:text-green-200 flex items-center gap-2 text-lg">
+                    <CheckCircle2 className="h-6 w-6" />
+                    🎉 TikTok Shop conectado!
+                  </p>
+                  {tiktokShopInfo && (
+                    <div className="mt-2 space-y-1 text-sm text-green-700 dark:text-green-300">
+                      <p>🏪 <strong>Loja:</strong> {tiktokShopInfo.shopName}</p>
+                      <p>📦 <strong>Produtos:</strong> {tiktokShopInfo.productsCount || 0}</p>
+                      {tiktokShopInfo.lastSync && (
+                        <p>🔄 <strong>Última sync:</strong> {new Date(tiktokShopInfo.lastSync).toLocaleString("pt-BR")}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={handleTiktokShopDisconnect}
+                >
+                  <XCircle className="h-4 w-4 mr-1" /> Desconectar
+                </Button>
+              </div>
+              
+              <div className="flex gap-2 pt-2 border-t border-green-300 dark:border-green-700">
+                <Button 
+                  onClick={handleTiktokShopSyncProducts}
+                  disabled={isSyncingProducts}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {isSyncingProducts ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Sincronizando...
+                    </>
+                  ) : (
+                    <>🔄 Sincronizar Produtos</>
+                  )}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => window.location.href = '/products?source=tiktok_shop'}
+                  className="border-green-500 text-green-700 hover:bg-green-50 dark:hover:bg-green-900/30"
+                >
+                  📦 Ver Produtos
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {tiktokShopStatus !== "connected" && (
+            <>
+              {/* Instruções Resumidas */}
+              <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  <strong>Resumo:</strong> 1️⃣ Copie a URL acima e cole no TikTok Shop Partner Center → 
+                  2️⃣ Cole suas credenciais aqui → 
+                  3️⃣ Clique em Autorizar, copie o código da URL resultante e cole aqui → 
+                  4️⃣ Clique em Conectar
+                </p>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

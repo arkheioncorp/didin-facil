@@ -1,25 +1,28 @@
 """
 TikTok Scraping Worker
 Automated background scraping with configurable intervals and caching
++ Persistence to PostgreSQL database
 """
 
 import asyncio
 import json
 import signal
 import sys
+import uuid
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from dataclasses import dataclass, asdict
 
 # Add backend to path (needed for standalone execution)
 backend_dir = Path(__file__).resolve().parent.parent
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
-from shared.redis import get_redis  # noqa: E402
+from api.database.connection import database  # noqa: E402
 from scraper.cache import get_product_cache  # noqa: E402
 from scraper.tiktok import TikTokAPIScraper, get_api_scraper  # noqa: E402
+from shared.redis import get_redis  # noqa: E402
 
 
 @dataclass
@@ -44,6 +47,7 @@ class ScraperJobResult:
     products_found: int
     products_cached: int
     duration_seconds: float
+    products_saved: int = 0  # count of products saved to DB
     error: Optional[str] = None
     timestamp: str = ""
     
@@ -60,6 +64,7 @@ class TikTokScrapingWorker:
     - Configurable scraping jobs (trending, search, categories)
     - Redis-based job queue and state management
     - Automatic caching of scraped products
+    - **Persistence to PostgreSQL database**
     - Health monitoring and metrics
     - Graceful shutdown handling
     """
@@ -266,8 +271,11 @@ class TikTokScrapingWorker:
             
             # Cache individual products
             cached = 0
+            saved = 0
             if products:
                 cached = await self.cache.set_products_batch(products)
+                # Save to PostgreSQL database
+                saved = await self._save_products_to_db(products)
             
             duration = (
                 datetime.now(timezone.utc) - start_time
@@ -278,12 +286,13 @@ class TikTokScrapingWorker:
                 success=True,
                 products_found=len(products),
                 products_cached=cached,
+                products_saved=saved,
                 duration_seconds=duration,
             )
             
             print(
                 f"[Worker] Job {job.name} completed: "
-                f"{len(products)} products, {cached} cached"
+                f"{len(products)} products, {cached} cached, {saved} saved to DB"
             )
             
             return result
@@ -300,9 +309,132 @@ class TikTokScrapingWorker:
                 success=False,
                 products_found=0,
                 products_cached=0,
+                products_saved=0,
                 duration_seconds=duration,
                 error=str(e),
             )
+    
+    async def _save_products_to_db(self, products: List[Dict]) -> int:
+        """
+        Save products to PostgreSQL database using upsert.
+        
+        Args:
+            products: List of product dicts from scraper
+            
+        Returns:
+            Number of products saved/updated
+        """
+        if not products:
+            return 0
+        
+        saved = 0
+        
+        try:
+            # Ensure database is connected
+            if not database.is_connected:
+                await database.connect()
+            
+            for product in products:
+                try:
+                    # Map scraper output to database schema
+                    tiktok_id = str(
+                        product.get("tiktok_id") or 
+                        product.get("video_id") or 
+                        ""
+                    )
+                    
+                    if not tiktok_id:
+                        continue
+                    
+                    # Generate UUID for new products
+                    product_uuid = str(uuid.uuid4())
+                    
+                    # Get price or default to 0 (required field)
+                    price = product.get("price")
+                    if price is None:
+                        price = 0.00
+                    
+                    # Extract image URL
+                    image_url = product.get("image_url", "")
+                    
+                    # Prepare data for insert
+                    db_product = {
+                        "id": product_uuid,
+                        "tiktok_id": tiktok_id,
+                        "title": (product.get("title") or "")[:500],
+                        "description": product.get("description"),
+                        "price": price,
+                        "original_price": product.get("original_price"),
+                        "currency": "BRL",
+                        "category": product.get("category"),
+                        "subcategory": None,
+                        "seller_name": product.get("seller_name"),
+                        "seller_rating": None,
+                        "product_rating": product.get("rating"),
+                        "reviews_count": product.get("review_count", 0) or 0,
+                        "sales_count": product.get("sold_count", 0) or 0,
+                        "sales_7d": 0,
+                        "sales_30d": product.get("sold_count", 0) or 0,
+                        "commission_rate": None,
+                        "image_url": image_url,
+                        "video_url": product.get("product_url"),
+                        "product_url": product.get("product_url") or "",
+                        "affiliate_url": None,
+                        "has_free_shipping": False,
+                        "is_trending": True,
+                        "is_on_sale": product.get("discount_percent") is not None,
+                        "in_stock": True,
+                        "collected_at": datetime.now(),
+                    }
+                    
+                    # Upsert query (without images field for now)
+                    query = """
+                        INSERT INTO products (
+                            id, tiktok_id, title, description, price, 
+                            original_price, currency, category, subcategory,
+                            seller_name, seller_rating, product_rating,
+                            reviews_count, sales_count, sales_7d, sales_30d,
+                            commission_rate, image_url, video_url,
+                            product_url, affiliate_url, has_free_shipping,
+                            is_trending, is_on_sale, in_stock, collected_at,
+                            updated_at
+                        ) VALUES (
+                            :id, :tiktok_id, :title, :description, :price,
+                            :original_price, :currency, :category, :subcategory,
+                            :seller_name, :seller_rating, :product_rating,
+                            :reviews_count, :sales_count, :sales_7d, :sales_30d,
+                            :commission_rate, :image_url, :video_url,
+                            :product_url, :affiliate_url, :has_free_shipping,
+                            :is_trending, :is_on_sale, :in_stock, :collected_at,
+                            NOW()
+                        )
+                        ON CONFLICT (tiktok_id) DO UPDATE SET
+                            title = EXCLUDED.title,
+                            description = EXCLUDED.description,
+                            price = EXCLUDED.price,
+                            original_price = EXCLUDED.original_price,
+                            sales_count = EXCLUDED.sales_count,
+                            sales_30d = EXCLUDED.sales_30d,
+                            product_rating = EXCLUDED.product_rating,
+                            reviews_count = EXCLUDED.reviews_count,
+                            image_url = EXCLUDED.image_url,
+                            is_trending = EXCLUDED.is_trending,
+                            updated_at = NOW()
+                    """
+                    
+                    await database.execute(query, db_product)
+                    saved += 1
+                    
+                except Exception as e:
+                    print(f"[Worker] Error saving product {tiktok_id}: {e}")
+                    continue
+            
+            print(f"[Worker] Saved {saved}/{len(products)} products to database")
+            
+        except Exception as e:
+            print(f"[Worker] Database error: {e}")
+        
+        return saved
     
     async def _load_state(self):
         """Load worker state from Redis"""

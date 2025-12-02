@@ -69,6 +69,12 @@ fn main() {
             // Dashboard & user commands
             commands::get_user_stats,
             commands::validate_license,
+            // Subscription commands (SaaS Híbrido)
+            commands::validate_subscription,
+            commands::get_cached_subscription,
+            commands::check_feature_access,
+            commands::get_execution_mode,
+            commands::can_work_offline,
             // Scraper commands
             commands::scrape_tiktok_shop,
             commands::get_scraper_status,

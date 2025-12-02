@@ -473,7 +473,10 @@ export function ScraperControl() {
                 isActive={isRunning}
                 currentUrl={browserState.url}
                 screenshot={browserState.screenshot}
-                status={browserState.status}
+                status={statusMessage}
+                productsFound={productsFound}
+                progress={progress}
+                logs={logs}
             />
         </Card>
     );

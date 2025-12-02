@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr
-from typing import Optional
-from api.middleware.auth import get_current_user
-from api.database.connection import database
-from passlib.context import CryptContext
 from datetime import datetime
+from typing import Optional
+
+from api.database.connection import database
+from api.middleware.auth import get_current_user
+from fastapi import APIRouter, Depends, HTTPException, status
+from passlib.context import CryptContext
+from pydantic import BaseModel, EmailStr
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -208,3 +209,90 @@ async def update_my_password(
     await database.execute(update_query, {"hash": new_hash, "id": current_user["id"]})
     
     return {"message": "Password updated successfully"}
+
+
+class DashboardStatsResponse(BaseModel):
+    """Dashboard statistics response"""
+    totalProducts: int = 0
+    trendingProducts: int = 0
+    favoriteCount: int = 0
+    searchesToday: int = 0
+    copiesGenerated: int = 0
+    topCategories: list = []
+
+
+@router.get("/stats", response_model=DashboardStatsResponse)
+async def get_user_stats(current_user: dict = Depends(get_current_user)):
+    """Get dashboard statistics for current user"""
+    user_id = current_user["id"]
+    
+    # Get favorites count
+    favorites_result = await database.fetch_one(
+        "SELECT COUNT(*) as count FROM favorites WHERE user_id = :user_id",
+        {"user_id": user_id}
+    )
+    favorite_count = favorites_result["count"] if favorites_result else 0
+    
+    # Get copies generated (from api_usage_logs)
+    copies_result = await database.fetch_one(
+        """
+        SELECT COUNT(*) as count 
+        FROM api_usage_logs 
+        WHERE user_id = :user_id 
+        AND operation_type = 'copy_generation'
+        """,
+        {"user_id": user_id}
+    )
+    copies_generated = copies_result["count"] if copies_result else 0
+    
+    # Get searches today
+    searches_result = await database.fetch_one(
+        """
+        SELECT COUNT(*) as count 
+        FROM api_usage_logs 
+        WHERE user_id = :user_id 
+        AND operation_type = 'product_search'
+        AND created_at >= CURRENT_DATE
+        """,
+        {"user_id": user_id}
+    )
+    searches_today = searches_result["count"] if searches_result else 0
+    
+    # Get products count
+    products_result = await database.fetch_one(
+        """
+        SELECT 
+            COUNT(*) as total,
+            COUNT(*) FILTER (WHERE is_trending = true) as trending
+        FROM products
+        """,
+        {}
+    )
+    total_products = products_result["total"] if products_result else 0
+    trending_products = products_result["trending"] if products_result else 0
+    
+    # Get top categories
+    top_categories_result = await database.fetch_all(
+        """
+        SELECT category, COUNT(*) as count
+        FROM products
+        WHERE category IS NOT NULL
+        GROUP BY category
+        ORDER BY count DESC
+        LIMIT 5
+        """
+    )
+    top_categories = [
+        {"name": row["category"], "count": row["count"]} 
+        for row in top_categories_result
+    ] if top_categories_result else []
+    
+    return DashboardStatsResponse(
+        totalProducts=total_products,
+        trendingProducts=trending_products,
+        favoriteCount=favorite_count,
+        searchesToday=searches_today,
+        copiesGenerated=copies_generated,
+        topCategories=top_categories
+    )
+

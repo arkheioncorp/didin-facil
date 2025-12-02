@@ -879,3 +879,240 @@ pub fn get_product_history(db_path: &Path, product_id: &str) -> Result<Vec<Produ
 
     Ok(history)
 }
+
+// ==================================================
+// SUBSCRIPTION CACHE (SaaS Híbrido)
+// ==================================================
+
+use crate::models::CachedSubscription;
+
+/// Initialize subscription cache table
+pub fn init_subscription_tables(db_path: &Path) -> Result<()> {
+    let conn = Connection::open(db_path)?;
+
+    conn.execute_batch(
+        "
+        -- Subscription cache table
+        CREATE TABLE IF NOT EXISTS subscription_cache (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            subscription_json TEXT NOT NULL,
+            cached_at TEXT NOT NULL,
+            valid_until TEXT NOT NULL,
+            last_sync TEXT NOT NULL,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Usage tracking table (for offline usage tracking)
+        CREATE TABLE IF NOT EXISTS usage_tracking (
+            id TEXT PRIMARY KEY,
+            feature TEXT NOT NULL,
+            used INTEGER DEFAULT 0,
+            limit_value INTEGER DEFAULT 0,
+            period_start TEXT NOT NULL,
+            period_end TEXT NOT NULL,
+            synced_at TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Pending sync table (for hybrid mode)
+        CREATE TABLE IF NOT EXISTS pending_sync (
+            id TEXT PRIMARY KEY,
+            entity_type TEXT NOT NULL,
+            entity_id TEXT NOT NULL,
+            operation TEXT NOT NULL,
+            data_json TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            retry_count INTEGER DEFAULT 0,
+            last_error TEXT
+        );
+
+        -- Indexes
+        CREATE INDEX IF NOT EXISTS idx_usage_tracking_feature ON usage_tracking(feature);
+        CREATE INDEX IF NOT EXISTS idx_pending_sync_entity ON pending_sync(entity_type, entity_id);
+        ",
+    )?;
+
+    log::info!("Subscription tables initialized at {:?}", db_path);
+    Ok(())
+}
+
+/// Save subscription cache to database
+pub fn save_subscription_cache(db_path: &Path, cached: &CachedSubscription) -> Result<()> {
+    let conn = Connection::open(db_path)?;
+    
+    // Ensure tables exist
+    init_subscription_tables(db_path)?;
+    
+    let subscription_json = serde_json::to_string(&cached.subscription)
+        .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))?;
+
+    conn.execute(
+        "INSERT OR REPLACE INTO subscription_cache 
+         (id, subscription_json, cached_at, valid_until, last_sync, updated_at)
+         VALUES (1, ?1, ?2, ?3, ?4, datetime('now'))",
+        params![
+            subscription_json,
+            cached.cached_at,
+            cached.valid_until,
+            cached.last_sync,
+        ],
+    )?;
+
+    Ok(())
+}
+
+/// Get subscription cache from database
+pub fn get_subscription_cache(db_path: &Path) -> Result<Option<CachedSubscription>> {
+    let conn = Connection::open(db_path)?;
+    
+    // Ensure tables exist
+    let _ = init_subscription_tables(db_path);
+
+    let result: Option<(String, String, String, String)> = conn
+        .query_row(
+            "SELECT subscription_json, cached_at, valid_until, last_sync 
+             FROM subscription_cache WHERE id = 1",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+        )
+        .optional()?;
+
+    match result {
+        Some((json, cached_at, valid_until, last_sync)) => {
+            let subscription = serde_json::from_str(&json)
+                .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))?;
+            
+            Ok(Some(CachedSubscription {
+                subscription,
+                cached_at,
+                valid_until,
+                last_sync,
+            }))
+        }
+        None => Ok(None),
+    }
+}
+
+/// Update usage tracking for a feature
+pub fn update_usage_tracking(
+    db_path: &Path,
+    feature: &str,
+    increment: i32,
+    limit: i32,
+    period_start: &str,
+    period_end: &str,
+) -> Result<i32> {
+    let conn = Connection::open(db_path)?;
+    
+    // Ensure tables exist
+    let _ = init_subscription_tables(db_path);
+    
+    // Get current usage
+    let current: i32 = conn
+        .query_row(
+            "SELECT used FROM usage_tracking WHERE feature = ? AND period_end > datetime('now')",
+            params![feature],
+            |row| row.get(0),
+        )
+        .unwrap_or(0);
+    
+    let new_usage = current + increment;
+    
+    // Insert or update
+    conn.execute(
+        "INSERT INTO usage_tracking (id, feature, used, limit_value, period_start, period_end, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, datetime('now'))
+         ON CONFLICT(id) DO UPDATE SET 
+            used = ?3,
+            updated_at = datetime('now')",
+        params![
+            format!("{}_{}", feature, period_start),
+            feature,
+            new_usage,
+            limit,
+            period_start,
+            period_end,
+        ],
+    )?;
+    
+    Ok(new_usage)
+}
+
+/// Get usage for a feature
+pub fn get_feature_usage(db_path: &Path, feature: &str) -> Result<(i32, i32)> {
+    let conn = Connection::open(db_path)?;
+    
+    let result: Option<(i32, i32)> = conn
+        .query_row(
+            "SELECT used, limit_value FROM usage_tracking 
+             WHERE feature = ? AND period_end > datetime('now')
+             ORDER BY period_start DESC LIMIT 1",
+            params![feature],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .optional()?;
+    
+    Ok(result.unwrap_or((0, 0)))
+}
+
+/// Add pending sync item (for hybrid mode)
+pub fn add_pending_sync(
+    db_path: &Path,
+    entity_type: &str,
+    entity_id: &str,
+    operation: &str,
+    data: Option<&str>,
+) -> Result<String> {
+    let conn = Connection::open(db_path)?;
+    let id = Uuid::new_v4().to_string();
+    
+    conn.execute(
+        "INSERT INTO pending_sync (id, entity_type, entity_id, operation, data_json)
+         VALUES (?1, ?2, ?3, ?4, ?5)",
+        params![id, entity_type, entity_id, operation, data],
+    )?;
+    
+    Ok(id)
+}
+
+/// Get all pending sync items
+pub fn get_pending_sync(db_path: &Path) -> Result<Vec<(String, String, String, String, Option<String>)>> {
+    let conn = Connection::open(db_path)?;
+    
+    let mut stmt = conn.prepare(
+        "SELECT id, entity_type, entity_id, operation, data_json 
+         FROM pending_sync 
+         ORDER BY created_at ASC"
+    )?;
+    
+    let items = stmt
+        .query_map([], |row| {
+            Ok((
+                row.get(0)?,
+                row.get(1)?,
+                row.get(2)?,
+                row.get(3)?,
+                row.get(4).ok(),
+            ))
+        })?
+        .filter_map(|r| r.ok())
+        .collect();
+    
+    Ok(items)
+}
+
+/// Remove pending sync item after successful sync
+pub fn remove_pending_sync(db_path: &Path, id: &str) -> Result<()> {
+    let conn = Connection::open(db_path)?;
+    conn.execute("DELETE FROM pending_sync WHERE id = ?", params![id])?;
+    Ok(())
+}
+
+/// Clear all subscription cache
+pub fn clear_subscription_cache(db_path: &Path) -> Result<()> {
+    let conn = Connection::open(db_path)?;
+    conn.execute("DELETE FROM subscription_cache", [])?;
+    conn.execute("DELETE FROM usage_tracking", [])?;
+    Ok(())
+}

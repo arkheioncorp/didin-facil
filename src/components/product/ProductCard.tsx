@@ -10,7 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { FavoritesIcon, TrendingIcon, StarIcon } from "@/components/icons";
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { cn, formatCurrency, formatNumber } from "@/lib/utils";
 import type { Product } from "@/types";
 import { Sparkles, Calendar, MessageCircle, MoreHorizontal } from "lucide-react";
 
@@ -26,6 +26,8 @@ interface ProductCardProps {
   onCheckboxChange?: (product: Product, checked: boolean) => void;
   // Quick actions
   showQuickActions?: boolean;
+  // Compact mode for smaller grid scales
+  compact?: boolean;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -38,6 +40,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   isSelected = false,
   onCheckboxChange,
   showQuickActions = true,
+  compact = false,
 }) => {
   const navigate = useNavigate();
   const discount = product.originalPrice
@@ -67,8 +70,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       onClick={() => onSelect?.(product)}
       data-testid="product-card"
     >
-      {/* Image Container - Melhoria #13: Hover reveal */}
-      <div className="relative aspect-square bg-muted overflow-hidden">
+      {/* Image Container */}
+      <div className={cn("relative bg-muted overflow-hidden", compact ? "aspect-[4/3]" : "aspect-square")}>
         <img
           src={product.imageUrl || "https://placehold.co/300x300/1a1a2e/ffffff?text=Produto"}
           alt={product.title}
@@ -82,7 +85,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Checkbox for Bulk Selection */}
         {showCheckbox && (
           <div
-            className="absolute top-3 left-3 z-20"
+            className={cn("absolute z-20", compact ? "top-2 left-2" : "top-3 left-3")}
             onClick={(e) => e.stopPropagation()}
           >
             <input
@@ -90,25 +93,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               checked={isSelected}
               onChange={(e) => onCheckboxChange?.(product, e.target.checked)}
               data-testid="product-checkbox"
-              className="h-5 w-5 rounded bg-white/90 dark:bg-black/50 backdrop-blur-sm border-2 cursor-pointer accent-tiktrend-primary"
+              className={cn(
+                "rounded bg-white/90 dark:bg-black/50 backdrop-blur-sm border-2 cursor-pointer accent-tiktrend-primary",
+                compact ? "h-4 w-4" : "h-5 w-5"
+              )}
             />
           </div>
         )}
 
         {/* Badges - Top Left (shifted when checkbox is shown) */}
-        <div className={`absolute top-3 ${showCheckbox ? 'left-10' : 'left-3'} flex flex-col gap-1.5`}>
+        <div className={cn(
+          "absolute flex flex-col gap-1",
+          compact ? "top-2" : "top-3",
+          showCheckbox ? (compact ? 'left-8' : 'left-10') : (compact ? 'left-2' : 'left-3')
+        )}>
           {product.isTrending && (
-            <Badge variant="tiktrend" className="gap-1 text-xs shadow-lg">
-              <TrendingIcon size={10} />
-              Em Alta
+            <Badge variant="tiktrend" className={cn("gap-1 shadow-lg", compact ? "text-[10px] px-1.5 py-0.5" : "text-xs")}>
+              <TrendingIcon size={compact ? 8 : 10} />
+              {!compact && "Em Alta"}
             </Badge>
           )}
           {discount > 0 && (
-            <Badge variant="destructive" className="text-xs font-bold shadow-lg">
+            <Badge variant="destructive" className={cn("font-bold shadow-lg", compact ? "text-[10px] px-1.5 py-0.5" : "text-xs")}>
               -{discount}%
             </Badge>
           )}
-          {product.hasFreeShipping && (
+          {product.hasFreeShipping && !compact && (
             <Badge variant="success" className="text-xs shadow-lg">
               Frete Grátis
             </Badge>
@@ -118,7 +128,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Favorite Button or Custom Action - Top Right */}
         {action ? (
           <div
-            className="absolute top-3 right-3 z-10"
+            className={cn("absolute z-10", compact ? "top-2 right-2" : "top-3 right-3")}
             onClick={(e) => e.stopPropagation()}
           >
             {action}
@@ -127,7 +137,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <Button
             variant="ghost"
             size="icon"
-            className={`absolute top-3 right-3 bg-white/90 dark:bg-black/50 backdrop-blur-sm hover:bg-white dark:hover:bg-black/70 h-9 w-9 rounded-full shadow-lg transition-all duration-300 ${isFavorite ? 'scale-110' : 'opacity-0 group-hover:opacity-100'}`}
+            className={cn(
+              "absolute bg-white/90 dark:bg-black/50 backdrop-blur-sm hover:bg-white dark:hover:bg-black/70 rounded-full shadow-lg transition-all duration-300",
+              compact ? "top-2 right-2 h-7 w-7" : "top-3 right-3 h-9 w-9",
+              isFavorite ? 'scale-110' : 'opacity-0 group-hover:opacity-100'
+            )}
             onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();
               onFavorite(product);
@@ -135,14 +149,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             data-testid="favorite-button"
           >
             <FavoritesIcon
-              size={18}
+              size={compact ? 14 : 18}
               className={`transition-colors ${isFavorite ? "fill-tiktrend-primary text-tiktrend-primary" : "text-muted-foreground"}`}
             />
           </Button>
         ) : null}
 
-        {/* Quick Actions Bar - Appears on Hover */}
-        {showQuickActions && (
+        {/* Quick Actions Bar - Appears on Hover (hidden in compact) */}
+        {showQuickActions && !compact && (
           <div className="absolute bottom-12 left-0 right-0 px-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
             <TooltipProvider>
               <div className="flex items-center justify-center gap-1 bg-black/70 backdrop-blur-sm rounded-full p-1">
@@ -217,64 +231,76 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         )}
 
-        {/* Quick Stats Overlay - Bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-          <div className="flex items-center justify-between text-white text-xs font-medium">
-            <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1">
-              <StarIcon size={12} filled className="text-yellow-400" />
-              <span>{product.productRating?.toFixed(1) || "N/A"}</span>
-            </div>
-            <div className="bg-black/50 backdrop-blur-sm rounded-full px-2 py-1">
-              {formatNumber(product.salesCount)} vendas
+        {/* Quick Stats Overlay - Bottom (hidden in compact) */}
+        {!compact && (
+          <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+            <div className="flex items-center justify-between text-white text-xs font-medium">
+              <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1">
+                <StarIcon size={12} filled className="text-yellow-400" />
+                <span>{product.productRating?.toFixed(1) || "N/A"}</span>
+              </div>
+              <div className="bg-black/50 backdrop-blur-sm rounded-full px-2 py-1">
+                {formatNumber(product.salesCount)} vendas
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Content */}
-      <CardContent className="p-4">
-        {/* Category */}
-        <div className="flex items-center gap-2 mb-2">
-          <Badge variant="secondary" size="sm" className="text-xs">
-            {product.category || "Sem categoria"}
-          </Badge>
-        </div>
+      <CardContent className={cn(compact ? "p-2.5" : "p-4")}>
+        {/* Category - hidden in compact */}
+        {!compact && (
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="secondary" size="sm" className="text-xs">
+              {product.category || "Sem categoria"}
+            </Badge>
+          </div>
+        )}
 
         {/* Title */}
         <h3
-          className="font-medium line-clamp-2 mb-3 min-h-[44px] text-sm leading-snug group-hover:text-tiktrend-primary transition-colors"
+          className={cn(
+            "font-medium line-clamp-2 group-hover:text-tiktrend-primary transition-colors",
+            compact ? "text-xs leading-tight mb-1.5 min-h-[32px]" : "mb-3 min-h-[44px] text-sm leading-snug"
+          )}
           data-testid="product-title"
         >
           {product.title}
         </h3>
 
         {/* Price */}
-        <div className="flex items-baseline gap-2 mb-3">
+        <div className={cn("flex items-baseline gap-1.5", compact ? "mb-1.5" : "mb-3")}>
           <span
-            className="text-xl font-bold text-tiktrend-primary"
+            className={cn("font-bold text-tiktrend-primary", compact ? "text-base" : "text-xl")}
             data-testid="product-price"
           >
             {formatCurrency(product.price)}
           </span>
           {product.originalPrice && (
-            <span className="text-xs text-muted-foreground line-through">
+            <span className={cn("text-muted-foreground line-through", compact ? "text-[10px]" : "text-xs")}>
               {formatCurrency(product.originalPrice)}
             </span>
           )}
         </div>
 
-        {/* Stats Row */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t">
-          <div className="flex items-center gap-1.5">
-            <StarIcon size={14} filled className="text-yellow-500" />
+        {/* Stats Row - simplified in compact mode */}
+        <div className={cn(
+          "flex items-center justify-between text-muted-foreground border-t",
+          compact ? "text-[10px] pt-1.5" : "text-xs pt-3"
+        )}>
+          <div className="flex items-center gap-1">
+            <StarIcon size={compact ? 10 : 14} filled className="text-yellow-500" />
             <span className="font-medium">{product.productRating?.toFixed(1) || "N/A"}</span>
-            <span className="text-muted-foreground/60">({formatNumber(product.reviewsCount)})</span>
+            {!compact && <span className="text-muted-foreground/60">({formatNumber(product.reviewsCount)})</span>}
           </div>
-          <span className="font-medium" data-testid="product-sales">{formatNumber(product.salesCount)} vendas</span>
+          <span className="font-medium" data-testid="product-sales">
+            {formatNumber(product.salesCount)} {compact ? "" : "vendas"}
+          </span>
         </div>
 
-        {/* Sales Trend - Melhoria #22: Visual de tendência */}
-        {product.sales7d > 0 && (
+        {/* Sales Trend - hidden in compact mode */}
+        {!compact && product.sales7d > 0 && (
           <div className="mt-3 pt-3 border-t">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Vendas 7d</span>
@@ -294,3 +320,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     </Card>
   );
 };
+
+// Memoized ProductCard to prevent unnecessary re-renders
+// Only re-renders when product data, favorite status, or selection changes
+export const MemoizedProductCard = React.memo(ProductCard, (prevProps, nextProps) => {
+  return (
+    prevProps.product.id === nextProps.product.id &&
+    prevProps.product.price === nextProps.product.price &&
+    prevProps.product.salesCount === nextProps.product.salesCount &&
+    prevProps.isFavorite === nextProps.isFavorite &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.compact === nextProps.compact
+  );
+});

@@ -20,7 +20,16 @@ export type NotificationType =
   | "challenge_required"
   | "quota_warning"
   | "error"
-  | "info";
+  | "info"
+  // Bot automation notifications
+  | "bot_task_started"
+  | "bot_task_completed"
+  | "bot_task_failed"
+  | "bot_task_progress"
+  | "bot_stats_update"
+  | "bot_screenshot"
+  | "bot_worker_started"
+  | "bot_worker_stopped";
 
 export interface WebSocketNotification {
   id: string;

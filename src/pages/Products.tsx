@@ -14,6 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { ProductsIcon, ExportIcon, StarIcon, TrendingIcon } from "@/components/icons";
 import { useFavoritesStore } from "@/stores";
@@ -24,7 +30,7 @@ import { BulkSelectionBar } from "@/components/product/bulk";
 import { useBulkActionsStore, useProductSelection } from "@/stores/bulkActionsStore";
 import { analytics } from "@/lib/analytics";
 import { cn, formatCurrency, formatNumber } from "@/lib/utils";
-import { Grid3X3, List, X, Heart, Download, RefreshCw, Info, ExternalLink, BarChart3 } from "lucide-react";
+import { Grid3X3, Grid2X2, LayoutGrid, List, X, Heart, Download, RefreshCw, Info, ExternalLink, BarChart3, Rows3, Rows4 } from "lucide-react";
 import { getProductHistory } from "@/services/products";
 
 import { getProducts } from "@/services/products";
@@ -48,6 +54,16 @@ const SORT_OPTIONS = [
 
 // View modes
 type ViewMode = "grid" | "list";
+
+// Grid scales - número de colunas
+type GridScale = "compact" | "small" | "medium" | "large";
+
+const GRID_SCALE_CONFIG = {
+  compact: { label: "Compacto", cols: "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8", icon: Rows4 },
+  small: { label: "Pequeno", cols: "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6", icon: Rows3 },
+  medium: { label: "Médio", cols: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", icon: Grid2X2 },
+  large: { label: "Grande", cols: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3", icon: LayoutGrid },
+} as const;
 
 // Default categories (fallback)
 const DEFAULT_CATEGORIES: CategoryInfo[] = [
@@ -437,6 +453,14 @@ export const Products: React.FC = () => {
     return "grid";
   });
 
+  // Grid scale with localStorage persistence
+  const [gridScale, setGridScale] = React.useState<GridScale>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("products-grid-scale") as GridScale) || "medium";
+    }
+    return "medium";
+  });
+
   // Bulk selection state
   const [selectedProducts, setSelectedProducts] = React.useState<Set<string>>(new Set());
   const [showExportModal, setShowExportModal] = React.useState(false);
@@ -476,6 +500,11 @@ export const Products: React.FC = () => {
   React.useEffect(() => {
     localStorage.setItem("products-view-mode", viewMode);
   }, [viewMode]);
+
+  // Persist grid scale
+  React.useEffect(() => {
+    localStorage.setItem("products-grid-scale", gridScale);
+  }, [gridScale]);
 
   // Build API sort params
   const getSortParams = () => {
@@ -1050,7 +1079,37 @@ export const Products: React.FC = () => {
               <span className="text-sm">{t("products.select_all")}</span>
             </label>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {/* Grid Scale Selector - Only visible in grid mode */}
+              {viewMode === "grid" && (
+                <div className="flex items-center gap-1 border rounded-lg p-1">
+                  {(Object.entries(GRID_SCALE_CONFIG) as [GridScale, typeof GRID_SCALE_CONFIG[GridScale]][]).map(([key, config]) => {
+                    const Icon = config.icon;
+                    return (
+                      <TooltipProvider key={key}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => setGridScale(key)}
+                              className={cn(
+                                "p-1.5 rounded transition-colors",
+                                gridScale === key ? "bg-accent" : "hover:bg-accent/50"
+                              )}
+                              data-testid={`grid-scale-${key}`}
+                            >
+                              <Icon size={14} />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-xs">
+                            {config.label}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* View Mode Toggle */}
               <div className="flex items-center gap-1 border rounded-lg p-1">
                 <button
@@ -1130,6 +1189,7 @@ export const Products: React.FC = () => {
                 selectedProducts={selectedProducts}
                 onSelectProduct={handleSelectProduct}
                 onEndReached={loadMoreProducts}
+                gridScale={gridScale}
               />
             </div>
           ) : (

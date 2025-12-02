@@ -5,18 +5,16 @@ Purchase credits with MercadoPago integration
 
 import uuid
 from datetime import datetime, timezone
-from typing import Optional
 from decimal import Decimal
-
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from pydantic import BaseModel, Field, EmailStr
+from typing import Optional
 
 from api.database.connection import get_db
+from api.middleware.auth import get_current_user, get_current_user_optional
 from api.services.accounting import AccountingService
 from api.services.mercadopago import MercadoPagoService
-from api.middleware.auth import get_current_user, get_current_user_optional
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, EmailStr, Field
 from shared.config import settings
-
 
 router = APIRouter()
 
@@ -290,11 +288,13 @@ async def use_credits(
     Use credits for an operation.
     Consumes bonus credits first, then regular credits.
     """
-    from sqlalchemy import select, update
-    from api.database.models import User
-    from api.database.accounting_models import FinancialTransaction, TransactionType
     from datetime import datetime, timezone
-    
+
+    from api.database.accounting_models import (FinancialTransaction,
+                                                TransactionType)
+    from api.database.models import User
+    from sqlalchemy import select, update
+
     # Get current user balance
     result = await db.execute(
         select(User.credits_balance, User.bonus_balance, User.bonus_expires_at)
@@ -347,9 +347,10 @@ async def use_credits(
         user_id=current_user["id"],
         transaction_type=TransactionType.CREDIT_USAGE.value,
         credits_amount=-request.amount,
+        amount_brl=0,  # Uso de créditos não envolve dinheiro diretamente
         operation_type=request.operation,
         description=f"Uso de créditos: {request.operation}",
-        resource_id=request.resource_id,
+        extra_data={"resource_id": request.resource_id} if request.resource_id else {},
     )
     db.add(transaction)
     await db.commit()
@@ -380,10 +381,11 @@ async def add_bonus_credits(
     """
     Add bonus credits to a user (admin only).
     """
-    from sqlalchemy import select, update
+    from datetime import datetime, timedelta, timezone
+
     from api.database.models import User
-    from datetime import datetime, timezone, timedelta
-    
+    from sqlalchemy import select, update
+
     # Check if current user is admin
     if not current_user.get("is_admin", False):
         raise HTTPException(
@@ -423,8 +425,8 @@ async def get_purchase_status(
     Check payment status for a credit purchase.
     Frontend polls this after PIX/boleto creation.
     """
-    from sqlalchemy import select
     from api.database.accounting_models import FinancialTransaction
+    from sqlalchemy import select
     
     result = await db.execute(
         select(FinancialTransaction)
@@ -455,8 +457,9 @@ async def get_purchase_history(
     db = Depends(get_db)
 ):
     """Get user's credit purchase and usage history"""
+    from api.database.accounting_models import (FinancialTransaction,
+                                                TransactionType)
     from sqlalchemy import select
-    from api.database.accounting_models import FinancialTransaction, TransactionType
     
     result = await db.execute(
         select(FinancialTransaction)
@@ -495,9 +498,9 @@ async def mercadopago_credits_webhook(
     Handle MercadoPago webhook for credit purchases.
     Called when payment status changes.
     """
-    from sqlalchemy import select, update
     from api.database.accounting_models import FinancialTransaction
     from api.database.models import User
+    from sqlalchemy import select, update
     
     if data.get("type") != "payment":
         return {"status": "ignored"}
@@ -577,7 +580,8 @@ async def _store_pending_purchase(
     payment_id: str,
 ):
     """Store a pending credit purchase transaction"""
-    from api.database.accounting_models import FinancialTransaction, TransactionType, PaymentStatus
+    from api.database.accounting_models import (FinancialTransaction,
+                                                PaymentStatus, TransactionType)
     
     transaction = FinancialTransaction(
         id=uuid.uuid4(),

@@ -11,7 +11,7 @@ Features:
 - Analytics em tempo real
 - Multi-canal (WhatsApp, Instagram, TikTok)
 - Escalonamento para humano
-- Memória de contexto
+- Memória de contexto (Redis persistente)
 - Automações n8n integradas
 """
 
@@ -24,6 +24,8 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
+# Import do context store Redis
+from modules.chatbot.context_store import context_store
 from pydantic import BaseModel, Field
 
 # Import do orchestrator de automações
@@ -823,25 +825,62 @@ class ProfessionalSellerBot:
             logger.warning("Erro ao disparar automações: %s", e)
     
     # ========================================
-    # CONTEXT MANAGEMENT
+    # CONTEXT MANAGEMENT (Redis + In-Memory Fallback)
     # ========================================
     
     async def _get_or_create_context(
         self,
         message: IncomingMessage
     ) -> ConversationContext:
-        """Obtém contexto existente ou cria novo."""
-        context_key = f"{message.channel.value}:{message.sender_id}"
+        """
+        Obtém contexto existente ou cria novo.
         
+        Usa Redis como storage primário com fallback para memória.
+        """
+        channel = message.channel.value
+        user_id = message.sender_id
+        context_key = f"{channel}:{user_id}"
+        
+        # Tentar Redis primeiro
+        try:
+            stored = await context_store.get(channel, user_id)
+            if stored:
+                # Reconstruir ConversationContext do dict
+                # Converter channel string de volta para enum
+                stored["channel"] = MessageChannel(stored["channel"])
+                # Converter enums de string
+                if "stage" in stored:
+                    stored["stage"] = ConversationStage(stored["stage"])
+                if "lead_temperature" in stored:
+                    stored["lead_temperature"] = LeadTemperature(
+                        stored["lead_temperature"]
+                    )
+                # Converter datetimes
+                for dt_field in [
+                    "last_interaction", "created_at", "updated_at"
+                ]:
+                    if dt_field in stored and isinstance(stored[dt_field], str):
+                        stored["last_interaction"] = datetime.fromisoformat(
+                            stored[dt_field]
+                        )
+                
+                context = ConversationContext(**stored)
+                self._contexts[context_key] = context  # Cache local
+                return context
+        except Exception as e:
+            logger.warning(f"Error loading context from Redis: {e}")
+        
+        # Fallback para memória local
         if context_key in self._contexts:
             context = self._contexts[context_key]
             
             # Verificar se expirou (30 min de inatividade)
-            if datetime.utcnow() - context.last_interaction > timedelta(minutes=30):
+            inactivity = datetime.utcnow() - context.last_interaction
+            if inactivity > timedelta(minutes=30):
                 # Criar novo contexto mas manter info do usuário
                 old_context = context
                 context = ConversationContext(
-                    user_id=message.sender_id,
+                    user_id=user_id,
                     channel=message.channel,
                     user_name=old_context.user_name,
                     user_phone=old_context.user_phone,
@@ -849,7 +888,7 @@ class ProfessionalSellerBot:
                 )
         else:
             context = ConversationContext(
-                user_id=message.sender_id,
+                user_id=user_id,
                 channel=message.channel,
                 user_name=message.sender_name,
                 user_phone=message.sender_phone,
@@ -859,10 +898,31 @@ class ProfessionalSellerBot:
         return context
     
     async def _save_context(self, context: ConversationContext):
-        """Salva contexto (em produção, persistir em Redis/DB)."""
+        """
+        Salva contexto no Redis e cache local.
+        """
         context.updated_at = datetime.utcnow()
         context_key = f"{context.channel.value}:{context.user_id}"
+        
+        # Atualizar cache local
         self._contexts[context_key] = context
+        
+        # Persistir no Redis
+        try:
+            # Serializar para dict (Pydantic v2)
+            ctx_dict = context.model_dump(mode="json")
+            # Converter enums para string
+            ctx_dict["channel"] = context.channel.value
+            ctx_dict["stage"] = context.stage.value
+            ctx_dict["lead_temperature"] = context.lead_temperature.value
+            
+            await context_store.set(
+                context.channel.value,
+                context.user_id,
+                ctx_dict
+            )
+        except Exception as e:
+            logger.warning(f"Error saving context to Redis: {e}")
     
     def _update_lead_temperature(
         self,

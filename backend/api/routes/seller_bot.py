@@ -11,31 +11,22 @@ Features:
 """
 
 import logging
-from typing import Optional, Dict, Any, List
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
-from pydantic import BaseModel, Field
-
-from modules.chatbot.professional_seller_bot import (
-    ProfessionalSellerBot,
-    IncomingMessage,
-    BotResponse,
-    ConversationContext,
-    MessageChannel,
-    ConversationStage,
-    LeadTemperature,
-    create_seller_bot,
-)
-from modules.chatbot.channel_integrations import (
-    ChannelRouter,
-    ChatwootAdapter,
-    EvolutionAdapter,
-    create_chatwoot_adapter,
-    create_evolution_adapter,
-)
-from shared.config import settings
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from integrations.n8n import N8nClient
+from modules.chatbot.channel_integrations import (ChannelRouter,
+                                                  create_chatwoot_adapter,
+                                                  create_evolution_adapter)
+from modules.chatbot.professional_seller_bot import (ConversationStage,
+                                                     IncomingMessage,
+                                                     LeadTemperature,
+                                                     MessageChannel,
+                                                     ProfessionalSellerBot,
+                                                     create_seller_bot)
+from pydantic import BaseModel, Field
+from shared.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -77,12 +68,15 @@ def get_channel_router() -> ChannelRouter:
             _channel_router.register_adapter(MessageChannel.WHATSAPP, chatwoot)
         
         if settings.EVOLUTION_API_KEY:
+            instance = getattr(settings, 'EVOLUTION_INSTANCE', 'didin-bot')
             evolution = create_evolution_adapter(
                 api_url=settings.EVOLUTION_API_URL,
                 api_key=settings.EVOLUTION_API_KEY,
-                instance_name=getattr(settings, 'EVOLUTION_INSTANCE', 'didin-bot'),
+                instance_name=instance,
             )
-            _channel_router.register_adapter(MessageChannel.WHATSAPP, evolution)
+            _channel_router.register_adapter(
+                MessageChannel.WHATSAPP, evolution
+            )
     
     return _channel_router
 
@@ -249,21 +243,186 @@ async def evolution_webhook(
 @router.post("/webhook/instagram")
 async def instagram_webhook(request: Request):
     """
-    Recebe webhooks do Instagram.
+    Recebe webhooks do Instagram Messaging API.
     
-    Inclui verificação de hub challenge.
+    Inclui verificação de hub challenge e processamento de mensagens.
+    
+    Eventos suportados:
+    - messages: Mensagens recebidas
+    - messaging_postbacks: Cliques em botões
+    - messaging_reactions: Reações a mensagens
     """
-    # Hub verification
+    # Hub verification (GET request transformado em POST)
     params = request.query_params
     if "hub.mode" in params:
-        if params.get("hub.verify_token") == settings.INSTAGRAM_VERIFY_TOKEN:
+        verify_token = getattr(
+            settings, 'INSTAGRAM_VERIFY_TOKEN', 'default_token'
+        )
+        if params.get("hub.verify_token") == verify_token:
             return int(params.get("hub.challenge", 0))
         raise HTTPException(403, "Invalid verify token")
     
-    # TODO: Implementar processamento similar aos outros
-    payload = await request.json()
-    logger.info(f"Instagram webhook: {payload}")
-    return {"status": "received"}
+    # Processar webhook
+    try:
+        payload = await request.json()
+        logger.info(f"Instagram webhook received: {payload}")
+        
+        # Validar estrutura do payload
+        if "object" not in payload or payload["object"] != "instagram":
+            logger.warning("Invalid Instagram webhook payload")
+            return {"status": "ignored", "reason": "not_instagram"}
+        
+        entries = payload.get("entry", [])
+        if not entries:
+            return {"status": "ignored", "reason": "no_entries"}
+        
+        # Processar cada entrada
+        for entry in entries:
+            messaging = entry.get("messaging", [])
+            
+            for message_event in messaging:
+                # Extrair dados do remetente
+                sender_id = message_event.get("sender", {}).get("id")
+                if not sender_id:
+                    continue
+                
+                # Determinar tipo de evento
+                if "message" in message_event:
+                    # Mensagem de texto ou mídia
+                    msg_data = message_event["message"]
+                    
+                    # Ignorar mensagens echo (enviadas por nós)
+                    if msg_data.get("is_echo"):
+                        continue
+                    
+                    # Extrair conteúdo
+                    text = msg_data.get("text", "")
+                    
+                    # Verificar anexos (imagens, áudio, etc)
+                    attachments = msg_data.get("attachments", [])
+                    media_url = None
+                    media_type = None
+                    if attachments:
+                        first_att = attachments[0]
+                        media_type = first_att.get("type")
+                        media_url = first_att.get("payload", {}).get("url")
+                    
+                    # Criar mensagem para o bot
+                    incoming = IncomingMessage(
+                        channel=MessageChannel.INSTAGRAM,
+                        sender_id=sender_id,
+                        content=text,
+                        media_url=media_url,
+                        media_type=media_type,
+                        raw_payload=message_event,
+                    )
+                    
+                    # Processar com o bot
+                    bot = get_bot()
+                    responses = await bot.process_message(incoming)
+                    
+                    # Enviar respostas via Instagram API
+                    for response in responses:
+                        await _send_instagram_message(
+                            recipient_id=sender_id,
+                            text=response.text,
+                            quick_replies=response.quick_replies,
+                        )
+                
+                elif "postback" in message_event:
+                    # Clique em botão
+                    postback = message_event["postback"]
+                    payload_text = postback.get("payload", "")
+                    
+                    incoming = IncomingMessage(
+                        channel=MessageChannel.INSTAGRAM,
+                        sender_id=sender_id,
+                        content=payload_text,
+                        raw_payload=message_event,
+                    )
+                    
+                    bot = get_bot()
+                    responses = await bot.process_message(incoming)
+                    
+                    for response in responses:
+                        await _send_instagram_message(
+                            recipient_id=sender_id,
+                            text=response.text,
+                        )
+                
+                elif "reaction" in message_event:
+                    # Reação - apenas logar
+                    reaction = message_event["reaction"]
+                    logger.info(
+                        f"Instagram reaction from {sender_id}: "
+                        f"{reaction.get('emoji', 'unknown')}"
+                    )
+        
+        return {"status": "processed"}
+        
+    except Exception as e:
+        logger.exception(f"Error processing Instagram webhook: {e}")
+        # Retornar 200 para evitar reenvios
+        return {"status": "error", "message": str(e)}
+
+
+async def _send_instagram_message(
+    recipient_id: str,
+    text: str,
+    quick_replies: list[str] | None = None,
+):
+    """
+    Envia mensagem via Instagram Messaging API.
+    
+    Requer INSTAGRAM_ACCESS_TOKEN configurado.
+    """
+    import httpx
+    
+    access_token = getattr(settings, 'INSTAGRAM_ACCESS_TOKEN', None)
+    if not access_token:
+        logger.warning("INSTAGRAM_ACCESS_TOKEN not configured")
+        return
+    
+    page_id = getattr(settings, 'INSTAGRAM_PAGE_ID', None)
+    if not page_id:
+        logger.warning("INSTAGRAM_PAGE_ID not configured")
+        return
+    
+    url = f"https://graph.facebook.com/v18.0/{page_id}/messages"
+    
+    message_data: dict = {"text": text}
+    
+    # Adicionar quick replies se houver
+    if quick_replies:
+        message_data["quick_replies"] = [
+            {"content_type": "text", "title": qr, "payload": qr}
+            for qr in quick_replies[:13]  # Limite de 13 quick replies
+        ]
+    
+    payload = {
+        "recipient": {"id": recipient_id},
+        "message": message_data,
+    }
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                url,
+                json=payload,
+                params={"access_token": access_token},
+                timeout=10.0,
+            )
+            
+            if response.status_code != 200:
+                logger.error(
+                    f"Instagram send failed: {response.status_code} "
+                    f"{response.text}"
+                )
+            else:
+                logger.debug(f"Instagram message sent to {recipient_id}")
+                
+    except Exception as e:
+        logger.error(f"Error sending Instagram message: {e}")
 
 
 # ============================================
@@ -292,7 +451,9 @@ async def send_direct_message(
             "tiktok": MessageChannel.TIKTOK,
             "telegram": MessageChannel.TELEGRAM,
         }
-        channel = channel_map.get(request.channel.lower(), MessageChannel.WEBCHAT)
+        channel = channel_map.get(
+            request.channel.lower(), MessageChannel.WEBCHAT
+        )
         
         # Criar mensagem
         message = IncomingMessage(
@@ -312,7 +473,10 @@ async def send_direct_message(
                 {
                     "content": r.content,
                     "quick_replies": r.quick_replies,
-                    "intent": r.intent_detected.value if r.intent_detected else None,
+                    "intent": (
+                        r.intent_detected.value
+                        if r.intent_detected else None
+                    ),
                     "should_handoff": r.should_handoff,
                 }
                 for r in responses
@@ -350,8 +514,9 @@ async def list_conversations(
                 continue
             if stage and ctx.stage.value != stage:
                 continue
-            if lead_temperature and ctx.lead_temperature.value != lead_temperature:
-                continue
+            if lead_temperature:
+                if ctx.lead_temperature.value != lead_temperature:
+                    continue
             
             conversations.append({
                 "conversation_id": ctx.conversation_id,
@@ -485,16 +650,20 @@ async def get_bot_stats(
             key=lambda x: x["count"],
             reverse=True
         )[:10]
-        
+
+        # Calcular totais
+        total_messages = sum(c.message_count for c in contexts)
+        handoffs = sum(
+            1 for c in contexts
+            if c.stage == ConversationStage.HUMAN_HANDOFF
+        )
+
         return BotStatsResponse(
             total_conversations=total,
             active_conversations=active,
-            messages_today=sum(c.message_count for c in contexts),  # Simplificado
-            handoffs_today=sum(
-                1 for c in contexts 
-                if c.stage == ConversationStage.HUMAN_HANDOFF
-            ),
-            avg_response_time_ms=250.0,  # Mock
+            messages_today=total_messages,
+            handoffs_today=handoffs,
+            avg_response_time_ms=250.0,  # TODO: calcular real
             top_intents=top_intents,
             lead_distribution=lead_dist,
         )
@@ -534,7 +703,7 @@ async def get_funnel_stats(
     stages = {}
     for stage in ConversationStage:
         stages[stage.value] = sum(
-            1 for c in bot._contexts.values() 
+            1 for c in bot._contexts.values()
             if c.stage == stage
         )
     
@@ -590,7 +759,9 @@ async def _process_message(
         # Determinar recipient
         if message.channel == MessageChannel.WEBCHAT:
             # Para Chatwoot, usar conversation_id
-            recipient = message.metadata.get("conversation_id", message.sender_id)
+            recipient = message.metadata.get(
+                "conversation_id", message.sender_id
+            )
         else:
             recipient = message.sender_id
         
@@ -598,7 +769,9 @@ async def _process_message(
         for response in responses:
             # Aguardar delay se configurado
             if response.delay_ms > 0:
-                await router.send_typing(message.channel, recipient, response.delay_ms)
+                await router.send_typing(
+                    message.channel, recipient, response.delay_ms
+                )
             
             await router.send_response(message.channel, response, recipient)
             
@@ -622,9 +795,12 @@ async def _process_message(
 @router.get("/health")
 async def health_check():
     """Health check do seller bot."""
+    adapters_count = (
+        len(_channel_router._adapters) if _channel_router else 0
+    )
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "bot_active": _bot_instance is not None,
-        "adapters_registered": len(_channel_router._adapters) if _channel_router else 0,
+        "adapters_registered": adapters_count,
     }

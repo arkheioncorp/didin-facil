@@ -3,26 +3,23 @@ TikTok Routes
 Upload de vídeos para TikTok via Selenium + API Scraping
 """
 
-from fastapi import (
-    APIRouter, Depends, HTTPException,
-    UploadFile, File, Form, Query, BackgroundTasks
-)
-from pydantic import BaseModel, Field
-from typing import Optional, List
-import shutil
 import os
+import shutil
 from datetime import datetime
+from typing import List, Optional
 
-from api.middleware.auth import get_current_user
-from vendor.tiktok.client import (
-    TikTokClient, TikTokConfig, VideoConfig, Privacy
-)
-from shared.config import settings
-from integrations.tiktok_hub import get_tiktok_hub
-from api.services.tiktok_session import TikTokSessionStatus
+from api.middleware.auth import get_current_user, get_current_user_optional
 from api.services.cache import CacheService
-from scraper.tiktok.api_scraper import TikTokAPIScraper
+from api.services.tiktok_session import TikTokSessionStatus
+from fastapi import (APIRouter, BackgroundTasks, Depends, File, Form,
+                     HTTPException, Query, UploadFile)
+from integrations.tiktok_hub import get_tiktok_hub
+from pydantic import BaseModel, Field
 from scraper.cache import ProductCacheManager
+from scraper.tiktok.api_scraper import TikTokAPIScraper
+from shared.config import settings
+from vendor.tiktok.client import (Privacy, TikTokClient, TikTokConfig,
+                                  VideoConfig)
 
 router = APIRouter()
 hub = get_tiktok_hub()
@@ -82,8 +79,13 @@ async def create_session(
 
 
 @router.get("/sessions")
-async def list_sessions(current_user=Depends(get_current_user)):
-    """Lista sessões TikTok do usuário."""
+async def list_sessions(
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """Lista sessões TikTok do usuário. Funciona em modo trial."""
+    if not current_user:
+        return {"sessions": []}
+    
     sessions = await session_manager.list_sessions(str(current_user["id"]))
     
     return {

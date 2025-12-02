@@ -7,7 +7,6 @@ import uuid
 from typing import Optional
 
 import httpx
-
 from api.database.connection import database
 from shared.config import settings
 
@@ -143,6 +142,61 @@ class MercadoPagoService:
                 "ticket_url": transaction_data.get("ticket_url")
             }
 
+    async def create_subscription_preference(
+        self,
+        title: str,
+        price: float,
+        user_email: str,
+        external_reference: str,
+        frequency: int = 1,
+        frequency_type: str = "months"
+    ) -> dict:
+        """Create a subscription preference (preapproval)"""
+        data = {
+            "reason": title,
+            "auto_recurring": {
+                "frequency": frequency,
+                "frequency_type": frequency_type,
+                "transaction_amount": price,
+                "currency_id": "BRL"
+            },
+            "payer_email": user_email,
+            "back_url": f"{settings.FRONTEND_URL}/subscription/success",
+            "external_reference": external_reference,
+            "status": "pending"
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/preapproval",
+                headers=self.headers,
+                json=data
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_subscription(self, preapproval_id: str) -> dict:
+        """Get subscription details"""
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.base_url}/preapproval/{preapproval_id}",
+                headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def cancel_subscription(self, preapproval_id: str) -> dict:
+        """Cancel a subscription"""
+        data = {"status": "cancelled"}
+        async with httpx.AsyncClient() as client:
+            response = await client.put(
+                f"{self.base_url}/preapproval/{preapproval_id}",
+                headers=self.headers,
+                json=data
+            )
+            response.raise_for_status()
+            return response.json()
+
     async def log_event(self, event_type: str, data: dict):
         """Log payment event to database"""
         await self.db.execute(
@@ -183,8 +237,8 @@ class MercadoPagoService:
             if hasattr(settings, 'SMTP_HOST') and settings.SMTP_HOST:
                 # Envio via SMTP
                 import smtplib
-                from email.mime.text import MIMEText
                 from email.mime.multipart import MIMEMultipart
+                from email.mime.text import MIMEText
                 
                 subject = f'🎉 {credits_amount} créditos adicionados!'
                 if includes_license:
@@ -201,7 +255,8 @@ class MercadoPagoService:
                     <h2>Seus créditos foram adicionados! 🚀</h2>
                     {license_msg}
                     <p>Olá!</p>
-                    <p>Confirmamos a adição de <strong>{credits_amount} créditos</strong> 
+                    <p>Confirmamos a adição de 
+                       <strong>{credits_amount} créditos</strong> 
                        à sua conta Didin Fácil.</p>
                     <p>Você já pode usar para:</p>
                     <ul>
@@ -224,27 +279,37 @@ class MercadoPagoService:
                     if getattr(settings, 'SMTP_TLS', True):
                         server.starttls()
                     if settings.SMTP_USER and settings.SMTP_PASSWORD:
-                        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                        server.login(
+                            settings.SMTP_USER,
+                            settings.SMTP_PASSWORD
+                        )
                     server.send_message(msg)
                 
                 logger.info(f"Email de créditos enviado para {email}")
                 
-            elif hasattr(settings, 'RESEND_API_KEY') and settings.RESEND_API_KEY:
+            elif (hasattr(settings, 'RESEND_API_KEY') and
+                  settings.RESEND_API_KEY):
                 # Envio via Resend (alternativa moderna)
                 async with httpx.AsyncClient() as client:
                     await client.post(
                         "https://api.resend.com/emails",
                         headers={
-                            "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                            "Authorization": (
+                                f"Bearer {settings.RESEND_API_KEY}"
+                            ),
                             "Content-Type": "application/json",
                         },
                         json={
                             "from": "Didin Fácil <noreply@didinfacil.com>",
                             "to": [email],
-                            "subject": f"🎉 {credits_amount} créditos adicionados!",
+                            "subject": (
+                                f"🎉 {credits_amount} créditos adicionados!"
+                            ),
                             "html": f"""
                             <h2>Seus créditos foram adicionados! 🚀</h2>
-                            <p>{credits_amount} créditos disponíveis na sua conta.</p>
+                            <p>
+                                {credits_amount} créditos disponíveis.
+                            </p>
                             """,
                         },
                     )
@@ -252,7 +317,7 @@ class MercadoPagoService:
             else:
                 # Log apenas se não houver serviço configurado
                 logger.info(
-                    f"[EMAIL SIM] Créditos adicionados: {email} +{credits_amount}"
+                    f"[EMAIL SIM] Créditos: {email} +{credits_amount}"
                 )
                 
         except Exception as e:

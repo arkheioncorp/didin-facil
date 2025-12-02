@@ -8,12 +8,10 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from openai import AsyncOpenAI
-
 from api.database.connection import database, get_db
-from api.services.cache import CacheService
 from api.services.accounting import AccountingService
-
+from api.services.cache import CacheService
+from openai import AsyncOpenAI
 
 # OpenAI settings from environment
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
@@ -261,15 +259,22 @@ Sempre responda APENAS com o texto da copy, sem explicações ou comentários ad
         user_id: str,
         product_id: str,
         product_title: str,
-        copy_result: dict
+        copy_result: dict,
+        cached: bool = False,
+        credits_used: int = 1
     ):
         """Save generated copy to user history"""
         async with get_db() as db:
             await db.execute(
                 """
-                INSERT INTO copy_history 
-                (id, user_id, product_id, product_title, copy_type, tone, copy_text, created_at)
-                VALUES (:id, :user_id, :product_id, :product_title, :copy_type, :tone, :copy_text, :created_at)
+                INSERT INTO copy_history
+                    (id, user_id, product_id, product_title, copy_type,
+                     platform, tone, copy_text, word_count, character_count,
+                     cached, credits_used, created_at)
+                VALUES
+                    (:id, :user_id, :product_id, :product_title, :copy_type,
+                     :platform, :tone, :copy_text, :word_count, :character_count,
+                     :cached, :credits_used, :created_at)
                 """,
                 {
                     "id": copy_result["id"],
@@ -277,29 +282,155 @@ Sempre responda APENAS com o texto da copy, sem explicações ou comentários ad
                     "product_id": product_id,
                     "product_title": product_title,
                     "copy_type": copy_result["copy_type"],
+                    "platform": copy_result.get("platform", "instagram"),
                     "tone": copy_result["tone"],
                     "copy_text": copy_result["copy_text"],
+                    "word_count": copy_result.get("word_count", 0),
+                    "character_count": copy_result.get("character_count", 0),
+                    "cached": cached,
+                    "credits_used": credits_used,
                     "created_at": copy_result["created_at"]
                 }
             )
+
+            # Atualizar preferências do usuário com analytics
+            await self._update_user_copy_analytics(db, user_id, copy_result)
+
+    async def _update_user_copy_analytics(
+        self, db, user_id: str, copy_result: dict
+    ):
+        """Atualiza analytics de uso do usuário"""
+        await db.execute(
+            """
+            INSERT INTO user_copy_preferences
+                (user_id, total_copies_generated, last_copy_generated_at,
+                 most_used_copy_type, most_used_tone)
+            VALUES (:user_id, 1, NOW(), :copy_type, :tone)
+            ON CONFLICT (user_id) DO UPDATE SET
+                total_copies_generated =
+                    user_copy_preferences.total_copies_generated + 1,
+                last_copy_generated_at = NOW(),
+                most_used_copy_type = :copy_type,
+                most_used_tone = :tone,
+                updated_at = NOW()
+            """,
+            {
+                "user_id": user_id,
+                "copy_type": copy_result["copy_type"],
+                "tone": copy_result["tone"]
+            }
+        )
+    
+    async def get_user_preferences(self, user_id: str) -> dict:
+        """Obtém preferências de Copy AI do usuário"""
+        async with get_db() as db:
+            result = await db.fetch_one(
+                """
+                SELECT * FROM user_copy_preferences WHERE user_id = :user_id
+                """,
+                {"user_id": user_id}
+            )
+            
+            if result:
+                return dict(result)
+            
+            # Retorna defaults se não existir
+            return {
+                "default_copy_type": "tiktok_hook",
+                "default_tone": "urgent",
+                "default_platform": "instagram",
+                "default_language": "pt-BR",
+                "include_emoji": True,
+                "include_hashtags": True,
+                "total_copies_generated": 0
+            }
+    
+    async def update_user_preferences(self, user_id: str, preferences: dict) -> dict:
+        """Atualiza preferências de Copy AI do usuário"""
+        async with get_db() as db:
+            # Upsert
+            await db.execute(
+                """
+                INSERT INTO user_copy_preferences (user_id, default_copy_type, default_tone, default_platform, 
+                                                   default_language, include_emoji, include_hashtags)
+                VALUES (:user_id, :copy_type, :tone, :platform, :language, :emoji, :hashtags)
+                ON CONFLICT (user_id) DO UPDATE SET
+                    default_copy_type = COALESCE(:copy_type, user_copy_preferences.default_copy_type),
+                    default_tone = COALESCE(:tone, user_copy_preferences.default_tone),
+                    default_platform = COALESCE(:platform, user_copy_preferences.default_platform),
+                    default_language = COALESCE(:language, user_copy_preferences.default_language),
+                    include_emoji = COALESCE(:emoji, user_copy_preferences.include_emoji),
+                    include_hashtags = COALESCE(:hashtags, user_copy_preferences.include_hashtags),
+                    updated_at = NOW()
+                """,
+                {
+                    "user_id": user_id,
+                    "copy_type": preferences.get("default_copy_type"),
+                    "tone": preferences.get("default_tone"),
+                    "platform": preferences.get("default_platform"),
+                    "language": preferences.get("default_language"),
+                    "emoji": preferences.get("include_emoji"),
+                    "hashtags": preferences.get("include_hashtags")
+                }
+            )
+            
+            return await self.get_user_preferences(user_id)
     
     async def get_history(
         self,
         user_id: str,
         limit: int = 50,
-        offset: int = 0
+        offset: int = 0,
+        copy_type: Optional[str] = None,
+        platform: Optional[str] = None
     ) -> List[dict]:
-        """Get user's copy generation history"""
+        """Get user's copy generation history with optional filters"""
         async with get_db() as db:
-            results = await db.fetch_all(
-                """
-                SELECT id, product_id, product_title, copy_type, tone, copy_text, created_at
+            query = """
+                SELECT id, product_id, product_title, copy_type, platform, tone, 
+                       copy_text, word_count, character_count, cached, credits_used, created_at
                 FROM copy_history
                 WHERE user_id = :user_id
-                ORDER BY created_at DESC
-                LIMIT :limit OFFSET :offset
-                """,
-                {"user_id": user_id, "limit": limit, "offset": offset}
-            )
+            """
+            params = {"user_id": user_id, "limit": limit, "offset": offset}
+            
+            if copy_type:
+                query += " AND copy_type = :copy_type"
+                params["copy_type"] = copy_type
+            
+            if platform:
+                query += " AND platform = :platform"
+                params["platform"] = platform
+            
+            query += " ORDER BY created_at DESC LIMIT :limit OFFSET :offset"
+            
+            results = await db.fetch_all(query, params)
         
         return [dict(r) for r in results]
+    
+    async def get_history_stats(self, user_id: str) -> dict:
+        """Obtém estatísticas de uso do histórico"""
+        async with get_db() as db:
+            stats = await db.fetch_one(
+                """
+                SELECT 
+                    COUNT(*) as total_copies,
+                    SUM(credits_used) as total_credits_used,
+                    SUM(CASE WHEN cached THEN 1 ELSE 0 END) as cached_copies,
+                    COUNT(DISTINCT copy_type) as copy_types_used,
+                    COUNT(DISTINCT platform) as platforms_used,
+                    MAX(created_at) as last_generated
+                FROM copy_history
+                WHERE user_id = :user_id
+                """,
+                {"user_id": user_id}
+            )
+            
+            return dict(stats) if stats else {
+                "total_copies": 0,
+                "total_credits_used": 0,
+                "cached_copies": 0,
+                "copy_types_used": 0,
+                "platforms_used": 0,
+                "last_generated": None
+            }

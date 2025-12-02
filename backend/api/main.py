@@ -33,7 +33,8 @@ from .routes import (accounting, accounts,  # New financial routes + favorites
                      instagram, integrations, license, marketplaces, metrics,
                      products, scheduler, scraper, seller_bot, social_auth,
                      status_webhooks, template_library, templates, tiktok,
-                     users, webhooks, whatsapp, youtube)
+                     tiktok_shop, tiktok_shop_v2, users, webhooks, whatsapp,
+                     youtube)
 from .utils.integrity import IntegrityChecker
 from .utils.security import security_monitor
 
@@ -168,6 +169,16 @@ app.include_router(
     social_auth.router,
     prefix="/social-auth",
     tags=["Social Media OAuth"]
+)
+app.include_router(
+    tiktok_shop.router,
+    prefix="/tiktok-shop",
+    tags=["TikTok Shop API"]
+)
+app.include_router(
+    tiktok_shop_v2.router,
+    prefix="/tiktok-shop-v2",
+    tags=["TikTok Shop V2"]
 )
 app.include_router(
     metrics.router,

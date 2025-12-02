@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -52,8 +52,14 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { user, license, logout } = useUserStore();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const menuSections = [
     {
@@ -417,7 +423,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                             <span data-testid="user-email">Perfil</span>
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={logout} className="text-red-600 cursor-pointer" data-testid="logout-button">
+                        <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer" data-testid="logout-button">
                           <LogOut size={16} className="mr-2" />
                           <span>Sair</span>
                         </DropdownMenuItem>

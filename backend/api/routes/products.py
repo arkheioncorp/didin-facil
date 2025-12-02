@@ -3,16 +3,15 @@ Products Routes
 Product search and retrieval endpoints
 """
 
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query, HTTPException, BackgroundTasks, Response
-from pydantic import BaseModel, Field
-
-from api.middleware.auth import get_current_user
+from api.middleware.auth import get_current_user, get_current_user_optional
 from api.services.cache import CacheService
 from api.services.scraper import ScraperOrchestrator
-
+from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException, Query,
+                     Response)
+from pydantic import BaseModel, Field
 
 router = APIRouter()
 
@@ -91,12 +90,13 @@ async def get_products(
     min_sales: Optional[int] = Query(None, ge=0),
     sort_by: str = "sales_30d",
     sort_order: str = "desc",
-    user: dict = Depends(get_current_user),
+    user: Optional[dict] = Depends(get_current_user_optional),
     background_tasks: BackgroundTasks = None,
 ):
     """
     Get paginated list of products with optional filters.
     Results are cached for 1 hour.
+    Works in trial mode (without auth) with limited results.
     """
     cache = CacheService()
 
@@ -141,11 +141,12 @@ async def search_products(
     q: str = Query(..., min_length=2, max_length=200),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
-    user: dict = Depends(get_current_user),
+    user: Optional[dict] = Depends(get_current_user_optional),
 ):
     """
     Search products by keyword.
     Searches in title and description.
+    Works in trial mode.
     """
     cache = CacheService()
     orchestrator = ScraperOrchestrator()
@@ -171,11 +172,12 @@ async def get_trending_products(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=50),
     category: Optional[str] = None,
-    user: dict = Depends(get_current_user),
+    user: Optional[dict] = Depends(get_current_user_optional),
 ):
     """
     Get trending products (high sales velocity).
     Updated every 30 minutes.
+    Works in trial mode.
     """
     cache = CacheService()
     orchestrator = ScraperOrchestrator()
@@ -197,8 +199,8 @@ async def get_trending_products(
 
 
 @router.get("/categories")
-async def get_categories(user: dict = Depends(get_current_user)):
-    """Get list of available product categories"""
+async def get_categories(user: Optional[dict] = Depends(get_current_user_optional)):
+    """Get list of available product categories. Works in trial mode."""
     cache = CacheService()
 
     cached = await cache.get("categories")
@@ -217,9 +219,9 @@ async def get_categories(user: dict = Depends(get_current_user)):
 @router.get("/{product_id}", response_model=Product)
 async def get_product(
     product_id: str,
-    user: dict = Depends(get_current_user),
+    user: Optional[dict] = Depends(get_current_user_optional),
 ):
-    """Get single product by ID"""
+    """Get single product by ID. Works in trial mode."""
     cache = CacheService()
 
     cache_key = f"product:{product_id}"
@@ -277,8 +279,8 @@ async def export_products(
 
 
 @router.get("/stats")
-async def get_product_stats(user: dict = Depends(get_current_user)):
-    """Get product statistics"""
+async def get_product_stats(user: Optional[dict] = Depends(get_current_user_optional)):
+    """Get product statistics. Works in trial mode."""
     # Stub implementation
     return {
         "total": 100,
