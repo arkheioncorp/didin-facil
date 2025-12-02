@@ -284,7 +284,9 @@ class TestGenerateCopyEndpoint:
                 with patch(
                     "api.routes.copy.OpenAIService"
                 ) as MockOpenAI:
-                    MockOpenAI.return_value = MagicMock()
+                    mock_openai = MagicMock()
+                    mock_openai.save_to_history = AsyncMock(return_value=None)
+                    MockOpenAI.return_value = mock_openai
                 
                     response = await client.post(
                         "/generate",

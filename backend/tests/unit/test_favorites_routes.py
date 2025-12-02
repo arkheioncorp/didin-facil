@@ -4,10 +4,11 @@ Testes para Favorites Routes
 Cobertura completa para api/routes/favorites.py
 """
 
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timezone
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
+
+import pytest
 
 
 # Fixtures
@@ -48,6 +49,16 @@ def list_data():
     }
 
 
+@pytest.fixture
+def mock_cache():
+    """Mock do CacheService."""
+    cache = MagicMock()
+    cache.get = AsyncMock(return_value=None)
+    cache.set = AsyncMock(return_value=True)
+    cache.delete_pattern = AsyncMock(return_value=0)
+    return cache
+
+
 # ==================== GET FAVORITES TESTS ====================
 
 
@@ -55,10 +66,10 @@ class TestGetFavorites:
     """Testes do endpoint GET favorites."""
 
     @pytest.mark.asyncio
-    async def test_get_favorites_empty(self, mock_user, mock_db):
+    async def test_get_favorites_empty(self, mock_user, mock_db, mock_cache):
         """Testa listagem vazia de favoritos."""
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
+             patch("api.routes.favorites.cache", mock_cache):
             from api.routes.favorites import get_favorites
 
             result = await get_favorites(None, 100, 0, mock_user)
@@ -66,7 +77,7 @@ class TestGetFavorites:
             assert result == []
 
     @pytest.mark.asyncio
-    async def test_get_favorites_with_products(self, mock_user, mock_db):
+    async def test_get_favorites_with_products(self, mock_user, mock_cache):
         """Testa listagem de favoritos com produtos."""
         now = datetime.now(timezone.utc)
         fav_id_1 = str(uuid4())
@@ -75,6 +86,7 @@ class TestGetFavorites:
         prod_id_2 = str(uuid4())
         list_id_1 = str(uuid4())
         
+        mock_db = MagicMock()
         mock_db.fetch_all = AsyncMock(
             return_value=[
                 {
@@ -117,7 +129,7 @@ class TestGetFavorites:
         )
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
+             patch("api.routes.favorites.cache", mock_cache):
             from api.routes.favorites import get_favorites
 
             result = await get_favorites(None, 100, 0, mock_user)
@@ -128,13 +140,13 @@ class TestGetFavorites:
             assert result[1].product is None
 
     @pytest.mark.asyncio
-    async def test_get_favorites_with_list_filter(self, mock_user, mock_db):
+    async def test_get_favorites_with_list_filter(self, mock_user, mock_db, mock_cache):
         """Testa listagem com filtro de lista."""
         mock_db.fetch_all = AsyncMock(return_value=[])
         list_id = str(uuid4())
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
+             patch("api.routes.favorites.cache", mock_cache):
             from api.routes.favorites import get_favorites
 
             result = await get_favorites(list_id, 100, 0, mock_user)
@@ -152,13 +164,15 @@ class TestAddFavorite:
     """Testes do endpoint POST favorites."""
 
     @pytest.mark.asyncio
-    async def test_add_favorite_success(self, mock_user, mock_db, favorite_data):
+    async def test_add_favorite_success(self, mock_user, favorite_data, mock_cache):
         """Testa adição de favorito com sucesso."""
+        mock_db = MagicMock()
         mock_db.fetch_one = AsyncMock(return_value=None)  # Não existe
+        mock_db.execute = AsyncMock(return_value=1)
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
-            from api.routes.favorites import add_favorite, FavoriteCreate
+             patch("api.routes.favorites.cache", mock_cache):
+            from api.routes.favorites import FavoriteCreate, add_favorite
 
             request = FavoriteCreate(**favorite_data)
             result = await add_favorite(request, mock_user)
@@ -169,13 +183,15 @@ class TestAddFavorite:
             mock_db.execute.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_add_favorite_already_exists(self, mock_user, mock_db, favorite_data):
+    async def test_add_favorite_already_exists(
+        self, mock_user, mock_db, favorite_data, mock_cache
+    ):
         """Testa adição de favorito já existente."""
         mock_db.fetch_one = AsyncMock(return_value={"id": str(uuid4())})
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
-            from api.routes.favorites import add_favorite, FavoriteCreate
+             patch("api.routes.favorites.cache", mock_cache):
+            from api.routes.favorites import FavoriteCreate, add_favorite
             from fastapi import HTTPException
 
             request = FavoriteCreate(**favorite_data)
@@ -187,13 +203,15 @@ class TestAddFavorite:
             assert "already in favorites" in exc_info.value.detail
 
     @pytest.mark.asyncio
-    async def test_add_favorite_without_list(self, mock_user, mock_db):
+    async def test_add_favorite_without_list(self, mock_user, mock_cache):
         """Testa adição de favorito sem lista."""
+        mock_db = MagicMock()
         mock_db.fetch_one = AsyncMock(return_value=None)
+        mock_db.execute = AsyncMock(return_value=1)
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
-            from api.routes.favorites import add_favorite, FavoriteCreate
+             patch("api.routes.favorites.cache", mock_cache):
+            from api.routes.favorites import FavoriteCreate, add_favorite
 
             # product_id must be a valid UUID
             request = FavoriteCreate(product_id=str(uuid4()))
@@ -210,12 +228,12 @@ class TestRemoveFavorite:
     """Testes do endpoint DELETE favorites."""
 
     @pytest.mark.asyncio
-    async def test_remove_favorite_success(self, mock_user, mock_db):
+    async def test_remove_favorite_success(self, mock_user, mock_db, mock_cache):
         """Testa remoção de favorito com sucesso."""
         mock_db.execute = AsyncMock(return_value=1)  # 1 row affected
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
+             patch("api.routes.favorites.cache", mock_cache):
             from api.routes.favorites import remove_favorite
 
             result = await remove_favorite(str(uuid4()), mock_user)
@@ -224,12 +242,13 @@ class TestRemoveFavorite:
             mock_db.execute.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_remove_favorite_not_found(self, mock_user, mock_db):
+    async def test_remove_favorite_not_found(self, mock_user, mock_cache):
         """Testa remoção de favorito não encontrado."""
+        mock_db = MagicMock()
         mock_db.execute = AsyncMock(return_value=0)  # No rows affected
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
+             patch("api.routes.favorites.cache", mock_cache):
             from api.routes.favorites import remove_favorite
             from fastapi import HTTPException
 
@@ -307,7 +326,8 @@ class TestFavoriteLists:
         """Testa criação de lista de favoritos."""
         with patch("api.routes.favorites.database", mock_db), \
              patch("api.routes.favorites.get_current_user", return_value=mock_user):
-            from api.routes.favorites import create_favorite_list, FavoriteListCreate
+            from api.routes.favorites import (FavoriteListCreate,
+                                              create_favorite_list)
 
             request = FavoriteListCreate(**list_data)
             result = await create_favorite_list(request, mock_user)
@@ -324,7 +344,8 @@ class TestFavoriteLists:
         """Testa criação de lista com dados mínimos."""
         with patch("api.routes.favorites.database", mock_db), \
              patch("api.routes.favorites.get_current_user", return_value=mock_user):
-            from api.routes.favorites import create_favorite_list, FavoriteListCreate
+            from api.routes.favorites import (FavoriteListCreate,
+                                              create_favorite_list)
 
             request = FavoriteListCreate(name="Simple List")
             result = await create_favorite_list(request, mock_user)
@@ -448,15 +469,17 @@ class TestEdgeCases:
     """Testes de casos extremos."""
 
     @pytest.mark.asyncio
-    async def test_get_favorites_with_pagination(self, mock_user, mock_db):
+    async def test_get_favorites_with_pagination(
+        self, mock_user, mock_db, mock_cache
+    ):
         """Testa paginação de favoritos."""
         mock_db.fetch_all = AsyncMock(return_value=[])
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user", return_value=mock_user):
+             patch("api.routes.favorites.cache", mock_cache):
             from api.routes.favorites import get_favorites
 
-            result = await get_favorites(None, 10, 20, mock_user)
+            _ = await get_favorites(None, 10, 20, mock_user)
 
             # Verificar que offset/limit são passados
             call_args = mock_db.fetch_all.call_args
@@ -465,11 +488,12 @@ class TestEdgeCases:
             assert values.get("offset") == 20
 
     @pytest.mark.asyncio
-    async def test_product_with_null_values(self, mock_user, mock_db):
+    async def test_product_with_null_values(self, mock_user, mock_cache):
         """Testa produto com valores nulos."""
         now = datetime.now(timezone.utc)
         fav_id = str(uuid4())
         product_id = str(uuid4())
+        mock_db = MagicMock()
         mock_db.fetch_all = AsyncMock(
             return_value=[
                 {
@@ -494,8 +518,7 @@ class TestEdgeCases:
         )
 
         with patch("api.routes.favorites.database", mock_db), \
-             patch("api.routes.favorites.get_current_user",
-                   return_value=mock_user):
+             patch("api.routes.favorites.cache", mock_cache):
             from api.routes.favorites import get_favorites
 
             result = await get_favorites(None, 100, 0, mock_user)
