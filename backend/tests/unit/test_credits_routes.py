@@ -3,12 +3,13 @@ Testes para Credits Routes - api/routes/credits.py
 Cobertura: get_credit_packages, purchase_credits, get_credit_balance,
            get_purchase_status, get_purchase_history, mercadopago_credits_webhook
 """
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+import uuid
 from datetime import datetime
 from decimal import Decimal
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from fastapi import HTTPException
-import uuid
 
 # ============================================
 # MOCKS & FIXTURES
@@ -126,7 +127,8 @@ class TestPurchaseCredits:
         """Deve criar pagamento PIX com sucesso"""
         with patch("api.routes.credits.AccountingService", return_value=mock_accounting_service),              patch("api.routes.credits.MercadoPagoService", return_value=mock_mp_service),              patch("api.routes.credits._store_pending_purchase", new_callable=AsyncMock) as mock_store:
             
-            from api.routes.credits import purchase_credits, CreditsPurchaseRequest
+            from api.routes.credits import (CreditsPurchaseRequest,
+                                            purchase_credits)
             
             request = CreditsPurchaseRequest(
                 package_slug="starter",
@@ -146,7 +148,8 @@ class TestPurchaseCredits:
         """Deve criar preferência de cartão com sucesso"""
         with patch("api.routes.credits.AccountingService", return_value=mock_accounting_service),              patch("api.routes.credits.MercadoPagoService", return_value=mock_mp_service),              patch("api.routes.credits._store_pending_purchase", new_callable=AsyncMock) as mock_store:
             
-            from api.routes.credits import purchase_credits, CreditsPurchaseRequest
+            from api.routes.credits import (CreditsPurchaseRequest,
+                                            purchase_credits)
             
             request = CreditsPurchaseRequest(
                 package_slug="starter",
@@ -166,7 +169,8 @@ class TestPurchaseCredits:
         mock_accounting_service.get_package_by_slug.return_value = None
         
         with patch("api.routes.credits.AccountingService", return_value=mock_accounting_service):
-            from api.routes.credits import purchase_credits, CreditsPurchaseRequest
+            from api.routes.credits import (CreditsPurchaseRequest,
+                                            purchase_credits)
             
             request = CreditsPurchaseRequest(package_slug="invalid", payment_method="pix")
             
@@ -183,7 +187,8 @@ class TestPurchaseCredits:
         mock_accounting_service.get_package_by_slug.return_value = mock_package
         
         with patch("api.routes.credits.AccountingService", return_value=mock_accounting_service):
-            from api.routes.credits import purchase_credits, CreditsPurchaseRequest
+            from api.routes.credits import (CreditsPurchaseRequest,
+                                            purchase_credits)
             
             request = CreditsPurchaseRequest(package_slug="starter", payment_method="pix")
             
@@ -200,7 +205,8 @@ class TestPurchaseCredits:
         
         with patch("api.routes.credits.AccountingService", return_value=mock_accounting_service),              patch("api.routes.credits.MercadoPagoService", return_value=mock_mp_service):
             
-            from api.routes.credits import purchase_credits, CreditsPurchaseRequest
+            from api.routes.credits import (CreditsPurchaseRequest,
+                                            purchase_credits)
             
             request = CreditsPurchaseRequest(package_slug="starter", payment_method="pix")
             
@@ -317,7 +323,7 @@ class TestStatusHistory:
         # Patch select para evitar erro do SQLAlchemy com MagicMock
         with patch("sqlalchemy.select") as mock_select:
             from api.routes.credits import get_purchase_history
-            
+
             # Passar limit e offset explicitamente para evitar erro com Query()
             response = await get_purchase_history(
                 limit=20, 
@@ -460,3 +466,432 @@ class TestWebhook:
             assert response["status"] == "rejected"
             assert transaction.payment_status == "rejected"
             mock_db.commit.assert_called()
+
+    @pytest.mark.asyncio
+    async def test_webhook_cancelled(self, mock_db, mock_mp_service):
+        """Deve processar pagamento cancelado"""
+        transaction = MagicMock()
+        transaction.payment_status = "pending"
+        mock_db.execute.return_value.scalar_one_or_none.return_value = transaction
+        
+        mock_mp_service.get_payment.return_value = {
+            "external_reference": "CRED-123",
+            "status": "cancelled"
+        }
+        
+        with patch("sqlalchemy.select") as mock_select,              patch("api.routes.credits.MercadoPagoService", return_value=mock_mp_service):
+            
+            from api.routes.credits import mercadopago_credits_webhook
+            
+            response = await mercadopago_credits_webhook(
+                {"type": "payment", "data": {"id": "123"}}, 
+                db=mock_db
+            )
+            
+            assert response["status"] == "cancelled"
+            assert transaction.payment_status == "cancelled"
+
+    @pytest.mark.asyncio
+    async def test_webhook_pending_status(self, mock_db, mock_mp_service):
+        """Deve retornar pending para status não final"""
+        transaction = MagicMock()
+        transaction.payment_status = "pending"
+        mock_db.execute.return_value.scalar_one_or_none.return_value = transaction
+        
+        mock_mp_service.get_payment.return_value = {
+            "external_reference": "CRED-123",
+            "status": "in_process"
+        }
+        
+        with patch("sqlalchemy.select") as mock_select,              patch("api.routes.credits.MercadoPagoService", return_value=mock_mp_service):
+            
+            from api.routes.credits import mercadopago_credits_webhook
+            
+            response = await mercadopago_credits_webhook(
+                {"type": "payment", "data": {"id": "123"}}, 
+                db=mock_db
+            )
+            
+            assert response["status"] == "pending"
+
+
+# ============================================
+# TESTS: Use Credits
+# ============================================
+
+class TestUseCredits:
+    """Testes do endpoint use_credits"""
+    
+    @pytest.fixture
+    def mock_user_dict(self):
+        """Mock de usuário como dict"""
+        return {
+            "id": uuid.uuid4(),
+            "email": "test@example.com",
+            "name": "Test User",
+            "is_admin": False
+        }
+    
+    @pytest.mark.asyncio
+    async def test_use_credits_success(self, mock_db, mock_user_dict):
+        """Deve consumir créditos com sucesso"""
+        from datetime import datetime, timedelta, timezone
+
+        # Mock resultado da query com saldo
+        row = MagicMock()
+        row.credits_balance = 100
+        row.bonus_balance = 50
+        row.bonus_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+        mock_db.execute.return_value.fetchone.return_value = row
+        
+        with patch("sqlalchemy.select"), patch("sqlalchemy.update"):
+            from api.routes.credits import UseCreditsRequest, use_credits
+            
+            request = UseCreditsRequest(
+                amount=20,
+                operation="ai_copy",
+                resource_id="test-123"
+            )
+            
+            response = await use_credits(request, current_user=mock_user_dict, db=mock_db)
+            
+            assert response.success is True
+            assert response.credits_used == 20
+            assert response.bonus_used == 20  # Usa bonus primeiro
+            mock_db.commit.assert_called()
+
+    @pytest.mark.asyncio
+    async def test_use_credits_regular_credits(self, mock_db, mock_user_dict):
+        """Deve consumir créditos regulares quando bonus não é suficiente"""
+        from datetime import datetime, timedelta, timezone
+        
+        row = MagicMock()
+        row.credits_balance = 100
+        row.bonus_balance = 10
+        row.bonus_expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+        mock_db.execute.return_value.fetchone.return_value = row
+        
+        with patch("sqlalchemy.select"), patch("sqlalchemy.update"):
+            from api.routes.credits import UseCreditsRequest, use_credits
+            
+            request = UseCreditsRequest(amount=50, operation="search")
+            
+            response = await use_credits(request, current_user=mock_user_dict, db=mock_db)
+            
+            assert response.success is True
+            assert response.credits_used == 50
+            assert response.bonus_used == 10
+            assert response.new_balance == 60  # 100 - 40 + 0 bonus
+
+    @pytest.mark.asyncio
+    async def test_use_credits_insufficient_balance(self, mock_db, mock_user_dict):
+        """Deve retornar erro quando saldo é insuficiente"""
+        row = MagicMock()
+        row.credits_balance = 10
+        row.bonus_balance = 5
+        row.bonus_expires_at = None
+        mock_db.execute.return_value.fetchone.return_value = row
+        
+        with patch("sqlalchemy.select"):
+            from api.routes.credits import UseCreditsRequest, use_credits
+            
+            request = UseCreditsRequest(amount=100, operation="ai_copy")
+            
+            with pytest.raises(HTTPException) as exc:
+                await use_credits(request, current_user=mock_user_dict, db=mock_db)
+            
+            assert exc.value.status_code == 402
+            assert "Créditos insuficientes" in exc.value.detail
+
+    @pytest.mark.asyncio
+    async def test_use_credits_expired_bonus(self, mock_db, mock_user_dict):
+        """Deve ignorar bonus expirado"""
+        from datetime import datetime, timedelta, timezone
+        
+        row = MagicMock()
+        row.credits_balance = 100
+        row.bonus_balance = 500  # Muito bonus, mas expirado
+        row.bonus_expires_at = datetime.now(timezone.utc) - timedelta(days=1)
+        mock_db.execute.return_value.fetchone.return_value = row
+        
+        with patch("sqlalchemy.select"), patch("sqlalchemy.update"):
+            from api.routes.credits import UseCreditsRequest, use_credits
+            
+            request = UseCreditsRequest(amount=50, operation="export")
+            
+            response = await use_credits(request, current_user=mock_user_dict, db=mock_db)
+            
+            assert response.success is True
+            assert response.bonus_used == 0  # Bonus expirado não foi usado
+            assert response.new_balance == 50  # 100 - 50
+
+    @pytest.mark.asyncio
+    async def test_use_credits_user_not_found(self, mock_db, mock_user_dict):
+        """Deve retornar 404 se usuário não encontrado"""
+        mock_db.execute.return_value.fetchone.return_value = None
+        
+        with patch("sqlalchemy.select"):
+            from api.routes.credits import UseCreditsRequest, use_credits
+            
+            request = UseCreditsRequest(amount=10, operation="ai_copy")
+            
+            with pytest.raises(HTTPException) as exc:
+                await use_credits(request, current_user=mock_user_dict, db=mock_db)
+            
+            assert exc.value.status_code == 404
+            assert "Usuário não encontrado" in exc.value.detail
+
+
+# ============================================
+# TESTS: Add Bonus Credits
+# ============================================
+
+class TestAddBonusCredits:
+    """Testes do endpoint add_bonus_credits"""
+    
+    @pytest.fixture
+    def mock_admin_user(self):
+        """Mock de usuário admin"""
+        return {
+            "id": uuid.uuid4(),
+            "email": "admin@example.com",
+            "name": "Admin User",
+            "is_admin": True
+        }
+    
+    @pytest.fixture
+    def mock_regular_user(self):
+        """Mock de usuário regular"""
+        return {
+            "id": uuid.uuid4(),
+            "email": "user@example.com",
+            "name": "Regular User",
+            "is_admin": False
+        }
+    
+    @pytest.mark.asyncio
+    async def test_add_bonus_success(self, mock_db, mock_admin_user):
+        """Admin deve adicionar bonus com sucesso"""
+        target_user_id = str(uuid.uuid4())
+        
+        with patch("sqlalchemy.select"), patch("sqlalchemy.update"):
+            from api.routes.credits import AddBonusRequest, add_bonus_credits
+            
+            request = AddBonusRequest(
+                user_id=target_user_id,
+                amount=100,
+                reason="Promoção especial",
+                expires_in_days=60
+            )
+            
+            response = await add_bonus_credits(request, current_user=mock_admin_user, db=mock_db)
+            
+            assert response["success"] is True
+            assert response["bonus_added"] == 100
+            assert response["user_id"] == target_user_id
+            assert response["reason"] == "Promoção especial"
+            mock_db.commit.assert_called()
+
+    @pytest.mark.asyncio
+    async def test_add_bonus_forbidden_non_admin(self, mock_db, mock_regular_user):
+        """Usuário não-admin deve receber erro 403"""
+        from api.routes.credits import AddBonusRequest, add_bonus_credits
+        
+        request = AddBonusRequest(
+            user_id=str(uuid.uuid4()),
+            amount=100,
+            reason="Tentativa não autorizada"
+        )
+        
+        with pytest.raises(HTTPException) as exc:
+            await add_bonus_credits(request, current_user=mock_regular_user, db=mock_db)
+        
+        assert exc.value.status_code == 403
+        assert "administradores" in exc.value.detail
+
+    @pytest.mark.asyncio
+    async def test_add_bonus_default_expiry(self, mock_db, mock_admin_user):
+        """Deve usar expiração padrão de 30 dias"""
+        from datetime import datetime, timedelta, timezone
+        
+        with patch("sqlalchemy.select"), patch("sqlalchemy.update"):
+            from api.routes.credits import AddBonusRequest, add_bonus_credits
+            
+            request = AddBonusRequest(
+                user_id=str(uuid.uuid4()),
+                amount=50,
+                reason="Teste default"
+            )
+            
+            response = await add_bonus_credits(request, current_user=mock_admin_user, db=mock_db)
+            
+            expires_at = datetime.fromisoformat(response["expires_at"].replace("Z", "+00:00"))
+            expected_min = datetime.now(timezone.utc) + timedelta(days=29)
+            expected_max = datetime.now(timezone.utc) + timedelta(days=31)
+            
+            assert expected_min < expires_at < expected_max
+
+
+# ============================================
+# TESTS: Store Pending Purchase (Helper)
+# ============================================
+
+class TestStorePendingPurchase:
+    """Testes da função _store_pending_purchase"""
+    
+    @pytest.mark.asyncio
+    async def test_store_pending_purchase_success(self, mock_db):
+        """Deve armazenar transação pendente com sucesso"""
+        from api.routes.credits import _store_pending_purchase
+        
+        await _store_pending_purchase(
+            db=mock_db,
+            user_id=str(uuid.uuid4()),
+            package_id=str(uuid.uuid4()),
+            order_id="CRED-20240101-ABC123",
+            amount=Decimal("50.00"),
+            credits=100,
+            payment_method="pix",
+            payment_id="mp-payment-123"
+        )
+        
+        mock_db.add.assert_called_once()
+        mock_db.commit.assert_called_once()
+        
+        # Verificar que transação foi criada corretamente
+        call_args = mock_db.add.call_args[0][0]
+        assert call_args.credits_amount == 100
+        assert call_args.amount_brl == Decimal("50.00")
+        assert call_args.payment_method == "pix"
+
+    @pytest.mark.asyncio
+    async def test_store_pending_purchase_card_method(self, mock_db):
+        """Deve armazenar transação com cartão"""
+        from api.routes.credits import _store_pending_purchase
+        
+        await _store_pending_purchase(
+            db=mock_db,
+            user_id=str(uuid.uuid4()),
+            package_id=str(uuid.uuid4()),
+            order_id="CRED-20240101-DEF456",
+            amount=Decimal("100.00"),
+            credits=200,
+            payment_method="card",
+            payment_id="mp-card-456"
+        )
+        
+        call_args = mock_db.add.call_args[0][0]
+        assert call_args.payment_method == "card"
+        assert call_args.credits_amount == 200
+
+
+# ============================================
+# TESTS: Package Edge Cases
+# ============================================
+
+class TestPackageEdgeCases:
+    """Testes de casos específicos de pacotes"""
+    
+    @pytest.mark.asyncio
+    async def test_package_without_original_price(self, mock_db):
+        """Pacote sem preço original não deve ter savings"""
+        pkg = MagicMock()
+        pkg.id = uuid.uuid4()
+        pkg.name = "Basic"
+        pkg.slug = "basic"
+        pkg.credits = 50
+        pkg.price_brl = Decimal("25.00")
+        pkg.price_per_credit = Decimal("0.50")
+        pkg.original_price = None
+        pkg.discount_percent = 0
+        pkg.description = None
+        pkg.badge = None
+        pkg.is_featured = False
+        
+        mock_service = AsyncMock()
+        mock_service.get_active_packages.return_value = [pkg]
+        
+        with patch("api.routes.credits.AccountingService", return_value=mock_service):
+            from api.routes.credits import get_credit_packages
+            
+            response = await get_credit_packages(db=mock_db)
+            
+            assert len(response) == 1
+            assert response[0].savings is None
+            assert response[0].discount_percent == 0
+
+    @pytest.mark.asyncio
+    async def test_package_same_price_no_savings(self, mock_db):
+        """Pacote com mesmo preço original não deve ter savings"""
+        pkg = MagicMock()
+        pkg.id = uuid.uuid4()
+        pkg.name = "Standard"
+        pkg.slug = "standard"
+        pkg.credits = 100
+        pkg.price_brl = Decimal("50.00")
+        pkg.price_per_credit = Decimal("0.50")
+        pkg.original_price = Decimal("50.00")  # Mesmo preço
+        pkg.discount_percent = 0
+        pkg.description = "Sem desconto"
+        pkg.badge = None
+        pkg.is_featured = False
+        
+        mock_service = AsyncMock()
+        mock_service.get_active_packages.return_value = [pkg]
+        
+        with patch("api.routes.credits.AccountingService", return_value=mock_service):
+            from api.routes.credits import get_credit_packages
+            
+            response = await get_credit_packages(db=mock_db)
+            
+            assert len(response) == 1
+            # Savings deve ser None pois preço original não é maior
+            assert response[0].savings is None
+
+    @pytest.mark.asyncio
+    async def test_empty_packages_list(self, mock_db):
+        """Deve retornar lista vazia se não houver pacotes"""
+        mock_service = AsyncMock()
+        mock_service.get_active_packages.return_value = []
+        
+        with patch("api.routes.credits.AccountingService", return_value=mock_service):
+            from api.routes.credits import get_credit_packages
+            
+            response = await get_credit_packages(db=mock_db)
+            
+            assert response == []
+
+
+# ============================================
+# TESTS: Purchase with Boleto
+# ============================================
+
+class TestPurchaseBoleto:
+    """Testes de compra com boleto"""
+    
+    @pytest.fixture
+    def mock_user_dict(self):
+        return {
+            "id": uuid.uuid4(),
+            "email": "user@test.com",
+            "name": "Test User",
+            "is_admin": False
+        }
+    
+    @pytest.mark.asyncio
+    async def test_purchase_boleto_success(self, mock_user_dict, mock_db, mock_accounting_service, mock_mp_service):
+        """Deve criar preferência de boleto com sucesso"""
+        with patch("api.routes.credits.AccountingService", return_value=mock_accounting_service),              patch("api.routes.credits.MercadoPagoService", return_value=mock_mp_service),              patch("api.routes.credits._store_pending_purchase", new_callable=AsyncMock):
+            
+            from api.routes.credits import (CreditsPurchaseRequest,
+                                            purchase_credits)
+            
+            request = CreditsPurchaseRequest(
+                package_slug="starter",
+                payment_method="boleto"
+            )
+            
+            response = await purchase_credits(request, current_user=mock_user_dict, db=mock_db)
+            
+            assert response.status == "pending"
+            assert response.payment_url == "https://mercadopago.com/checkout/123"

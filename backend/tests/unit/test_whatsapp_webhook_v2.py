@@ -95,18 +95,19 @@ class TestRealProductChatbot:
         """Test welcome message processing"""
         from api.routes.whatsapp_webhook import RealProductChatbot
 
-        with patch.object(RealProductChatbot, '_increment_metric', new_callable=AsyncMock):
-            with patch.object(RealProductChatbot, '_show_welcome', new_callable=AsyncMock) as mock_welcome:
-                mock_welcome.return_value = {"text": "Bem-vindo!", "action": "welcome"}
-                
-                chatbot = RealProductChatbot()
-                result = await chatbot.process_message(
-                    phone="5511999999999",
-                    message="oi",
-                    push_name="João"
-                )
+        chatbot = RealProductChatbot()
+        
+        with patch.object(chatbot.cache, 'get', new_callable=AsyncMock) as mock_get, \
+             patch.object(chatbot.cache, 'increment', new_callable=AsyncMock):
+            mock_get.return_value = None
+            
+            result = await chatbot.process_message(
+                phone="5511999999999",
+                message="oi",
+                push_name="João"
+            )
 
-                assert result["action"] == "welcome"
+            assert result["action"] == "welcome"
 
     @pytest.mark.asyncio
     async def test_process_menu_option_1(self):
@@ -461,8 +462,9 @@ class TestEvolutionWebhookEndpoint:
     async def test_messages_upsert_event(self):
         """Test MESSAGES_UPSERT event"""
         from unittest.mock import AsyncMock, MagicMock
-        from fastapi import BackgroundTasks
+
         from api.routes.whatsapp_webhook import evolution_webhook
+        from fastapi import BackgroundTasks
 
         request = MagicMock()
         request.json = AsyncMock(return_value={
@@ -741,8 +743,8 @@ class TestSendWhatsAppMessage:
     @pytest.mark.asyncio
     async def test_send_success(self):
         """Test successful message sending"""
-        from api.routes.whatsapp_webhook import send_whatsapp_message
         import httpx
+        from api.routes.whatsapp_webhook import send_whatsapp_message
 
         with patch('httpx.AsyncClient') as mock_client_class:
             mock_client = MagicMock()
