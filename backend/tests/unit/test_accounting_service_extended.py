@@ -74,6 +74,10 @@ def mock_db():
     db.fetch_one = AsyncMock()
     db.fetch_all = AsyncMock()
     db.execute = AsyncMock()
+    db.fetch_val = AsyncMock()
+    db.commit = AsyncMock()
+    db.add = MagicMock()
+    db.refresh = AsyncMock()
     return db
 
 

@@ -1,13 +1,13 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { 
-  Play, 
-  Square, 
-  Loader2, 
-  TrendingUp, 
-  Package, 
-  Settings2, 
-  RefreshCw, 
+import {
+  Play,
+  Square,
+  Loader2,
+  TrendingUp,
+  Package,
+  Settings2,
+  RefreshCw,
   Wifi,
   Cookie,
   Check,
@@ -119,7 +119,7 @@ const CookieSetup: React.FC<CookieSetupProps> = ({
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {/* Status Alert */}
         {connectionStatus === "error" && (
@@ -210,7 +210,7 @@ const CookieSetup: React.FC<CookieSetupProps> = ({
                 <Alert>
                   <HelpCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Clique na aba <strong>"Console"</strong> no painel que abrir. 
+                    Clique na aba <strong>"Console"</strong> no painel que abrir.
                     Ignore qualquer mensagem de erro ou aviso que aparecer.
                   </AlertDescription>
                 </Alert>
@@ -232,9 +232,9 @@ const CookieSetup: React.FC<CookieSetupProps> = ({
                 </p>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-black text-green-400 font-mono text-sm">
                   <code className="flex-1">document.cookie</code>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     className="h-8 w-8 text-green-400 hover:text-green-300 hover:bg-green-900/30"
                     onClick={handleCopy}
                   >
@@ -242,14 +242,14 @@ const CookieSetup: React.FC<CookieSetupProps> = ({
                   </Button>
                 </div>
                 <p className="text-muted-foreground">
-                  O resultado será uma longa string de texto. <strong>Copie todo o conteúdo</strong> 
+                  O resultado será uma longa string de texto. <strong>Copie todo o conteúdo</strong>
                   (incluindo as aspas, se aparecerem).
                 </p>
                 <Alert variant="default" className="border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800">
                   <Shield className="h-4 w-4 text-amber-600" />
                   <AlertTitle className="text-amber-800 dark:text-amber-200">Segurança</AlertTitle>
                   <AlertDescription className="text-amber-700 dark:text-amber-300">
-                    Seus cookies são armazenados apenas localmente no seu computador. 
+                    Seus cookies são armazenados apenas localmente no seu computador.
                     Nunca os compartilhe com terceiros.
                   </AlertDescription>
                 </Alert>
@@ -273,6 +273,7 @@ const CookieSetup: React.FC<CookieSetupProps> = ({
                   value={cookies}
                   onChange={(e) => setCookies(e.target.value)}
                   className="min-h-[120px] font-mono text-sm"
+                  data-testid="coleta-url-input"
                 />
                 <div className="flex gap-3">
                   <Button onClick={handleSave} disabled={!cookies.trim()} className="flex-1">
@@ -518,6 +519,7 @@ const ScraperPanel: React.FC<ScraperPanelProps> = ({
               disabled={isPending || selectedCategories.length === 0}
               className="flex-1"
               size="lg"
+              data-testid="coleta-start-btn"
             >
               {isPending ? (
                 <>
@@ -553,7 +555,7 @@ const ScraperPanel: React.FC<ScraperPanelProps> = ({
 // ========================================
 export const Coleta: React.FC = () => {
   const { t } = useTranslation();
-  
+
   // State for cookies
   const [cookies, setCookies] = React.useState(() => {
     return localStorage.getItem("tiktok_cookies") || "";
@@ -595,11 +597,11 @@ export const Coleta: React.FC = () => {
   // Listen to browser events (only in Tauri)
   React.useEffect(() => {
     if (!isTauri) return;
-    
+
     let cleanup: (() => void) | undefined;
-    
+
     import("@tauri-apps/api/event").then(({ listen }) => {
-      listen<{url: string; screenshot?: string; status: string}>(
+      listen<{ url: string; screenshot?: string; status: string }>(
         'browser-update',
         (event) => {
           setBrowserState(event.payload);
@@ -608,7 +610,7 @@ export const Coleta: React.FC = () => {
         cleanup = unlisten;
       });
     }).catch(console.error);
-    
+
     return () => {
       cleanup?.();
     };
@@ -652,11 +654,11 @@ export const Coleta: React.FC = () => {
 
   const handleTestConnection = async () => {
     setConnectionStatus("testing");
-    
+
     try {
       // Simulated connection test - in production, would actually test cookies
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       if (cookies.includes("sessionid") || cookies.includes("tt_webid")) {
         setConnectionStatus("connected");
         toast({
@@ -822,7 +824,7 @@ export const Coleta: React.FC = () => {
             onHeadlessChange={setHeadless}
             isPending={startScraper.isPending}
           />
-          
+
           {/* Browser Viewer */}
           <BrowserViewer
             isActive={isRunning}

@@ -4,16 +4,21 @@ Chatbot API Routes
 Endpoints para integração com Typebot e gerenciamento de chatbots.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
+import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from api.middleware.auth import get_current_user
+from api.middleware.auth import get_current_user, get_current_user_optional
+from fastapi import APIRouter, Depends, HTTPException, Request
 from integrations.typebot import TypebotClient, TypebotWebhookHandler
+from pydantic import BaseModel
 
 router = APIRouter()
 typebot_client = TypebotClient()
 webhook_handler = TypebotWebhookHandler()
+
+# In-memory storage for chatbots (will be replaced with database later)
+chatbots_db: Dict[str, Dict[str, Any]] = {}
 
 
 # ============================================
@@ -35,6 +40,12 @@ class ChatResponse(BaseModel):
     session_id: str
     messages: List[Dict[str, Any]]
     input: Optional[Dict[str, Any]] = None
+
+
+class CreateChatbotRequest(BaseModel):
+    name: str
+    description: str
+    channels: List[str]
 
 
 # ============================================
@@ -195,6 +206,130 @@ async def get_typebot_results(
 
 
 # ============================================
+# CHATBOT MANAGEMENT (CRUD)
+# ============================================
+
+@router.get("/bots")
+async def list_chatbots(
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """
+    Lista todos os chatbots do usuário.
+    """
+    # Return all chatbots from in-memory storage
+    return list(chatbots_db.values())
+
+
+@router.post("/bots")
+async def create_chatbot(
+    data: CreateChatbotRequest,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """
+    Cria um novo chatbot.
+    """
+    chatbot_id = str(uuid.uuid4())
+    typebot_id = str(uuid.uuid4())  # Mock typebot ID
+    
+    chatbot = {
+        "id": chatbot_id,
+        "name": data.name,
+        "description": data.description,
+        "typebot_id": typebot_id,
+        "status": "draft",
+        "channels": data.channels,
+        "total_sessions": 0,
+        "total_messages": 0,
+        "completion_rate": 0,
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
+    }
+    
+    chatbots_db[chatbot_id] = chatbot
+    return chatbot
+
+
+@router.post("/bots/{bot_id}/toggle")
+async def toggle_chatbot(
+    bot_id: str,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """
+    Alterna o status do chatbot (active/paused).
+    """
+    if bot_id not in chatbots_db:
+        raise HTTPException(status_code=404, detail="Chatbot não encontrado")
+    
+    chatbot = chatbots_db[bot_id]
+    
+    # Toggle between active and paused
+    if chatbot["status"] == "active":
+        chatbot["status"] = "paused"
+    else:
+        chatbot["status"] = "active"
+    
+    chatbot["updated_at"] = datetime.utcnow().isoformat()
+    return chatbot
+
+
+@router.delete("/bots/{bot_id}")
+async def delete_chatbot(
+    bot_id: str,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """
+    Remove um chatbot.
+    """
+    if bot_id not in chatbots_db:
+        raise HTTPException(status_code=404, detail="Chatbot não encontrado")
+    
+    del chatbots_db[bot_id]
+    return {"status": "deleted", "id": bot_id}
+
+
+@router.get("/stats")
+async def get_chatbot_stats(
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """
+    Retorna estatísticas gerais dos chatbots.
+    """
+    total_chatbots = len(chatbots_db)
+    active_chatbots = sum(1 for bot in chatbots_db.values() if bot["status"] == "active")
+    
+    # Calculate aggregated stats
+    total_sessions_today = sum(bot.get("total_sessions", 0) for bot in chatbots_db.values())
+    total_messages_today = sum(bot.get("total_messages", 0) for bot in chatbots_db.values())
+    
+    # Calculate average completion rate
+    completion_rates = [bot.get("completion_rate", 0) for bot in chatbots_db.values()]
+    avg_completion_rate = sum(completion_rates) / len(completion_rates) if completion_rates else 0
+    
+    # Get popular flows (mock data for now)
+    popular_flows = [
+        {
+            "name": bot["name"],
+            "sessions": bot.get("total_sessions", 0),
+            "completion_rate": bot.get("completion_rate", 0)
+        }
+        for bot in sorted(
+            chatbots_db.values(),
+            key=lambda x: x.get("total_sessions", 0),
+            reverse=True
+        )[:5]
+    ]
+    
+    return {
+        "total_chatbots": total_chatbots,
+        "active_chatbots": active_chatbots,
+        "total_sessions_today": total_sessions_today,
+        "total_messages_today": total_messages_today,
+        "avg_completion_rate": round(avg_completion_rate, 1),
+        "popular_flows": popular_flows
+    }
+
+
+# ============================================
 # TEMPLATES
 # ============================================
 
@@ -203,19 +338,24 @@ async def list_chatbot_templates():
     """
     Lista templates de chatbot pré-definidos.
     """
-    from integrations.typebot import DIDIN_TYPEBOT_TEMPLATES
-    
-    return {
-        "templates": [
+    try:
+        from integrations.typebot import DIDIN_TYPEBOT_TEMPLATES
+
+        # Return array directly (not wrapped in {templates: []})
+        return [
             {
                 "id": key,
-                "name": template["name"],
-                "description": template["description"],
-                "blocks_count": len(template.get("blocks", []))
+                "name": template.get("name", key),
+                "description": template.get("description", ""),
+                "category": template.get("category", "geral"),
+                "preview_url": template.get("preview_url", ""),
+                "tags": template.get("tags", [])
             }
             for key, template in DIDIN_TYPEBOT_TEMPLATES.items()
         ]
-    }
+    except ImportError:
+        # Return empty array if templates not available
+        return []
 
 
 @router.get("/templates/{template_id}")

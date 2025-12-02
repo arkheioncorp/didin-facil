@@ -9,9 +9,15 @@ const isTauri = (): boolean => {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 };
 
+// Check if running in development mode
+const isDevelopment = (): boolean => {
+  return import.meta.env.DEV || import.meta.env.MODE === 'development';
+};
+
 export const ProtectedRoute = () => {
   const isAuthenticated = useUserStore((state) => state.isAuthenticated);
   const hasHydrated = useUserStore((state) => state.hasHydrated);
+  const setHasHydrated = useUserStore((state) => state.setHasHydrated);
   const location = useLocation();
   const [isReady, setIsReady] = useState(false);
   const [setupComplete, setSetupComplete] = useState<boolean | null>(null);
@@ -45,11 +51,15 @@ export const ProtectedRoute = () => {
     } else {
       // Fallback: if hydration takes too long, consider it complete
       const timeout = setTimeout(() => {
+        // Force hydration if it hasn't completed
+        if (!hasHydrated) {
+          setHasHydrated(true);
+        }
         setIsReady(true);
-      }, 500);
+      }, 300); // Reduced timeout for faster loading
       return () => clearTimeout(timeout);
     }
-  }, [hasHydrated, setupComplete]);
+  }, [hasHydrated, setupComplete, setHasHydrated]);
 
   if (!isReady) {
     return (
@@ -65,6 +75,13 @@ export const ProtectedRoute = () => {
   // Redirect to setup if not complete (and not already on setup page)
   if (setupComplete === false && location.pathname !== "/setup") {
     return <Navigate to="/setup" replace />;
+  }
+
+  // In development mode or trial mode, allow access without authentication
+  // This enables testing and demo functionality
+  if (isDevelopment() && !isAuthenticated) {
+    // Allow access in dev mode without requiring login
+    return <Outlet />;
   }
 
   if (!isAuthenticated) {

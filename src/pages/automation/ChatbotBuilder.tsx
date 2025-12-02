@@ -100,8 +100,8 @@ function ChatbotCard({ chatbot, onEdit, onDelete, onToggle }: {
             <CardTitle className="text-lg">{chatbot.name}</CardTitle>
           </div>
           <Badge className={statusColors[chatbot.status]}>
-            {chatbot.status === 'active' ? 'Ativo' : 
-             chatbot.status === 'paused' ? 'Pausado' : 'Rascunho'}
+            {chatbot.status === 'active' ? 'Ativo' :
+              chatbot.status === 'paused' ? 'Pausado' : 'Rascunho'}
           </Badge>
         </div>
         <CardDescription className="line-clamp-2">
@@ -141,17 +141,17 @@ function ChatbotCard({ chatbot, onEdit, onDelete, onToggle }: {
 
           {/* Actions */}
           <div className="flex items-center gap-2 pt-2 border-t">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="flex-1"
               onClick={onEdit}
             >
               <Settings className="h-4 w-4 mr-1" />
               Editar
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={onToggle}
             >
@@ -161,8 +161,8 @@ function ChatbotCard({ chatbot, onEdit, onDelete, onToggle }: {
                 <Play className="h-4 w-4" />
               )}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={onDelete}
             >
@@ -223,7 +223,7 @@ function StatsOverview({ stats }: { stats: ChatbotStats }) {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
@@ -237,7 +237,7 @@ function StatsOverview({ stats }: { stats: ChatbotStats }) {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
@@ -251,7 +251,7 @@ function StatsOverview({ stats }: { stats: ChatbotStats }) {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
@@ -279,7 +279,7 @@ export const ChatbotBuilder = () => {
   });
 
   // Fetch chatbots
-  const { data: chatbots, isLoading: isLoadingChatbots } = useQuery<Chatbot[]>({
+  const { data: chatbots, isLoading: isLoadingChatbots, error: chatbotsError, refetch: refetchChatbots } = useQuery<Chatbot[]>({
     queryKey: ['chatbots'],
     queryFn: async (): Promise<Chatbot[]> => {
       const response = await api.get('/chatbot/bots');
@@ -288,7 +288,7 @@ export const ChatbotBuilder = () => {
   });
 
   // Fetch stats
-  const { data: stats } = useQuery<ChatbotStats>({
+  const { data: stats, error: statsError } = useQuery<ChatbotStats>({
     queryKey: ['chatbot-stats'],
     queryFn: async (): Promise<ChatbotStats> => {
       const response = await api.get('/chatbot/stats');
@@ -297,17 +297,20 @@ export const ChatbotBuilder = () => {
   });
 
   // Fetch templates
-  const { data: templates } = useQuery<ChatbotTemplate[]>({
+  const { data: templates, error: templatesError } = useQuery<ChatbotTemplate[]>({
     queryKey: ['chatbot-templates'],
     queryFn: async (): Promise<ChatbotTemplate[]> => {
       const response = await api.get('/chatbot/templates');
-      return response.data as ChatbotTemplate[];
+      // Backend now returns array directly
+      const data = response.data;
+      // Defensive: ensure we always return an array
+      return Array.isArray(data) ? data : [];
     },
   });
 
   // Create chatbot mutation
   const createMutation = useMutation({
-    mutationFn: (data: typeof newBot) => 
+    mutationFn: (data: typeof newBot) =>
       api.post('/chatbot/bots', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chatbots'] });
@@ -323,7 +326,7 @@ export const ChatbotBuilder = () => {
 
   // Toggle status mutation
   const toggleMutation = useMutation({
-    mutationFn: (id: string) => 
+    mutationFn: (id: string) =>
       api.post(`/chatbot/bots/${id}/toggle`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chatbots'] });
@@ -333,7 +336,7 @@ export const ChatbotBuilder = () => {
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => 
+    mutationFn: (id: string) =>
       api.delete(`/chatbot/bots/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chatbots'] });
@@ -369,7 +372,7 @@ export const ChatbotBuilder = () => {
             Crie fluxos de conversa automatizados com Typebot
           </p>
         </div>
-        
+
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -384,7 +387,7 @@ export const ChatbotBuilder = () => {
                 Configure seu novo chatbot e escolha os canais de atendimento.
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nome do Chatbot</Label>
@@ -395,7 +398,7 @@ export const ChatbotBuilder = () => {
                   placeholder="Ex: Atendimento WhatsApp"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="description">Descrição</Label>
                 <Input
@@ -405,7 +408,7 @@ export const ChatbotBuilder = () => {
                   placeholder="Descrição breve do chatbot"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label>Canais</Label>
                 <div className="flex flex-wrap gap-2">
@@ -425,12 +428,12 @@ export const ChatbotBuilder = () => {
                 </div>
               </div>
             </div>
-            
+
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
                 Cancelar
               </Button>
-              <Button 
+              <Button
                 onClick={() => createMutation.mutate(newBot)}
                 disabled={!newBot.name || newBot.channels.length === 0 || createMutation.isPending}
               >
@@ -487,6 +490,19 @@ export const ChatbotBuilder = () => {
                 <Button onClick={() => setIsCreateOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Criar Primeiro Chatbot
+                </Button>
+              </CardContent>
+            </Card>
+          ) : chatbotsError ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Bot className="h-16 w-16 text-destructive mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Erro ao carregar chatbots</h3>
+                <p className="text-muted-foreground mb-4">
+                  Não foi possível carregar os chatbots. Tente novamente.
+                </p>
+                <Button onClick={() => refetchChatbots()}>
+                  Tentar Novamente
                 </Button>
               </CardContent>
             </Card>

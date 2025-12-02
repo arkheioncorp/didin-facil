@@ -205,7 +205,7 @@ export const Dashboard: React.FC = () => {
       )}
 
       {/* Stats Grid - Melhoria #4, #11 */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-testid="stats-grid">
         <StatCard
           title="Produtos Coletados"
           value={stats?.totalProducts ?? 0}

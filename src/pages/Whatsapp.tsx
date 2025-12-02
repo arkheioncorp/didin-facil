@@ -15,10 +15,10 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { 
-  MessageSquare, 
-  Send, 
-  Phone, 
+import {
+  MessageSquare,
+  Send,
+  Phone,
   Users,
   Plus,
   Trash2,
@@ -49,8 +49,8 @@ import {
   Alert,
   AlertDescription,
 } from "@/components/ui/alert";
-import { 
-  whatsappService, 
+import {
+  whatsappService,
   ChatMessage,
   Contact,
 } from '@/lib/whatsapp';
@@ -105,21 +105,21 @@ export function WhatsappPage() {
   const [showQRCode, setShowQRCode] = useState(false);
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
   const [newInstanceName, setNewInstanceName] = useState('');
-  
+
   // State - Conversations
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // State - Messages
   const [newMessage, setNewMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
-  
+
   // State - UI
   const [loading, setLoading] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [testResult, setTestResult] = useState<{success: boolean; message: string} | null>(null);
-  
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -157,27 +157,27 @@ export function WhatsappPage() {
     try {
       setLoading(true);
       setConnectionError(null);
-      
+
       const data = await whatsappService.fetchInstances();
-      
+
       const mappedInstances: Instance[] = data.map((item) => ({
         id: item.instance.instanceId || item.instance.instanceName,
         name: item.instance.instanceName,
         phone_number: item.instance.owner?.replace('@s.whatsapp.net', ''),
-        status: item.instance.status === 'open' ? 'connected' : 
-                item.instance.status === 'connecting' ? 'connecting' : 'disconnected',
+        status: item.instance.status === 'open' ? 'connected' :
+          item.instance.status === 'connecting' ? 'connecting' : 'disconnected',
         profile_picture: item.instance.profilePictureUrl || undefined,
         created_at: new Date().toISOString(),
         owner: item.instance.owner || undefined,
       }));
-      
+
       setInstances(mappedInstances);
-      
+
       if (mappedInstances.length > 0 && !selectedInstance) {
         setSelectedInstance(mappedInstances[0].name);
         whatsappService.setInstance(mappedInstances[0].name);
       }
-      
+
       toast.success(`${mappedInstances.length} instância(s) encontrada(s)`);
     } catch (error) {
       console.error('Error fetching instances:', error);
@@ -191,9 +191,9 @@ export function WhatsappPage() {
   const fetchConversations = async () => {
     try {
       setLoading(true);
-      
+
       const contacts = await whatsappService.fetchContacts();
-      
+
       const mappedConversations: Conversation[] = contacts
         .filter((c: Contact) => c.id && !c.id.includes('@g.us'))
         .slice(0, 50)
@@ -210,7 +210,7 @@ export function WhatsappPage() {
           instance_id: selectedInstance || '',
           is_bot_active: false,
         }));
-      
+
       setConversations(mappedConversations);
     } catch (error) {
       console.error('Error fetching conversations:', error);
@@ -223,19 +223,19 @@ export function WhatsappPage() {
   const fetchMessages = async (jid: string) => {
     try {
       setLoading(true);
-      
+
       const result = await whatsappService.fetchMessages(jid, 50);
-      
+
       const mappedMessages: Message[] = (result.messages || []).map((msg: ChatMessage) => ({
         id: msg.key.id,
         content: whatsappService.getMessageText(msg.message),
         sender: (msg.key.fromMe ? 'user' : 'contact') as 'user' | 'contact',
-        timestamp: msg.messageTimestamp 
+        timestamp: msg.messageTimestamp
           ? new Date(msg.messageTimestamp * 1000).toISOString()
           : new Date().toISOString(),
         status: 'read' as const,
       })).reverse();
-      
+
       setMessages(mappedMessages);
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -254,16 +254,16 @@ export function WhatsappPage() {
     try {
       setLoading(true);
       const result = await whatsappService.createInstance(newInstanceName);
-      
+
       toast.success('Instância criada com sucesso');
       setNewInstanceName('');
       setShowCreateInstance(false);
-      
+
       if (result.qrcode?.base64) {
         setQrCodeData(result.qrcode.base64);
         setShowQRCode(true);
       }
-      
+
       fetchInstances();
     } catch (error) {
       toast.error('Erro ao criar instância');
@@ -290,15 +290,15 @@ export function WhatsappPage() {
     try {
       setLoading(true);
       whatsappService.setInstance(name);
-      
+
       const qrResponse = await whatsappService.connectInstance();
-      
+
       if (qrResponse.base64) {
         setQrCodeData(qrResponse.base64);
         setShowQRCode(true);
         startConnectionPolling(name);
       }
-      
+
       toast.info('Escaneie o QR Code para conectar');
     } catch (error) {
       toast.error('Erro ao conectar');
@@ -312,17 +312,17 @@ export function WhatsappPage() {
     if (pollIntervalRef.current) {
       clearInterval(pollIntervalRef.current);
     }
-    
+
     pollIntervalRef.current = setInterval(async () => {
       try {
         const state = await whatsappService.getConnectionState();
-        
+
         if (state.instance.state === 'open') {
           toast.success('WhatsApp conectado com sucesso!');
           setShowQRCode(false);
           setQrCodeData(null);
           fetchInstances();
-          
+
           if (pollIntervalRef.current) {
             clearInterval(pollIntervalRef.current);
             pollIntervalRef.current = null;
@@ -332,7 +332,7 @@ export function WhatsappPage() {
         console.error('Error polling connection status:', error);
       }
     }, 3000);
-    
+
     setTimeout(() => {
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
@@ -346,12 +346,12 @@ export function WhatsappPage() {
 
     try {
       setLoading(true);
-      
+
       const result = await whatsappService.sendText(
         selectedConversation.contact.phone,
         newMessage
       );
-      
+
       const newMsg: Message = {
         id: result.key.id,
         content: newMessage,
@@ -359,7 +359,7 @@ export function WhatsappPage() {
         timestamp: new Date().toISOString(),
         status: 'sent',
       };
-      
+
       setMessages(prev => [...prev, newMsg]);
       setNewMessage('');
       toast.success('Mensagem enviada');
@@ -373,10 +373,10 @@ export function WhatsappPage() {
   const testWhatsAppFlow = useCallback(async () => {
     setLoading(true);
     setTestResult(null);
-    
+
     try {
       const state = await whatsappService.getConnectionState();
-      
+
       if (state.instance.state !== 'open') {
         setTestResult({
           success: false,
@@ -384,9 +384,9 @@ export function WhatsappPage() {
         });
         return;
       }
-      
+
       const instance = await whatsappService.getCurrentInstance();
-      
+
       if (!instance?.owner) {
         setTestResult({
           success: false,
@@ -394,7 +394,7 @@ export function WhatsappPage() {
         });
         return;
       }
-      
+
       const phone = instance.owner.replace('@s.whatsapp.net', '');
       const testMessage = `🧪 TESTE AUTOMATIZADO - TikTrend
 
@@ -407,16 +407,16 @@ Para testar o chatbot, envie:
 2 - Comparar preços
 3 - Alertas
 4 - Falar com atendente`;
-      
+
       await whatsappService.sendText(phone, testMessage);
-      
+
       setTestResult({
         success: true,
         message: `Mensagem de teste enviada para ${phone}. Verifique seu WhatsApp!`
       });
-      
+
       toast.success('Teste concluído com sucesso!');
-      
+
     } catch (error) {
       console.error('Test failed:', error);
       setTestResult({
@@ -435,7 +435,7 @@ Para testar o chatbot, envie:
       ...selectedConversation,
       is_bot_active: !selectedConversation.is_bot_active,
     });
-    
+
     toast.success(selectedConversation.is_bot_active ? 'Bot desativado' : 'Bot ativado');
   };
 
@@ -463,7 +463,7 @@ Para testar o chatbot, envie:
     const date = new Date(timestamp);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
-    
+
     if (diff < 86400000) {
       return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     } else if (diff < 172800000) {
@@ -496,9 +496,9 @@ Para testar o chatbot, envie:
             <CheckCircle className="h-5 w-5" />
           )}
         </button>
-        
+
         <div className="h-px w-8 bg-border my-2" />
-        
+
         {instances.map((instance) => (
           <button
             key={instance.id}
@@ -506,18 +506,17 @@ Para testar o chatbot, envie:
               setSelectedInstance(instance.name);
               whatsappService.setInstance(instance.name);
             }}
-            className={`relative p-3 rounded-xl transition-all ${
-              selectedInstance === instance.name 
-                ? 'bg-primary text-primary-foreground' 
-                : 'hover:bg-muted'
-            }`}
+            className={`relative p-3 rounded-xl transition-all ${selectedInstance === instance.name
+              ? 'bg-primary text-primary-foreground'
+              : 'hover:bg-muted'
+              }`}
             title={`${instance.name}${instance.phone_number ? ` (${instance.phone_number})` : ''}`}
           >
             <Phone className="h-5 w-5" />
             <span className={`absolute bottom-1 right-1 h-2.5 w-2.5 rounded-full ${getStatusColor(instance.status)}`} />
           </button>
         ))}
-        
+
         <Dialog open={showCreateInstance} onOpenChange={setShowCreateInstance}>
           <DialogTrigger asChild>
             <button className="p-3 rounded-xl hover:bg-muted text-muted-foreground">
@@ -559,7 +558,7 @@ Para testar o chatbot, envie:
       </div>
 
       {/* Conversations List */}
-      <div className="w-80 border-r flex flex-col">
+      <div className="w-80 border-r flex flex-col" data-testid="conversations-list">
         <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -583,7 +582,7 @@ Para testar o chatbot, envie:
                     <QrCode className="h-4 w-4 mr-2" /> Conectar
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   className="text-destructive"
                   onClick={() => currentInstance && deleteInstance(currentInstance.name)}
                 >
@@ -592,7 +591,7 @@ Para testar o chatbot, envie:
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
+
           {connectionError && (
             <Alert variant="destructive" className="mb-3">
               <AlertCircle className="h-4 w-4" />
@@ -601,7 +600,7 @@ Para testar o chatbot, envie:
               </AlertDescription>
             </Alert>
           )}
-          
+
           {testResult && (
             <Alert variant={testResult.success ? "default" : "destructive"} className="mb-3">
               {testResult.success ? (
@@ -614,7 +613,7 @@ Para testar o chatbot, envie:
               </AlertDescription>
             </Alert>
           )}
-          
+
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -652,9 +651,9 @@ Para testar o chatbot, envie:
             <div className="p-8 text-center text-muted-foreground">
               <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>Nenhuma conversa encontrada</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="mt-4"
                 onClick={() => fetchConversations()}
               >
@@ -667,9 +666,8 @@ Para testar o chatbot, envie:
               <div
                 key={conv.id}
                 onClick={() => setSelectedConversation(conv)}
-                className={`p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors ${
-                  selectedConversation?.id === conv.id ? 'bg-muted' : ''
-                }`}
+                className={`p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedConversation?.id === conv.id ? 'bg-muted' : ''
+                  }`}
               >
                 <div className="flex items-start gap-3">
                   <Avatar>
@@ -732,6 +730,7 @@ Para testar o chatbot, envie:
                   variant={selectedConversation.is_bot_active ? "default" : "outline"}
                   size="sm"
                   onClick={toggleBot}
+                  data-testid="bot-toggle"
                 >
                   <Bot className="h-4 w-4 mr-1" />
                   {selectedConversation.is_bot_active ? 'Bot Ativo' : 'Ativar Bot'}
@@ -768,16 +767,14 @@ Para testar o chatbot, envie:
                       className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                          message.sender === 'user'
-                            ? 'bg-primary text-primary-foreground rounded-br-md'
-                            : 'bg-muted rounded-bl-md'
-                        }`}
+                        className={`max-w-[70%] rounded-2xl px-4 py-2 ${message.sender === 'user'
+                          ? 'bg-primary text-primary-foreground rounded-br-md'
+                          : 'bg-muted rounded-bl-md'
+                          }`}
                       >
                         <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                        <div className={`flex items-center gap-1 mt-1 ${
-                          message.sender === 'user' ? 'justify-end' : 'justify-start'
-                        }`}>
+                        <div className={`flex items-center gap-1 mt-1 ${message.sender === 'user' ? 'justify-end' : 'justify-start'
+                          }`}>
                           <span className="text-[10px] opacity-70">
                             {formatTime(message.timestamp)}
                           </span>
@@ -855,10 +852,11 @@ Para testar o chatbot, envie:
           </DialogHeader>
           <div className="flex items-center justify-center p-8">
             {qrCodeData ? (
-              <img 
+              <img
                 src={qrCodeData.startsWith('data:') ? qrCodeData : `data:image/png;base64,${qrCodeData}`}
-                alt="QR Code" 
+                alt="QR Code"
                 className="w-64 h-64"
+                data-testid="qr-code"
               />
             ) : (
               <div className="w-64 h-64 bg-muted rounded-lg flex items-center justify-center">

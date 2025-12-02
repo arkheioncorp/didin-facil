@@ -8,20 +8,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { SettingLabel } from "@/components/ui/info-tooltip";
-import { 
-  SparkleIcon, 
-  CopyIcon, 
+import {
+  SparkleIcon,
+  CopyIcon,
   StarIcon,
   SearchIcon,
   ChartIcon
 } from "@/components/icons";
-import { 
-  Zap, 
-  MessageSquare, 
-  Image, 
-  Clock, 
-  TrendingUp, 
-  Send, 
+import {
+  Zap,
+  MessageSquare,
+  Image,
+  Clock,
+  TrendingUp,
+  Send,
   RefreshCw,
   Wand2,
   Target,
@@ -479,7 +479,7 @@ const PlatformBadge: React.FC<{ platform: string }> = ({ platform }) => {
 export const Copy: React.FC = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
-  
+
   // State
   const [activeTab, setActiveTab] = React.useState("generate");
   const [favorites, setFavorites] = React.useState<FavoriteWithProduct[]>([]);
@@ -490,7 +490,7 @@ export const Copy: React.FC = () => {
   const [selectedWorkflow, setSelectedWorkflow] = React.useState<AutomationWorkflow | null>(null);
   const [templateSearch, setTemplateSearch] = React.useState("");
   const [workflowCategory, setWorkflowCategory] = React.useState<string>("all");
-  
+
   const [state, setState] = React.useState<CopyFormState>({
     selectedProductId: null,
     copyType: "tiktok_hook",
@@ -554,7 +554,7 @@ export const Copy: React.FC = () => {
     }
 
     setState((prev) => ({ ...prev, isGenerating: true }));
-    
+
     try {
       analytics.track('copy_generated', {
         productId: state.selectedProductId,
@@ -572,18 +572,18 @@ export const Copy: React.FC = () => {
         platform: "instagram", // Default to instagram, or derive from copyType
         language: "pt-BR"
       });
-      
-      setState((prev) => ({ 
-        ...prev, 
+
+      setState((prev) => ({
+        ...prev,
         generatedCopy: response.copyText,
-        isGenerating: false 
+        isGenerating: false
       }));
 
       toast({
         title: "✨ Copy gerada!",
         description: "Sua copy está pronta. Copie e use nas suas campanhas!",
       });
-      
+
       const history = await getCopyHistory();
       setCopyHistory(history);
     } catch (error) {
@@ -591,7 +591,7 @@ export const Copy: React.FC = () => {
       setState((prev) => ({ ...prev, isGenerating: false }));
 
       const errorStr = String(error).toLowerCase();
-      
+
       if (errorStr.includes("quota_exceeded") || errorStr.includes("quota")) {
         toast({
           title: "Limite de cota atingido",
@@ -655,16 +655,16 @@ export const Copy: React.FC = () => {
 
   // Action handlers for next steps
   const navigate = useNavigate();
-  
+
   const handleSchedulePost = () => {
     if (!state.generatedCopy) return;
     // Navegar para o agendador passando os dados da copy
-    navigate('/scheduler', { 
-      state: { 
+    navigate('/scheduler', {
+      state: {
         copy: state.generatedCopy,
         platform: state.selectedPlatform,
         copyType: state.selectedType,
-      } 
+      }
     });
     toast({
       title: "📅 Redirecionando!",
@@ -692,12 +692,12 @@ export const Copy: React.FC = () => {
 
   const handleSaveAsTemplate = async () => {
     if (!state.generatedCopy) return;
-    
+
     try {
       // Extrair variáveis do template (padrão {{variavel}})
       const variableMatches = state.generatedCopy.match(/\{\{([^}]+)\}\}/g) || [];
       const variables = variableMatches.map(v => v.replace(/[{}]/g, '').trim());
-      
+
       await api.post('/templates', {
         name: `Copy ${state.selectedType} - ${new Date().toLocaleDateString('pt-BR')}`,
         description: `Template gerado automaticamente de ${state.selectedType}`,
@@ -708,7 +708,7 @@ export const Copy: React.FC = () => {
         variables: variables,
         is_public: false,
       });
-      
+
       toast({
         title: "💾 Template salvo!",
         description: "Disponível na aba Templates.",
@@ -728,11 +728,11 @@ export const Copy: React.FC = () => {
       title: "📥 Exportando...",
       description: `Workflow "${workflow.name}" será baixado como JSON.`,
     });
-    
+
     try {
       // Determinar tipo de trigger baseado na string
       const isSchedule = workflow.trigger.toLowerCase().includes("agendado");
-      
+
       // Criar estrutura de workflow n8n compatível
       const n8nWorkflow = {
         name: workflow.name,
@@ -742,18 +742,18 @@ export const Copy: React.FC = () => {
             name: "Trigger",
             type: isSchedule ? "n8n-nodes-base.cron" : "n8n-nodes-base.webhook",
             position: [250, 300],
-            parameters: isSchedule 
+            parameters: isSchedule
               ? { cronExpression: "0 9 * * *" }
               : { httpMethod: "POST", path: `/didin/${workflow.id}` },
           },
           ...(workflow.steps || []).map((step, index) => ({
             id: `step_${index}`,
             name: step.name,
-            type: step.type === "api_call" 
+            type: step.type === "api_call"
               ? "n8n-nodes-base.httpRequest"
               : step.type === "openai"
-              ? "n8n-nodes-base.openAi"
-              : "n8n-nodes-base.set",
+                ? "n8n-nodes-base.openAi"
+                : "n8n-nodes-base.set",
             position: [450 + (index * 200), 300],
             parameters: step.config || {},
           })),
@@ -765,7 +765,7 @@ export const Copy: React.FC = () => {
         }, {} as Record<string, unknown>),
         settings: { executionOrder: "v1" },
       };
-      
+
       // Criar e baixar arquivo
       const blob = new Blob([JSON.stringify(n8nWorkflow, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -776,7 +776,7 @@ export const Copy: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       toast({
         title: "✅ Pronto!",
         description: "Importe o arquivo no seu n8n.",
@@ -874,16 +874,16 @@ export const Copy: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Button 
-                    variant="tiktrend" 
+                  <Button
+                    variant="tiktrend"
                     size="sm"
                     onClick={completeOnboarding}
                   >
                     <CheckCircle2 className="h-4 w-4 mr-2" />
                     Entendi, começar!
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     onClick={completeOnboarding}
                   >
@@ -906,8 +906,8 @@ export const Copy: React.FC = () => {
             {t("copy_ai.title")}
           </h1>
           {!showOnboarding && (
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => setShowOnboarding(true)}
               className="text-xs text-muted-foreground"
@@ -1018,9 +1018,10 @@ export const Copy: React.FC = () => {
               <CardContent className="space-y-6">
                 {/* Product Selection */}
                 <div className="space-y-2">
-                  <SettingLabel 
+                  <SettingLabel
                     label={t("copy_ai.select_product")}
                     tooltip="Selecione um produto dos favoritos para gerar copy personalizada"
+                    data-testid="product-select"
                   />
                   {isLoadingFavorites ? (
                     <div className="space-y-2">
@@ -1033,11 +1034,10 @@ export const Copy: React.FC = () => {
                         <div
                           key={fav.product.id}
                           onClick={() => setState((prev) => ({ ...prev, selectedProductId: fav.product.id }))}
-                          className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
-                            state.selectedProductId === fav.product.id
-                              ? "bg-tiktrend-primary/10 border-2 border-tiktrend-primary ring-2 ring-tiktrend-primary/20"
-                              : "hover:bg-accent border-2 border-transparent"
-                          }`}
+                          className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${state.selectedProductId === fav.product.id
+                            ? "bg-tiktrend-primary/10 border-2 border-tiktrend-primary ring-2 ring-tiktrend-primary/20"
+                            : "hover:bg-accent border-2 border-transparent"
+                            }`}
                         >
                           <img
                             src={fav.product.imageUrl || "https://placehold.co/50x50"}
@@ -1064,20 +1064,19 @@ export const Copy: React.FC = () => {
 
                 {/* Copy Type */}
                 <div className="space-y-2">
-                  <SettingLabel 
+                  <SettingLabel
                     label={t("copy_ai.copy_type")}
                     tooltip="Escolha o formato de texto mais adequado para seu canal de comunicação"
                   />
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2" data-testid="copy-types">
                     {COPY_TYPES.map((type) => (
                       <div
                         key={type.id}
                         onClick={() => setState((prev) => ({ ...prev, copyType: type.id as CopyType }))}
-                        className={`flex items-center gap-2 p-3 rounded-lg cursor-pointer transition-all ${
-                          state.copyType === type.id
-                            ? "bg-tiktrend-primary/10 border-2 border-tiktrend-primary"
-                            : "hover:bg-accent border-2 border-muted"
-                        }`}
+                        className={`flex items-center gap-2 p-3 rounded-lg cursor-pointer transition-all ${state.copyType === type.id
+                          ? "bg-tiktrend-primary/10 border-2 border-tiktrend-primary"
+                          : "hover:bg-accent border-2 border-muted"
+                          }`}
                       >
                         <span className="text-lg">{type.icon}</span>
                         <span className="text-sm">{type.name}</span>
@@ -1088,7 +1087,7 @@ export const Copy: React.FC = () => {
 
                 {/* Tone */}
                 <div className="space-y-2">
-                  <SettingLabel 
+                  <SettingLabel
                     label={t("copy_ai.tone")}
                     tooltip="O tom de voz define a personalidade do texto gerado"
                   />
@@ -1113,6 +1112,7 @@ export const Copy: React.FC = () => {
                   className="w-full gap-2 shadow-lg shadow-tiktrend-primary/25"
                   onClick={handleGenerate}
                   disabled={!state.selectedProductId || state.isGenerating}
+                  data-testid="generate-button"
                 >
                   <SparkleIcon size={18} className={state.isGenerating ? "animate-spin" : ""} />
                   {state.isGenerating ? t("copy_ai.generating") : t("copy_ai.generate")}
@@ -1122,18 +1122,18 @@ export const Copy: React.FC = () => {
                 <div className="pt-4 border-t">
                   <p className="text-xs text-muted-foreground mb-2">⚡ Ações rápidas</p>
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="flex-1"
                       onClick={() => setActiveTab("templates")}
                     >
                       <Palette className="h-4 w-4 mr-1" />
                       Usar Template
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="flex-1"
                       onClick={() => setActiveTab("automation")}
                     >
@@ -1207,41 +1207,41 @@ export const Copy: React.FC = () => {
                         Regenerar
                       </Button>
                     </div>
-                    
+
                     {/* Next Steps */}
                     <div className="pt-4 border-t">
                       <p className="text-xs font-medium mb-2">🚀 Próximos passos</p>
                       <div className="grid grid-cols-2 gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           className="justify-start text-xs h-auto py-2"
                           onClick={handleSchedulePost}
                         >
                           <Send className="h-3 w-3 mr-2" />
                           Agendar post
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           className="justify-start text-xs h-auto py-2"
                           onClick={handleCreateAutomation}
                         >
                           <Zap className="h-3 w-3 mr-2" />
                           Criar automação
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           className="justify-start text-xs h-auto py-2"
                           onClick={handleSendWhatsApp}
                         >
                           <MessageSquare className="h-3 w-3 mr-2" />
                           Enviar WhatsApp
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           className="justify-start text-xs h-auto py-2"
                           onClick={handleSaveAsTemplate}
                         >
@@ -1293,8 +1293,8 @@ export const Copy: React.FC = () => {
           {/* Template Grid */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredTemplates.map((template) => (
-              <Card 
-                key={template.id} 
+              <Card
+                key={template.id}
                 className="group hover:border-tiktrend-primary/50 hover:shadow-lg transition-all cursor-pointer"
                 onClick={() => setSelectedTemplate(template)}
               >
@@ -1344,7 +1344,7 @@ export const Copy: React.FC = () => {
                       </div>
                     </div>
                   </DialogHeader>
-                  
+
                   <div className="space-y-4 mt-4">
                     {/* Template Preview */}
                     <div>
@@ -1395,15 +1395,15 @@ export const Copy: React.FC = () => {
 
                     {/* Actions */}
                     <div className="flex gap-2 pt-4 border-t">
-                      <Button 
-                        variant="tiktrend" 
+                      <Button
+                        variant="tiktrend"
                         className="flex-1"
                         onClick={() => handleUseTemplate(selectedTemplate)}
                       >
                         <Wand2 className="h-4 w-4 mr-2" />
                         Usar Template
                       </Button>
-                      <Button 
+                      <Button
                         variant="outline"
                         onClick={() => copyToClipboard(selectedTemplate.captionTemplate)}
                       >
@@ -1446,7 +1446,7 @@ export const Copy: React.FC = () => {
           {/* Workflows Grid */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredWorkflows.map((workflow) => (
-              <Card 
+              <Card
                 key={workflow.id}
                 className="group hover:border-blue-500/50 hover:shadow-lg transition-all cursor-pointer"
                 onClick={() => setSelectedWorkflow(workflow)}
@@ -1539,7 +1539,7 @@ export const Copy: React.FC = () => {
                       </div>
                     </div>
                   </DialogHeader>
-                  
+
                   <div className="space-y-4 mt-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 bg-muted/30 rounded-lg">
@@ -1567,15 +1567,15 @@ export const Copy: React.FC = () => {
                     </div>
 
                     <div className="flex gap-2 pt-4 border-t">
-                      <Button 
-                        variant="tiktrend" 
+                      <Button
+                        variant="tiktrend"
                         className="flex-1"
                         onClick={() => handleExportN8n(selectedWorkflow)}
                       >
                         <Download className="h-4 w-4 mr-2" />
                         Exportar para n8n
                       </Button>
-                      <Button 
+                      <Button
                         variant="outline"
                         onClick={() => handleOpenDocs(selectedWorkflow)}
                       >
@@ -1655,8 +1655,8 @@ export const Copy: React.FC = () => {
                   </div>
                   <p className="text-muted-foreground">Nenhuma copy gerada ainda</p>
                   <p className="text-sm text-muted-foreground/60 mt-1">Suas copies aparecerão aqui</p>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="mt-4"
                     onClick={() => setActiveTab("generate")}
                   >

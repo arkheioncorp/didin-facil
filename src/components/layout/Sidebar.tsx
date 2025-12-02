@@ -300,10 +300,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                     return collapsed ? (
                       <Tooltip key={item.path} delayDuration={0}>
                         <TooltipTrigger asChild>
-                          <Link to={item.path} data-testid={item.testId}>
+                          <Link to={item.path}>
                             <Button
                               variant={active ? "default" : "ghost"}
                               size="icon"
+                              data-testid={item.testId}
                               className={cn(
                                 "w-9 h-9 rounded-lg transition-all duration-200 relative",
                                 active && "bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary shadow-md shadow-tiktrend-primary/20 hover:shadow-tiktrend-primary/30",
@@ -330,9 +331,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                         </TooltipContent>
                       </Tooltip>
                     ) : (
-                      <Link key={item.path} to={item.path} data-testid={item.testId}>
+                      <Link key={item.path} to={item.path}>
                         <Button
                           variant={active ? "default" : "ghost"}
+                          data-testid={item.testId}
                           className={cn(
                             "w-full justify-start gap-2.5 h-9 rounded-lg text-[13px] transition-all duration-200",
                             active && "bg-gradient-to-r from-tiktrend-primary to-tiktrend-secondary shadow-md shadow-tiktrend-primary/20 hover:shadow-tiktrend-primary/30",
@@ -427,10 +429,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                 return collapsed ? (
                   <Tooltip key={item.path} delayDuration={0}>
                     <TooltipTrigger asChild>
-                      <Link to={item.path} data-testid={testId}>
+                      <Link to={item.path}>
                         <Button
                           variant={active ? "secondary" : "ghost"}
                           size="icon"
+                          data-testid={testId}
                           className="w-full"
                         >
                           <Icon size={20} />
@@ -442,9 +445,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                     </TooltipContent>
                   </Tooltip>
                 ) : (
-                  <Link key={item.path} to={item.path} data-testid={testId}>
+                  <Link key={item.path} to={item.path}>
                     <Button
                       variant={active ? "secondary" : "ghost"}
+                      data-testid={testId}
                       className="w-full justify-start gap-3"
                     >
                       <Icon size={20} />

@@ -44,7 +44,7 @@ interface TutorialContextType {
   currentTutorial: Tutorial | null;
   currentStepIndex: number;
   completedTutorials: string[];
-  
+
   // Actions
   startTutorial: (tutorialId: string) => void;
   endTutorial: () => void;
@@ -53,7 +53,7 @@ interface TutorialContextType {
   skipTutorial: () => void;
   markCompleted: (tutorialId: string) => void;
   resetTutorials: () => void;
-  
+
   // Helpers
   getTutorialProgress: () => { current: number; total: number };
   isStepVisible: (stepId: string) => boolean;
@@ -148,7 +148,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "dash-stats",
         title: "📊 Estatísticas Rápidas",
         content: "Cards com números-chave atualizados em tempo real. Clique em qualquer card para ver detalhes.",
-        target: ".stats-grid, .dashboard-stats",
+        target: "[data-testid='stats-grid']",
         position: "bottom",
         page: "/",
       },
@@ -181,7 +181,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "search-bar",
         title: "🔎 Barra de Busca",
         content: "Digite palavras-chave, categorias ou até links de produtos. A IA entende o que você procura.",
-        target: "input[type='search'], input[placeholder*='busca'], .search-input",
+        target: "[data-testid='search-input']",
         position: "bottom",
         page: "/search",
       },
@@ -189,7 +189,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "search-filters",
         title: "⚡ Filtros Avançados",
         content: "Filtre por preço, avaliação, vendas, categoria e muito mais. Combine filtros para resultados precisos.",
-        target: ".filters-container, [data-testid='filters']",
+        target: "[data-testid='filters-container']",
         position: "right",
         page: "/search",
       },
@@ -197,7 +197,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "search-results",
         title: "📦 Resultados",
         content: "Cada produto mostra: preço, avaliação, vendas e potencial de lucro. Clique para ver detalhes ou adicionar aos favoritos.",
-        target: ".product-grid, .products-list",
+        target: "[data-testid='product-grid']",
         position: "top",
         page: "/search",
       },
@@ -222,7 +222,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "coleta-url",
         title: "🔗 Cole URLs",
         content: "Cole links de produtos, lojas ou categorias. Suportamos TikTok Shop, AliExpress, Shopee e mais.",
-        target: "textarea, .url-input",
+        target: "[data-testid='coleta-url-input']",
         position: "bottom",
         page: "/coleta",
       },
@@ -230,7 +230,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "coleta-start",
         title: "▶️ Iniciar Coleta",
         content: "Clique para começar a extração. O progresso aparece em tempo real com estimativa de conclusão.",
-        target: "button[type='submit'], .start-button",
+        target: "[data-testid='coleta-start-btn']",
         position: "top",
         page: "/coleta",
       },
@@ -255,7 +255,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "whats-connect",
         title: "📱 Conectar WhatsApp",
         content: "Escaneie o QR Code com seu WhatsApp para conectar. A conexão é segura e criptografada.",
-        target: ".qr-code, [data-testid='qr-code']",
+        target: "[data-testid='qr-code']",
         position: "bottom",
         page: "/whatsapp",
       },
@@ -263,7 +263,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "whats-conversations",
         title: "💭 Conversas",
         content: "Veja todas as conversas em um só lugar. O bot responde automaticamente ou transfira para atendimento humano.",
-        target: ".conversations-list, .chat-list",
+        target: "[data-testid='conversations-list']",
         position: "right",
         page: "/whatsapp",
       },
@@ -271,7 +271,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "whats-bot",
         title: "🤖 Bot Inteligente",
         content: "O chatbot responde perguntas, envia produtos e qualifica leads automaticamente.",
-        target: ".bot-toggle, [data-testid='bot-toggle']",
+        target: "[data-testid='bot-toggle']",
         position: "left",
         page: "/whatsapp",
       },
@@ -296,7 +296,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "copy-select",
         title: "📦 Selecione um Produto",
         content: "Escolha um produto dos seus favoritos ou cole uma URL. A IA analisa e cria copies otimizados.",
-        target: ".product-selector, [data-testid='product-select']",
+        target: "[data-testid='product-select']",
         position: "bottom",
         page: "/copy",
       },
@@ -304,7 +304,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "copy-types",
         title: "📝 Tipos de Copy",
         content: "Escolha o tipo: anúncio, descrição, post para redes sociais, email marketing e mais.",
-        target: ".copy-types, .type-selector",
+        target: "[data-testid='copy-types']",
         position: "right",
         page: "/copy",
       },
@@ -312,7 +312,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "copy-generate",
         title: "⚡ Gerar Copy",
         content: "Clique para gerar. Cada geração usa créditos IA. Você pode regenerar ou editar o resultado.",
-        target: "button[type='submit'], .generate-button",
+        target: "[data-testid='generate-button']",
         position: "top",
         page: "/copy",
       },
@@ -344,7 +344,7 @@ export const TUTORIALS: Tutorial[] = [
         id: "crm-pipeline",
         title: "📊 Pipeline Visual",
         content: "Arraste cards entre colunas para mover leads no funil. Personalize etapas conforme seu processo.",
-        target: ".pipeline-board, .kanban-board",
+        target: ".pipeline-board, .kanban-board", // No specific data-testid provided for this, keeping original
         position: "top",
         page: "/crm",
       },
@@ -509,7 +509,7 @@ export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const endTutorial = useCallback(() => {
     if (currentTutorial) {
-      setCompletedTutorials((prev) => 
+      setCompletedTutorials((prev) =>
         prev.includes(currentTutorial.id) ? prev : [...prev, currentTutorial.id]
       );
     }
@@ -537,7 +537,7 @@ export const TutorialProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [endTutorial]);
 
   const markCompleted = useCallback((tutorialId: string) => {
-    setCompletedTutorials((prev) => 
+    setCompletedTutorials((prev) =>
       prev.includes(tutorialId) ? prev : [...prev, tutorialId]
     );
   }, []);
@@ -609,18 +609,57 @@ const TutorialOverlay: React.FC = () => {
   const [targetRect, setTargetRect] = React.useState<DOMRect | null>(null);
 
   React.useEffect(() => {
-    if (currentStep.target) {
-      const element = document.querySelector(currentStep.target);
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        setTargetRect(rect);
-        element.scrollIntoView({ behavior: "smooth", block: "center" });
+    const updateTargetRect = () => {
+      if (currentStep.target) {
+        // Pequeno delay para garantir que o DOM foi atualizado
+        const findElement = () => {
+          const element = document.querySelector(currentStep.target!);
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            setTargetRect(rect);
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else {
+            setTargetRect(null);
+            // Tentar novamente após um curto delay se o elemento não foi encontrado
+            console.warn(`[Tutorial] Element not found: ${currentStep.target}`);
+          }
+        };
+
+        // Tentar imediatamente
+        findElement();
+        
+        // Tentar novamente após um curto delay (para elementos que podem demorar a renderizar)
+        const retryTimeout = setTimeout(findElement, 100);
+        const retryTimeout2 = setTimeout(findElement, 300);
+        
+        return () => {
+          clearTimeout(retryTimeout);
+          clearTimeout(retryTimeout2);
+        };
       } else {
         setTargetRect(null);
       }
-    } else {
-      setTargetRect(null);
-    }
+    };
+
+    updateTargetRect();
+
+    // Atualizar posição quando a janela for redimensionada
+    const handleResize = () => {
+      if (currentStep.target) {
+        const element = document.querySelector(currentStep.target);
+        if (element) {
+          setTargetRect(element.getBoundingClientRect());
+        }
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleResize, true);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleResize, true);
+    };
   }, [currentStep]);
 
   // Calculate tooltip position

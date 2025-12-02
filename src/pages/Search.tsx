@@ -21,7 +21,7 @@ export const Search: React.FC = () => {
   const [totalResults, setTotalResults] = React.useState(0);
   const [hasSearched, setHasSearched] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  
+
   const { filters, searchHistory, addToHistory } = useSearchStore();
   const [selectedCategories, setSelectedCategories] = React.useState<string[]>(filters.categories || []);
   const [priceMin, setPriceMin] = React.useState<string>("");
@@ -33,19 +33,19 @@ export const Search: React.FC = () => {
       setIsSearching(true);
       setError(null);
       setHasSearched(true);
-      
+
       if (query.trim()) {
         addToHistory(query);
       }
-      
+
       // Map category IDs to database values
       const mappedCategories = selectedCategories
         .map(id => CATEGORY_ID_TO_DB[id])
         .filter(Boolean);
-      
+
       // Map sort ID to database field
       const mappedSortBy = SORT_ID_TO_FIELD[filters.sortBy] || filters.sortBy;
-      
+
       const searchFilters: Partial<SearchFilters> = {
         query: query.trim() || undefined,
         categories: mappedCategories,
@@ -62,18 +62,18 @@ export const Search: React.FC = () => {
         query: query.trim(),
         filters: searchFilters
       });
-      
+
       const response = await searchProducts(searchFilters);
       setSearchResults(response.data);
       setTotalResults(response.total);
-      
+
       // Save search history to database
       await saveSearchHistory(
         query.trim(),
         searchFilters as SearchFilters,
         response.total
       ).catch(console.error);
-      
+
     } catch (err) {
       console.error("Search error:", err);
       setError(t("errors.generic"));
@@ -131,6 +131,7 @@ export const Search: React.FC = () => {
                 onKeyDown={handleKeyDown}
                 icon={<SearchIcon size={18} />}
                 className="h-12 text-lg"
+                data-testid="search-input"
               />
             </div>
             <Button
@@ -164,7 +165,7 @@ export const Search: React.FC = () => {
       {/* Filters and Results */}
       <div className="grid gap-6 lg:grid-cols-4">
         {/* Sidebar Filters */}
-        <Card className="lg:col-span-1 h-fit">
+        <Card className="lg:col-span-1 h-fit" data-testid="filters-container">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
@@ -185,11 +186,10 @@ export const Search: React.FC = () => {
                   <div
                     key={category.id}
                     onClick={() => toggleCategory(category.id)}
-                    className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                      selectedCategories.includes(category.id)
+                    className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${selectedCategories.includes(category.id)
                         ? "bg-tiktrend-primary/10 text-tiktrend-primary"
                         : "hover:bg-accent"
-                    }`}
+                      }`}
                   >
                     <span className="text-lg">{category.icon}</span>
                     <span className="text-sm">{category.label}</span>
@@ -305,7 +305,7 @@ export const Search: React.FC = () => {
                 </p>
                 <Badge variant="success" dot>{t("search.updatedNow")}</Badge>
               </div>
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-testid="product-grid">
                 {searchResults.map((product, index) => (
                   <div
                     key={product.id}

@@ -6,19 +6,18 @@ Complete financial tracking and reporting for Didin Fácil
 import uuid
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-from typing import Optional, List, Dict, Any, Union
+from typing import Any, Dict, List, Optional, Union
 
+from api.database.accounting_models import (APIUsageLog, CreditPackage,
+                                            DailyFinancialReport,
+                                            FinancialTransaction,
+                                            MonthlyFinancialSummary,
+                                            OperationCost, OperationType,
+                                            PaymentStatus, TransactionType,
+                                            UserFinancialSummary)
 from databases import Database
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from api.database.accounting_models import (
-    CreditPackage, OperationCost, FinancialTransaction,
-    DailyFinancialReport, MonthlyFinancialSummary,
-    UserFinancialSummary, APIUsageLog,
-    TransactionType, OperationType, PaymentStatus
-)
-
 
 # =============================================================================
 # PRICING CONSTANTS
@@ -361,7 +360,7 @@ class AccountingService:
         )
         summary = result.scalar_one_or_none()
         
-        now = datetime.now(timezone.utc)
+        now = datetime.utcnow()
         
         if summary:
             summary.total_spent += amount_spent
@@ -393,77 +392,95 @@ class AccountingService:
 
     async def get_dashboard_metrics(self, days: int = 30) -> Dict[str, Any]:
         """Get dashboard metrics for admin panel"""
-        start_date = datetime.now(timezone.utc) - timedelta(days=days)
+        start_date = datetime.utcnow() - timedelta(days=days)
         
         # Total revenue
-        revenue_result = await self.db.execute(
-            select(func.sum(FinancialTransaction.amount_brl))
-            .where(
-                and_(
-                    FinancialTransaction.created_at >= start_date,
-                    FinancialTransaction.transaction_type.in_([
-                        TransactionType.CREDIT_PURCHASE.value,
-                        TransactionType.LICENSE_PURCHASE.value,
-                    ]),
-                    FinancialTransaction.payment_status == PaymentStatus.APPROVED.value
-                )
-            )
+        revenue_result = await self.db.fetch_one(
+            """
+            SELECT COALESCE(SUM(amount_brl), 0) as total
+            FROM financial_transactions
+            WHERE created_at >= :start_date
+              AND transaction_type IN (:credit_purchase, :license_purchase)
+              AND payment_status = :approved
+            """,
+            {
+                "start_date": start_date,
+                "credit_purchase": TransactionType.CREDIT_PURCHASE.value,
+                "license_purchase": TransactionType.LICENSE_PURCHASE.value,
+                "approved": PaymentStatus.APPROVED.value,
+            }
         )
-        total_revenue = revenue_result.scalar() or Decimal("0")
+        total_revenue = Decimal(str(revenue_result["total"])) if revenue_result else Decimal("0")
         
-        # Total costs
-        costs_result = await self.db.execute(
-            select(func.sum(FinancialTransaction.cost_brl))
-            .where(FinancialTransaction.created_at >= start_date)
+        # Total costs from transactions
+        costs_result = await self.db.fetch_one(
+            """
+            SELECT COALESCE(SUM(cost_brl), 0) as total
+            FROM financial_transactions
+            WHERE created_at >= :start_date
+            """,
+            {"start_date": start_date}
         )
-        total_costs = costs_result.scalar() or Decimal("0")
+        total_costs = Decimal(str(costs_result["total"])) if costs_result else Decimal("0")
         
         # OpenAI costs
-        openai_costs_result = await self.db.execute(
-            select(func.sum(APIUsageLog.cost_brl))
-            .where(APIUsageLog.created_at >= start_date)
+        openai_result = await self.db.fetch_one(
+            """
+            SELECT COALESCE(SUM(cost_brl), 0) as total
+            FROM api_usage_logs
+            WHERE created_at >= :start_date
+            """,
+            {"start_date": start_date}
         )
-        openai_costs = openai_costs_result.scalar() or Decimal("0")
+        openai_costs = Decimal(str(openai_result["total"])) if openai_result else Decimal("0")
         
         # Credits sold
-        credits_result = await self.db.execute(
-            select(func.sum(FinancialTransaction.credits_amount))
-            .where(
-                and_(
-                    FinancialTransaction.created_at >= start_date,
-                    FinancialTransaction.transaction_type == TransactionType.CREDIT_PURCHASE.value,
-                    FinancialTransaction.payment_status == PaymentStatus.APPROVED.value
-                )
-            )
+        credits_sold_result = await self.db.fetch_one(
+            """
+            SELECT COALESCE(SUM(credits_amount), 0) as total
+            FROM financial_transactions
+            WHERE created_at >= :start_date
+              AND transaction_type = :credit_purchase
+              AND payment_status = :approved
+            """,
+            {
+                "start_date": start_date,
+                "credit_purchase": TransactionType.CREDIT_PURCHASE.value,
+                "approved": PaymentStatus.APPROVED.value,
+            }
         )
-        credits_sold = credits_result.scalar() or 0
+        credits_sold = int(credits_sold_result["total"]) if credits_sold_result else 0
         
         # Credits consumed
-        credits_used_result = await self.db.execute(
-            select(func.sum(func.abs(FinancialTransaction.credits_amount)))
-            .where(
-                and_(
-                    FinancialTransaction.created_at >= start_date,
-                    FinancialTransaction.transaction_type == TransactionType.CREDIT_USAGE.value
-                )
-            )
+        credits_consumed_result = await self.db.fetch_one(
+            """
+            SELECT COALESCE(SUM(ABS(credits_amount)), 0) as total
+            FROM financial_transactions
+            WHERE created_at >= :start_date
+              AND transaction_type = :credit_usage
+            """,
+            {
+                "start_date": start_date,
+                "credit_usage": TransactionType.CREDIT_USAGE.value,
+            }
         )
-        credits_consumed = credits_used_result.scalar() or 0
+        credits_consumed = int(credits_consumed_result["total"]) if credits_consumed_result else 0
         
         # Transactions count
-        transactions_result = await self.db.execute(
-            select(func.count(FinancialTransaction.id))
-            .where(
-                and_(
-                    FinancialTransaction.created_at >= start_date,
-                    FinancialTransaction.transaction_type.in_([
-                        TransactionType.CREDIT_PURCHASE.value,
-                        TransactionType.LICENSE_PURCHASE.value,
-                    ])
-                )
-            )
+        tx_count_result = await self.db.fetch_one(
+            """
+            SELECT COUNT(*) as total
+            FROM financial_transactions
+            WHERE created_at >= :start_date
+              AND transaction_type IN (:credit_purchase, :license_purchase)
+            """,
+            {
+                "start_date": start_date,
+                "credit_purchase": TransactionType.CREDIT_PURCHASE.value,
+                "license_purchase": TransactionType.LICENSE_PURCHASE.value,
+            }
         )
-        transactions_count = transactions_result.scalar() or 0
+        transactions_count = int(tx_count_result["total"]) if tx_count_result else 0
         
         # Calculate metrics
         gross_profit = total_revenue - total_costs - openai_costs
@@ -476,121 +493,144 @@ class AccountingService:
             "openai_costs": float(openai_costs),
             "gross_profit": float(gross_profit),
             "profit_margin_percent": float(profit_margin),
-            "credits_sold": int(credits_sold),
-            "credits_consumed": int(credits_consumed),
-            "transactions_count": int(transactions_count),
+            "credits_sold": credits_sold,
+            "credits_consumed": credits_consumed,
+            "transactions_count": transactions_count,
             "avg_transaction_value": float(total_revenue / transactions_count) if transactions_count > 0 else 0,
         }
 
     async def get_revenue_by_day(self, days: int = 30) -> List[Dict]:
         """Get daily revenue for charts"""
-        start_date = datetime.now(timezone.utc) - timedelta(days=days)
+        start_date = datetime.utcnow() - timedelta(days=days)
         
-        result = await self.db.execute(
-            select(
-                func.date(FinancialTransaction.created_at).label("date"),
-                func.sum(FinancialTransaction.amount_brl).label("revenue"),
-                func.sum(FinancialTransaction.cost_brl).label("costs"),
-                func.count(FinancialTransaction.id).label("transactions")
-            )
-            .where(
-                and_(
-                    FinancialTransaction.created_at >= start_date,
-                    FinancialTransaction.transaction_type.in_([
-                        TransactionType.CREDIT_PURCHASE.value,
-                        TransactionType.LICENSE_PURCHASE.value,
-                    ]),
-                    FinancialTransaction.payment_status == PaymentStatus.APPROVED.value
-                )
-            )
-            .group_by(func.date(FinancialTransaction.created_at))
-            .order_by(func.date(FinancialTransaction.created_at))
+        rows = await self.db.fetch_all(
+            """
+            SELECT 
+                DATE(created_at) as date,
+                COALESCE(SUM(amount_brl), 0) as revenue,
+                COALESCE(SUM(cost_brl), 0) as costs,
+                COUNT(*) as transactions
+            FROM financial_transactions
+            WHERE created_at >= :start_date
+              AND transaction_type IN (:credit_purchase, :license_purchase)
+              AND payment_status = :approved
+            GROUP BY DATE(created_at)
+            ORDER BY DATE(created_at)
+            """,
+            {
+                "start_date": start_date,
+                "credit_purchase": TransactionType.CREDIT_PURCHASE.value,
+                "license_purchase": TransactionType.LICENSE_PURCHASE.value,
+                "approved": PaymentStatus.APPROVED.value,
+            }
         )
         
         return [
             {
-                "date": str(row.date),
-                "revenue": float(row.revenue or 0),
-                "costs": float(row.costs or 0),
-                "profit": float((row.revenue or 0) - (row.costs or 0)),
-                "transactions": row.transactions,
+                "date": str(row["date"]),
+                "revenue": float(row["revenue"] or 0),
+                "costs": float(row["costs"] or 0),
+                "profit": float((row["revenue"] or 0) - (row["costs"] or 0)),
+                "transactions": row["transactions"],
             }
-            for row in result.fetchall()
+            for row in rows
         ]
 
     async def get_operations_breakdown(self, days: int = 30) -> Dict[str, int]:
         """Get breakdown of operations by type"""
-        start_date = datetime.now(timezone.utc) - timedelta(days=days)
+        start_date = datetime.utcnow() - timedelta(days=days)
         
-        result = await self.db.execute(
-            select(
-                FinancialTransaction.operation_type,
-                func.count(FinancialTransaction.id).label("count")
-            )
-            .where(
-                and_(
-                    FinancialTransaction.created_at >= start_date,
-                    FinancialTransaction.transaction_type == TransactionType.CREDIT_USAGE.value
-                )
-            )
-            .group_by(FinancialTransaction.operation_type)
-        )
+        query = """
+            SELECT operation_type, COUNT(*) as count
+            FROM financial_transactions
+            WHERE created_at >= :start_date
+              AND transaction_type = :tx_type
+            GROUP BY operation_type
+        """
+        rows = await self.db.fetch_all(query, {
+            "start_date": start_date,
+            "tx_type": TransactionType.CREDIT_USAGE.value
+        })
         
-        return {row.operation_type: row.count for row in result.fetchall()}
+        # Build result with defaults for all operation types
+        result = {
+            "copy_generation": 0,
+            "trend_analysis": 0,
+            "niche_report": 0,
+            "ai_chat": 0,
+            "image_generation": 0,
+        }
+        
+        # Fill in actual values
+        for row in rows:
+            op_type = row["operation_type"]
+            if op_type and op_type in result:
+                result[op_type] = row["count"]
+        
+        return result
 
     async def get_top_users(self, limit: int = 10) -> List[Dict]:
         """Get top spending users"""
-        result = await self.db.execute(
-            select(UserFinancialSummary)
-            .order_by(UserFinancialSummary.total_spent.desc())
-            .limit(limit)
-        )
+        query = """
+            SELECT user_id, total_spent, total_credits_purchased, 
+                   total_credits_used, purchase_count, lifetime_profit
+            FROM user_financial_summaries
+            ORDER BY total_spent DESC
+            LIMIT :limit
+        """
+        rows = await self.db.fetch_all(query, {"limit": limit})
+        
+        if not rows:
+            return []
         
         return [
             {
-                "user_id": str(row.user_id),
-                "total_spent": float(row.total_spent),
-                "credits_purchased": row.total_credits_purchased,
-                "credits_used": row.total_credits_used,
-                "purchase_count": row.purchase_count,
-                "lifetime_profit": float(row.lifetime_profit),
+                "user_id": str(row["user_id"]),
+                "total_spent": float(row["total_spent"] or 0),
+                "credits_purchased": int(row["total_credits_purchased"] or 0),
+                "credits_used": int(row["total_credits_used"] or 0),
+                "purchase_count": int(row["purchase_count"] or 0),
+                "lifetime_profit": float(row["lifetime_profit"] or 0),
             }
-            for row in result.scalars().all()
+            for row in rows
         ]
 
     async def get_package_sales_stats(self, days: int = 30) -> List[Dict]:
         """Get sales stats per package"""
-        start_date = datetime.now(timezone.utc) - timedelta(days=days)
+        start_date = datetime.utcnow() - timedelta(days=days)
         
-        result = await self.db.execute(
-            select(
-                CreditPackage.name,
-                CreditPackage.slug,
-                func.count(FinancialTransaction.id).label("sales"),
-                func.sum(FinancialTransaction.amount_brl).label("revenue"),
-                func.sum(FinancialTransaction.credits_amount).label("credits")
-            )
-            .join(CreditPackage, FinancialTransaction.package_id == CreditPackage.id)
-            .where(
-                and_(
-                    FinancialTransaction.created_at >= start_date,
-                    FinancialTransaction.transaction_type == TransactionType.CREDIT_PURCHASE.value,
-                    FinancialTransaction.payment_status == PaymentStatus.APPROVED.value
-                )
-            )
-            .group_by(CreditPackage.name, CreditPackage.slug)
-            .order_by(func.sum(FinancialTransaction.amount_brl).desc())
+        rows = await self.db.fetch_all(
+            """
+            SELECT 
+                cp.name,
+                cp.slug,
+                COUNT(ft.id) as sales,
+                COALESCE(SUM(ft.amount_brl), 0) as revenue,
+                COALESCE(SUM(ft.credits_amount), 0) as credits
+            FROM financial_transactions ft
+            JOIN credit_packages cp ON ft.package_id = cp.id
+            WHERE ft.created_at >= :start_date
+              AND ft.transaction_type = :credit_purchase
+              AND ft.payment_status = :approved
+            GROUP BY cp.name, cp.slug
+            ORDER BY SUM(ft.amount_brl) DESC
+            """,
+            {
+                "start_date": start_date,
+                "credit_purchase": TransactionType.CREDIT_PURCHASE.value,
+                "approved": PaymentStatus.APPROVED.value,
+            }
         )
         
         return [
             {
-                "name": row.name,
-                "slug": row.slug,
-                "sales": row.sales,
-                "revenue": float(row.revenue or 0),
-                "credits": row.credits,
+                "name": row["name"],
+                "slug": row["slug"],
+                "sales": row["sales"],
+                "revenue": float(row["revenue"] or 0),
+                "credits": int(row["credits"] or 0),
             }
-            for row in result.fetchall()
+            for row in rows
         ]
 
     # =========================================================================
@@ -600,7 +640,7 @@ class AccountingService:
     async def generate_daily_report(self, date: datetime = None) -> DailyFinancialReport:
         """Generate or update daily financial report"""
         if date is None:
-            date = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+            date = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         
         start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
         end_of_day = start_of_day + timedelta(days=1)
@@ -619,7 +659,7 @@ class AccountingService:
         if report:
             for key, value in metrics.items():
                 setattr(report, key, value)
-            report.updated_at = datetime.now(timezone.utc)
+            report.updated_at = datetime.utcnow()
         else:
             report = DailyFinancialReport(
                 id=uuid.uuid4(),
