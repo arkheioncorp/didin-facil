@@ -445,10 +445,13 @@ class TestOAuthCallback:
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         
-        # Configure mock_redis properly
-        mock_redis.get = AsyncMock(return_value=json.dumps(state_data))
-        mock_redis.delete = AsyncMock()
-        mock_get_redis.return_value = AsyncMock(return_value=mock_redis)()
+        # Create a proper mock Redis that will be returned by get_redis()
+        redis_mock = MagicMock()
+        redis_mock.get = AsyncMock(return_value=json.dumps(state_data))
+        redis_mock.delete = AsyncMock()
+        
+        # get_redis is async, so it should return the redis_mock when awaited
+        mock_get_redis.return_value = redis_mock
         
         with pytest.raises(HTTPException) as exc:
             await oauth_callback(

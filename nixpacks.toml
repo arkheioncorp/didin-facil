@@ -11,8 +11,6 @@ nixPkgs = [
   "postgresql",
   "ffmpeg",
   "chromium",
-  "gcc",
-  "glibc",
 ]
 
 aptPkgs = [
@@ -23,6 +21,7 @@ aptPkgs = [
   "libgbm1",
   "libasound2t64",
   "libstdc++6",
+  "libgcc-s1",
 ]
 
 [phases.install]
@@ -39,4 +38,3 @@ cmds = ["echo 'Build complete'"]
 
 [variables]
 PYTHONUNBUFFERED = "1"
-NIX_LD_LIBRARY_PATH = "/nix/var/nix/profiles/default/lib:/usr/lib/x86_64-linux-gnu"
