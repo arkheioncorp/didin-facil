@@ -10,6 +10,10 @@ FROM node:20-alpine as builder
 
 WORKDIR /app
 
+# Build arguments for environment variables
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 # Install dependencies
 COPY package*.json ./
 RUN npm ci
@@ -26,12 +30,13 @@ FROM nginx:alpine
 # Copy build artifacts
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy Nginx configuration
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+# Copy Nginx configuration template
+COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
 
-# Expose port (Railway uses $PORT, but Nginx listens on 80 by default. 
-# We need to configure Nginx to listen on $PORT or map it)
-# Railway automatically maps the exposed port.
-EXPOSE 80
+# Railway uses dynamic PORT - nginx:alpine supports envsubst via templates
+ENV PORT=80
+
+# Expose port
+EXPOSE ${PORT}
 
 CMD ["nginx", "-g", "daemon off;"]

@@ -1,0 +1,27 @@
+# ============================================================================
+# Railway Configuration - TikTrend Frontend
+# ============================================================================
+# Configuração para deploy do frontend no Railway
+# ============================================================================
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "docker/frontend.Dockerfile"
+watchPatterns = [
+    "src/**",
+    "public/**",
+    "package.json",
+    "vite.config.ts",
+    "docker/frontend.Dockerfile",
+    "docker/nginx.conf",
+]
+
+[build.args]
+VITE_API_URL = "https://ticktrend-production.up.railway.app"
+
+[deploy]
+numReplicas = 1
+healthcheckPath = "/health"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
