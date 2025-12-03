@@ -1,0 +1,20 @@
+# ============================================================================
+# Nixpacks Configuration - Didin Fácil / TikTrend
+# ============================================================================
+# Configuração mais leve para Railway
+# ============================================================================
+
+[phases.setup]
+nixPkgs = ["python311", "postgresql"]
+
+[phases.install]
+cmds = ["cd backend && pip install -r requirements.txt"]
+
+[phases.build]
+cmds = ["echo 'Build complete'"]
+
+[start]
+cmd = "cd backend && alembic upgrade head && gunicorn api.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT"
+
+[variables]
+PYTHONUNBUFFERED = "1"
