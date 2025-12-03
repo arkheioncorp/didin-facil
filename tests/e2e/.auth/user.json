@@ -10,7 +10,7 @@
         },
         {
           "name": "auth_token",
-          "value": "eyJzdWIiOiJ1c2VyXzE3NjQ2NzI3MTA5NzAiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJleHAiOjE3NjQ3NTkxMTA5NzB9.dev.1764672710970"
+          "value": "eyJzdWIiOiJ1c2VyXzE3NjQ3MTgyODEwNDIiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJleHAiOjE3NjQ4MDQ2ODEwNDJ9.dev.1764718281043"
         },
         {
           "name": "completed_tutorials",
@@ -21,8 +21,8 @@
           "value": "true"
         },
         {
-          "name": "didin-user-v2",
-          "value": "{\"state\":{\"user\":{\"id\":\"user_1764672710970\",\"email\":\"test@example.com\",\"name\":\"test\",\"avatarUrl\":null,\"phone\":null,\"hasLifetimeLicense\":true,\"licenseActivatedAt\":\"2025-12-02T10:51:50.970Z\",\"isActive\":true,\"isEmailVerified\":true,\"language\":\"pt-BR\",\"timezone\":\"America/Sao_Paulo\",\"createdAt\":\"2025-12-02T10:51:50.970Z\",\"updatedAt\":null,\"lastLoginAt\":\"2025-12-02T10:51:50.970Z\"},\"license\":{\"id\":\"lic_1764672710970\",\"isValid\":true,\"isLifetime\":true,\"plan\":\"lifetime\",\"activatedAt\":\"2025-12-02T10:51:50.970Z\",\"expiresAt\":null,\"maxDevices\":2,\"activeDevices\":1,\"currentDeviceId\":null,\"isCurrentDeviceAuthorized\":true},\"credits\":{\"balance\":10,\"totalPurchased\":0,\"totalUsed\":0,\"lastPurchaseAt\":null,\"bonusBalance\":0,\"bonusExpiresAt\":null},\"isAuthenticated\":true,\"theme\":\"system\"},\"version\":0}"
+          "name": "didin-user-v3",
+          "value": "{\"state\":{\"user\":{\"id\":\"user_1764718281042\",\"email\":\"test@example.com\",\"name\":\"test\",\"avatarUrl\":null,\"phone\":null,\"hasLifetimeLicense\":true,\"licenseActivatedAt\":\"2025-12-02T23:31:21.042Z\",\"isActive\":true,\"isEmailVerified\":true,\"language\":\"pt-BR\",\"timezone\":\"America/Sao_Paulo\",\"createdAt\":\"2025-12-02T23:31:21.042Z\",\"updatedAt\":null,\"lastLoginAt\":\"2025-12-02T23:31:21.042Z\"},\"license\":{\"id\":\"lic_1764718281042\",\"isValid\":true,\"isLifetime\":true,\"plan\":\"lifetime\",\"activatedAt\":\"2025-12-02T23:31:21.042Z\",\"expiresAt\":null,\"maxDevices\":2,\"activeDevices\":1,\"currentDeviceId\":null,\"isCurrentDeviceAuthorized\":true},\"credits\":{\"balance\":10,\"totalPurchased\":0,\"totalUsed\":0,\"lastPurchaseAt\":null,\"bonusBalance\":0,\"bonusExpiresAt\":null},\"subscription\":null,\"isAuthenticated\":true,\"theme\":\"system\"},\"version\":0}"
         },
         {
           "name": "onboarding_completed",
