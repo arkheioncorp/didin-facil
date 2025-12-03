@@ -7,3 +7,6 @@ export * from "./setup";
 export * from "./auth";
 export * from "./tutorial";
 
+// SaaS Components
+export * from "./UpgradePrompt";
+export * from "./UsageWidget";

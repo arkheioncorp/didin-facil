@@ -71,6 +71,7 @@ export interface ProductFilters {
   search?: string;
   is_trending?: boolean;
   has_video?: boolean;
+  source?: string;
 }
 
 export interface CategoryInfo {
@@ -127,6 +128,7 @@ export async function fetchProducts(filters: ProductFilters = {}): Promise<Pagin
     sort_by = 'sales_30d',
     sort_order = 'desc',
     search,
+    source,
   } = filters;
 
   // Build query params
@@ -140,6 +142,7 @@ export async function fetchProducts(filters: ProductFilters = {}): Promise<Pagin
   if (min_price !== undefined) params.append('min_price', String(min_price));
   if (max_price !== undefined) params.append('max_price', String(max_price));
   if (min_sales !== undefined) params.append('min_sales', String(min_sales));
+  if (source) params.append('source', source);
 
   // Use search endpoint if search query provided
   const endpoint = search 

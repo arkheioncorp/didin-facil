@@ -429,6 +429,7 @@ export const Products: React.FC = () => {
   const [filterMinPrice, setFilterMinPrice] = React.useState(minPrice);
   const [filterMaxPrice, setFilterMaxPrice] = React.useState(maxPrice);
   const [filterMinSales, setFilterMinSales] = React.useState(minSales);
+  const [showTikTokOnly, setShowTikTokOnly] = React.useState(false); // NEW
   // Future use: advanced filter states
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_filterSearch, _setFilterSearch] = React.useState(searchQuery);
@@ -558,6 +559,7 @@ export const Products: React.FC = () => {
           minSales: minSales ? parseInt(minSales, 10) : undefined,
           sortBy,
           sortOrder,
+          source: showTikTokOnly ? "tiktok_shop" : undefined,
         });
         
         const filteredProducts = applyClientFilters(response.data);
@@ -575,7 +577,7 @@ export const Products: React.FC = () => {
 
     loadProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort, category, minPrice, maxPrice, minSales, showTrending, showOnSale, showFreeShipping]);
+  }, [sort, category, minPrice, maxPrice, minSales, showTrending, showOnSale, showFreeShipping, showTikTokOnly]);
 
   // Load more products (infinite scroll)
   const loadMoreProducts = React.useCallback(async () => {
@@ -593,6 +595,7 @@ export const Products: React.FC = () => {
         minSales: minSales ? parseInt(minSales, 10) : undefined,
         sortBy,
         sortOrder,
+        source: showTikTokOnly ? "tiktok_shop" : undefined,
       });
       
       const filteredNewProducts = applyClientFilters(response.data);
@@ -1037,6 +1040,15 @@ export const Products: React.FC = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium">{t("products.quick_filters")}</label>
               <div className="space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="rounded" 
+                    checked={showTikTokOnly}
+                    onChange={(e) => setShowTikTokOnly(e.target.checked)}
+                  />
+                  <span className="text-sm">Apenas TikTok Shop</span>
+                </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" className="rounded" />
                   <span className="text-sm">{t("products.trending")}</span>

@@ -250,13 +250,13 @@ export const UpgradePromptModal: React.FC<UpgradePromptModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" data-testid="upgrade-prompt-modal">
         <DialogHeader>
           <div className="mx-auto p-3 rounded-full bg-amber-100 dark:bg-amber-900 mb-4">
             <Lock className="w-6 h-6 text-amber-600" />
           </div>
           <DialogTitle className="text-center">
-            Recurso não disponível
+            Limite Atingido
           </DialogTitle>
           <DialogDescription className="text-center">
             <strong className="text-foreground">{featureName}</strong> não está incluído no seu plano atual.

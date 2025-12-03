@@ -931,24 +931,28 @@ pub async fn check_feature_access(
         Some(c) if is_cache_valid(&c) => {
             let has_access = check_subscription_feature(&c.subscription, &feature);
             let limit = get_feature_limit(&c.subscription, &feature);
+            let plan_required = get_required_plan_for_feature(&feature);
             
             Ok(FeatureAccessResult {
                 feature,
                 has_access,
                 limit,
                 current_usage: 0, // Would need to track locally
-                plan_required: get_required_plan_for_feature(&feature),
+                plan_required,
             })
         }
         _ => {
             // No valid subscription - FREE plan features only
             let has_access = is_free_feature(&feature);
+            let limit = get_free_limit(&feature);
+            let plan_required = if has_access { None } else { Some("starter".to_string()) };
+            
             Ok(FeatureAccessResult {
                 feature,
                 has_access,
-                limit: get_free_limit(&feature),
+                limit,
                 current_usage: 0,
-                plan_required: if has_access { None } else { Some("starter".to_string()) },
+                plan_required,
             })
         }
     }

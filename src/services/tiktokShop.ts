@@ -144,22 +144,21 @@ export const tiktokShopService = {
 
   /**
    * Busca produtos da loja TikTok Shop
+   * Nota: Usa o endpoint /products com parâmetros de filtro
    */
   async searchProducts(
-    query?: string,
-    page: number = 1,
-    pageSize: number = 20
+    pageSize: number = 20,
+    pageToken?: string
   ): Promise<TikTokShopProductSearchResult> {
     const params = new URLSearchParams({
-      page: page.toString(),
       page_size: pageSize.toString(),
     });
-
-    if (query) {
-      params.append("keyword", query);
+    
+    if (pageToken) {
+      params.append("page_token", pageToken);
     }
 
-    return fetchWithAuth(`/tiktok-shop-v2/products/search?${params.toString()}`);
+    return fetchWithAuth(`/tiktok-shop-v2/products?${params.toString()}`);
   },
 
   /**
@@ -191,17 +190,22 @@ export const tiktokShopService = {
    */
   async disconnect(): Promise<{ success: boolean; message: string }> {
     return fetchWithAuth("/tiktok-shop-v2/disconnect", {
-      method: "DELETE",
+      method: "POST",
     });
   },
 
   /**
-   * Atualiza o token de acesso usando o refresh token
+   * Lista lojas conectadas
    */
-  async refreshToken(): Promise<{ success: boolean; message: string }> {
-    return fetchWithAuth("/tiktok-shop-v2/auth/refresh", {
-      method: "POST",
-    });
+  async getShops(): Promise<{ shops: Array<{ shop_id: string; shop_name: string; region: string }> }> {
+    return fetchWithAuth("/tiktok-shop-v2/shops");
+  },
+
+  /**
+   * Verifica status da sincronização
+   */
+  async getSyncStatus(): Promise<{ status: string; progress?: number; message?: string }> {
+    return fetchWithAuth("/tiktok-shop-v2/products/sync/status");
   },
 };
 

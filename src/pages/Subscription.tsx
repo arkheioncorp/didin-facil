@@ -412,7 +412,7 @@ export const Subscription: React.FC = () => {
             {/* Plan Cards */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {plans.map((planInfo) => {
-                const tier = planInfo.name as PlanTier;
+                const tier = planInfo.tier;
                 const isCurrentPlan = tier === planTier;
                 const isUpgrade = subscriptionApi.isPlanSuperior(tier, planTier || 'free');
                 const price = billingCycle === 'yearly' 

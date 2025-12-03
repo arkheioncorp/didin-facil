@@ -9,6 +9,7 @@ import { getUserStats, getSearchHistory } from "@/lib/tauri";
 import type { DashboardStats } from "@/types";
 import type { SearchHistoryItem } from "@/types";
 import { useNavigate } from "react-router-dom";
+import { UsageWidget } from "@/components/UsageWidget";
 
 // Melhoria #22: Mini sparkline chart component
 const MiniSparkline: React.FC<{ data: number[]; color?: string; height?: number }> = ({
@@ -242,6 +243,11 @@ export const Dashboard: React.FC = () => {
           isLoading={isLoading}
           delay={150}
         />
+      </div>
+
+      {/* Usage Widget */}
+      <div className="w-full">
+        <UsageWidget />
       </div>
 
       {/* Quick Actions - Melhoria visual */}

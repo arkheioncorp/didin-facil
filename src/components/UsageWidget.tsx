@@ -61,6 +61,7 @@ interface UsageWidgetProps {
 }
 
 interface UsageItemProps {
+  featureId: string;
   label: string;
   current: number;
   limit: number;
@@ -71,7 +72,6 @@ interface UsageItemProps {
 
 interface QuickStatsProps {
   usage: UsageStats[];
-  planName: string;
 }
 
 // ============================================
@@ -155,6 +155,7 @@ function formatResetTime(resetAt: string | undefined): string | null {
 // ============================================
 
 const UsageItem: React.FC<UsageItemProps> = ({
+  featureId,
   label,
   current,
   limit,
@@ -172,7 +173,10 @@ const UsageItem: React.FC<UsageItemProps> = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-default">
+            <div 
+              data-testid={`usage-widget-${featureId}`}
+              className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-default"
+            >
               <div className={cn("p-1.5 rounded-md", colors.bg)}>
                 {icon}
               </div>
@@ -203,7 +207,7 @@ const UsageItem: React.FC<UsageItemProps> = ({
   }
   
   return (
-    <div className="space-y-2">
+    <div data-testid={`usage-widget-${featureId}`} className="space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className={cn("p-2 rounded-lg", colors.bg)}>
@@ -456,6 +460,7 @@ export const UsageWidget: React.FC<UsageWidgetProps> = ({
           {meteredUsage.slice(0, 4).map(stat => (
             <UsageItem
               key={stat.feature}
+              featureId={stat.feature}
               label={FEATURE_LABELS[stat.feature] || stat.feature}
               current={stat.current}
               limit={stat.limit}
@@ -478,9 +483,9 @@ export const UsageWidget: React.FC<UsageWidgetProps> = ({
               <CardTitle className="text-lg">Uso do Plano</CardTitle>
               <CardDescription className="flex items-center gap-2 mt-1">
                 <Badge variant="secondary" className="capitalize">
-                  {plan}
+                  {plan?.tier || 'free'}
                 </Badge>
-                <QuickStats usage={meteredUsage} plan={plan} />
+                <QuickStats usage={meteredUsage} />
               </CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={handleUpgrade}>
@@ -491,17 +496,24 @@ export const UsageWidget: React.FC<UsageWidgetProps> = ({
         </CardHeader>
       )}
       <CardContent className={showTitle ? undefined : "pt-6"}>
-        {showAlerts && <UsageAlertsDisplay onUpgrade={onUpgrade} />}
+        {showAlerts && (
+          <UsageAlertsDisplay 
+            onUpgrade={onUpgrade}
+            nearLimitFeatures={nearLimitFeatures}
+            atLimitFeatures={atLimitFeatures}
+          />
+        )}
         
         <div className="space-y-6 mt-4">
           {meteredUsage.map(stat => (
             <UsageItem
               key={stat.feature}
+              featureId={stat.feature}
               label={FEATURE_LABELS[stat.feature] || stat.feature}
               current={stat.current}
               limit={stat.limit}
               icon={FEATURE_ICONS[stat.feature] || <Zap className="w-4 h-4" />}
-              resetsAt={stat.resets_at}
+              resetsAt={stat.resetsAt}
             />
           ))}
         </div>
@@ -510,7 +522,7 @@ export const UsageWidget: React.FC<UsageWidgetProps> = ({
           <div className="text-center py-8 text-muted-foreground">
             <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-emerald-500" />
             <p>Todos os recursos disponíveis!</p>
-            <p className="text-sm">Seu plano {plan} não tem limites de uso.</p>
+            <p className="text-sm">Seu plano {plan?.name || plan?.tier || 'atual'} não tem limites de uso.</p>
           </div>
         )}
       </CardContent>
