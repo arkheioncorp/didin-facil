@@ -81,20 +81,24 @@ RUN pip install --no-cache /wheels/*
 
 # Copy application code
 COPY --chown=tiktrend:tiktrend backend/api /app/api
+COPY --chown=tiktrend:tiktrend backend/modules /app/modules
+COPY --chown=tiktrend:tiktrend backend/shared /app/shared
+COPY --chown=tiktrend:tiktrend backend/alembic /app/alembic
+COPY --chown=tiktrend:tiktrend backend/alembic.ini /app/alembic.ini
 
 # Switch to non-root user
 USER tiktrend
 
-# Expose port
+# Expose port (Railway uses $PORT)
 EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
-# Run production server
+# Default command (Railway overrides this via railway.toml)
 CMD ["gunicorn", "api.main:app", \
-    "--workers", "4", \
+    "--workers", "2", \
     "--worker-class", "uvicorn.workers.UvicornWorker", \
     "--bind", "0.0.0.0:8000", \
     "--access-logfile", "-", \
