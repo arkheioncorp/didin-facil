@@ -1,0 +1,83 @@
+# ============================================================================
+# Docker Ignore - Didin Fácil / TikTrend
+# ============================================================================
+# Arquivos que NÃO devem ir para o container Docker
+# ============================================================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Node/Frontend (não necessário para API)
+node_modules/
+src/
+public/
+dist/
+*.md
+!README.md
+
+# Tauri (Desktop app - não necessário para API)
+src-tauri/
+builds/
+
+# Tests
+tests/
+backend/tests/
+playwright-report/
+test-results/
+coverage/
+htmlcov/
+*.spec.ts
+*.test.ts
+*.test.py
+pytest.ini
+vitest.config.ts
+playwright.config.ts
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build artifacts
+*.log
+*.pyc
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage.json
+coverage.xml
+
+# Infra (não necessário no container)
+infra/
+docker/
+!docker/api.Dockerfile
+
+# Documentation
+docs/
+memory-bank/
+
+# Archives
+_archive/
+
+# Local configs
+.env
+.env.*
+!.env.example
+*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Storybook
+.storybook/
+src/stories/
+
+# Temporary
+tmp/
+temp/
+*.tmp

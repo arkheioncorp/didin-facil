@@ -55,3 +55,10 @@ Untitled*.ipynb
 
 # Railway local config
 .railway/
+
+# Build binaries (large files)
+builds/windows/**/*.msi
+builds/windows/**/*.exe
+builds/**/*.dmg
+builds/**/*.AppImage
+src-tauri/test_parsing
