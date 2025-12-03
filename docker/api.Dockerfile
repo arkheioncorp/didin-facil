@@ -85,6 +85,10 @@ COPY --chown=tiktrend:tiktrend backend/modules /app/modules
 COPY --chown=tiktrend:tiktrend backend/shared /app/shared
 COPY --chown=tiktrend:tiktrend backend/alembic /app/alembic
 COPY --chown=tiktrend:tiktrend backend/alembic.ini /app/alembic.ini
+COPY --chown=tiktrend:tiktrend backend/vendor /app/vendor
+COPY --chown=tiktrend:tiktrend backend/integrations /app/integrations
+COPY --chown=tiktrend:tiktrend backend/scraper /app/scraper
+COPY --chown=tiktrend:tiktrend backend/seller_bot /app/seller_bot
 
 # Switch to non-root user
 USER tiktrend
@@ -97,12 +101,12 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
 # Default command (Railway overrides this via railway.toml)
-CMD ["gunicorn", "api.main:app", \
-    "--workers", "2", \
-    "--worker-class", "uvicorn.workers.UvicornWorker", \
-    "--bind", "0.0.0.0:8000", \
-    "--access-logfile", "-", \
-    "--error-logfile", "-", \
-    "--capture-output", \
-    "--enable-stdio-inheritance"]
+CMD gunicorn api.main:app \
+    --workers 2 \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --bind 0.0.0.0:${PORT:-8000} \
+    --access-logfile - \
+    --error-logfile - \
+    --capture-output \
+    --enable-stdio-inheritance
 

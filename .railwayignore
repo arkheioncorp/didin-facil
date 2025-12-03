@@ -1,0 +1,19 @@
+# Railway Ignore File
+# Exclude large binaries and build artifacts
+src-tauri/target/
+src-tauri/gen/
+builds/
+dist/
+node_modules/
+backend/venv/
+backend/.venv/
+backend/__pycache__/
+.git/
+.github/
+coverage/
+test-results/
+playwright-report/
+_archive/
+*.log
+*.sqlite
+*.db

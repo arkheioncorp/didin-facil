@@ -31,7 +31,7 @@ aiohttp>=3.9.0
 openai>=1.10.0
 
 # Validation
-pydantic>=2.5.2,<3.0.0
+pydantic==2.11.7
 pydantic-settings>=2.1.0
 email-validator>=2.1.0
 
@@ -77,7 +77,7 @@ markdown>=3.5.0
 # ===========================================
 # Video Processing (opcional)
 # ===========================================
-moviepy>=1.0.3
+moviepy==1.0.3
 imageio>=2.31.0
 imageio-ffmpeg>=0.4.8
 

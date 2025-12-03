@@ -5,7 +5,8 @@
 # ============================================================================
 
 [build]
-builder = "NIXPACKS"
+builder = "DOCKERFILE"
+dockerfilePath = "docker/api.Dockerfile"
 watchPatterns = ["backend/**"]
 
 [deploy]
