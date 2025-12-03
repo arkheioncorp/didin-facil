@@ -1,0 +1,50 @@
+# ============================================================================
+# Production Environment - Terraform Variables
+# ============================================================================
+# Copy this file to terraform.tfvars and fill in your values
+# DO NOT commit terraform.tfvars to version control!
+# ============================================================================
+
+# General
+environment = "production"
+domain_name = "didin.com.br"  # Replace with your domain
+
+# AWS Region
+aws_region = "us-east-2"
+
+# VPC
+vpc_cidr            = "10.0.0.0/16"
+public_subnets      = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+private_subnets     = ["10.0.11.0/24", "10.0.12.0/24", "10.0.13.0/24"]
+database_subnets    = ["10.0.21.0/24", "10.0.22.0/24", "10.0.23.0/24"]
+
+# RDS
+db_instance_class    = "db.t3.medium"
+db_allocated_storage = 50
+db_name              = "didin"
+db_username          = "didin_admin"
+db_password          = "CHANGE_ME_SUPER_SECRET_PASSWORD"  # Use Secrets Manager in production!
+
+# ElastiCache
+redis_node_type       = "cache.t3.medium"
+redis_num_cache_nodes = 1
+
+# ECS - API
+ecs_api_cpu          = 512
+ecs_api_memory       = 1024
+ecs_api_desired_count = 2
+ecs_api_min_capacity = 1
+ecs_api_max_capacity = 10
+
+# ECS - Scraper
+ecs_scraper_cpu           = 1024
+ecs_scraper_memory        = 2048
+ecs_scraper_desired_count = 1
+
+# Application Secrets (Use actual values in production)
+jwt_secret_key         = "CHANGE_ME_JWT_SECRET_KEY_AT_LEAST_32_CHARS"
+openai_api_key         = "sk-..."
+mercadopago_access_token = "APP_USR-..."
+mercadopago_public_key   = "APP_USR-..."
+telegram_bot_token       = ""
+sentry_dsn              = ""

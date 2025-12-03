@@ -1,0 +1,49 @@
+# ============================================================================
+# Staging Environment - Terraform Variables
+# ============================================================================
+# Smaller, cost-effective resources for staging/testing
+# ============================================================================
+
+# General
+environment = "staging"
+domain_name = "staging.didin.com.br"  # Replace with your staging domain
+
+# AWS Region
+aws_region = "us-east-2"
+
+# VPC - Same structure, isolated from production
+vpc_cidr            = "10.1.0.0/16"
+public_subnets      = ["10.1.1.0/24", "10.1.2.0/24"]
+private_subnets     = ["10.1.11.0/24", "10.1.12.0/24"]
+database_subnets    = ["10.1.21.0/24", "10.1.22.0/24"]
+
+# RDS - Smaller instance for staging
+db_instance_class    = "db.t3.micro"
+db_allocated_storage = 20
+db_name              = "didin_staging"
+db_username          = "didin_staging"
+db_password          = "CHANGE_ME_STAGING_PASSWORD"
+
+# ElastiCache - Smallest instance
+redis_node_type       = "cache.t3.micro"
+redis_num_cache_nodes = 1
+
+# ECS - Minimal resources for staging
+ecs_api_cpu           = 256
+ecs_api_memory        = 512
+ecs_api_desired_count = 1
+ecs_api_min_capacity  = 1
+ecs_api_max_capacity  = 2
+
+# ECS - Scraper (smaller for staging)
+ecs_scraper_cpu           = 512
+ecs_scraper_memory        = 1024
+ecs_scraper_desired_count = 1
+
+# Application Secrets (Use staging-specific values)
+jwt_secret_key           = "STAGING_JWT_SECRET_KEY_AT_LEAST_32_CHARS"
+openai_api_key           = "sk-..."
+mercadopago_access_token = "TEST-..."  # Use sandbox credentials
+mercadopago_public_key   = "TEST-..."
+telegram_bot_token       = ""
+sentry_dsn               = ""
