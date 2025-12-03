@@ -3,17 +3,15 @@ Accounting Routes - Admin Financial Dashboard
 Complete financial tracking and reporting API
 """
 
-from datetime import datetime, timedelta
-from typing import Optional, List
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
-
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from pydantic import BaseModel, Field
+from typing import List, Optional
 
 from api.database.connection import get_db
-from api.services.accounting import AccountingService
 from api.middleware.auth import get_current_user, require_admin
-
+from api.services.accounting import AccountingService
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field
 
 router = APIRouter()
 
@@ -254,14 +252,14 @@ async def export_financial_report(
     db = Depends(get_db)
 ):
     """Export financial report in various formats"""
-    from fastapi.responses import StreamingResponse
-    from io import StringIO, BytesIO
     import csv
     import json
-    
-    # Buscar dados do relatório
-    from sqlalchemy import select, func
+    from io import BytesIO, StringIO
+
     from api.database.accounting_models import DailyReport
+    from fastapi.responses import StreamingResponse
+    # Buscar dados do relatório
+    from sqlalchemy import func, select
     
     result = await db.execute(
         select(DailyReport).where(
@@ -394,10 +392,10 @@ async def get_openai_costs(
 ):
     """Get OpenAI API costs breakdown"""
     # Query API usage logs
-    from sqlalchemy import select, func
     from api.database.accounting_models import APIUsageLog
+    from sqlalchemy import func, select
     
-    start_date = datetime.utcnow() - timedelta(days=days)
+    start_date = datetime.now(timezone.utc) - timedelta(days=days)
     
     result = await db.execute(
         select(
@@ -427,10 +425,10 @@ async def get_costs_by_operation(
     db = Depends(get_db)
 ):
     """Get costs breakdown by operation type"""
-    from sqlalchemy import select, func
     from api.database.accounting_models import APIUsageLog
+    from sqlalchemy import func, select
     
-    start_date = datetime.utcnow() - timedelta(days=days)
+    start_date = datetime.now(timezone.utc) - timedelta(days=days)
     
     result = await db.execute(
         select(

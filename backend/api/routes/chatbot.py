@@ -9,8 +9,10 @@ from typing import Any, Dict, List, Optional
 
 from api.database.connection import database
 from api.middleware.auth import get_current_user, get_current_user_optional
+from api.middleware.subscription import get_subscription_service
 from fastapi import APIRouter, Depends, HTTPException, Request
 from integrations.typebot import TypebotClient, TypebotWebhookHandler
+from modules.subscription import SubscriptionService
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -87,11 +89,24 @@ async def start_chat(
 @router.post("/chat/message")
 async def send_message(
     data: SendMessageRequest,
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    service: SubscriptionService = Depends(get_subscription_service)
 ):
     """
     Envia uma mensagem para uma sessão de chat existente.
     """
+    # Check plan limits
+    can_use = await service.can_use_feature(
+        str(current_user["id"]),
+        "chatbot_ai",
+        increment=1
+    )
+    if not can_use:
+        raise HTTPException(
+            status_code=402,
+            detail="Limite de mensagens de IA atingido"
+        )
+
     try:
         response = await typebot_client.send_message(
             session_id=data.session_id,
@@ -235,7 +250,8 @@ async def list_chatbots(
 @router.post("/bots")
 async def create_chatbot(
     data: CreateChatbotRequest,
-    current_user: Optional[dict] = Depends(get_current_user_optional)
+    current_user: Optional[dict] = Depends(get_current_user_optional),
+    service: SubscriptionService = Depends(get_subscription_service)
 ):
     """
     Cria um novo chatbot.
@@ -246,6 +262,18 @@ async def create_chatbot(
         raise HTTPException(
             status_code=401,
             detail="Faça login para criar chatbots"
+        )
+
+    # Check plan limits
+    can_use = await service.can_use_feature(
+        str(current_user["id"]),
+        "chatbot_flows",
+        increment=1
+    )
+    if not can_use:
+        raise HTTPException(
+            status_code=402,
+            detail="Limite de chatbots atingido"
         )
     
     chatbot_id = str(uuid.uuid4())

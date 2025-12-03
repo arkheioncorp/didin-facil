@@ -9,7 +9,7 @@ Usa o serviço TikTokShopService para todas as operações.
 import json
 import logging
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from api.database.connection import get_db
@@ -101,6 +101,9 @@ async def save_user_credentials(user_id: str, credentials: CredentialsInput, red
         "service_id": credentials.service_id
     }
     await redis.set(key, json.dumps(data))
+    
+    # Mapeamento para webhooks (lookup por app_key)
+    await redis.set(f"tiktok_shop_app:{credentials.app_key}:secret", credentials.app_secret)
 
 
 async def get_user_token(user_id: str, redis) -> Optional[TikTokShopToken]:
@@ -138,7 +141,7 @@ async def save_user_token(user_id: str, token: TikTokShopToken, redis):
         "user_type": token.user_type
     }
     # Expira junto com refresh_token
-    ttl = int((token.refresh_token_expires_at - datetime.utcnow()).total_seconds())
+    ttl = int((token.refresh_token_expires_at - datetime.now(timezone.utc)).total_seconds())
     await redis.set(key, json.dumps(data), ex=max(ttl, 3600))
 
 
@@ -166,7 +169,7 @@ async def ensure_valid_token(user_id: str, redis) -> TikTokShopToken:
         )
     
     # Verifica se precisa renovar (5 minutos antes de expirar)
-    if token.access_token_expires_at < datetime.utcnow() + timedelta(minutes=5):
+    if token.access_token_expires_at < datetime.now(timezone.utc) + timedelta(minutes=5):
         credentials = await get_user_credentials(user_id, redis)
         if not credentials:
             raise HTTPException(status_code=400, detail="Credenciais não encontradas")
@@ -659,7 +662,7 @@ async def run_product_sync(user_id: str, shop_id: Optional[str], redis):
             "products_synced": synced_count,
             "errors": errors[:10],  # Limita erros
             "duration_seconds": round(duration, 2),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         
         # Salva resultado
@@ -670,7 +673,7 @@ async def run_product_sync(user_id: str, shop_id: Optional[str], redis):
         )
         await redis.set(
             get_redis_key(user_id, "last_sync"),
-            datetime.utcnow().isoformat(),
+            datetime.now(timezone.utc).isoformat(),
             ex=86400 * 7
         )
         await redis.set(
@@ -709,5 +712,55 @@ async def list_shops(
         return {"shops": [s.dict() for s in shops]}
     except TikTokShopError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# ==================== ENDPOINTS: WEBHOOKS ====================
+
+@router.post("/webhook", summary="Receber Webhooks")
+async def tiktok_webhook(
+    request: Request,
+    app_key: str = Query(..., description="App Key para validação"),
+    background_tasks: BackgroundTasks = None,
+    redis=Depends(get_redis)
+):
+    """
+    Recebe webhooks do TikTok Shop.
+    Valida assinatura usando o App Secret associado à App Key.
+    """
+    # 1. Obter assinatura e body
+    signature = request.headers.get("Authorization")
+    if not signature:
+        raise HTTPException(status_code=401, detail="Missing signature")
+    
+    body = await request.body()
+    
+    # 2. Obter app_secret
+    app_secret = await redis.get(f"tiktok_shop_app:{app_key}:secret")
+    if not app_secret:
+        logger.warning(f"Webhook recebido para App Key desconhecida: {app_key}")
+        raise HTTPException(status_code=404, detail="App Key not found")
+    
+    # 3. Validar assinatura
+    service = create_tiktok_shop_service(app_key, app_secret)
+    
+    if not service.verify_webhook_signature(signature, body):
+        logger.warning(f"Assinatura de webhook inválida para App Key: {app_key}")
+        raise HTTPException(status_code=401, detail="Invalid signature")
+        
+    # 4. Processar evento
+    try:
+        payload = await request.json()
+        event_type = payload.get("type") or payload.get("event_type")
+        data = payload.get("data", {})
+        
+        # Processar (pode ser movido para background task se for pesado)
+        await service.handle_webhook(event_type, data)
+        
+        return {"message": "Webhook processed"}
+        
+    except Exception as e:
+        logger.error(f"Erro ao processar webhook: {e}")
+        raise HTTPException(status_code=500, detail="Internal error")
+
     finally:
         await service.close()

@@ -11,7 +11,9 @@ from typing import Any, Dict, List, Optional
 
 import httpx
 from api.middleware.auth import get_current_user
+from api.middleware.subscription import get_subscription_service
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from modules.subscription import SubscriptionService
 from pydantic import BaseModel
 from shared.config import settings
 from shared.redis import get_redis
@@ -161,13 +163,26 @@ def get_client_credentials(platform: str) -> tuple[str, str]:
 @router.post("/init")
 async def init_oauth(
     data: OAuthInitRequest,
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    service: SubscriptionService = Depends(get_subscription_service)
 ) -> Dict[str, Any]:
     """
     Inicia fluxo OAuth para plataforma.
     
     Retorna URL de autorização para redirecionar o usuário.
     """
+    # Check plan limits
+    can_use = await service.can_use_feature(
+        str(current_user["id"]),
+        "social_accounts",
+        increment=1
+    )
+    if not can_use:
+        raise HTTPException(
+            status_code=402,
+            detail="Limite de contas sociais atingido"
+        )
+
     config = get_platform_config(data.platform)
     client_id, _ = get_client_credentials(data.platform)
     

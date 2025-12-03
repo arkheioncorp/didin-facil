@@ -175,7 +175,7 @@ async def chatwoot_webhook(
         if not chatwoot_adapter:
             raise HTTPException(500, "Chatwoot adapter não configurado")
         
-        message = await chatwoot_adapter.parse_incoming(payload.dict())
+        message = await chatwoot_adapter.parse_incoming(payload.model_dump())
         
         if not message:
             return {"status": "ignored", "reason": "not_incoming_message"}
@@ -186,7 +186,7 @@ async def chatwoot_webhook(
             bot,
             router,
             message,
-            payload.dict()
+            payload.model_dump()
         )
         
         return {"status": "processing", "message_id": message.id}
@@ -220,7 +220,7 @@ async def evolution_webhook(
         if not evolution_adapter:
             raise HTTPException(500, "Evolution adapter não configurado")
         
-        message = await evolution_adapter.parse_incoming(payload.dict())
+        message = await evolution_adapter.parse_incoming(payload.model_dump())
         
         if not message:
             return {"status": "ignored", "reason": "not_processable"}
@@ -230,7 +230,7 @@ async def evolution_webhook(
             bot,
             router,
             message,
-            payload.dict()
+            payload.model_dump()
         )
         
         return {"status": "processing", "message_id": message.id}

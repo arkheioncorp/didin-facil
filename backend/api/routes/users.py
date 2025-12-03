@@ -5,7 +5,7 @@ from api.database.connection import database
 from api.middleware.auth import get_current_user
 from fastapi import APIRouter, Depends, HTTPException, status
 from passlib.context import CryptContext
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -46,8 +46,7 @@ class UserProfileResponse(BaseModel):
     updated_at: Optional[datetime] = None
     last_login_at: Optional[datetime] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LicenseResponse(BaseModel):

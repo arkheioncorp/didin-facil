@@ -137,6 +137,7 @@ class CacheService:
         sort_by: str = "sales_30d",
         page: int = 1,
         per_page: int = 20,
+        source: Optional[str] = None,
     ) -> str:
         """Build cache key for product queries"""
         params = {
@@ -146,7 +147,8 @@ class CacheService:
             "min_s": min_sales,
             "sort": sort_by,
             "p": page,
-            "pp": per_page
+            "pp": per_page,
+            "src": source,
         }
         
         # Create hash of params

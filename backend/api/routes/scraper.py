@@ -9,7 +9,9 @@ from datetime import datetime
 from typing import List, Optional
 
 from api.middleware.auth import get_current_user_optional
+from api.middleware.subscription import get_subscription_service
 from fastapi import APIRouter, Depends, HTTPException
+from modules.subscription import SubscriptionService
 from pydantic import BaseModel
 from shared.redis import get_redis
 
@@ -98,7 +100,8 @@ async def get_scraper_status(
 @router.post("/start", response_model=ScraperStatus)
 async def start_scraper(
     config: ScraperConfig,
-    current_user: Optional[dict] = Depends(get_current_user_optional)
+    current_user: Optional[dict] = Depends(get_current_user_optional),
+    service: SubscriptionService = Depends(get_subscription_service)
 ):
     """
     Inicia um novo job de scraping.
@@ -114,6 +117,20 @@ async def start_scraper(
         max_products = config.effective_max_products
         if not current_user:
             max_products = min(max_products, 20)
+        else:
+            # Check subscription limits for authenticated users
+            can_use = await service.can_use_feature(
+                str(user_id), 
+                "price_searches"
+            )
+            if not can_use:
+                raise HTTPException(
+                    status_code=402,
+                    detail="Limite de buscas atingido para seu plano"
+                )
+            
+            # Increment usage
+            await service.increment_usage(str(user_id), "price_searches", 1)
         
         # Create scraping job
         job_id = f"job:{user_id}:{datetime.utcnow().timestamp()}"

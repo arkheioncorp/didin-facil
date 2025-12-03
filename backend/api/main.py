@@ -32,9 +32,9 @@ from .routes import (accounting, accounts,  # New financial routes + favorites
                      checkout, content, copy, credits, crm, email, favorites,
                      instagram, integrations, license, marketplaces, metrics,
                      products, scheduler, scraper, seller_bot, social_auth,
-                     status_webhooks, template_library, templates, tiktok,
-                     tiktok_shop, tiktok_shop_v2, users, webhooks, whatsapp,
-                     youtube)
+                     status_webhooks, subscription, template_library,
+                     templates, tiktok, tiktok_shop, tiktok_shop_v2, users,
+                     webhooks, whatsapp, youtube)
 from .utils.integrity import IntegrityChecker
 from .utils.security import security_monitor
 
@@ -220,7 +220,12 @@ app.include_router(
 )
 
 # New routes for monetization, analytics, chatbot, and automation
-# subscription.router removed - use credits.router instead
+# SaaS Hybrid Subscription System
+app.include_router(
+    subscription.router,
+    prefix="/subscription",
+    tags=["Subscription & Plans"]
+)
 app.include_router(
     analytics_social.router,
     prefix="/analytics/social",

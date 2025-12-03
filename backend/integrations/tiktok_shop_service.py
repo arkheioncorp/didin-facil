@@ -579,6 +579,53 @@ class TikTokShopService:
         return all_products[:max_products]
 
 
+    # ============================================
+    # Webhooks
+    # ============================================
+
+    def verify_webhook_signature(self, signature: str, body: bytes) -> bool:
+        """
+        Verifica assinatura do webhook.
+        
+        Args:
+            signature: Header Authorization do webhook
+            body: Corpo cru da requisição (bytes)
+            
+        Returns:
+            True se assinatura válida
+        """
+        # TikTok usa HMAC-SHA256 do body com app_secret
+        expected = hmac.new(
+            self.credentials.app_secret.encode("utf-8"),
+            body,
+            hashlib.sha256
+        ).hexdigest()
+        
+        return hmac.compare_digest(expected, signature)
+
+    async def handle_webhook(self, event_type: str, data: Dict) -> bool:
+        """
+        Processa evento de webhook.
+        
+        Args:
+            event_type: Tipo do evento (ex: product.update)
+            data: Payload do evento
+            
+        Returns:
+            True se processado com sucesso
+        """
+        logger.info(f"Processing webhook: {event_type}")
+        
+        # TODO: Implementar lógica específica por evento
+        # Por enquanto apenas logamos
+        if event_type == "product.update":
+            logger.info(f"Product update received: {data}")
+        elif event_type == "order.status_change":
+            logger.info(f"Order status change: {data}")
+            
+        return True
+
+
 # ============================================
 # EXCEPTIONS
 # ============================================

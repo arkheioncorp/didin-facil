@@ -4,13 +4,15 @@ n8n Automation API Routes
 Endpoints para integração com n8n e automações.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from typing import Optional, Dict, Any
 from datetime import datetime
+from typing import Any, Dict, Optional
 
 from api.middleware.auth import get_current_user
-from integrations.n8n import N8nClient, WorkflowStatus, DIDIN_N8N_WORKFLOWS
+from api.middleware.subscription import get_subscription_service
+from fastapi import APIRouter, Depends, HTTPException
+from integrations.n8n import DIDIN_N8N_WORKFLOWS, N8nClient, WorkflowStatus
+from modules.subscription import SubscriptionService
+from pydantic import BaseModel
 
 router = APIRouter()
 n8n_client = N8nClient()
@@ -89,11 +91,24 @@ async def get_workflow(
 @router.post("/workflows/{workflow_id}/activate")
 async def activate_workflow(
     workflow_id: str,
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    service: SubscriptionService = Depends(get_subscription_service)
 ):
     """
     Ativa um workflow.
     """
+    # Check plan limits
+    can_use = await service.can_use_feature(
+        str(current_user["id"]),
+        "crm_automation",
+        increment=1
+    )
+    if not can_use:
+        raise HTTPException(
+            status_code=402,
+            detail="Limite de automações atingido"
+        )
+
     success = await n8n_client.activate_workflow(workflow_id)
     
     if not success:

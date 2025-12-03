@@ -10,7 +10,9 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 from api.middleware.auth import get_current_user, get_current_user_optional
+from api.middleware.subscription import get_subscription_service
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from modules.subscription import SubscriptionService
 from pydantic import BaseModel
 from shared.config import settings
 from shared.redis import get_redis
@@ -148,7 +150,8 @@ async def upload_video(
     is_short: bool = Form(False),
     file: UploadFile = File(...),
     thumbnail: Optional[UploadFile] = File(None),
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    service: SubscriptionService = Depends(get_subscription_service)
 ):
     """
     Faz upload de vídeo para o YouTube.
@@ -164,6 +167,20 @@ async def upload_video(
         file: Arquivo de vídeo
         thumbnail: Thumbnail (opcional, jpg/png)
     """
+    # Check subscription limits
+    can_use = await service.can_use_feature(
+        str(current_user["id"]),
+        "social_posts"
+    )
+    if not can_use:
+        raise HTTPException(
+            status_code=402,
+            detail="Limite de posts sociais atingido. Faça upgrade para continuar."
+        )
+    
+    # Increment usage after successful check
+    await service.increment_usage(str(current_user["id"]), "social_posts", 1)
+    
     # Verificar token
     tokens_dir = os.path.join(settings.DATA_DIR, "youtube_tokens")
     user_id = current_user["id"]

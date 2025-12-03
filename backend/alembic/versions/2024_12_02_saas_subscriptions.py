@@ -1,7 +1,7 @@
 """Create SaaS Hybrid subscriptions tables
 
 Revision ID: 2024_12_02_saas_subscriptions
-Revises: 2024_12_02_copy_ai_improvements
+Revises: copy_ai_improvements
 Create Date: 2024-12-02 10:00:00.000000
 
 Este migration cria as tabelas necessárias para o modelo SaaS Híbrido:
@@ -18,7 +18,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = '2024_12_02_saas_subscriptions'
-down_revision: Union[str, None] = '2024_12_02_copy_ai_improvements'
+down_revision: Union[str, None] = 'copy_ai_improvements'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -355,27 +355,44 @@ def upgrade() -> None:
     # =========================================
     # UPDATES: Atualizar tabela users
     # =========================================
-    # Adicionar campos para compatibilidade
-    op.add_column(
-        'users',
-        sa.Column(
-            'current_plan',
-            sa.String(20),
-            nullable=True,
-            server_default='free',
-            comment='Cache do plano atual para queries rápidas'
+    # Adicionar campos para compatibilidade (se não existirem)
+    conn = op.get_bind()
+    
+    # Check if current_plan column exists
+    result = conn.execute(sa.text("""
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'current_plan'
+    """))
+    if not result.fetchone():
+        op.add_column(
+            'users',
+            sa.Column(
+                'current_plan',
+                sa.String(20),
+                nullable=True,
+                server_default='free',
+                comment='Cache do plano atual para queries rápidas'
+            )
         )
-    )
-    op.add_column(
-        'users',
-        sa.Column(
-            'subscription_status',
-            sa.String(20),
-            nullable=True,
-            server_default='active',
-            comment='Cache do status para queries rápidas'
+    
+    # Check if subscription_status column exists
+    result = conn.execute(sa.text("""
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'subscription_status'
+    """))
+    if not result.fetchone():
+        op.add_column(
+            'users',
+            sa.Column(
+                'subscription_status',
+                sa.String(20),
+                nullable=True,
+                server_default='active',
+                comment='Cache do status para queries rápidas'
+            )
         )
-    )
 
 
 def downgrade() -> None:

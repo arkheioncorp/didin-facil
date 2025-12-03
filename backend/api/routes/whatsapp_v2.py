@@ -11,25 +11,21 @@ Migração:
 - Backward compatible com v1 durante período de transição
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Query
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+import logging
+import uuid
 from datetime import datetime, timezone
 from enum import Enum
-import uuid
-import logging
+from typing import Any, Dict, List, Optional
 
-from integrations.whatsapp_hub import (
-    WhatsAppHub,
-    WhatsAppMessage,
-    InstanceInfo,
-    MessageType,
-    ConnectionState,
-    get_whatsapp_hub,
-)
-from api.middleware.auth import get_current_user
 from api.database.connection import database
-from api.database.models import WhatsAppInstance, WhatsAppMessage as DBWhatsAppMessage
+from api.database.models import WhatsAppInstance
+from api.database.models import WhatsAppMessage as DBWhatsAppMessage
+from api.middleware.auth import get_current_user
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from integrations.whatsapp_hub import (ConnectionState, InstanceInfo,
+                                       MessageType, WhatsAppHub,
+                                       WhatsAppMessage, get_whatsapp_hub)
+from pydantic import BaseModel, ConfigDict, Field
 from shared.config import settings
 
 logger = logging.getLogger(__name__)
@@ -56,8 +52,7 @@ class InstanceResponse(BaseModel):
     webhook_url: Optional[str] = None
     created_at: Optional[datetime] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class WebhookConfigRequest(BaseModel):
@@ -875,9 +870,9 @@ async def _update_instance_status(instance_name: str, state: ConnectionState):
 async def _forward_to_seller_bot(instance_name: str, message: WhatsAppMessage):
     """Encaminha mensagem para o Seller Bot."""
     try:
-        from modules.chatbot.whatsapp_adapter import WhatsAppHubAdapter
         from modules.chatbot.bot import get_seller_bot
-        
+        from modules.chatbot.whatsapp_adapter import WhatsAppHubAdapter
+
         # Obtém o hub
         hub = get_whatsapp_hub()
         

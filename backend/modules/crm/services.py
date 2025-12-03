@@ -1168,6 +1168,16 @@ class PipelineService:
     ) -> List[Dict[str, Any]]:
         """Lista pipelines do usuário."""
         pipelines = await self.repo.list(user_id, is_active)
+        
+        if not pipelines:
+            # Verifica se existe algum pipeline (independente de filtros)
+            all_pipelines = await self.repo.list(user_id)
+            if not all_pipelines:
+                # Se não tem nenhum pipeline, cria o default
+                await self.repo.ensure_default_exists(user_id)
+                # Busca novamente com os filtros originais
+                pipelines = await self.repo.list(user_id, is_active)
+        
         return [p.to_dict() for p in pipelines]
     
     async def update(

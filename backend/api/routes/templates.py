@@ -3,15 +3,15 @@ Content Templates Routes
 Reusable templates for social media posts
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+import json
+import uuid
 from datetime import datetime
 from enum import Enum
-import uuid
-import json
+from typing import Any, Dict, List, Optional
 
 from api.middleware.auth import get_current_user
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 from shared.redis import redis_client
 
 router = APIRouter()
@@ -50,7 +50,7 @@ class TemplateCreate(BaseModel):
     platform: TemplatePlatform = TemplatePlatform.ALL
     category: TemplateCategory = TemplateCategory.CUSTOM
     caption_template: str = Field(..., min_length=1, max_length=2200)
-    hashtags: List[str] = Field(default_factory=list, max_items=30)
+    hashtags: List[str] = Field(default_factory=list, max_length=30)
     variables: List[TemplateVariable] = Field(default_factory=list)
     thumbnail_url: Optional[str] = None
     is_public: bool = False

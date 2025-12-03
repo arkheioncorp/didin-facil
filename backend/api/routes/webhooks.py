@@ -202,10 +202,10 @@ async def handle_subscription_event(
         "authorized": SubscriptionStatus.ACTIVE,
         "paused": SubscriptionStatus.PAST_DUE,
         "cancelled": SubscriptionStatus.CANCELED,
-        "pending": SubscriptionStatus.INCOMPLETE
+        "pending": SubscriptionStatus.EXPIRED
     }
     
-    new_status = status_map.get(status_mp, SubscriptionStatus.INCOMPLETE)
+    new_status = status_map.get(status_mp, SubscriptionStatus.EXPIRED)
     
     try:
         subscription = await subscription_service.get_subscription(user_id)

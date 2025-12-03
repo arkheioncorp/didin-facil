@@ -2,11 +2,12 @@
 # Queue Models - Modelos para Fila de Tarefas
 # ============================================
 
+import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
-from pydantic import BaseModel, Field
-import uuid
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TaskPriority(int, Enum):
@@ -58,8 +59,7 @@ class QueuedTask(BaseModel):
     screenshots: list[str] = Field(default_factory=list)
     logs: list[str] = Field(default_factory=list)
     
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class QueueStats(BaseModel):
@@ -75,4 +75,5 @@ class QueueStats(BaseModel):
     
     # Tempos
     avg_execution_time_seconds: Optional[float] = None
+    oldest_queued_at: Optional[datetime] = None
     oldest_queued_at: Optional[datetime] = None

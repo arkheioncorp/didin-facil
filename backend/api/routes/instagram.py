@@ -1,15 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from pydantic import BaseModel
-from typing import Optional
-import shutil
-import os
 import json
+import os
+import shutil
+from typing import Optional
 
 from api.middleware.auth import get_current_user
-from vendor.instagram.client import InstagramClient, InstagramConfig, PostConfig
-from shared.redis import get_redis
-from integrations.instagram_hub import get_instagram_hub
+from api.middleware.subscription import get_subscription_service
 from api.services.instagram_session import ChallengeStatus
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from integrations.instagram_hub import get_instagram_hub
+from modules.subscription import SubscriptionService
+from pydantic import BaseModel
+from shared.redis import get_redis
+from vendor.instagram.client import (InstagramClient, InstagramConfig,
+                                     PostConfig)
 
 router = APIRouter()
 hub = get_instagram_hub()
@@ -212,9 +215,24 @@ async def upload_media(
     caption: str = Form(...),
     media_type: str = Form(...),
     file: UploadFile = File(...),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user),
+    service: SubscriptionService = Depends(get_subscription_service)
 ):
     """Upload media to Instagram."""
+    # Check subscription limits
+    can_use = await service.can_use_feature(
+        str(current_user["id"]),
+        "social_posts"
+    )
+    if not can_use:
+        raise HTTPException(
+            status_code=402,
+            detail="Limite de posts sociais atingido. Faça upgrade para continuar."
+        )
+    
+    # Increment usage after successful check
+    await service.increment_usage(str(current_user["id"]), "social_posts", 1)
+    
     redis = await get_redis()
     session_data = await redis.get(f"instagram:session:{username}")
     

@@ -3,18 +3,19 @@ Scheduler Routes
 Endpoints para agendamento de posts em redes sociais
 """
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime, timezone
 import os
 import shutil
+from datetime import datetime, timezone
+from typing import List, Optional
 
 from api.middleware.auth import get_current_user
-from workers.post_scheduler import (
-    PostSchedulerService, ScheduledPost, Platform, PostStatus
-)
+from api.middleware.subscription import get_subscription_service
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from modules.subscription import SubscriptionService
+from pydantic import BaseModel
 from shared.config import settings
+from workers.post_scheduler import (Platform, PostSchedulerService, PostStatus,
+                                    ScheduledPost)
 
 router = APIRouter()
 
@@ -45,7 +46,8 @@ class SchedulePostResponse(BaseModel):
 @router.post("/posts", response_model=SchedulePostResponse)
 async def schedule_post(
     data: SchedulePostRequest,
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    service: SubscriptionService = Depends(get_subscription_service)
 ):
     """
     Agenda um post para publicação futura.
@@ -56,6 +58,18 @@ async def schedule_post(
     - youtube: video, short
     - whatsapp: text
     """
+    # Check plan limits
+    can_use = await service.can_use_feature(
+        str(current_user["id"]),
+        "social_posts",
+        increment=1
+    )
+    if not can_use:
+        raise HTTPException(
+            status_code=402,
+            detail="Limite de posts atingido"
+        )
+
     try:
         platform = Platform(data.platform)
     except ValueError:
@@ -101,9 +115,22 @@ async def schedule_post_with_file(
     hashtags: str = Form(""),
     account_name: Optional[str] = Form(None),
     file: UploadFile = File(...),
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    service: SubscriptionService = Depends(get_subscription_service)
 ):
     """Agenda um post com upload de arquivo."""
+    # Check plan limits
+    can_use = await service.can_use_feature(
+        str(current_user["id"]),
+        "social_posts",
+        increment=1
+    )
+    if not can_use:
+        raise HTTPException(
+            status_code=402,
+            detail="Limite de posts atingido"
+        )
+
     try:
         platform_enum = Platform(platform)
     except ValueError:

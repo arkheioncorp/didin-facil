@@ -9,11 +9,13 @@ from datetime import datetime
 from typing import List, Optional
 
 from api.middleware.auth import get_current_user, get_current_user_optional
+from api.middleware.subscription import get_subscription_service
 from api.services.cache import CacheService
 from api.services.tiktok_session import TikTokSessionStatus
 from fastapi import (APIRouter, BackgroundTasks, Depends, File, Form,
                      HTTPException, Query, UploadFile)
 from integrations.tiktok_hub import get_tiktok_hub
+from modules.subscription import SubscriptionService
 from pydantic import BaseModel, Field
 from scraper.cache import ProductCacheManager
 from scraper.tiktok.api_scraper import TikTokAPIScraper
@@ -220,7 +222,8 @@ async def upload_video(
     hashtags: str = Form(""),
     privacy: str = Form("public"),
     file: UploadFile = File(...),
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    service: SubscriptionService = Depends(get_subscription_service)
 ):
     """
     Faz upload de vídeo para o TikTok.
@@ -232,6 +235,20 @@ async def upload_video(
         privacy: public, friends, private
         file: Arquivo de vídeo (mp4)
     """
+    # Check subscription limits
+    can_use = await service.can_use_feature(
+        str(current_user["id"]),
+        "social_posts"
+    )
+    if not can_use:
+        raise HTTPException(
+            status_code=402,
+            detail="Limite de posts sociais atingido. Faça upgrade para continuar."
+        )
+    
+    # Increment usage after successful check
+    await service.increment_usage(str(current_user["id"]), "social_posts", 1)
+    
     # Verificar sessão
     sessions_dir = os.path.join(settings.DATA_DIR, "tiktok_sessions")
     cookies_file = os.path.join(

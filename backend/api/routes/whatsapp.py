@@ -11,18 +11,20 @@ Migração:
 - Backward compatible com chamadas antigas
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime, timezone
-import uuid
 import logging
+import uuid
+from datetime import datetime, timezone
+from typing import Optional
 
-from shared.config import settings
-from integrations.whatsapp_hub import get_whatsapp_hub, WhatsAppHub
-from api.middleware.auth import get_current_user
 from api.database.connection import database
 from api.database.models import WhatsAppInstance, WhatsAppMessage
+from api.middleware.auth import get_current_user
+from api.middleware.subscription import get_subscription_service
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from integrations.whatsapp_hub import WhatsAppHub, get_whatsapp_hub
+from modules.subscription import SubscriptionService
+from pydantic import BaseModel
+from shared.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -54,12 +56,38 @@ class WhatsAppMessageSend(BaseModel):
 @router.post("/instances")
 async def create_instance(
     data: WhatsAppInstanceCreate,
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    service: SubscriptionService = Depends(get_subscription_service)
 ):
     """Create a new WhatsApp instance using Hub."""
+    user_id = str(current_user["id"])
+    
+    # Check instance limit
+    subscription = await service.get_subscription(user_id)
+    plan_config = service.get_plan_config(subscription.plan)
+    limit = plan_config.limits.get("whatsapp_instances", 0)
+    
+    if limit != -1:
+        query = (
+            "SELECT COUNT(*) FROM whatsapp_instances "
+            "WHERE user_id = :user_id AND status != 'deleted'"
+        )
+        count = await database.fetch_val(query, {"user_id": user_id})
+        if count >= limit:
+            raise HTTPException(
+                status_code=402,
+                detail=(
+                    f"Limite de instâncias atingido ({limit}). "
+                    "Faça upgrade para criar mais."
+                )
+            )
+
     hub = get_hub()
     try:
-        webhook_url = data.webhook_url or f"{settings.API_URL}/whatsapp/webhook"
+        webhook_url = (
+            data.webhook_url or
+            f"{settings.API_URL}/whatsapp/webhook"
+        )
         result = await hub.create_instance(
             instance_name=data.instance_name,
             webhook_url=webhook_url
@@ -100,9 +128,22 @@ async def get_qrcode(
 @router.post("/messages/text")
 async def send_message(
     data: WhatsAppMessageSend,
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    service: SubscriptionService = Depends(get_subscription_service)
 ):
     """Send text message using Hub."""
+    # Check message limit
+    can_use = await service.can_use_feature(
+        str(current_user["id"]),
+        "whatsapp_messages",
+        increment=1
+    )
+    if not can_use:
+        raise HTTPException(
+            status_code=402,
+            detail="Limite de mensagens atingido"
+        )
+
     hub = get_hub()
     try:
         result = await hub.send_message(
@@ -256,8 +297,9 @@ async def _schedule_reconnection(instance_name: str, user_id: str):
     
     Usa exponential backoff para evitar sobrecarga.
     """
-    from shared.redis import get_redis
     import json
+
+    from shared.redis import get_redis
     
     redis = await get_redis()
     
@@ -314,8 +356,9 @@ async def get_instance_status(
     if instance.user_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    from shared.redis import get_redis
     import json
+
+    from shared.redis import get_redis
     
     redis = await get_redis()
     
@@ -408,5 +451,7 @@ async def list_messages(
     ).order_by(WhatsAppMessage.timestamp.desc()).limit(limit).offset(offset)
     
     messages = await database.fetch_all(query)
+    return messages
+
     return messages
 

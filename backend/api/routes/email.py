@@ -10,22 +10,17 @@ Funcionalidades:
 - Tracking de métricas
 """
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
-from api.middleware.auth import get_current_user
 from api.database.models import User
+from api.middleware.auth import get_current_user
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from pydantic import BaseModel, EmailStr, Field
 from shared.redis import get_redis
-from vendor.email import (
-    EmailClient,
-    EmailConfig,
-    EmailMessage,
-    EmailAddress,
-    EmailStatus,
-)
+from vendor.email import (EmailAddress, EmailClient, EmailConfig, EmailMessage,
+                          EmailStatus)
 
 router = APIRouter()
 
@@ -640,7 +635,7 @@ async def list_contacts(
 
 @router.get("/stats", response_model=EmailStatsResponse)
 async def get_email_stats(
-    period: str = Query("7d", regex="^(1d|7d|30d|90d)$"),
+    period: str = Query("7d", pattern="^(1d|7d|30d|90d)$"),
     current_user: User = Depends(get_current_user),
 ):
     """Retorna estatísticas de email."""

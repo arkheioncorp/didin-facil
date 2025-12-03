@@ -9,7 +9,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_serializer
 
 
 class MarketplaceType(str, Enum):
@@ -114,11 +114,15 @@ class Product(BaseModel):
     attributes: dict[str, Any] = Field(default_factory=dict)
     fetched_at: datetime = Field(default_factory=datetime.utcnow)
     
-    class Config:
-        json_encoders = {
-            Decimal: str,
-            datetime: lambda v: v.isoformat(),
-        }
+    model_config = ConfigDict(ser_json_timedelta="iso8601")
+    
+    @field_serializer("price", "original_price")
+    def serialize_decimal(self, v: Decimal | None) -> str | None:
+        return str(v) if v is not None else None
+    
+    @field_serializer("fetched_at")
+    def serialize_datetime(self, v: datetime) -> str:
+        return v.isoformat()
     
     @property
     def has_discount(self) -> bool:

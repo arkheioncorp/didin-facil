@@ -11,7 +11,7 @@ from api.services.cache import CacheService
 from api.services.scraper import ScraperOrchestrator
 from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException, Query,
                      Response)
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 router = APIRouter()
 
@@ -57,8 +57,7 @@ class Product(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProductsResponse(BaseModel):
@@ -90,6 +89,7 @@ async def get_products(
     min_sales: Optional[int] = Query(None, ge=0),
     sort_by: str = "sales_30d",
     sort_order: str = "desc",
+    source: Optional[str] = Query(None),
     user: Optional[dict] = Depends(get_current_user_optional),
     background_tasks: BackgroundTasks = None,
 ):
@@ -109,6 +109,7 @@ async def get_products(
         sort_by=sort_by,
         page=page,
         per_page=per_page,
+        source=source,
     )
 
     # Check cache
@@ -128,6 +129,7 @@ async def get_products(
         min_sales=min_sales,
         sort_by=sort_by,
         sort_order=sort_order,
+        source=source,
     )
 
     # Cache result

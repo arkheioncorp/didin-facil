@@ -11,16 +11,16 @@ Funcionalidades:
 - Analytics de campanha
 """
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List, Dict, Any
+import json
+import uuid
 from datetime import datetime, timedelta
 from enum import Enum
-import uuid
-import json
+from typing import Any, Dict, List, Optional
 
-from api.middleware.auth import get_current_user
 from api.database.models import User
+from api.middleware.auth import get_current_user
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from pydantic import BaseModel, EmailStr, Field
 from shared.redis import get_redis
 
 router = APIRouter()
@@ -64,7 +64,7 @@ class CampaignCreate(BaseModel):
     template_id: Optional[str] = None
     html_content: Optional[str] = None
     text_content: Optional[str] = None
-    list_ids: List[str] = Field(..., min_items=1)
+    list_ids: List[str] = Field(..., min_length=1)
     type: CampaignType = CampaignType.REGULAR
     trigger: TriggerType = TriggerType.IMMEDIATE
     schedule_at: Optional[datetime] = None

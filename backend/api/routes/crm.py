@@ -17,9 +17,11 @@ from typing import Any, Dict, List, Optional
 from api.database.connection import get_db_pool
 from api.database.models import User
 from api.middleware.auth import get_current_user, get_current_user_optional
+from api.middleware.subscription import get_subscription_service
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from modules.crm import (ContactStatus, CRMService, DealStatus, LeadSource,
                          LeadStatus)
+from modules.subscription import SubscriptionService
 from pydantic import BaseModel, EmailStr, Field
 
 router = APIRouter()
@@ -258,8 +260,23 @@ async def list_contacts(
 async def create_contact(
     data: ContactCreate,
     user: User = Depends(get_current_user),
+    subscription_service: SubscriptionService = Depends(get_subscription_service),
 ):
     """Cria um novo contato."""
+    # Check subscription limits for CRM contacts
+    can_use = await subscription_service.can_use_feature(
+        str(user["id"]),
+        "crm_contacts"
+    )
+    if not can_use:
+        raise HTTPException(
+            status_code=402,
+            detail="Limite de contatos CRM atingido. Faça upgrade para adicionar mais."
+        )
+    
+    # Increment usage
+    await subscription_service.increment_usage(str(user["id"]), "crm_contacts", 1)
+    
     service = await get_crm_service()
 
     try:
@@ -457,8 +474,21 @@ async def list_leads(
 async def create_lead(
     data: LeadCreate,
     user: User = Depends(get_current_user),
+    sub_service: SubscriptionService = Depends(get_subscription_service)
 ):
     """Cria um novo lead."""
+    # Check plan limits
+    can_use = await sub_service.can_use_feature(
+        str(user["id"]),
+        "crm_leads",
+        increment=1
+    )
+    if not can_use:
+        raise HTTPException(
+            status_code=402,
+            detail="Limite de leads atingido"
+        )
+
     service = await get_crm_service()
 
     try:

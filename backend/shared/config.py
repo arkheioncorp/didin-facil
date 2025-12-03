@@ -8,6 +8,7 @@ Detecta automaticamente se está rodando em Docker e usa URLs internas.
 import os
 from typing import Optional
 
+from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
 
@@ -170,11 +171,12 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "http://localhost:1420,http://localhost:3000,tauri://localhost"
     FRONTEND_URL: str = "http://localhost:5173"
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True
-        extra = "ignore"
+    model_config = ConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore"
+    )
 
     @property
     def database(self):

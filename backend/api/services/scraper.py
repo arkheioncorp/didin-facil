@@ -53,7 +53,8 @@ class ScraperOrchestrator:
         max_price: Optional[float] = None,
         min_sales: Optional[int] = None,
         sort_by: str = "sales_30d",
-        sort_order: str = "desc"
+        sort_order: str = "desc",
+        source: Optional[str] = None
     ) -> dict:
         """Get paginated products with filters"""
         
@@ -80,6 +81,11 @@ class ScraperOrchestrator:
             conditions.append("sales_count >= :min_sales")
             count_params["min_sales"] = min_sales
             query_params["min_sales"] = min_sales
+
+        if source:
+            conditions.append("source = :source")
+            count_params["source"] = source
+            query_params["source"] = source
         
         where_clause = " AND ".join(conditions)
         

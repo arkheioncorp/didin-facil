@@ -360,7 +360,7 @@ class AccountingService:
         )
         summary = result.scalar_one_or_none()
         
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         if summary:
             summary.total_spent += amount_spent
@@ -392,7 +392,7 @@ class AccountingService:
 
     async def get_dashboard_metrics(self, days: int = 30) -> Dict[str, Any]:
         """Get dashboard metrics for admin panel"""
-        start_date = datetime.utcnow() - timedelta(days=days)
+        start_date = datetime.now(timezone.utc) - timedelta(days=days)
         
         # Total revenue
         revenue_result = await self.db.fetch_one(
@@ -501,7 +501,7 @@ class AccountingService:
 
     async def get_revenue_by_day(self, days: int = 30) -> List[Dict]:
         """Get daily revenue for charts"""
-        start_date = datetime.utcnow() - timedelta(days=days)
+        start_date = datetime.now(timezone.utc) - timedelta(days=days)
         
         rows = await self.db.fetch_all(
             """
@@ -538,7 +538,7 @@ class AccountingService:
 
     async def get_operations_breakdown(self, days: int = 30) -> Dict[str, int]:
         """Get breakdown of operations by type"""
-        start_date = datetime.utcnow() - timedelta(days=days)
+        start_date = datetime.now(timezone.utc) - timedelta(days=days)
         
         query = """
             SELECT operation_type, COUNT(*) as count
@@ -597,7 +597,7 @@ class AccountingService:
 
     async def get_package_sales_stats(self, days: int = 30) -> List[Dict]:
         """Get sales stats per package"""
-        start_date = datetime.utcnow() - timedelta(days=days)
+        start_date = datetime.now(timezone.utc) - timedelta(days=days)
         
         rows = await self.db.fetch_all(
             """
@@ -640,7 +640,7 @@ class AccountingService:
     async def generate_daily_report(self, date: datetime = None) -> DailyFinancialReport:
         """Generate or update daily financial report"""
         if date is None:
-            date = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+            date = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
         
         start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
         end_of_day = start_of_day + timedelta(days=1)
@@ -659,7 +659,7 @@ class AccountingService:
         if report:
             for key, value in metrics.items():
                 setattr(report, key, value)
-            report.updated_at = datetime.utcnow()
+            report.updated_at = datetime.now(timezone.utc)
         else:
             report = DailyFinancialReport(
                 id=uuid.uuid4(),

@@ -21,12 +21,12 @@ Integração com MercadoPago para pagamentos recorrentes.
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 logger = logging.getLogger(__name__)
 
@@ -679,14 +679,13 @@ class SubscriptionV2(BaseModel):
         grace_end = self.current_period_end + timedelta(
             days=plan_config.grace_period_days
         )
-        return datetime.utcnow() < grace_end
+        return datetime.now(timezone.utc) < grace_end
     
     def get_plan_config(self) -> PlanConfig:
         """Retorna configuração do plano."""
         return PLANS_V2.get(self.plan, PLANS_V2[PlanTier.FREE])
     
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 # LEGACY: Mantido para compatibilidade
@@ -801,9 +800,9 @@ class SubscriptionService:
             status=SubscriptionStatus.ACTIVE,
             billing_cycle=BillingCycle.MONTHLY,
             execution_mode=ExecutionMode.WEB_ONLY,
-            created_at=datetime.utcnow(),
-            current_period_start=datetime.utcnow(),
-            current_period_end=datetime.utcnow() + timedelta(days=30),
+            created_at=datetime.now(timezone.utc),
+            current_period_start=datetime.now(timezone.utc),
+            current_period_end=datetime.now(timezone.utc) + timedelta(days=30),
             usage={}
         )
     
@@ -962,7 +961,7 @@ class SubscriptionService:
         redis = await self._get_redis()
         
         # Key com período mensal
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         key = f"usage:{user_id}:{feature}:{now.year}:{now.month}"
         
         usage = await redis.get(key)
@@ -977,7 +976,7 @@ class SubscriptionService:
         """Incrementa uso de uma feature."""
         redis = await self._get_redis()
         
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         key = f"usage:{user_id}:{feature}:{now.year}:{now.month}"
         
         new_value = await redis.incrby(key, amount)
@@ -1009,7 +1008,7 @@ class SubscriptionService:
         plan_config = self.get_plan_config(subscription.plan)
         
         # Calcular data de reset (primeiro dia do próximo mês)
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         if now.month == 12:
             resets_at = datetime(now.year + 1, 1, 1)
         else:
@@ -1059,7 +1058,7 @@ class SubscriptionService:
         # Atualizar subscription
         subscription.plan = new_plan
         subscription.billing_cycle = billing_cycle
-        subscription.current_period_start = datetime.utcnow()
+        subscription.current_period_start = datetime.now(timezone.utc)
         subscription.status = SubscriptionStatus.ACTIVE
         
         # Definir modo de execução padrão do novo plano
@@ -1067,9 +1066,9 @@ class SubscriptionService:
             subscription.execution_mode = new_config.execution_modes[0]
         
         if billing_cycle == BillingCycle.MONTHLY:
-            subscription.current_period_end = datetime.utcnow() + timedelta(days=30)
+            subscription.current_period_end = datetime.now(timezone.utc) + timedelta(days=30)
         else:
-            subscription.current_period_end = datetime.utcnow() + timedelta(days=365)
+            subscription.current_period_end = datetime.now(timezone.utc) + timedelta(days=365)
         
         await self._cache_subscription(subscription)
         
@@ -1104,7 +1103,7 @@ class SubscriptionService:
         """Cancela assinatura (mantém até o final do período)."""
         subscription = await self.get_subscription(user_id)
         subscription.status = SubscriptionStatus.CANCELED
-        subscription.canceled_at = datetime.utcnow()
+        subscription.canceled_at = datetime.now(timezone.utc)
         
         await self._cache_subscription(subscription)
         
