@@ -1124,7 +1124,7 @@ class SubscriptionService:
         import json
         await redis.set(
             f"subscription:{subscription.user_id}",
-            json.dumps(subscription.dict(), default=str),
+            json.dumps(subscription.model_dump(), default=str),
             ex=ttl
         )
     

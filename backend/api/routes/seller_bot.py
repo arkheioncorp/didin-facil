@@ -11,7 +11,7 @@ Features:
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
@@ -800,7 +800,7 @@ async def health_check():
     )
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "bot_active": _bot_instance is not None,
         "adapters_registered": adapters_count,
     }

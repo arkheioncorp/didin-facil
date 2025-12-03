@@ -326,7 +326,7 @@ async def exchange_token(
             shops = await service.get_active_shops(token.access_token)
             await redis.set(
                 get_redis_key(user_id, "shops"),
-                json.dumps([s.dict() for s in shops]),
+                json.dumps([s.model_dump() for s in shops]),
                 ex=86400  # 24h
             )
         except Exception as e:
@@ -340,7 +340,7 @@ async def exchange_token(
             "message": "TikTok Shop conectado com sucesso!",
             "seller_name": token.seller_name,
             "seller_region": token.seller_base_region,
-            "shops": [s.dict() for s in shops] if shops else []
+            "shops": [s.model_dump() for s in shops] if shops else []
         }
     except TikTokShopError as e:
         logger.error(f"Erro ao trocar código: {e}")
@@ -382,7 +382,7 @@ async def oauth_callback(
         shops = await service.get_active_shops(token.access_token)
         await redis.set(
             get_redis_key(user_id, "shops"),
-            json.dumps([s.dict() for s in shops]),
+            json.dumps([s.model_dump() for s in shops]),
             ex=86400  # 24h
         )
         
@@ -392,7 +392,7 @@ async def oauth_callback(
             "success": True,
             "seller_name": token.seller_name,
             "seller_region": token.seller_base_region,
-            "shops": [s.dict() for s in shops]
+            "shops": [s.model_dump() for s in shops]
         }
     except TikTokShopError as e:
         logger.error(f"Erro OAuth: {e}")
@@ -499,7 +499,7 @@ async def list_products(
         )
         
         return ProductListResponse(
-            products=[p.dict() for p in products],
+            products=[p.model_dump() for p in products],
             total=len(products),
             next_page_token=next_token
         )
@@ -633,7 +633,7 @@ async def run_product_sync(user_id: str, shop_id: Optional[str], redis):
                             "tiktok_shop": {
                                 "status": tts_product.status.value,
                                 "sales_regions": tts_product.sales_regions,
-                                "skus": [s.dict() for s in tts_product.skus],
+                                "skus": [s.model_dump() for s in tts_product.skus],
                                 "quality_tier": tts_product.listing_quality_tier
                             }
                         }
@@ -705,11 +705,11 @@ async def list_shops(
         # Atualiza cache
         await redis.set(
             get_redis_key(user_id, "shops"),
-            json.dumps([s.dict() for s in shops]),
+            json.dumps([s.model_dump() for s in shops]),
             ex=86400
         )
         
-        return {"shops": [s.dict() for s in shops]}
+        return {"shops": [s.model_dump() for s in shops]}
     except TikTokShopError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

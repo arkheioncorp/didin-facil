@@ -4,7 +4,7 @@ n8n Automation API Routes
 Endpoints para integração com n8n e automações.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from api.middleware.auth import get_current_user
@@ -299,7 +299,7 @@ async def trigger_price_drop_alert(
                 "discount_percent": round((1 - new_price/old_price) * 100, 1),
                 "product_url": product_url,
                 "user_id": str(current_user["id"]),
-                "triggered_at": datetime.utcnow().isoformat()
+                "triggered_at": datetime.now(timezone.utc).isoformat()
             }
         )
         
@@ -330,7 +330,7 @@ async def trigger_new_lead(
                 "email": email,
                 "source": source,
                 "user_id": str(current_user["id"]),
-                "created_at": datetime.utcnow().isoformat()
+                "created_at": datetime.now(timezone.utc).isoformat()
             }
         )
         
@@ -358,7 +358,7 @@ async def trigger_post_published(
                 "post_id": post_id,
                 "post_url": post_url,
                 "user_id": str(current_user["id"]),
-                "published_at": datetime.utcnow().isoformat()
+                "published_at": datetime.now(timezone.utc).isoformat()
             }
         )
         

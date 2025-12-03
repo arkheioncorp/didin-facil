@@ -4,15 +4,24 @@ Handles session persistence, backup, and restoration via Redis
 """
 
 import logging
-from datetime import datetime, timedelta
-from typing import Optional, Dict, List
-from pydantic import BaseModel, Field
-from enum import Enum
 import uuid
+from datetime import datetime, timedelta, timezone
+from enum import Enum
+from typing import Dict, List, Optional
 
+from pydantic import BaseModel, Field
 from shared.redis import redis_client
 
 logger = logging.getLogger(__name__)
+
+
+def ensure_aware(dt: Optional[datetime]) -> Optional[datetime]:
+    """Ensure datetime is timezone-aware (UTC)."""
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
 
 
 class TikTokSessionStatus(str, Enum):
@@ -30,7 +39,7 @@ class TikTokSession(BaseModel):
     account_name: str
     status: TikTokSessionStatus = TikTokSessionStatus.ACTIVE
     cookies: List[Dict] = []
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     last_used: Optional[datetime] = None
     expires_at: Optional[datetime] = None
     last_error: Optional[str] = None
@@ -79,7 +88,7 @@ class TikTokSessionManager:
                 user_id=user_id,
                 account_name=account_name,
                 cookies=cookies,
-                expires_at=datetime.utcnow() + timedelta(days=30),
+                expires_at=datetime.now(timezone.utc) + timedelta(days=30),
                 metadata=metadata or {}
             )
             
@@ -147,7 +156,7 @@ class TikTokSessionManager:
             if not session:
                 return False
             
-            session.last_used = datetime.utcnow()
+            session.last_used = datetime.now(timezone.utc)
             session.upload_count += 1
             
             key = f"{self.SESSION_PREFIX}{user_id}:{account_name}"
@@ -208,7 +217,7 @@ class TikTokSessionManager:
             if not session:
                 return False
             
-            ts = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+            ts = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
             backup_key = f"{self.BACKUP_PREFIX}{user_id}:{account_name}:{ts}"
             
             await redis_client.set(
@@ -330,12 +339,13 @@ class TikTokSessionManager:
                 "status": "not_found"
             }
         
-        now = datetime.utcnow()
-        is_expired = session.expires_at and session.expires_at < now
+        now = datetime.now(timezone.utc)
+        expires_at = ensure_aware(session.expires_at)
+        is_expired = expires_at and expires_at < now
         
         days_until_expiry = None
-        if session.expires_at:
-            delta = session.expires_at - now
+        if expires_at:
+            delta = expires_at - now
             days_until_expiry = max(0, delta.days)
         
         return {
@@ -383,7 +393,7 @@ class TikTokSessionManager:
             session.cookies = cookies
             session.status = TikTokSessionStatus.ACTIVE
             session.last_error = None
-            session.expires_at = datetime.utcnow() + timedelta(days=30)
+            session.expires_at = datetime.now(timezone.utc) + timedelta(days=30)
             
             key = f"{self.SESSION_PREFIX}{user_id}:{account_name}"
             await redis_client.set(
@@ -419,7 +429,9 @@ class TikTokSessionManager:
                     session = TikTokSession.model_validate_json(data)
                     
                     if session.status == TikTokSessionStatus.ACTIVE:
-                        if session.expires_at and session.expires_at < datetime.utcnow():
+                        exp = ensure_aware(session.expires_at)
+                        now = datetime.now(timezone.utc)
+                        if exp and exp < now:
                             expired += 1
                         else:
                             active += 1

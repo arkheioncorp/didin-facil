@@ -1,19 +1,87 @@
 # Railway Ignore File
 # Exclude large binaries and build artifacts
-src-tauri/target/
-src-tauri/gen/
+
+# ============================================================================
+# CRÍTICO: Arquivos enormes que estavam causando 4GB+ de upload
+# ============================================================================
+
+# Tauri / Rust (20GB+)
+src-tauri/
 builds/
-dist/
-node_modules/
+
+# Virtual environments
+venv/
+.venv/
 backend/venv/
 backend/.venv/
+
+# Node (instalado no build)
+node_modules/
+
+# ============================================================================
+# Outros arquivos desnecessários para deploy
+# ============================================================================
+
+# Build outputs
+dist/
+
+# Python cache
+__pycache__/
 backend/__pycache__/
-.git/
-.github/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Test & Coverage
+htmlcov/
+backend/htmlcov/
 coverage/
 test-results/
+test-reports/
 playwright-report/
+coverage.json
+coverage.xml
+vitest-results.json
+test-results.json
+stats.html
+
+# Temp & archives
 _archive/
 *.log
+*_output.txt
+
+# Git & IDE
+.git/
+.github/
+.vscode/
+.idea/
+
+# DB files
 *.sqlite
 *.db
+
+# Frontend (não necessário para API backend)
+src/
+public/
+index.html
+components.json
+*.config.js
+postcss.config.js
+tailwind.config.js
+tsconfig*.json
+vite.config.ts
+vitest.config.ts
+playwright.config.ts
+
+# Docs
+docs/
+memory-bank/
+
+# Infra & scripts locais
+infra/
+scripts/
+Makefile
+Justfile
+*.sh
+make_admin.py
+

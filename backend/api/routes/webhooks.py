@@ -217,8 +217,8 @@ async def handle_subscription_event(
             subscription.billing_cycle = billing_cycle
         
         if new_status == SubscriptionStatus.CANCELED:
-            from datetime import datetime
-            subscription.canceled_at = datetime.utcnow()
+            from datetime import datetime, timezone
+            subscription.canceled_at = datetime.now(timezone.utc)
             
         await subscription_service._cache_subscription(subscription)
         await mp_service.log_event("subscription_updated", subscription_mp)
@@ -258,9 +258,9 @@ async def handle_subscription_payment(
                 )
                 
                 # Extend subscription
-                from datetime import datetime, timedelta
+                from datetime import datetime, timezone, timedelta, timezone
                 
-                now = datetime.utcnow()
+                now = datetime.now(timezone.utc)
                 # If current period end is in the future, add to it.
                 # Else start from now.
                 start_date = max(now, subscription.current_period_end)

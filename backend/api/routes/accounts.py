@@ -6,7 +6,7 @@ Manage multiple social media accounts per platform
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import uuid
 import json
@@ -95,7 +95,7 @@ class MultiAccountService:
     ) -> Account:
         """Create new account"""
         account_id = str(uuid.uuid4())
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         # Check if username already exists for this platform
         existing = await self.get_by_username(user_id, data.platform.value, data.username)
@@ -208,7 +208,7 @@ class MultiAccountService:
         if not existing:
             return None
         
-        updates = {"updated_at": datetime.utcnow().isoformat()}
+        updates = {"updated_at": datetime.now(timezone.utc).isoformat()}
         
         if data.display_name is not None:
             updates["display_name"] = data.display_name
@@ -263,8 +263,8 @@ class MultiAccountService:
         # Update last used timestamp
         key = f"{self.PREFIX}{user_id}:{account_id}"
         await redis_client.hset(key, mapping={
-            "last_used_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat()
+            "last_used_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
         })
         
         # Store active account per platform
@@ -312,7 +312,7 @@ class MultiAccountService:
         
         await redis_client.hset(key, mapping={
             "metrics": json.dumps(metrics.model_dump(mode="json")),
-            "updated_at": datetime.utcnow().isoformat()
+            "updated_at": datetime.now(timezone.utc).isoformat()
         })
         
         return await self.get(user_id, account_id)

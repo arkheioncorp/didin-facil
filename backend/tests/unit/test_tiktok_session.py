@@ -1,16 +1,13 @@
 """
 Tests for TikTok Session Manager
 """
-import pytest
-from unittest.mock import AsyncMock, patch
-from datetime import datetime, timedelta
 import json
+from datetime import datetime, timedelta, timezone
+from unittest.mock import AsyncMock, patch
 
-from api.services.tiktok_session import (
-    TikTokSessionManager,
-    TikTokSession,
-    TikTokSessionStatus,
-)
+import pytest
+from api.services.tiktok_session import (TikTokSession, TikTokSessionManager,
+                                         TikTokSessionStatus)
 
 
 @pytest.fixture
@@ -254,7 +251,7 @@ class TestTikTokSessionManager:
             user_id="user123",
             account_name="myaccount",
             cookies=sample_cookies,
-            expires_at=datetime.utcnow() + timedelta(days=15),
+            expires_at=datetime.now(timezone.utc) + timedelta(days=15),
             upload_count=10
         )
         mock_redis.get.return_value = session.model_dump_json()
@@ -274,7 +271,7 @@ class TestTikTokSessionManager:
             user_id="user123",
             account_name="myaccount",
             cookies=sample_cookies,
-            expires_at=datetime.utcnow() - timedelta(days=1)
+            expires_at=datetime.now(timezone.utc) - timedelta(days=1)
         )
         mock_redis.get.return_value = session.model_dump_json()
         mock_redis.keys.return_value = []
@@ -321,7 +318,7 @@ class TestTikTokSessionManager:
             account_name="myaccount",
             cookies=sample_cookies,
             status=TikTokSessionStatus.ACTIVE,
-            expires_at=datetime.utcnow() + timedelta(days=10)
+            expires_at=datetime.now(timezone.utc) + timedelta(days=10)
         )
         mock_redis.keys.return_value = [
             "tiktok:session:user123:account1"

@@ -19,7 +19,7 @@ import json
 import logging
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
@@ -716,7 +716,7 @@ class ProfessionalSellerBot:
         
         # Atualizar contexto
         context.message_count += 1
-        context.last_interaction = datetime.utcnow()
+        context.last_interaction = datetime.now(timezone.utc)
         
         # Detectar intenção
         analysis = self.intent_detector.detect(message.content, context)
@@ -875,7 +875,7 @@ class ProfessionalSellerBot:
             context = self._contexts[context_key]
             
             # Verificar se expirou (30 min de inatividade)
-            inactivity = datetime.utcnow() - context.last_interaction
+            inactivity = datetime.now(timezone.utc) - context.last_interaction
             if inactivity > timedelta(minutes=30):
                 # Criar novo contexto mas manter info do usuário
                 old_context = context
@@ -901,7 +901,7 @@ class ProfessionalSellerBot:
         """
         Salva contexto no Redis e cache local.
         """
-        context.updated_at = datetime.utcnow()
+        context.updated_at = datetime.now(timezone.utc)
         context_key = f"{context.channel.value}:{context.user_id}"
         
         # Atualizar cache local
@@ -1870,7 +1870,7 @@ Quer buscar algo? Me diga o que procura!
                     "complaint": complaint,
                     "sentiment": context.sentiment_history[-1] if context.sentiment_history else "unknown",
                     "lead_score": context.lead_score,
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
             )
         except Exception as e:

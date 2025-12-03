@@ -11,7 +11,7 @@ Responsabilidades:
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from .models import (Activity, ActivityType, Contact, ContactStatus, Deal,
@@ -81,7 +81,7 @@ class ContactService:
             tags=tags or [],
             custom_fields=custom_fields or {},
             subscribed=True,
-            subscription_date=datetime.utcnow(),
+            subscription_date=datetime.now(timezone.utc),
             **kwargs
         )
         
@@ -240,7 +240,7 @@ class ContactService:
             return False
         
         contact.subscribed = False
-        contact.unsubscribe_date = datetime.utcnow()
+        contact.unsubscribe_date = datetime.now(timezone.utc)
         contact.status = ContactStatus.UNSUBSCRIBED
         
         await self.repo.update(contact)
@@ -270,7 +270,7 @@ class ContactService:
         contact.engagement_score = max(
             0, contact.engagement_score + engagement_score_delta
         )
-        contact.last_activity_at = datetime.utcnow()
+        contact.last_activity_at = datetime.now(timezone.utc)
         
         return await self.repo.update(contact)
     
@@ -604,7 +604,7 @@ class LeadService:
         
         lead.score = max(0, min(100, lead.score + points))
         lead.temperature = self._calculate_temperature(lead.score)
-        lead.last_contact_at = datetime.utcnow()
+        lead.last_contact_at = datetime.now(timezone.utc)
         
         lead = await self.repo.update(lead)
         

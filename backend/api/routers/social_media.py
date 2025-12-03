@@ -220,7 +220,7 @@ async def send_whatsapp_bulk(
 @router.post("/whatsapp/webhook")
 async def whatsapp_webhook(payload: WebhookPayload):
     """Webhook para receber mensagens do WhatsApp."""
-    message = parse_webhook_message(payload.dict())
+    message = parse_webhook_message(payload.model_dump())
     
     if message:
         logger.info(f"Mensagem recebida de {message.from_number}: {message.content}")

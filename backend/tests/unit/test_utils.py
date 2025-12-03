@@ -2,14 +2,13 @@
 Utils Unit Tests
 Tests for integrity and security utilities
 """
-import pytest
-from unittest.mock import patch
 import os
 import tempfile
+from unittest.mock import patch
 
-from api.utils.integrity import IntegrityChecker, CRITICAL_FILES
+import pytest
+from api.utils.integrity import CRITICAL_FILES, IntegrityChecker
 from api.utils.security import SecurityMonitor
-
 
 # ============== IntegrityChecker Tests ==============
 
@@ -150,7 +149,7 @@ class TestSecurityMonitor:
     def test_check_debugger_env_var_detected(self):
         with patch.dict(
             os.environ,
-            {"ALLOW_DEBUGGER": "false", "PYCHARM_HOSTED": "1"}
+            {"ALLOW_DEBUGGER": "false", "PYCHARM_HOSTED": "true"}
         ):
             with patch("sys.gettrace", return_value=None):
                 result = SecurityMonitor.check_debugger()
@@ -160,7 +159,7 @@ class TestSecurityMonitor:
     def test_check_debugger_vscode_detected(self):
         with patch.dict(
             os.environ,
-            {"ALLOW_DEBUGGER": "false", "VSCODE_PID": "12345"}
+            {"ALLOW_DEBUGGER": "false", "VSCODE_PID": "true"}
         ):
             with patch("sys.gettrace", return_value=None):
                 result = SecurityMonitor.check_debugger()

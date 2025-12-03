@@ -15,7 +15,7 @@ Entidades:
 
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import uuid
 
@@ -154,7 +154,7 @@ class Tag:
             description=data.get("description"),
             user_id=data.get("user_id", ""),
             created_at=datetime.fromisoformat(data["created_at"])
-            if "created_at" in data else datetime.utcnow(),
+            if "created_at" in data else datetime.now(timezone.utc),
         )
 
 
@@ -310,9 +310,9 @@ class Contact:
             lead_score=data.get("lead_score", 0),
             engagement_score=data.get("engagement_score", 0),
             created_at=datetime.fromisoformat(data["created_at"])
-            if "created_at" in data else datetime.utcnow(),
+            if "created_at" in data else datetime.now(timezone.utc),
             updated_at=datetime.fromisoformat(data["updated_at"])
-            if "updated_at" in data else datetime.utcnow(),
+            if "updated_at" in data else datetime.now(timezone.utc),
             last_activity_at=datetime.fromisoformat(data["last_activity_at"])
             if data.get("last_activity_at") else None,
         )
@@ -375,7 +375,7 @@ class Lead:
     @property
     def days_in_pipeline(self) -> int:
         """Dias no pipeline."""
-        end_date = self.converted_at or self.lost_at or datetime.utcnow()
+        end_date = self.converted_at or self.lost_at or datetime.now(timezone.utc)
         return (end_date - self.created_at).days
     
     def to_dict(self) -> Dict[str, Any]:
@@ -441,9 +441,9 @@ class Lead:
             tags=data.get("tags", []),
             custom_fields=data.get("custom_fields", {}),
             created_at=datetime.fromisoformat(data["created_at"])
-            if "created_at" in data else datetime.utcnow(),
+            if "created_at" in data else datetime.now(timezone.utc),
             updated_at=datetime.fromisoformat(data["updated_at"])
-            if "updated_at" in data else datetime.utcnow(),
+            if "updated_at" in data else datetime.now(timezone.utc),
             last_contact_at=datetime.fromisoformat(data["last_contact_at"])
             if data.get("last_contact_at") else None,
             next_follow_up=datetime.fromisoformat(data["next_follow_up"])
@@ -605,9 +605,9 @@ class Pipeline:
             total_deals=data.get("total_deals", 0),
             total_value=data.get("total_value", 0.0),
             created_at=datetime.fromisoformat(data["created_at"])
-            if "created_at" in data else datetime.utcnow(),
+            if "created_at" in data else datetime.now(timezone.utc),
             updated_at=datetime.fromisoformat(data["updated_at"])
-            if "updated_at" in data else datetime.utcnow(),
+            if "updated_at" in data else datetime.now(timezone.utc),
         )
 
 
@@ -680,7 +680,7 @@ class Deal:
     @property
     def days_in_stage(self) -> int:
         """Dias no estágio atual."""
-        return (datetime.utcnow() - self.stage_entered_at).days
+        return (datetime.now(timezone.utc) - self.stage_entered_at).days
     
     @property
     def weighted_value(self) -> float:
@@ -753,13 +753,13 @@ class Deal:
             tags=data.get("tags", []),
             custom_fields=data.get("custom_fields", {}),
             created_at=datetime.fromisoformat(data["created_at"])
-            if "created_at" in data else datetime.utcnow(),
+            if "created_at" in data else datetime.now(timezone.utc),
             updated_at=datetime.fromisoformat(data["updated_at"])
-            if "updated_at" in data else datetime.utcnow(),
+            if "updated_at" in data else datetime.now(timezone.utc),
             last_activity_at=datetime.fromisoformat(data["last_activity_at"])
             if data.get("last_activity_at") else None,
             stage_entered_at=datetime.fromisoformat(data["stage_entered_at"])
-            if data.get("stage_entered_at") else datetime.utcnow(),
+            if data.get("stage_entered_at") else datetime.now(timezone.utc),
         )
 
 
@@ -840,9 +840,9 @@ class Activity:
             if data.get("completed_at") else None,
             performed_by=data.get("performed_by"),
             created_at=datetime.fromisoformat(data["created_at"])
-            if "created_at" in data else datetime.utcnow(),
+            if "created_at" in data else datetime.now(timezone.utc),
             updated_at=datetime.fromisoformat(data["updated_at"])
-            if "updated_at" in data else datetime.utcnow(),
+            if "updated_at" in data else datetime.now(timezone.utc),
         )
 
 
@@ -930,7 +930,7 @@ class Segment:
             last_computed_at=datetime.fromisoformat(data["last_computed_at"])
             if data.get("last_computed_at") else None,
             created_at=datetime.fromisoformat(data["created_at"])
-            if "created_at" in data else datetime.utcnow(),
+            if "created_at" in data else datetime.now(timezone.utc),
             updated_at=datetime.fromisoformat(data["updated_at"])
-            if "updated_at" in data else datetime.utcnow(),
+            if "updated_at" in data else datetime.now(timezone.utc),
         )

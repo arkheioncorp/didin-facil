@@ -5,16 +5,38 @@
 # ============================================================================
 
 [phases.setup]
-nixPkgs = ["python311", "postgresql"]
+nixPkgs = [
+  "python311",
+  "python311Packages.pip",
+  "postgresql",
+  "ffmpeg",
+  "chromium",
+  "gcc",
+  "glibc",
+]
+
+aptPkgs = [
+  "libnss3",
+  "libatk-bridge2.0-0",
+  "libdrm2",
+  "libxkbcommon0",
+  "libgbm1",
+  "libasound2t64",
+  "libstdc++6",
+]
 
 [phases.install]
-cmds = ["cd backend && pip install -r requirements.txt"]
+cmds = [
+  "cd backend && pip install --break-system-packages -r requirements.txt",
+  "playwright install chromium --with-deps || true",
+]
 
 [phases.build]
 cmds = ["echo 'Build complete'"]
 
 [start]
-cmd = "cd backend && alembic upgrade head && gunicorn api.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT"
+# Start command is defined in railway.toml
 
 [variables]
 PYTHONUNBUFFERED = "1"
+NIX_LD_LIBRARY_PATH = "/nix/var/nix/profiles/default/lib:/usr/lib/x86_64-linux-gnu"

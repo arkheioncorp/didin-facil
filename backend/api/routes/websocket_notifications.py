@@ -11,7 +11,7 @@ Real-time notifications via WebSocket for:
 import asyncio
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Optional, Set
 from uuid import uuid4
 
@@ -183,11 +183,11 @@ def create_notification(
             "platform": platform,
             "title": title,
             "message": message,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "data": data,
             "read": False,
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -271,9 +271,9 @@ async def websocket_endpoint(
             "event": "connected",
             "data": {
                 "userId": user_id,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             },
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         })
 
         # Load recent notifications from Redis
@@ -287,7 +287,7 @@ async def websocket_endpoint(
                     await websocket.send_json({
                         "event": "notification",
                         "data": notif,
-                        "timestamp": datetime.utcnow().isoformat(),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
                     })
         except Exception as e:
             logger.warning(f"Failed to load notifications from Redis: {e}")
@@ -306,7 +306,7 @@ async def websocket_endpoint(
                 await websocket.send_json({
                     "event": "pong",
                     "data": {},
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                 })
 
             elif event == "subscribe" and user_id:
@@ -316,7 +316,7 @@ async def websocket_endpoint(
                     await websocket.send_json({
                         "event": "subscribed",
                         "data": {"platform": platform},
-                        "timestamp": datetime.utcnow().isoformat(),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
                     })
 
             elif event == "unsubscribe" and user_id:
@@ -326,7 +326,7 @@ async def websocket_endpoint(
                     await websocket.send_json({
                         "event": "unsubscribed",
                         "data": {"platform": platform},
-                        "timestamp": datetime.utcnow().isoformat(),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
                     })
 
             elif event == "mark_read":

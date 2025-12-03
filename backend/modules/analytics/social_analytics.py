@@ -13,7 +13,7 @@ Métricas:
 
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta, timezone
 from enum import Enum
 import logging
 
@@ -222,7 +222,7 @@ class SocialAnalyticsService:
         custom_end: Optional[datetime] = None
     ) -> tuple[datetime, datetime]:
         """Calcula range de datas para o período."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         if period == MetricPeriod.TODAY:
             start = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -500,7 +500,7 @@ class SocialAnalyticsService:
             published_at_str = post.get("published_at")
             published_at = (
                 datetime.fromisoformat(published_at_str) 
-                if published_at_str else datetime.utcnow()
+                if published_at_str else datetime.now(timezone.utc)
             )
             
             posts_with_metrics.append({

@@ -5,7 +5,7 @@ Suporta modo trial (sem autenticação) e modo autenticado.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from api.middleware.auth import get_current_user_optional
@@ -133,7 +133,7 @@ async def start_scraper(
             await service.increment_usage(str(user_id), "price_searches", 1)
         
         # Create scraping job
-        job_id = f"job:{user_id}:{datetime.utcnow().timestamp()}"
+        job_id = f"job:{user_id}:{datetime.now(timezone.utc).timestamp()}"
         job_data = {
             "id": job_id,
             "user_id": user_id,
@@ -142,7 +142,7 @@ async def start_scraper(
                 "maxProducts": max_products
             },
             "status": "pending",
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat()
         }
         
         # Add job to queue
@@ -156,7 +156,7 @@ async def start_scraper(
             "progress": 0.0,
             "currentProduct": None,
             "errors": [],
-            "startedAt": datetime.utcnow().isoformat(),
+            "startedAt": datetime.now(timezone.utc).isoformat(),
             "statusMessage": f"Iniciando scraping...{trial_msg}",
             "logs": [f"Job criado e adicionado à fila{trial_msg}"]
         }

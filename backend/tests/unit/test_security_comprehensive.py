@@ -235,7 +235,7 @@ class TestSecurityMonitorComplete:
         """Test debugger detection with DEBUG_MODE env"""
         from api.utils.security import SecurityMonitor
         
-        with patch.dict(os.environ, {"ALLOW_DEBUGGER": "false", "DEBUG_MODE": "1"}):
+        with patch.dict(os.environ, {"ALLOW_DEBUGGER": "false", "DEBUG_MODE": "true"}):
             with patch("sys.gettrace", return_value=None):
                 result = SecurityMonitor.check_debugger()
                 assert result is True
@@ -244,7 +244,7 @@ class TestSecurityMonitorComplete:
         """Test debugger detection with PYTHONDEVMODE"""
         from api.utils.security import SecurityMonitor
         
-        with patch.dict(os.environ, {"ALLOW_DEBUGGER": "false", "PYTHONDEVMODE": "1"}):
+        with patch.dict(os.environ, {"ALLOW_DEBUGGER": "false", "PYTHONDEVMODE": "true"}):
             with patch("sys.gettrace", return_value=None):
                 result = SecurityMonitor.check_debugger()
                 assert result is True

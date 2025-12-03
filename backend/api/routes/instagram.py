@@ -270,6 +270,8 @@ async def upload_media(
             raise HTTPException(status_code=400, detail="Invalid media type")
             
         return {"status": "success", "media_pk": result.get("pk")}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:

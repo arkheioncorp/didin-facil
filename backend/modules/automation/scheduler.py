@@ -12,7 +12,7 @@ import asyncio
 import logging
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -190,10 +190,10 @@ class AutomationScheduler:
         if scheduled_for:
             exec_time = scheduled_for
         elif delay_minutes is not None:
-            exec_time = datetime.utcnow() + timedelta(minutes=delay_minutes)
+            exec_time = datetime.now(timezone.utc) + timedelta(minutes=delay_minutes)
         else:
             default_delay = self.DEFAULT_DELAYS.get(automation_type, 0)
-            exec_time = datetime.utcnow() + timedelta(minutes=default_delay)
+            exec_time = datetime.now(timezone.utc) + timedelta(minutes=default_delay)
         
         event = ScheduledEvent(
             id=str(uuid.uuid4()),
@@ -334,7 +334,7 @@ class AutomationScheduler:
 
     async def _process_pending_events(self):
         """Processa eventos pendentes prontos para execução."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         self._stats.last_run = now
         
         # Encontrar eventos prontos (ordenados por prioridade)
@@ -373,7 +373,7 @@ class AutomationScheduler:
         self._stats.total_processing += 1
         self._stats.total_pending -= 1
         
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         
         try:
             # Disparar automação via orchestrator
@@ -403,7 +403,7 @@ class AutomationScheduler:
     ):
         """Marca evento como completado."""
         event.status = ScheduleStatus.COMPLETED
-        event.processed_at = datetime.utcnow()
+        event.processed_at = datetime.now(timezone.utc)
         
         self._processing_events.pop(event.id, None)
         self._completed_events.append(event)
@@ -442,7 +442,7 @@ class AutomationScheduler:
         if event.retry_count < event.max_retries:
             # Reagendar para retry
             event.status = ScheduleStatus.RETRYING
-            event.scheduled_for = datetime.utcnow() + timedelta(
+            event.scheduled_for = datetime.now(timezone.utc) + timedelta(
                 seconds=self.DEFAULT_RETRY_DELAY * event.retry_count
             )
             self._pending_events[event.id] = event
@@ -455,7 +455,7 @@ class AutomationScheduler:
         else:
             # Marcar como falho definitivo
             event.status = ScheduleStatus.FAILED
-            event.processed_at = datetime.utcnow()
+            event.processed_at = datetime.now(timezone.utc)
             self._failed_events.append(event)
             self._stats.total_failed += 1
             
@@ -518,7 +518,7 @@ class AutomationScheduler:
         total = len(self._pending_events)
         
         for event in list(self._pending_events.values()):
-            event.scheduled_for = datetime.utcnow()
+            event.scheduled_for = datetime.now(timezone.utc)
         
         await self._process_pending_events()
         
@@ -646,7 +646,7 @@ class AutomationScheduler:
         events = []
         
         for i in range(max_occurrences):
-            scheduled_for = datetime.utcnow() + timedelta(
+            scheduled_for = datetime.now(timezone.utc) + timedelta(
                 hours=interval_hours * (i + 1)
             )
             

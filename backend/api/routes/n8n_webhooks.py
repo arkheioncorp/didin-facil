@@ -7,7 +7,7 @@ Endpoints para receber eventos do n8n e inte grar bidirecionalmente.
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 from api.middleware.auth import get_current_user
@@ -227,7 +227,7 @@ async def trigger_price_drop_alert(
                 "old_price": old_price,
                 "new_price": new_price,
                 "discount_percentage": round((1 - new_price / old_price) * 100, 2),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             },
         )
 

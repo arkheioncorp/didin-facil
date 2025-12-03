@@ -5,7 +5,7 @@ Reusable templates for social media posts
 
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -104,7 +104,7 @@ class TemplateService:
     ) -> Template:
         """Create new template"""
         template_id = str(uuid.uuid4())
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         template = {
             "id": template_id,
@@ -235,7 +235,7 @@ class TemplateService:
         if not existing:
             return None
         
-        updates = {"updated_at": datetime.utcnow().isoformat()}
+        updates = {"updated_at": datetime.now(timezone.utc).isoformat()}
         
         if data.name is not None:
             updates["name"] = data.name

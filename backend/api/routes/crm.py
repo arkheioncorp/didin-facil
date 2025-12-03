@@ -238,7 +238,9 @@ async def list_contacts(
     
     service = await get_crm_service()
 
-    tag_list = tags.split(",") if tags else None
+    # Garantir que tags seja uma string antes de split
+    tags_str = str(tags) if tags else None
+    tag_list = tags_str.split(",") if tags_str else None
     status_enum = ContactStatus(status) if status else None
     source_enum = LeadSource(source) if source else None
 
@@ -451,7 +453,8 @@ async def list_leads(
     """Lista leads com filtros e paginação."""
     service = await get_crm_service()
 
-    tag_list = tags.split(",") if tags else None
+    tags_str = str(tags) if tags else None
+    tag_list = tags_str.split(",") if tags_str else None
     status_enum = LeadStatus(status) if status else None
     source_enum = LeadSource(source) if source else None
 
@@ -677,7 +680,8 @@ async def list_deals(
     """Lista deals com filtros e paginação."""
     service = await get_crm_service()
 
-    tag_list = tags.split(",") if tags else None
+    tags_str = str(tags) if tags else None
+    tag_list = tags_str.split(",") if tags_str else None
     status_enum = DealStatus(status) if status else None
 
     return await service.deals.list(

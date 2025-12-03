@@ -7,7 +7,7 @@ Usa PostgreSQL como storage principal.
 """
 
 from typing import Optional, List, Dict, Any, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 import logging
 
@@ -196,7 +196,7 @@ class ContactRepository(BaseRepository):
     
     async def update(self, contact: Contact) -> Contact:
         """Atualiza um contato."""
-        contact.updated_at = datetime.utcnow()
+        contact.updated_at = datetime.now(timezone.utc)
         
         query = f"""
             UPDATE {self.TABLE} SET
@@ -474,7 +474,7 @@ class LeadRepository(BaseRepository):
     
     async def update(self, lead: Lead) -> Lead:
         """Atualiza um lead."""
-        lead.updated_at = datetime.utcnow()
+        lead.updated_at = datetime.now(timezone.utc)
         
         query = f"""
             UPDATE {self.TABLE} SET
@@ -511,7 +511,7 @@ class LeadRepository(BaseRepository):
         reason: Optional[str] = None
     ) -> bool:
         """Atualiza status do lead."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         updates = ["status = $3", "updated_at = $4"]
         params = [lead_id, user_id, status.value, now]
@@ -801,7 +801,7 @@ class DealRepository(BaseRepository):
     
     async def update(self, deal: Deal) -> Deal:
         """Atualiza um deal."""
-        deal.updated_at = datetime.utcnow()
+        deal.updated_at = datetime.now(timezone.utc)
         
         query = f"""
             UPDATE {self.TABLE} SET
@@ -837,7 +837,7 @@ class DealRepository(BaseRepository):
         probability: int = 0
     ) -> bool:
         """Move deal para outro estágio."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         query = f"""
             UPDATE {self.TABLE}
             SET stage_id = $3, probability = $4,
@@ -856,7 +856,7 @@ class DealRepository(BaseRepository):
         user_id: str
     ) -> bool:
         """Marca deal como ganho."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         query = f"""
             UPDATE {self.TABLE}
             SET status = 'won', won_at = $3, actual_close_date = $3,
@@ -874,7 +874,7 @@ class DealRepository(BaseRepository):
         reason: Optional[str] = None
     ) -> bool:
         """Marca deal como perdido."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         query = f"""
             UPDATE {self.TABLE}
             SET status = 'lost', lost_at = $3, actual_close_date = $3,
@@ -1051,7 +1051,7 @@ class PipelineRepository(BaseRepository):
     
     async def update(self, pipeline: Pipeline) -> Pipeline:
         """Atualiza um pipeline."""
-        pipeline.updated_at = datetime.utcnow()
+        pipeline.updated_at = datetime.now(timezone.utc)
         
         query = f"""
             UPDATE {self.TABLE} SET
@@ -1272,7 +1272,7 @@ class ActivityRepository(BaseRepository):
         user_id: str
     ) -> bool:
         """Marca atividade como concluída."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         query = f"""
             UPDATE {self.TABLE}
             SET is_done = true, completed_at = $3, updated_at = $3
@@ -1466,7 +1466,7 @@ class SegmentRepository(BaseRepository):
     
     async def update(self, segment: Segment) -> Segment:
         """Atualiza um segmento."""
-        segment.updated_at = datetime.utcnow()
+        segment.updated_at = datetime.now(timezone.utc)
         
         query = f"""
             UPDATE {self.TABLE} SET
@@ -1489,7 +1489,7 @@ class SegmentRepository(BaseRepository):
         count: int
     ) -> bool:
         """Atualiza contagem do segmento."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         query = f"""
             UPDATE {self.TABLE}
             SET count = $3, last_computed_at = $4, updated_at = $4

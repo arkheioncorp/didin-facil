@@ -28,7 +28,7 @@ Uso:
 import logging
 import asyncio
 from typing import Optional, Dict, Any, List
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta, timezone
 from enum import Enum
 from dataclasses import dataclass, field
 from uuid import uuid4
@@ -412,7 +412,7 @@ class N8nOrchestrator:
         
         # Aplicar delay se configurado
         if config.delay_minutes > 0:
-            event.scheduled_at = datetime.utcnow() + timedelta(minutes=config.delay_minutes)
+            event.scheduled_at = datetime.now(timezone.utc) + timedelta(minutes=config.delay_minutes)
             self._pending_events.append(event)
             return AutomationResult(
                 event_id=event.id,
@@ -440,7 +440,7 @@ class N8nOrchestrator:
                 "data": event.data,
                 "template": config.templates.get(event.channel.value, ""),
                 "priority": config.priority.value,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
             
             # Disparar webhook n8n
@@ -453,7 +453,7 @@ class N8nOrchestrator:
             self._update_rate_limit_cache(event.user_id, event.automation_type)
             
             # Marcar evento como executado
-            event.executed_at = datetime.utcnow()
+            event.executed_at = datetime.now(timezone.utc)
             event.status = "executed"
             event.result = response
             
@@ -662,7 +662,7 @@ class N8nOrchestrator:
                 "original_channel": channel.value,
                 "sentiment": sentiment,
                 "priority": priority,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             },
             channel=ChannelType.EMAIL,  # Alerta interno
             force=True  # Sempre notificar reclamações
@@ -691,7 +691,7 @@ class N8nOrchestrator:
                 "context_summary": context_summary,
                 "original_channel": channel.value,
                 "lead_score": lead_score,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             },
             channel=ChannelType.EMAIL,  # Notifica atendente
             force=True
@@ -714,7 +714,7 @@ class N8nOrchestrator:
             return True
         
         recent_events = self._event_cache[cache_key]
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         # Limpar eventos antigos
         min_time = now - timedelta(hours=config.min_delay_between_triggers_hours)
@@ -737,11 +737,11 @@ class N8nOrchestrator:
         if cache_key not in self._event_cache:
             self._event_cache[cache_key] = []
         
-        self._event_cache[cache_key].append(datetime.utcnow())
+        self._event_cache[cache_key].append(datetime.now(timezone.utc))
     
     def _check_allowed_hours(self, config: AutomationConfig) -> bool:
         """Verifica se está em horário permitido."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         # Ajustar para horário de Brasília (UTC-3)
         br_hour = (now.hour - 3) % 24
         
@@ -749,7 +749,7 @@ class N8nOrchestrator:
     
     def _get_next_allowed_time(self, config: AutomationConfig) -> datetime:
         """Calcula próximo horário permitido."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         br_hour = (now.hour - 3) % 24
         
         if br_hour < config.allowed_hours_start:
@@ -792,7 +792,7 @@ class N8nOrchestrator:
     
     def get_pending_events(self) -> List[AutomationEvent]:
         """Retorna eventos pendentes."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         return [
             e for e in self._pending_events
             if e.status == "pending" and e.scheduled_at <= now

@@ -16,7 +16,7 @@ Baseado em best practices de CRM 2024:
 
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import logging
 
@@ -249,7 +249,7 @@ class ScoreDecayService:
             last_activity = lead.created_at
         
         # Calcula dias de inatividade
-        days_inactive = (datetime.utcnow() - last_activity).days
+        days_inactive = (datetime.now(timezone.utc) - last_activity).days
         
         # Verifica período de graça
         if days_inactive <= self.config.grace_period_days:
@@ -569,7 +569,7 @@ class DealRiskDetectionService:
         """Verifica queda de engajamento."""
         if not activities:
             # Sem atividades registradas
-            days_since_creation = (datetime.utcnow() - deal.created_at).days
+            days_since_creation = (datetime.now(timezone.utc) - deal.created_at).days
             if days_since_creation >= self.NO_ACTIVITY_HIGH_DAYS:
                 return RiskSignal(
                     signal_type="no_activities",
@@ -581,11 +581,11 @@ class DealRiskDetectionService:
             # Verifica atividades recentes
             recent_activities = [
                 a for a in activities
-                if (datetime.utcnow() - a.created_at).days <= 14
+                if (datetime.now(timezone.utc) - a.created_at).days <= 14
             ]
             older_activities = [
                 a for a in activities
-                if (datetime.utcnow() - a.created_at).days > 14
+                if (datetime.now(timezone.utc) - a.created_at).days > 14
             ]
             
             # Se tinha atividades antes e agora não tem
@@ -607,7 +607,7 @@ class DealRiskDetectionService:
         if not deal.expected_close_date:
             return None
         
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         if deal.expected_close_date < now:
             days_overdue = (now - deal.expected_close_date).days
@@ -667,7 +667,7 @@ class DealRiskDetectionService:
         else:
             last_activity = max(a.created_at for a in contact_activities)
         
-        days_since_contact = (datetime.utcnow() - last_activity).days
+        days_since_contact = (datetime.now(timezone.utc) - last_activity).days
         
         if days_since_contact >= self.NO_ACTIVITY_CRITICAL_DAYS:
             return RiskSignal(
@@ -1113,7 +1113,7 @@ class NextBestActionEngine:
         """Calcula dias desde última atividade."""
         if not last_activity:
             return 999  # Muito tempo
-        return (datetime.utcnow() - last_activity).days
+        return (datetime.now(timezone.utc) - last_activity).days
 
 
 # =============================================================================
@@ -1460,10 +1460,10 @@ class WorkflowEngine:
                 })
             
             log.status = "completed"
-            log.completed_at = datetime.utcnow()
+            log.completed_at = datetime.now(timezone.utc)
             
             # Atualiza estatísticas do workflow
-            workflow.last_triggered_at = datetime.utcnow()
+            workflow.last_triggered_at = datetime.now(timezone.utc)
             workflow.trigger_count += 1
             
             logger.info(
@@ -1474,7 +1474,7 @@ class WorkflowEngine:
         except Exception as e:
             log.status = "failed"
             log.error_message = str(e)
-            log.completed_at = datetime.utcnow()
+            log.completed_at = datetime.now(timezone.utc)
             
             logger.error(
                 f"Workflow '{workflow.name}' failed for "

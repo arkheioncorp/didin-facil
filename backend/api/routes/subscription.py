@@ -20,7 +20,7 @@ Endpoints:
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from api.middleware.auth import get_current_user
@@ -678,7 +678,7 @@ async def validate_subscription(
         "current_period_end": subscription.current_period_end.isoformat(),
         "offline_days": plan_config.offline_days,
         "grace_period_days": plan_config.grace_period_days,
-        "cached_at": datetime.utcnow().isoformat(),
+        "cached_at": datetime.now(timezone.utc).isoformat(),
     }
 
 

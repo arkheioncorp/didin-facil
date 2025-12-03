@@ -9,7 +9,7 @@ Persiste contextos de conversa no Redis para:
 
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta, timezone
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel
@@ -70,9 +70,9 @@ class ContextStore:
             
             # Verificar expiração lógica (30 min inatividade)
             last_interaction = datetime.fromisoformat(
-                context.get("last_interaction", datetime.utcnow().isoformat())
+                context.get("last_interaction", datetime.now(timezone.utc).isoformat())
             )
-            if datetime.utcnow() - last_interaction > timedelta(seconds=self.ttl):
+            if datetime.now(timezone.utc) - last_interaction > timedelta(seconds=self.ttl):
                 # Contexto expirado logicamente
                 await self.delete(channel, user_id)
                 return None
@@ -109,8 +109,8 @@ class ContextStore:
             key = self._make_key(channel, user_id)
             
             # Atualizar timestamp
-            context["updated_at"] = datetime.utcnow().isoformat()
-            context["last_interaction"] = datetime.utcnow().isoformat()
+            context["updated_at"] = datetime.now(timezone.utc).isoformat()
+            context["last_interaction"] = datetime.now(timezone.utc).isoformat()
             
             # Salvar com TTL (Redis expira automaticamente)
             await redis.set(key, json.dumps(context), ex=self.ttl)
@@ -204,7 +204,7 @@ class ContextStore:
             keys = await redis.keys(pattern)
             
             removed = 0
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             
             for key in keys:
                 data = await redis.get(key)

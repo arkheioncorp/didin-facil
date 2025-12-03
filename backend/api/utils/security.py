@@ -1,8 +1,8 @@
-import sys
-import os
-import time
-import threading
 import logging
+import os
+import sys
+import threading
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +47,10 @@ class SecurityMonitor:
             "PYTHONDEVMODE"
         ]
         for var in debug_vars:
-            if os.environ.get(var):
+            val = os.environ.get(var)
+            if val and val.lower() == "true":
                 return True
+        return False
 
         return False
 

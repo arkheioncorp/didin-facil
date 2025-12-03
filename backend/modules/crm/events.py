@@ -12,7 +12,7 @@ Uso:
 """
 
 from typing import Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 from .advanced_services import WorkflowEngine, WorkflowEventType
@@ -498,7 +498,7 @@ class CRMEvent:
         self.entity_type = entity_type
         self.user_id = user_id
         self.data = data or {}
-        self.timestamp = timestamp or datetime.utcnow()
+        self.timestamp = timestamp or datetime.now(timezone.utc)
 
     def to_dict(self) -> Dict[str, Any]:
         return {

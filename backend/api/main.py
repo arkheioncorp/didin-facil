@@ -75,9 +75,17 @@ async def lifespan(app: FastAPI):
 
     # Startup
     logger.info(f"🚀 Starting TikTrend API (env: {settings.ENVIRONMENT})")
-    await init_database()
-    await init_redis()
-    logger.info("🔴 Redis initialized")
+    logger.info(f"🔌 PORT env var: {os.environ.get('PORT', 'Not Set')}")
+    try:
+        await init_database()
+    except Exception as e:
+        logger.error(f"❌ Database initialization failed: {e}")
+    
+    try:
+        await init_redis()
+        logger.info("🔴 Redis initialized")
+    except Exception as e:
+        logger.error(f"❌ Redis initialization failed: {e}")
     
     # Log storage status
     if storage.is_configured:

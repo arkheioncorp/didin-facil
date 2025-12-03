@@ -8,7 +8,7 @@ Detecta automaticamente se está rodando em Docker e usa URLs internas.
 import os
 from typing import Optional
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -67,6 +67,13 @@ class Settings(BaseSettings):
     DATABASE_URL: str = _URLS["database"]
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 10
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def fix_postgres_url(cls, v: str) -> str:
+        if v and v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql://", 1)
+        return v
     
     # Redis
     REDIS_URL: str = _URLS["redis"]

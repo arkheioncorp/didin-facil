@@ -11,7 +11,7 @@ Fornece:
 - Gerenciamento de agendamentos
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -122,7 +122,7 @@ async def dashboard_health():
     health = {
         "status": "healthy",
         "automation_available": AUTOMATION_AVAILABLE,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "components": {
             "orchestrator": False,
             "scheduler": False,
@@ -243,7 +243,7 @@ async def get_all_metrics(
         return {
             "metrics": metrics,
             "time_range": time_range.value,
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
         }
         
     except Exception as e:
@@ -733,7 +733,7 @@ async def get_stats_summary(
                 stats.last_run.isoformat()
                 if stats.last_run else None
             ),
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
         }
         
     except Exception as e:

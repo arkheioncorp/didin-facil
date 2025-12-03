@@ -5,13 +5,12 @@
 # ============================================================================
 
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "docker/api.Dockerfile"
-watchPatterns = ["backend/**"]
+builder = "NIXPACKS"
+watchPatterns = ["backend/**", "nixpacks.toml", "railway.toml"]
 
 [deploy]
 numReplicas = 1
-startCommand = "cd backend && alembic upgrade head && gunicorn api.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --access-logfile - --error-logfile -"
+startCommand = "export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/nix/var/nix/profiles/default/lib:$LD_LIBRARY_PATH && cd backend && echo 'Starting with PORT=$PORT' && python3 -c 'print(\"Python OK\")' && python3 -c 'from api.main import app; print(\"Import OK\")' && python3 -m uvicorn api.main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
