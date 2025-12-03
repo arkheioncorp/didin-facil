@@ -186,13 +186,17 @@ class TestStartScraper:
         mock_user = {"id": "user-123"}
         config = ScraperConfig(keywords=["tech"], max_products=50)
 
+        mock_sub_service = AsyncMock()
+        mock_sub_service.can_use_feature = AsyncMock(return_value=True)
+        mock_sub_service.increment_usage = AsyncMock()
+
         with patch('api.routes.scraper.get_redis') as mock_redis_getter:
             mock_redis = MagicMock()
             mock_redis.lpush = AsyncMock()
             mock_redis.set = AsyncMock()
             mock_redis_getter.return_value = mock_redis
 
-            result = await start_scraper(config, mock_user)
+            result = await start_scraper(config, mock_user, mock_sub_service)
 
             assert result.isRunning is True
             assert "Iniciando" in result.statusMessage
@@ -207,11 +211,14 @@ class TestStartScraper:
         mock_user = {"id": "user-123"}
         config = ScraperConfig()
 
+        mock_sub_service = AsyncMock()
+        mock_sub_service.can_use_feature = AsyncMock(return_value=True)
+
         with patch('api.routes.scraper.get_redis') as mock_redis_getter:
             mock_redis_getter.side_effect = Exception("Redis error")
 
             with pytest.raises(HTTPException) as exc_info:
-                await start_scraper(config, mock_user)
+                await start_scraper(config, mock_user, mock_sub_service)
 
             assert exc_info.value.status_code == 500
 

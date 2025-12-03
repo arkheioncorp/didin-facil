@@ -150,7 +150,14 @@ class TestSendMessage:
                     message="Hello!"
                 )
                 
-                response = await send_message(data=request, current_user=mock_user)
+                mock_service = AsyncMock()
+                mock_service.can_use_feature.return_value = True
+
+                response = await send_message(
+                    data=request,
+                    current_user=mock_user,
+                    service=mock_service
+                )
                 
                 assert len(response["messages"]) == 1
                 assert response["input"] == {"type": "text"}
@@ -173,7 +180,13 @@ class TestSendMessage:
                 request = SendMessageRequest(session_id="session-abc", message="Hi")
                 
                 with pytest.raises(HTTPException) as exc_info:
-                    await send_message(data=request, current_user=mock_user)
+                    mock_service = AsyncMock()
+                    mock_service.can_use_feature.return_value = True
+                    await send_message(
+                        data=request,
+                        current_user=mock_user,
+                        service=mock_service
+                    )
                 
                 assert exc_info.value.status_code == 500
 

@@ -245,6 +245,9 @@ class TestOAuthInitEndpoint:
         """Test init_oauth endpoint"""
         from api.routes.social_auth import OAuthInitRequest, init_oauth
 
+        mock_sub_service = AsyncMock()
+        mock_sub_service.can_use_feature = AsyncMock(return_value=True)
+
         with patch('api.routes.social_auth.get_redis') as mock_redis_getter, \
              patch('api.routes.social_auth.settings') as mock_settings:
 
@@ -262,7 +265,7 @@ class TestOAuthInitEndpoint:
             )
             user = {"id": "user-123"}
 
-            result = await init_oauth(request, user)
+            result = await init_oauth(request, user, mock_sub_service)
 
             assert "auth_url" in result
             assert "state" in result
@@ -272,6 +275,9 @@ class TestOAuthInitEndpoint:
     async def test_init_oauth_youtube(self):
         """Test init_oauth for YouTube (special params)"""
         from api.routes.social_auth import OAuthInitRequest, init_oauth
+
+        mock_sub_service = AsyncMock()
+        mock_sub_service.can_use_feature = AsyncMock(return_value=True)
 
         with patch('api.routes.social_auth.get_redis') as mock_redis_getter, \
              patch('api.routes.social_auth.settings') as mock_settings:
@@ -290,7 +296,7 @@ class TestOAuthInitEndpoint:
             )
             user = {"id": "user-456"}
 
-            result = await init_oauth(request, user)
+            result = await init_oauth(request, user, mock_sub_service)
 
             assert "auth_url" in result
             assert "offline" in result["auth_url"]

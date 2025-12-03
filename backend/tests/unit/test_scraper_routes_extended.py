@@ -234,6 +234,10 @@ class TestStartScraper:
     @pytest.mark.asyncio
     async def test_starts_scraper_for_authenticated_user(self, mock_current_user, sample_config):
         """Inicia scraper para usuário autenticado."""
+        mock_sub_service = AsyncMock()
+        mock_sub_service.can_use_feature = AsyncMock(return_value=True)
+        mock_sub_service.increment_usage = AsyncMock()
+        
         with patch('api.routes.scraper.get_redis', new_callable=AsyncMock) as mock_get_redis:
             mock_redis = MagicMock()
             mock_redis.lpush = AsyncMock(return_value=1)
@@ -243,7 +247,11 @@ class TestStartScraper:
             from api.routes.scraper import ScraperConfig, start_scraper
             config = ScraperConfig(**sample_config)
             
-            result = await start_scraper(config=config, current_user=mock_current_user)
+            result = await start_scraper(
+                config=config,
+                current_user=mock_current_user,
+                service=mock_sub_service
+            )
             
             assert result.isRunning == True
             assert "trial" not in result.statusMessage.lower()
@@ -252,6 +260,8 @@ class TestStartScraper:
     @pytest.mark.asyncio
     async def test_limits_trial_user_to_20_products(self, sample_config):
         """Limita usuário trial a 20 produtos."""
+        mock_sub_service = AsyncMock()
+        
         with patch('api.routes.scraper.get_redis', new_callable=AsyncMock) as mock_get_redis:
             mock_redis = MagicMock()
             mock_redis.lpush = AsyncMock(return_value=1)
@@ -261,7 +271,11 @@ class TestStartScraper:
             from api.routes.scraper import ScraperConfig, start_scraper
             config = ScraperConfig(**sample_config)
             
-            result = await start_scraper(config=config, current_user=None)
+            result = await start_scraper(
+                config=config,
+                current_user=None,
+                service=mock_sub_service
+            )
             
             assert result.isRunning == True
             assert "trial" in result.statusMessage.lower()
@@ -270,6 +284,10 @@ class TestStartScraper:
     async def test_creates_job_with_correct_data(self, mock_current_user, sample_config):
         """Cria job com dados corretos."""
         captured_job = None
+        
+        mock_sub_service = AsyncMock()
+        mock_sub_service.can_use_feature = AsyncMock(return_value=True)
+        mock_sub_service.increment_usage = AsyncMock()
         
         async def capture_lpush(key, value):
             nonlocal captured_job
@@ -285,7 +303,11 @@ class TestStartScraper:
             from api.routes.scraper import ScraperConfig, start_scraper
             config = ScraperConfig(**sample_config)
             
-            await start_scraper(config=config, current_user=mock_current_user)
+            await start_scraper(
+                config=config,
+                current_user=mock_current_user,
+                service=mock_sub_service
+            )
             
             assert captured_job is not None
             assert "user_id" in captured_job
@@ -295,6 +317,9 @@ class TestStartScraper:
     @pytest.mark.asyncio
     async def test_handles_redis_error(self, mock_current_user, sample_config):
         """Trata erro do Redis com HTTPException."""
+        mock_sub_service = AsyncMock()
+        mock_sub_service.can_use_feature = AsyncMock(return_value=True)
+        
         with patch('api.routes.scraper.get_redis', new_callable=AsyncMock) as mock_get_redis:
             mock_get_redis.side_effect = Exception("Connection failed")
             
@@ -304,7 +329,11 @@ class TestStartScraper:
             config = ScraperConfig(**sample_config)
             
             with pytest.raises(HTTPException) as exc_info:
-                await start_scraper(config=config, current_user=mock_current_user)
+                await start_scraper(
+                    config=config,
+                    current_user=mock_current_user,
+                    service=mock_sub_service
+                )
             
             assert exc_info.value.status_code == 500
 
@@ -519,6 +548,10 @@ class TestScraperIntegration:
     @pytest.mark.asyncio
     async def test_full_scraper_workflow(self, mock_current_user, sample_config):
         """Testa workflow completo: start -> status -> stop."""
+        mock_sub_service = AsyncMock()
+        mock_sub_service.can_use_feature = AsyncMock(return_value=True)
+        mock_sub_service.increment_usage = AsyncMock()
+        
         with patch('api.routes.scraper.get_redis', new_callable=AsyncMock) as mock_get_redis:
             mock_redis = MagicMock()
             mock_redis.lpush = AsyncMock(return_value=1)
@@ -536,13 +569,19 @@ class TestScraperIntegration:
 
             # Start
             config = ScraperConfig(**sample_config)
-            start_result = await start_scraper(config=config, current_user=mock_current_user)
-            assert start_result.isRunning == True
+            start_result = await start_scraper(
+                config=config,
+                current_user=mock_current_user,
+                service=mock_sub_service
+            )
+            assert start_result.isRunning is True
             
             # Check status
-            status_result = await get_scraper_status(current_user=mock_current_user)
-            assert status_result.isRunning == True
+            status_result = await get_scraper_status(
+                current_user=mock_current_user
+            )
+            assert status_result.isRunning is True
             
             # Stop
             stop_result = await stop_scraper(current_user=mock_current_user)
-            assert stop_result["success"] == True
+            assert stop_result["success"] is True

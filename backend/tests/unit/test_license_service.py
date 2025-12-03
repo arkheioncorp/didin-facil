@@ -3,13 +3,14 @@ License Service Tests - 100% Coverage
 Tests for license management and validation
 """
 
-import pytest
-import uuid
-from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime, timedelta
-
-import sys
 import os
+import sys
+import uuid
+from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
 
@@ -489,3 +490,297 @@ class TestLicenseServiceEdgeCases:
         )
 
         mock_db.execute.assert_called_once()
+
+
+class TestMarkForExpirationAndUpdatePlan:
+    """Tests for mark_for_expiration and update_plan methods"""
+
+    @pytest.fixture
+    def mock_db(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def license_service(self, mock_db):
+        with patch('api.services.license.database', mock_db):
+            from api.services.license import LicenseService
+            service = LicenseService()
+            service.db = mock_db
+            return service
+
+    @pytest.mark.asyncio
+    async def test_mark_for_expiration(self, license_service, mock_db):
+        """Test marking license to not renew"""
+        mock_db.execute = AsyncMock()
+        
+        await license_service.mark_for_expiration('license-123')
+        
+        mock_db.execute.assert_called_once()
+        call_args = str(mock_db.execute.call_args)
+        assert 'auto_renew' in call_args
+        assert 'false' in call_args.lower()
+
+    @pytest.mark.asyncio
+    async def test_update_plan(self, license_service, mock_db):
+        """Test updating license plan"""
+        mock_db.execute = AsyncMock()
+        
+        await license_service.update_plan('license-123', 'premium')
+        
+        mock_db.execute.assert_called_once()
+        call_args = str(mock_db.execute.call_args)
+        assert 'plan' in call_args
+        assert 'max_devices' in call_args
+
+
+class TestActivateLifetimeLicense:
+    """Tests for activate_lifetime_license method"""
+
+    @pytest.fixture
+    def mock_db(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def license_service(self, mock_db):
+        with patch('api.services.license.database', mock_db):
+            from api.services.license import LicenseService
+            service = LicenseService()
+            service.db = mock_db
+            return service
+
+    @pytest.mark.asyncio
+    async def test_activate_lifetime_license_new_user(self, license_service, mock_db):
+        """Test activating lifetime license for user without existing license"""
+        # User exists but doesn't have lifetime license
+        mock_db.fetch_one = AsyncMock(return_value={
+            'id': 'user-123',
+            'has_lifetime_license': False
+        })
+        mock_db.execute = AsyncMock()
+        
+        result = await license_service.activate_lifetime_license(
+            email='test@example.com',
+            payment_id='pay_123'
+        )
+        
+        assert result is True
+        # Should update user and log transaction
+        assert mock_db.execute.call_count == 2
+
+    @pytest.mark.asyncio
+    async def test_activate_lifetime_license_already_has_license(
+        self, license_service, mock_db
+    ):
+        """Test activating lifetime license when user already has one"""
+        mock_db.fetch_one = AsyncMock(return_value={
+            'id': 'user-123',
+            'has_lifetime_license': True
+        })
+        
+        result = await license_service.activate_lifetime_license(
+            email='test@example.com'
+        )
+        
+        assert result is True
+        # Should not execute any updates
+        mock_db.execute.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_activate_lifetime_license_user_not_found(
+        self, license_service, mock_db
+    ):
+        """Test activating lifetime license for non-existent user"""
+        mock_db.fetch_one = AsyncMock(return_value=None)
+        
+        result = await license_service.activate_lifetime_license(
+            email='nonexistent@example.com'
+        )
+        
+        assert result is False
+
+
+class TestGetUsageStats:
+    """Tests for get_usage_stats method"""
+
+    @pytest.fixture
+    def mock_db(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def license_service(self, mock_db):
+        with patch('api.services.license.database', mock_db):
+            from api.services.license import LicenseService
+            service = LicenseService()
+            service.db = mock_db
+            return service
+
+    @pytest.mark.asyncio
+    async def test_get_usage_stats_success(self, license_service, mock_db):
+        """Test getting usage stats for existing license"""
+        mock_db.fetch_one = AsyncMock(return_value={
+            'is_lifetime': True,
+            'credits_balance': 500,
+            'active_devices': 2
+        })
+        
+        result = await license_service.get_usage_stats('license-123')
+        
+        assert result is not None
+        assert result['is_lifetime'] is True
+        assert result['credits'] == 500
+        assert result['active_devices'] == 2
+        # Lifetime should have unlimited (-1)
+        assert result['searches_limit'] == -1
+        assert result['favorites_limit'] == -1
+        assert result['exports_limit'] == -1
+
+    @pytest.mark.asyncio
+    async def test_get_usage_stats_not_found(self, license_service, mock_db):
+        """Test getting usage stats for non-existent license"""
+        mock_db.fetch_one = AsyncMock(return_value=None)
+        
+        result = await license_service.get_usage_stats('nonexistent-license')
+        
+        assert result == {}
+
+
+class TestLicenseJWT:
+    """Tests for JWT creation and validation"""
+
+    @pytest.fixture
+    def mock_db(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def license_service(self, mock_db):
+        with patch('api.services.license.database', mock_db):
+            from api.services.license import LicenseService
+            service = LicenseService()
+            service.db = mock_db
+            return service
+
+    def test_create_license_jwt(self, license_service):
+        """Test creating a license JWT token"""
+        from datetime import datetime, timedelta, timezone
+        
+        expires = datetime.now(timezone.utc) + timedelta(days=365)
+        
+        token = license_service.create_license_jwt(
+            user_id='user-123',
+            hwid='hwid-abc',
+            is_lifetime=True,
+            expires_at=expires
+        )
+        
+        assert token is not None
+        assert isinstance(token, str)
+        assert len(token) > 50  # JWT tokens are long
+
+    def test_create_license_jwt_lifetime_default_expiry(self, license_service):
+        """Test creating JWT for lifetime license uses long expiry"""
+        token = license_service.create_license_jwt(
+            user_id='user-123',
+            hwid='hwid-abc',
+            is_lifetime=True
+        )
+        
+        assert token is not None
+        # Decode and check expiry is far in future (would need jwt.decode)
+
+
+class TestValidateKeyFormat:
+    """Tests for license key format validation"""
+
+    @pytest.fixture
+    def license_service(self):
+        with patch('api.services.license.database', AsyncMock()):
+            from api.services.license import LicenseService
+            return LicenseService()
+
+    def test_validate_key_format_valid(self, license_service):
+        """Test validating correctly formatted key"""
+        valid_key = "ABCD-1234-EFGH-5678"
+        
+        result = license_service.validate_key_format(valid_key)
+        
+        assert result is True
+
+    def test_validate_key_format_invalid_length(self, license_service):
+        """Test validating key with wrong length"""
+        invalid_key = "ABCD-1234"
+        
+        result = license_service.validate_key_format(invalid_key)
+        
+        assert result is False
+
+    def test_validate_key_format_invalid_parts(self, license_service):
+        """Test validating key with wrong number of parts"""
+        invalid_key = "ABCD-1234-EFGH"
+        
+        result = license_service.validate_key_format(invalid_key)
+        
+        assert result is False
+
+    def test_validate_key_format_invalid_chars(self, license_service):
+        """Test validating key with special characters"""
+        invalid_key = "AB!D-1234-EF@H-5678"
+        
+        result = license_service.validate_key_format(invalid_key)
+        
+        assert result is False
+
+    def test_validate_key_format_part_wrong_length(self, license_service):
+        """Test validating key with incorrect part lengths"""
+        invalid_key = "ABC-12345-EFGH-5678"  # First part too short
+        
+        result = license_service.validate_key_format(invalid_key)
+        
+        assert result is False
+
+    def test_validate_key_format_part_not_alphanumeric_in_loop(
+        self, license_service
+    ):
+        """Test key with non-alphanumeric in a part that is 4 chars"""
+        # This ensures the for loop's isalnum() check is hit
+        invalid_key = "ABCD-12$4-EFGH-5678"
+        
+        result = license_service.validate_key_format(invalid_key)
+        
+        assert result is False
+
+
+class TestPremiumBotFeatures:
+    """Tests for premium bot features"""
+
+    @pytest.fixture
+    def license_service(self):
+        with patch('api.services.license.database', AsyncMock()):
+            from api.services.license import LicenseService
+            return LicenseService()
+
+    def test_get_premium_bot_features(self, license_service):
+        """Test getting premium bot features"""
+        features = license_service.get_premium_bot_features()
+        
+        assert features is not None
+        assert features['seller_bot'] is True
+        assert features['priority_support'] is True
+        assert features['api_access'] is True
+        assert 'seller_bot_features' in features
+        assert features['seller_bot_features']['post_products'] is True
+
+    def test_get_plan_features_premium_bot(self, license_service):
+        """Test getting features for premium_bot plan"""
+        features = license_service.get_plan_features("premium_bot")
+        
+        assert features is not None
+        assert features['seller_bot'] is True
+        assert features['max_devices'] == 3
+
+    def test_get_lifetime_features(self, license_service):
+        """Test getting lifetime features"""
+        features = license_service.get_lifetime_features()
+        
+        assert features is not None
+        assert features['unlimited_searches'] is True
+        assert features['max_devices'] == 2
+        assert features['seller_bot'] is False  # Not included in lifetime

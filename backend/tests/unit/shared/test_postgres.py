@@ -1,16 +1,10 @@
-import pytest
 from unittest.mock import AsyncMock, patch
-from shared.postgres import (
-    PostgresManager,
-    init_db,
-    close_db,
-    get_database,
-    get_db,
-    DBSession,
-    Repository,
-    execute_raw,
-    fetch_raw
-)
+
+import pytest
+from shared.postgres import (DBSession, PostgresManager, Repository, close_db,
+                             execute_raw, fetch_raw, get_database, get_db,
+                             init_db)
+
 
 @pytest.fixture
 def mock_database():
@@ -135,13 +129,14 @@ async def test_dbsession_rollback(mock_database):
         
     transaction_mock.rollback.assert_called_once()
 
-class TestRepo(Repository):
+class _TestRepo(Repository):
+    """Helper class for testing Repository - named with underscore to avoid pytest collection"""
     table_name = "test_table"
 
 @pytest.mark.asyncio
 async def test_repository_methods(postgres_manager, mock_database):
     postgres_manager._database = mock_database
-    repo = TestRepo()
+    repo = _TestRepo()
     
     with patch("shared.postgres._manager", postgres_manager):
         # Test find_by_id
