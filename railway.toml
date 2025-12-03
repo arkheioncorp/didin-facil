@@ -1,0 +1,20 @@
+# ============================================================================
+# Railway Configuration - Didin Fácil / TikTrend
+# ============================================================================
+# Este arquivo configura o deploy automático no Railway
+# Documentação: https://docs.railway.app/reference/config-as-code
+# ============================================================================
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "docker/api.Dockerfile"
+
+[deploy]
+numReplicas = 1
+startCommand = "alembic upgrade head && gunicorn api.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --access-logfile - --error-logfile -"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+
+# Variáveis são configuradas no dashboard do Railway

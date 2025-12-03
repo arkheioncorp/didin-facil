@@ -46,3 +46,12 @@ stats.html
 *storybook.log
 storybook-static
 backend/data/youtube_credentials.json
+
+# Test outputs
+test_output*.txt
+
+# Jupyter notebooks temporários
+Untitled*.ipynb
+
+# Railway local config
+.railway/
