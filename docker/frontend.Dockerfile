@@ -30,8 +30,8 @@ FROM nginx:alpine
 # Copy build artifacts
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy Nginx configuration template
-COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
+# Copy Nginx configuration template (from root)
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Railway uses dynamic PORT - nginx:alpine supports envsubst via templates
 ENV PORT=80
