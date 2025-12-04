@@ -1,0 +1,332 @@
+name: Security Gate (Pre-Deploy)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+  COVERAGE_THRESHOLD: 90
+
+jobs:
+  # ============================================
+  # JOB 1: Backend Security Tests
+  # ============================================
+  security-tests:
+    name: 🔒 Security Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: didin_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pytest-cov pytest-xdist
+
+      - name: Run Security Tests with Coverage
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/didin_test
+          REDIS_URL: redis://localhost:6379
+          SECRET_KEY: test-secret-key-for-ci
+          JWT_SECRET: test-jwt-secret-for-ci
+          ENVIRONMENT: test
+        run: |
+          cd backend
+          pytest tests/unit/test_security*.py \
+                 tests/unit/test_license_service.py \
+                 tests/unit/test_blacklist_service.py \
+            -v \
+            -n auto \
+            --cov=api.middleware.auth \
+            --cov=api.middleware.subscription \
+            --cov=api.middleware.ratelimit \
+            --cov=api.middleware.security \
+            --cov=api.services.auth \
+            --cov=api.services.blacklist \
+            --cov=api.services.license \
+            --cov=api.utils.security \
+            --cov-report=xml:coverage-security.xml \
+            --cov-report=html:htmlcov-security \
+            --cov-report=term-missing \
+            --cov-fail-under=${{ env.COVERAGE_THRESHOLD }}
+
+      - name: Upload Security Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-coverage
+          path: |
+            backend/coverage-security.xml
+            backend/htmlcov-security/
+          retention-days: 30
+
+      - name: Comment Coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERAGE_PATH: backend/coverage-security.xml
+
+  # ============================================
+  # JOB 2: Vulnerability Scanning
+  # ============================================
+  vulnerability-scan:
+    name: 🛡️ Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Safety
+        run: pip install safety pip-audit
+
+      - name: Check Python Dependencies
+        run: |
+          cd backend
+          safety check -r requirements.txt --full-report || true
+          pip-audit -r requirements.txt --strict
+
+      - name: Run Trivy (Container Scan)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy Results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # ============================================
+  # JOB 3: SAST (Static Analysis)
+  # ============================================
+  static-analysis:
+    name: 🔍 Static Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit Security Analysis
+        run: |
+          cd backend
+          bandit -r api/ -f json -o bandit-report.json --severity-level medium || true
+          bandit -r api/ -f txt --severity-level medium
+
+      - name: Upload Bandit Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: backend/bandit-report.json
+          retention-days: 30
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install ESLint Security Plugin
+        run: |
+          npm ci
+          npm install eslint-plugin-security --save-dev || true
+
+      - name: Run ESLint Security Check
+        run: npm run lint || true
+
+  # ============================================
+  # JOB 4: Secret Detection
+  # ============================================
+  secret-scan:
+    name: 🔐 Secret Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect Secrets with Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================
+  # JOB 5: Security Summary
+  # ============================================
+  security-summary:
+    name: 📊 Security Summary
+    runs-on: ubuntu-latest
+    needs: [security-tests, vulnerability-scan, static-analysis, secret-scan]
+    if: always()
+    
+    steps:
+      - name: Check Security Gate Results
+        run: |
+          echo "## 🔒 Security Gate Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.security-tests.result }}" == "success" ]; then
+            echo "✅ Security Tests: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Security Tests: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.vulnerability-scan.result }}" == "success" ]; then
+            echo "✅ Vulnerability Scan: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Vulnerability Scan: CHECK REQUIRED" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.static-analysis.result }}" == "success" ]; then
+            echo "✅ Static Analysis: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Static Analysis: CHECK REQUIRED" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.secret-scan.result }}" == "success" ]; then
+            echo "✅ Secret Detection: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Secret Detection: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "Coverage Threshold: ${{ env.COVERAGE_THRESHOLD }}%" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if Security Tests Failed
+        if: needs.security-tests.result != 'success' || needs.secret-scan.result != 'success'
+        run: |
+          echo "❌ Security Gate FAILED - Deployment blocked"
+          exit 1
+
+  # ============================================
+  # JOB 6: Deploy to Railway (Staging)
+  # ============================================
+  deploy-staging:
+    name: 🚂 Deploy to Railway (Staging)
+    runs-on: ubuntu-latest
+    needs: [security-summary]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment: staging
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy Backend to Railway Staging
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          cd backend
+          railway up --service didin-api-staging
+
+      - name: Deploy Complete
+        run: |
+          echo "## 🚂 Staging Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Backend deployed to Railway Staging" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 URL: https://staging.didinfacil.com.br/api" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
+  # JOB 7: Deploy to Railway (Production)
+  # ============================================
+  deploy-production:
+    name: 🚀 Deploy to Railway (Production)
+    runs-on: ubuntu-latest
+    needs: [security-summary]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy Backend to Railway Production
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          cd backend
+          railway up --service didin-api
+
+      - name: Deploy Complete
+        run: |
+          echo "## 🚀 Production Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Backend deployed to Railway Production" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 URL: https://api.didinfacil.com.br" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
+  # JOB 8: Notify Deployment Status
+  # ============================================
+  notify:
+    name: 📢 Notify
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+    
+    steps:
+      - name: Deployment Notification
+        run: |
+          echo "Deployment completed successfully!"
+          # Add Slack/Discord webhook notification here if needed

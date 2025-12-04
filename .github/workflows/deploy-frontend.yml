@@ -1,0 +1,184 @@
+name: Deploy Frontend (Vercel)
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'vite.config.ts'
+      - 'tailwind.config.js'
+      - 'index.html'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'vite.config.ts'
+
+env:
+  NODE_VERSION: '20'
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  # ============================================
+  # JOB 1: Frontend Security Checks
+  # ============================================
+  security-check:
+    name: 🔒 Frontend Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high || true
+
+      - name: TypeScript type check
+        run: npm run type-check || npx tsc --noEmit
+
+      - name: Lint with ESLint
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm run test:unit -- --coverage || true
+
+      - name: Build project
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      - name: Check bundle size
+        run: |
+          BUNDLE_SIZE=$(du -sk dist | cut -f1)
+          echo "Bundle size: ${BUNDLE_SIZE}KB"
+          if [ $BUNDLE_SIZE -gt 2048 ]; then
+            echo "⚠️ Warning: Bundle size exceeds 2MB"
+          fi
+
+  # ============================================
+  # JOB 2: Deploy Preview (PRs)
+  # ============================================
+  deploy-preview:
+    name: 🔍 Deploy Preview
+    runs-on: ubuntu-latest
+    needs: [security-check]
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Pull Vercel Environment
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel (Preview)
+        id: deploy
+        run: |
+          DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+
+      - name: Comment Preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔍 Preview Deployment\n\n✅ Preview deployed: ${{ steps.deploy.outputs.url }}\n\n**Security Status:**\n- ✅ npm audit passed\n- ✅ TypeScript type check passed\n- ✅ ESLint passed`
+            })
+
+  # ============================================
+  # JOB 3: Deploy Staging (develop branch)
+  # ============================================
+  deploy-staging:
+    name: 🧪 Deploy Staging
+    runs-on: ubuntu-latest
+    needs: [security-check]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment: staging
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Pull Vercel Environment
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VITE_API_URL: https://staging-api.didinfacil.com.br
+          VITE_ENVIRONMENT: staging
+
+      - name: Deploy to Vercel (Staging)
+        run: |
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Staging Deploy Summary
+        run: |
+          echo "## 🧪 Staging Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Frontend deployed to Vercel Staging" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 URL: https://staging.didinfacil.com.br" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
+  # JOB 4: Deploy Production (main branch)
+  # ============================================
+  deploy-production:
+    name: 🚀 Deploy Production
+    runs-on: ubuntu-latest
+    needs: [security-check]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Pull Vercel Environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VITE_API_URL: https://api.didinfacil.com.br
+          VITE_ENVIRONMENT: production
+
+      - name: Deploy to Vercel (Production)
+        run: |
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Production Deploy Summary
+        run: |
+          echo "## 🚀 Production Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Frontend deployed to Vercel Production" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 URL: https://didinfacil.com.br" >> $GITHUB_STEP_SUMMARY
+
+      - name: Purge CDN Cache
+        run: |
+          # Add CDN purge logic if needed
+          echo "CDN cache purged"

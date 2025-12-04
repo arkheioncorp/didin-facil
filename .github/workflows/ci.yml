@@ -50,15 +50,34 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r backend/requirements.txt
-          pip install ruff mypy
+          pip install ruff mypy pytest-cov
 
       - name: Ruff lint
         run: ruff check backend/
 
-      - name: Unit Tests
+      - name: Unit Tests with Coverage
         run: |
           cd backend
-          pytest
+          pytest tests/unit/ -v --cov=api --cov-report=xml --cov-report=term-missing
+
+      - name: Security Tests
+        run: |
+          cd backend
+          pytest tests/unit/test_security*.py tests/unit/test_license_service.py tests/unit/test_blacklist_service.py \
+            -v \
+            --cov=api.middleware \
+            --cov=api.services.auth \
+            --cov=api.services.blacklist \
+            --cov=api.services.license \
+            --cov=api.utils \
+            --cov-report=term
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage.xml
+          retention-days: 7
 
   e2e-tests:
     runs-on: ubuntu-latest

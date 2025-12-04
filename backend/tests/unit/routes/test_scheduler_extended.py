@@ -5,7 +5,7 @@ Coverage target: Cover DLQ operations and _classify_error function.
 
 import json
 from datetime import datetime, timedelta, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 from uuid import uuid4
 
 import pytest
@@ -260,7 +260,7 @@ class TestRetryDlqPost:
         
         mock_redis.get = AsyncMock(return_value=mock_scheduled_post.model_dump_json())
         
-        with patch("api.routes.scheduler.get_redis", return_value=mock_redis), \
+        with patch("shared.redis.get_redis", return_value=mock_redis), \
              patch("api.routes.scheduler.scheduler") as mock_scheduler:
             mock_scheduler.retry_dlq_post = AsyncMock(return_value=True)
             
@@ -279,7 +279,7 @@ class TestRetryDlqPost:
         
         mock_redis.get = AsyncMock(return_value=None)
         
-        with patch("api.routes.scheduler.get_redis", return_value=mock_redis):
+        with patch("shared.redis.get_redis", return_value=mock_redis):
             with pytest.raises(HTTPException) as exc_info:
                 await retry_dlq_post(
                     post_id=str(uuid4()),
@@ -306,7 +306,7 @@ class TestRetryDlqPost:
         
         mock_redis.get = AsyncMock(return_value=other_post.model_dump_json())
         
-        with patch("api.routes.scheduler.get_redis", return_value=mock_redis):
+        with patch("shared.redis.get_redis", return_value=mock_redis):
             with pytest.raises(HTTPException) as exc_info:
                 await retry_dlq_post(
                     post_id=other_post.id,
@@ -322,7 +322,7 @@ class TestRetryDlqPost:
         
         mock_redis.get = AsyncMock(return_value=mock_scheduled_post.model_dump_json())
         
-        with patch("api.routes.scheduler.get_redis", return_value=mock_redis), \
+        with patch("shared.redis.get_redis", return_value=mock_redis), \
              patch("api.routes.scheduler.scheduler") as mock_scheduler:
             mock_scheduler.retry_dlq_post = AsyncMock(return_value=False)
             
@@ -347,7 +347,7 @@ class TestBulkRetryDlqPosts:
         
         mock_redis.get = AsyncMock(return_value=mock_scheduled_post.model_dump_json())
         
-        with patch("api.routes.scheduler.get_redis", return_value=mock_redis), \
+        with patch("shared.redis.get_redis", return_value=mock_redis), \
              patch("api.routes.scheduler.scheduler") as mock_scheduler:
             mock_scheduler.retry_dlq_post = AsyncMock(return_value=True)
             
@@ -372,7 +372,7 @@ class TestBulkRetryDlqPosts:
             None
         ])
         
-        with patch("api.routes.scheduler.get_redis", return_value=mock_redis), \
+        with patch("shared.redis.get_redis", return_value=mock_redis), \
              patch("api.routes.scheduler.scheduler") as mock_scheduler:
             mock_scheduler.retry_dlq_post = AsyncMock(return_value=True)
             
@@ -404,7 +404,7 @@ class TestBulkRetryDlqPosts:
         
         mock_redis.get = AsyncMock(return_value=other_post.model_dump_json())
         
-        with patch("api.routes.scheduler.get_redis", return_value=mock_redis):
+        with patch("shared.redis.get_redis", return_value=mock_redis):
             request = BulkActionRequest(ids=[other_post.id])
             result = await retry_all_dlq_posts(
                 request=request,
@@ -428,7 +428,7 @@ class TestBulkDeleteDlqPosts:
         
         mock_redis.get = AsyncMock(return_value=mock_scheduled_post.model_dump_json())
         
-        with patch("api.routes.scheduler.get_redis", return_value=mock_redis):
+        with patch("shared.redis.get_redis", return_value=mock_redis):
             request = BulkActionRequest(ids=[mock_scheduled_post.id])
             result = await delete_all_dlq_posts(
                 request=request,
@@ -449,7 +449,7 @@ class TestBulkDeleteDlqPosts:
         
         mock_redis.get = AsyncMock(return_value=None)
         
-        with patch("api.routes.scheduler.get_redis", return_value=mock_redis):
+        with patch("shared.redis.get_redis", return_value=mock_redis):
             request = BulkActionRequest(ids=[str(uuid4())])
             result = await delete_all_dlq_posts(
                 request=request,
@@ -472,7 +472,7 @@ class TestRemoveFromDlq:
         
         mock_redis.get = AsyncMock(return_value=mock_scheduled_post.model_dump_json())
         
-        with patch("api.routes.scheduler.get_redis", return_value=mock_redis):
+        with patch("shared.redis.get_redis", return_value=mock_redis):
             result = await remove_from_dlq(
                 post_id=mock_scheduled_post.id,
                 current_user=mock_user
@@ -489,7 +489,7 @@ class TestRemoveFromDlq:
         
         mock_redis.get = AsyncMock(return_value=None)
         
-        with patch("api.routes.scheduler.get_redis", return_value=mock_redis):
+        with patch("shared.redis.get_redis", return_value=mock_redis):
             with pytest.raises(HTTPException) as exc_info:
                 await remove_from_dlq(
                     post_id=str(uuid4()),
@@ -516,7 +516,7 @@ class TestRemoveFromDlq:
         
         mock_redis.get = AsyncMock(return_value=other_post.model_dump_json())
         
-        with patch("api.routes.scheduler.get_redis", return_value=mock_redis):
+        with patch("shared.redis.get_redis", return_value=mock_redis):
             with pytest.raises(HTTPException) as exc_info:
                 await remove_from_dlq(
                     post_id=other_post.id,
@@ -554,7 +554,8 @@ class TestSchedulePostWithFile:
         with patch("api.routes.scheduler.os.makedirs"), \
              patch("api.routes.scheduler.shutil.copyfileobj"), \
              patch("api.routes.scheduler.scheduler") as mock_scheduler, \
-             patch("api.routes.scheduler.settings") as mock_settings:
+             patch("api.routes.scheduler.settings") as mock_settings, \
+             patch("builtins.open", mock_open()):
             
             mock_settings.DATA_DIR = "/tmp/data"
             mock_scheduler.schedule = AsyncMock(return_value=scheduled_post)

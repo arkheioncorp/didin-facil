@@ -75,7 +75,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements-scraper.txt
-          pip install pytest-timeout pytest-asyncio httpx
+          pip install pytest-timeout pytest-asyncio httpx pytest-cov
 
       - name: Wait for services
         run: |
@@ -89,6 +89,27 @@ jobs:
           DATABASE_URL: postgresql://test:test@localhost:5432/didin_test
         run: |
           alembic upgrade head || true
+
+      - name: Run Security Tests (Gate)
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/didin_test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key
+          JWT_SECRET: test-jwt-secret
+          ENVIRONMENT: test
+        run: |
+          pytest tests/unit/test_security*.py \
+                 tests/unit/test_license_service.py \
+                 tests/unit/test_blacklist_service.py \
+            -v \
+            --cov=api.middleware \
+            --cov=api.services.auth \
+            --cov=api.services.blacklist \
+            --cov=api.services.license \
+            --cov=api.utils \
+            --cov-fail-under=90 \
+            --tb=short
 
       - name: Run integration tests
         working-directory: backend
