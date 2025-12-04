@@ -783,6 +783,96 @@ async def seed_products(secret: str = "", count: int = 20):
         }
 
 
+@app.get("/admin/products-schema")
+async def get_products_schema(secret: str = ""):
+    """Get products table schema for debugging"""
+    from api.database.connection import database
+    
+    expected_secret = os.environ.get(
+        "MIGRATION_SECRET", "tiktrend-migrate-2025"
+    )
+    if secret != expected_secret:
+        return {"status": "error", "message": "Invalid secret"}
+    
+    try:
+        if not database.is_connected:
+            await database.connect()
+        
+        columns = await database.fetch_all(
+            """
+            SELECT column_name, data_type, is_nullable, column_default
+            FROM information_schema.columns
+            WHERE table_name = 'products'
+            ORDER BY ordinal_position
+            """
+        )
+        
+        return {
+            "status": "success",
+            "columns": [dict(c) for c in columns]
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()[-500:]
+        }
+
+
+@app.post("/admin/test-insert")
+async def test_single_insert(secret: str = ""):
+    """Test a single product insert with detailed error"""
+    import uuid
+
+    from api.database.connection import database
+    
+    expected_secret = os.environ.get(
+        "MIGRATION_SECRET", "tiktrend-migrate-2025"
+    )
+    if secret != expected_secret:
+        return {"status": "error", "message": "Invalid secret"}
+    
+    try:
+        if not database.is_connected:
+            await database.connect()
+        
+        product_id = str(uuid.uuid4())
+        tiktok_id = f"TT{uuid.uuid4().hex[:12].upper()}"
+        
+        await database.execute(
+            """
+            INSERT INTO products (id, tiktok_id, title, description, price, 
+                product_url, category, sales_count)
+            VALUES (:id, :tiktok_id, :title, :desc, :price, 
+                :product_url, :category, :sales)
+            """,
+            {
+                "id": product_id,
+                "tiktok_id": tiktok_id,
+                "title": "Test Product",
+                "desc": "Test description",
+                "price": 29.90,
+                "product_url": f"https://tiktok.com/shop/product/{tiktok_id}",
+                "category": "Test",
+                "sales": 1000,
+            }
+        )
+        
+        return {
+            "status": "success",
+            "message": f"Inserted product {product_id}",
+            "tiktok_id": tiktok_id
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
 @app.get("/")
 async def root():
     """Root endpoint"""
