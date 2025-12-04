@@ -153,7 +153,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="TikTrend Finder API",
     description="Backend API for TikTrend Finder desktop application",
-    version="2.0.0",
+    version="2.0.1",
     lifespan=lifespan,
 )
 
@@ -371,7 +371,7 @@ app.include_router(
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "version": "2.0.0"}
+    return {"status": "healthy", "version": "2.0.1"}
 
 
 @app.get("/health/db")
