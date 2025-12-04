@@ -29,12 +29,12 @@ from .routes import whatsapp_webhook  # WhatsApp Real Webhook (Evolution API)
 from .routes import (accounting, accounts,  # New financial routes + favorites
                      analytics, analytics_social, api_docs, auth, automation,
                      automation_dashboard, bot, campaigns, chatbot, chatwoot,
-                     checkout, content, copy, credits, crm, email, favorites,
-                     instagram, integrations, license, marketplaces, metrics,
-                     products, scheduler, scraper, seller_bot, social_auth,
-                     status_webhooks, subscription, template_library,
-                     templates, tiktok, tiktok_shop, tiktok_shop_v2, users,
-                     webhooks, whatsapp, youtube)
+                     checkout, contact, content, copy, credits, crm, email,
+                     favorites, instagram, integrations, license, marketplaces,
+                     metrics, products, scheduler, scraper, seller_bot,
+                     social_auth, status_webhooks, subscription,
+                     template_library, templates, tiktok, tiktok_shop,
+                     tiktok_shop_v2, users, webhooks, whatsapp, youtube)
 from .utils.integrity import IntegrityChecker
 from .utils.security import security_monitor
 
@@ -187,6 +187,7 @@ app.include_router(webhooks.router, prefix="/webhooks", tags=["Webhooks"])
 app.include_router(bot.router, tags=["Seller Bot (Premium)"])
 app.include_router(whatsapp.router, prefix="/whatsapp", tags=["WhatsApp"])
 app.include_router(chatwoot.router, prefix="/chatwoot", tags=["Support"])
+app.include_router(contact.router, tags=["Contact & Support"])
 app.include_router(instagram.router, prefix="/instagram", tags=["Instagram"])
 app.include_router(tiktok.router, prefix="/tiktok", tags=["TikTok"])
 app.include_router(youtube.router, prefix="/youtube", tags=["YouTube"])

@@ -4,15 +4,19 @@ JWT-based authentication for desktop app
 Uses centralized security configuration from shared/security_config.py
 """
 
+import logging
 from datetime import datetime, timedelta, timezone
 
 from api.middleware.auth import get_current_user
 from api.services.auth import AuthService
-from fastapi import APIRouter, Depends, HTTPException, status
+from api.services.email import get_email_service
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel, EmailStr
 from shared.security_config import get_security_config
+
+logger = logging.getLogger(__name__)
 
 # Get security configuration (cached singleton)
 _security = get_security_config()
@@ -108,8 +112,11 @@ async def login(request: LoginRequest):
 
 
 @router.post("/register")
-async def register(request: RegisterRequest):
-    """Register a new user account"""
+async def register(
+    request: RegisterRequest,
+    background_tasks: BackgroundTasks
+):
+    """Register a new user account and send verification email"""
     auth_service = AuthService()
 
     # Check if user exists
@@ -125,7 +132,27 @@ async def register(request: RegisterRequest):
         email=request.email, password=request.password, name=request.name
     )
 
-    return {"message": "User created successfully", "user_id": user["id"]}
+    # Generate verification token
+    verification_token = await auth_service.create_verification_token(user["id"])
+
+    # Send verification email in background
+    async def send_verification():
+        try:
+            email_service = get_email_service()
+            await email_service.send_verification_email(
+                to=request.email,
+                name=request.name,
+                verification_token=verification_token
+            )
+        except Exception as e:
+            logger.error(f"Failed to send verification email: {e}")
+
+    background_tasks.add_task(send_verification)
+
+    return {
+        "message": "User created successfully. Check your email for verification.",
+        "user_id": user["id"]
+    }
 
 
 @router.post("/refresh", response_model=LoginResponse)
@@ -200,25 +227,138 @@ async def logout(user: dict = Depends(get_current_user)):
 
 @router.get("/verify-email")
 async def verify_email(token: str):
-    """Verify email address"""
-    # Stub implementation
-    return {"message": "Email verified successfully"}
+    """Verify email address using token from verification email"""
+    auth_service = AuthService()
+
+    user = await auth_service.verify_email_token(token)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification token",
+        )
+
+    # Send welcome email (optional, best effort)
+    try:
+        email_service = get_email_service()
+        await email_service.send_welcome(
+            to=user["email"],
+            name=user["name"]
+        )
+    except Exception as e:
+        logger.warning(f"Failed to send welcome email: {e}")
+
+    return {
+        "message": "Email verified successfully",
+        "email": user["email"]
+    }
+
+
+@router.post("/resend-verification")
+async def resend_verification(
+    request: ForgotPasswordRequest,  # Reusing model (just needs email)
+    background_tasks: BackgroundTasks
+):
+    """Resend verification email"""
+    auth_service = AuthService()
+
+    user = await auth_service.get_user_by_email(request.email)
+
+    if not user:
+        # Don't reveal if user exists
+        return {"message": "If the email exists, a verification link was sent"}
+
+    # Check if already verified
+    if await auth_service.is_email_verified(str(user["id"])):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is already verified",
+        )
+
+    # Generate new verification token
+    token = await auth_service.create_verification_token(str(user["id"]))
+
+    # Send email in background
+    async def send_email():
+        try:
+            email_service = get_email_service()
+            await email_service.send_verification_email(
+                to=user["email"],
+                name=user["name"],
+                verification_token=token
+            )
+        except Exception as e:
+            logger.error(f"Failed to resend verification email: {e}")
+
+    background_tasks.add_task(send_email)
+
+    return {"message": "If the email exists, a verification link was sent"}
 
 
 @router.post("/forgot-password")
-async def forgot_password(request: ForgotPasswordRequest):
-    """Request password reset"""
-    # Stub implementation
-    return {"message": "Password reset email sent"}
+async def forgot_password(
+    request: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks
+):
+    """Request password reset - sends email with reset link"""
+    auth_service = AuthService()
+
+    # Create reset token (returns None if user doesn't exist)
+    reset_token = await auth_service.create_reset_token(request.email)
+
+    # Always return success to not reveal if email exists
+    if reset_token:
+        # Get user info for email
+        user = await auth_service.get_user_by_email(request.email)
+
+        # Send reset email in background
+        async def send_reset():
+            try:
+                email_service = get_email_service()
+                await email_service.send_password_reset(
+                    to=request.email,
+                    name=user["name"] if user else "User",
+                    reset_token=reset_token
+                )
+            except Exception as e:
+                logger.error(f"Failed to send password reset email: {e}")
+
+        background_tasks.add_task(send_reset)
+
+    return {
+        "message": "If the email is registered, a password reset link was sent"
+    }
 
 
 @router.post("/reset-password")
 async def reset_password(request: ResetPasswordRequest):
-    """Reset password"""
+    """Reset password using token from email"""
+    auth_service = AuthService()
+
+    # Validate passwords match
     if request.new_password != request.confirm_password:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Passwords do not match",
         )
-    # Stub implementation
+
+    # Validate password strength
+    if len(request.new_password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 8 characters long",
+        )
+
+    # Reset password
+    success = await auth_service.reset_password_with_token(
+        token=request.token,
+        new_password=request.new_password
+    )
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token",
+        )
+
     return {"message": "Password reset successfully"}

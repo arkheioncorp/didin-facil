@@ -5,13 +5,17 @@ Uses centralized security configuration from shared/security_config.py
 """
 
 import secrets
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from api.database.connection import database
 from jose import jwt
 from passlib.context import CryptContext
 from shared.security_config import get_security_config
+
+# Token expiration times
+VERIFICATION_TOKEN_EXPIRES_HOURS = 24
+RESET_TOKEN_EXPIRES_HOURS = 1
 
 # Get security configuration (cached singleton)
 _security = get_security_config()
@@ -207,3 +211,187 @@ class AuthService:
     def generate_api_key() -> str:
         """Generate a random API key"""
         return f"tk_{secrets.token_urlsafe(32)}"
+
+    @staticmethod
+    def generate_verification_token() -> str:
+        """Generate a secure verification token"""
+        return secrets.token_urlsafe(32)
+
+    @staticmethod
+    def generate_reset_token() -> str:
+        """Generate a secure password reset token"""
+        return secrets.token_urlsafe(32)
+
+    # ==========================================
+    # EMAIL VERIFICATION
+    # ==========================================
+
+    async def create_verification_token(self, user_id: str) -> str:
+        """
+        Create and store email verification token.
+        Returns the token to be sent via email.
+        """
+        token = self.generate_verification_token()
+
+        await database.execute(
+            """
+            UPDATE users
+            SET verification_token = :token
+            WHERE id = :user_id
+            """,
+            {"token": token, "user_id": user_id}
+        )
+
+        return token
+
+    async def verify_email_token(self, token: str) -> Optional[dict]:
+        """
+        Verify email verification token.
+        Returns user dict if valid, None otherwise.
+        """
+        result = await database.fetch_one(
+            """
+            SELECT id, email, name, plan
+            FROM users
+            WHERE verification_token = :token
+            """,
+            {"token": token}
+        )
+
+        if not result:
+            return None
+
+        # Mark email as verified and clear token
+        await database.execute(
+            """
+            UPDATE users
+            SET is_email_verified = true,
+                verification_token = NULL
+            WHERE id = :user_id
+            """,
+            {"user_id": result["id"]}
+        )
+
+        return {
+            "id": str(result["id"]),
+            "email": result["email"],
+            "name": result["name"],
+            "plan": result["plan"]
+        }
+
+    async def is_email_verified(self, user_id: str) -> bool:
+        """Check if user's email is verified"""
+        result = await database.fetch_one(
+            """
+            SELECT is_email_verified
+            FROM users
+            WHERE id = :user_id
+            """,
+            {"user_id": user_id}
+        )
+
+        return result["is_email_verified"] if result else False
+
+    # ==========================================
+    # PASSWORD RESET
+    # ==========================================
+
+    async def create_reset_token(self, email: str) -> Optional[str]:
+        """
+        Create password reset token for user.
+        Returns token if user exists, None otherwise.
+        """
+        user = await self.get_user_by_email(email)
+        if not user:
+            return None
+
+        token = self.generate_reset_token()
+        expires_at = datetime.now(timezone.utc) + timedelta(
+            hours=RESET_TOKEN_EXPIRES_HOURS
+        )
+
+        await database.execute(
+            """
+            UPDATE users
+            SET reset_token = :token,
+                reset_token_expires = :expires_at
+            WHERE email = :email
+            """,
+            {"token": token, "expires_at": expires_at, "email": email}
+        )
+
+        return token
+
+    async def verify_reset_token(self, token: str) -> Optional[dict]:
+        """
+        Verify password reset token.
+        Returns user dict if valid and not expired, None otherwise.
+        """
+        result = await database.fetch_one(
+            """
+            SELECT id, email, name, reset_token_expires
+            FROM users
+            WHERE reset_token = :token
+            """,
+            {"token": token}
+        )
+
+        if not result:
+            return None
+
+        # Check expiration
+        expires_at = result["reset_token_expires"]
+        if expires_at and expires_at < datetime.now(timezone.utc):
+            # Token expired - clear it
+            await database.execute(
+                """
+                UPDATE users
+                SET reset_token = NULL, reset_token_expires = NULL
+                WHERE id = :user_id
+                """,
+                {"user_id": result["id"]}
+            )
+            return None
+
+        return {
+            "id": str(result["id"]),
+            "email": result["email"],
+            "name": result["name"]
+        }
+
+    async def reset_password_with_token(
+        self, token: str, new_password: str
+    ) -> bool:
+        """
+        Reset user password using valid reset token.
+        Returns True if successful, False otherwise.
+        """
+        user = await self.verify_reset_token(token)
+        if not user:
+            return False
+
+        password_hash = self.hash_password(new_password)
+
+        await database.execute(
+            """
+            UPDATE users
+            SET password_hash = :password_hash,
+                reset_token = NULL,
+                reset_token_expires = NULL
+            WHERE id = :user_id
+            """,
+            {"password_hash": password_hash, "user_id": user["id"]}
+        )
+
+        return True
+
+    async def update_last_login(self, user_id: str) -> None:
+        """Update user's last login timestamp"""
+        await database.execute(
+            """
+            UPDATE users
+            SET last_login_at = NOW()
+            WHERE id = :user_id
+            """,
+            {"user_id": user_id}
+        )

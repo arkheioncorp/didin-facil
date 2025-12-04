@@ -174,6 +174,14 @@ class Settings(BaseSettings):
     # Resend (alternative email service)
     RESEND_API_KEY: Optional[str] = None
     
+    # Contact & Support Configuration
+    SUPPORT_EMAIL: str = "suporte@didinfacil.com.br"
+    CONTACT_EMAIL: str = "contato@didinfacil.com.br"
+    NOREPLY_EMAIL: str = "noreply@didinfacil.com.br"
+    COMPANY_NAME: str = "Didin Fácil"
+    COMPANY_WEBSITE: str = "https://didinfacil.com.br"
+    COMPANY_ADDRESS: str = "São Paulo, Brasil"
+    
     # MercadoPago (alias for compatibility)
     MP_ACCESS_TOKEN: Optional[str] = None
     MP_PUBLIC_KEY: Optional[str] = None
@@ -227,3 +235,8 @@ class Settings(BaseSettings):
 
 # Global settings instance
 settings = Settings()
+
+
+def get_settings() -> Settings:
+    """Get settings instance (for dependency injection compatibility)"""
+    return settings

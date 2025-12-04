@@ -294,8 +294,7 @@ const PipelinePage = () => {
   const moveDeal = useMoveDeal();
   const createDeal = useCreateDeal();
   const updateDeal = useUpdateDeal();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _deleteDeal = useDeleteDeal();
+  useDeleteDeal(); // Mantido para futura implementação
   const winDeal = useWinDeal();
   const loseDeal = useLoseDeal();
 
