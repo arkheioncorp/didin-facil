@@ -718,16 +718,16 @@ export function FinancialDashboard() {
                       <LazyCartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                       <LazyXAxis
                         dataKey="date"
-                        tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                        tickFormatter={(value: string) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                         className="text-xs"
                       />
                       <LazyYAxis
-                        tickFormatter={(value) => `R$ ${value}`}
+                        tickFormatter={(value: number) => `R$ ${value}`}
                         className="text-xs"
                       />
                       <LazyTooltip
-                        formatter={(value) => formatBRL(Number(value))}
-                        labelFormatter={(label) => new Date(label).toLocaleDateString('pt-BR')}
+                        formatter={(value: number) => formatBRL(Number(value))}
+                        labelFormatter={(label: string) => new Date(label).toLocaleDateString('pt-BR')}
                         contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
                       />
                       <LazyLine type="monotone" dataKey="revenue" name="Receita" stroke="#10b981" strokeWidth={2} dot={false} />
