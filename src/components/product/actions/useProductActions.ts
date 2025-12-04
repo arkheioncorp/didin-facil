@@ -84,7 +84,7 @@ export function useProductActions(
   // COPY AI FORM STATES
   // ============================================
   
-  const [copyType, setCopyType] = useState<CopyType>("ad");
+  const [copyType, setCopyType] = useState<CopyType>("facebook_ad");
   const [copyTone, setCopyTone] = useState<CopyTone>("professional");
   const [generatedCopy, setGeneratedCopy] = useState<string | null>(null);
   
