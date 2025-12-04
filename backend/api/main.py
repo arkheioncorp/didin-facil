@@ -348,6 +348,45 @@ async def health_check():
     return {"status": "healthy", "version": "2.0.0"}
 
 
+@app.get("/health/db")
+async def health_check_db():
+    """Database health check endpoint"""
+    import traceback
+
+    from api.database.connection import database
+    from shared.config import settings
+    
+    try:
+        # Check if database is connected
+        if not database.is_connected:
+            await database.connect()
+        
+        # Simple query to test connection
+        result = await database.fetch_one("SELECT 1 as test")
+        
+        # Count products
+        count_result = await database.fetch_one("SELECT COUNT(*) as count FROM products")
+        product_count = count_result["count"] if count_result else 0
+        
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "product_count": product_count,
+            "database_url_set": bool(settings.DATABASE_URL),
+            "database_url_preview": settings.DATABASE_URL[:30] + "..." if settings.DATABASE_URL else None
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "database": "error",
+            "error": str(e),
+            "error_type": type(e).__name__,
+            "traceback": traceback.format_exc()[-500:],
+            "database_url_set": bool(settings.DATABASE_URL),
+            "database_url_preview": settings.DATABASE_URL[:30] + "..." if settings.DATABASE_URL else None
+        }
+
+
 @app.get("/")
 async def root():
     """Root endpoint"""
