@@ -413,6 +413,51 @@ async def health_check_db():
         }
 
 
+@app.post("/admin/run-migrations")
+async def run_migrations(secret: str = ""):
+    """Run database migrations manually (emergency endpoint)"""
+    import traceback
+
+    # Simple secret check (use settings.SECRET_KEY in production)
+    expected_secret = os.environ.get(
+        "MIGRATION_SECRET", "tiktrend-migrate-2025"
+    )
+    if secret != expected_secret:
+        return {"status": "error", "message": "Invalid secret"}
+    
+    try:
+        from alembic import command
+        from alembic.config import Config
+        
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        alembic_cfg = Config(os.path.join(base_path, "alembic.ini"))
+        alembic_cfg.set_main_option(
+            "script_location",
+            os.path.join(base_path, "alembic")
+        )
+        
+        # Set the database URL (sync version for alembic)
+        db_url = settings.DATABASE_URL
+        # Alembic needs sync driver, not asyncpg
+        if "+asyncpg" in db_url:
+            db_url = db_url.replace("+asyncpg", "")
+        
+        alembic_cfg.set_main_option("sqlalchemy.url", db_url)
+        
+        command.upgrade(alembic_cfg, "head")
+        
+        return {
+            "status": "success",
+            "message": "Migrations applied successfully"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()[-1000:]
+        }
+
+
 @app.get("/")
 async def root():
     """Root endpoint"""

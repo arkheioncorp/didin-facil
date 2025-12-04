@@ -1,24 +1,22 @@
 """
 License Management Routes
 Hardware-bound license validation
+
+Uses centralized security configuration from shared/security_config.py
 """
 
-import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr
-
 from api.middleware.auth import get_current_user
 from api.services.license import LicenseService
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, EmailStr
+from shared.security_config import get_security_config
 
-
-# JWT settings from environment
-JWT_SECRET_KEY = os.getenv(
-    "JWT_SECRET_KEY",
-    "dev-secret-key-change-in-production"
-)
+# Get security configuration (cached singleton)
+_security = get_security_config()
+JWT_SECRET_KEY = _security.jwt_secret_key
 
 router = APIRouter()
 
