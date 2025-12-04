@@ -371,7 +371,7 @@ app.include_router(
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "version": "2.0.1"}
+    return {"status": "healthy", "version": "2.0.2"}
 
 
 @app.get("/health/db")
@@ -390,16 +390,30 @@ async def health_check_db():
         # Simple query to test connection
         result = await database.fetch_one("SELECT 1 as test")
         
-        # Count products
-        count_result = await database.fetch_one("SELECT COUNT(*) as count FROM products")
-        product_count = count_result["count"] if count_result else 0
+        # List all tables
+        tables_result = await database.fetch_all(
+            "SELECT tablename FROM pg_tables WHERE schemaname = 'public'"
+        )
+        tables = [row["tablename"] for row in tables_result]
+        
+        # Try to count products if table exists
+        product_count = 0
+        if "products" in tables:
+            count_result = await database.fetch_one(
+                "SELECT COUNT(*) as count FROM products"
+            )
+            product_count = count_result["count"] if count_result else 0
         
         return {
-            "status": "healthy",
+            "status": "healthy" if "products" in tables else "needs_migration",
             "database": "connected",
+            "tables": tables,
             "product_count": product_count,
             "database_url_set": bool(settings.DATABASE_URL),
-            "database_url_preview": settings.DATABASE_URL[:30] + "..." if settings.DATABASE_URL else None
+            "database_url_preview": (
+                settings.DATABASE_URL[:30] + "..."
+                if settings.DATABASE_URL else None
+            )
         }
     except Exception as e:
         return {
@@ -409,7 +423,102 @@ async def health_check_db():
             "error_type": type(e).__name__,
             "traceback": traceback.format_exc()[-500:],
             "database_url_set": bool(settings.DATABASE_URL),
-            "database_url_preview": settings.DATABASE_URL[:30] + "..." if settings.DATABASE_URL else None
+            "database_url_preview": (
+                settings.DATABASE_URL[:30] + "..."
+                if settings.DATABASE_URL else None
+            )
+        }
+
+
+@app.post("/admin/init-db")
+async def init_database_tables(secret: str = ""):
+    """Initialize database with essential tables (emergency endpoint)"""
+    from api.database.connection import database
+
+    expected_secret = os.environ.get(
+        "MIGRATION_SECRET", "tiktrend-migrate-2025"
+    )
+    if secret != expected_secret:
+        return {"status": "error", "message": "Invalid secret"}
+
+    try:
+        if not database.is_connected:
+            await database.connect()
+
+        # Create alembic_version table first
+        await database.execute("""
+            CREATE TABLE IF NOT EXISTS alembic_version (
+                version_num VARCHAR(32) NOT NULL,
+                CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
+            )
+        """)
+
+        # Create essential tables
+        await database.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password_hash VARCHAR(255),
+                name VARCHAR(255),
+                plan VARCHAR(50) NOT NULL DEFAULT 'free',
+                is_active BOOLEAN DEFAULT true,
+                is_admin BOOLEAN DEFAULT false,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        await database.execute("""
+            CREATE TABLE IF NOT EXISTS products (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                tiktok_id VARCHAR(100) NOT NULL UNIQUE,
+                title VARCHAR(500) NOT NULL,
+                description TEXT,
+                price NUMERIC(10,2) NOT NULL,
+                original_price NUMERIC(10,2),
+                currency VARCHAR(10) DEFAULT 'BRL',
+                category VARCHAR(100),
+                seller_name VARCHAR(255),
+                product_rating FLOAT,
+                sales_count INTEGER DEFAULT 0,
+                image_url VARCHAR(1000),
+                product_url VARCHAR(1000) NOT NULL,
+                is_trending BOOLEAN DEFAULT false,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        await database.execute("""
+            CREATE TABLE IF NOT EXISTS licenses (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL REFERENCES users(id),
+                license_key VARCHAR(50) NOT NULL UNIQUE,
+                plan VARCHAR(50) NOT NULL,
+                max_devices INTEGER DEFAULT 1,
+                expires_at TIMESTAMP,
+                is_active BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Stamp alembic to latest migration
+        await database.execute("""
+            INSERT INTO alembic_version (version_num)
+            VALUES ('db_polish_2025_12_04')
+            ON CONFLICT (version_num) DO NOTHING
+        """)
+
+        return {
+            "status": "success",
+            "message": "Essential tables created and migration stamped"
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()[-1000:]
         }
 
 
