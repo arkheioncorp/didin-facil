@@ -723,25 +723,39 @@ async def seed_products(secret: str = "", count: int = 20):
         inserted = 0
         for title, category, price, sales in PRODUCTS[:count]:
             product_id = str(uuid.uuid4())
+            tiktok_id = f"TT{uuid.uuid4().hex[:12].upper()}"
             try:
                 await database.execute(
                     """
-                    INSERT INTO products (id, title, description, price, category, 
-                        sales_count, source, status, created_at, updated_at)
-                    VALUES (:id, :title, :desc, :price, :category, 
-                        :sales, :source, :status, :created, :updated)
+                    INSERT INTO products (id, tiktok_id, title, description, price, 
+                        original_price, currency, category, seller_name, 
+                        product_rating, reviews_count, sales_count, sales_7d, sales_30d,
+                        commission_rate, image_url, product_url, has_free_shipping, is_trending)
+                    VALUES (:id, :tiktok_id, :title, :desc, :price, 
+                        :original_price, :currency, :category, :seller_name,
+                        :rating, :reviews, :sales, :sales_7d, :sales_30d,
+                        :commission, :image_url, :product_url, :free_shipping, :is_trending)
                     """,
                     {
                         "id": product_id,
+                        "tiktok_id": tiktok_id,
                         "title": title,
                         "desc": f"{title} - Produto viral do TikTok com milhares de vendas!",
                         "price": price,
+                        "original_price": round(price * 1.3, 2),
+                        "currency": "BRL",
                         "category": category,
+                        "seller_name": f"TikTok Seller {random.randint(100, 999)}",
+                        "rating": round(random.uniform(4.0, 5.0), 1),
+                        "reviews": random.randint(100, 5000),
                         "sales": sales + random.randint(-1000, 1000),
-                        "source": "tiktok",
-                        "status": "active",
-                        "created": datetime.now(timezone.utc),
-                        "updated": datetime.now(timezone.utc),
+                        "sales_7d": random.randint(100, 2000),
+                        "sales_30d": random.randint(500, 8000),
+                        "commission": round(random.uniform(5.0, 15.0), 1),
+                        "image_url": f"https://placehold.co/400x400?text={title[:10].replace(' ', '+')}",
+                        "product_url": f"https://tiktok.com/shop/product/{tiktok_id}",
+                        "free_shipping": random.choice([True, False]),
+                        "is_trending": random.choice([True, True, False]),
                     }
                 )
                 inserted += 1
