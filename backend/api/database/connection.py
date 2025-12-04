@@ -3,15 +3,26 @@ Database Connection Manager
 Async PostgreSQL connection pool
 """
 
+import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from databases import Database
 from shared.config import settings
 
+logger = logging.getLogger(__name__)
 
 # Database URL from environment
-DATABASE_URL = settings.DATABASE_URL
+# Ensure it uses the asyncpg driver for the databases library
+_raw_url = settings.DATABASE_URL
+if _raw_url.startswith("postgresql://") and "+asyncpg" not in _raw_url:
+    DATABASE_URL = _raw_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+elif _raw_url.startswith("postgres://"):
+    DATABASE_URL = _raw_url.replace("postgres://", "postgresql+asyncpg://", 1)
+else:
+    DATABASE_URL = _raw_url
+
+logger.info(f"Database URL configured (driver: asyncpg)")
 
 # Database instance
 database = Database(DATABASE_URL)
