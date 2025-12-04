@@ -124,3 +124,4 @@ if context.is_offline_mode():
 else:
     # Use sync migrations to avoid asyncio.run() issues
     run_migrations_sync()
+# Force deploy qui 04 dez 2025 16:05:24 -04
