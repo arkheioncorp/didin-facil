@@ -2,7 +2,7 @@
 
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
 import pytest
@@ -52,7 +52,7 @@ class TestModels:
     def test_youtube_upload_request_full(self):
         """Teste do modelo YouTubeUploadRequest completo."""
         from api.routes.youtube import YouTubeUploadRequest
-        future_time = datetime.utcnow()
+        future_time = datetime.now(timezone.utc)
         req = YouTubeUploadRequest(
             account_name="main",
             title="Test Video",

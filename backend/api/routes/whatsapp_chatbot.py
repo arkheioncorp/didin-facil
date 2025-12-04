@@ -3,19 +3,71 @@ WhatsApp Chatbot Handler
 ========================
 Processa mensagens do WhatsApp e retorna respostas automáticas.
 Integrado com n8n webhook para processamento avançado.
+
+Security:
+- Webhook endpoints protected by API key validation
+- Rate limiting per phone number
 """
 
 import logging
-from typing import Optional, List, Dict, Any
+import secrets
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field
-from fastapi import APIRouter, HTTPException, Request
+from typing import Any, Dict, List, Optional
 
 from api.services.cache import CacheService
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from pydantic import BaseModel, Field
 from shared.config import settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/whatsapp-bot", tags=["WhatsApp Chatbot"])
+
+
+# ============================================
+# SECURITY
+# ============================================
+
+async def verify_webhook_secret(
+    x_webhook_secret: Optional[str] = Header(None, alias="X-Webhook-Secret"),
+    authorization: Optional[str] = Header(None),
+) -> bool:
+    """
+    Verify webhook request authenticity.
+    
+    Accepts either:
+    - X-Webhook-Secret header
+    - Authorization: Bearer <token> header
+    
+    Security: Uses constant-time comparison to prevent timing attacks.
+    """
+    expected_secret = settings.WEBHOOK_SECRET or settings.N8N_WEBHOOK_SECRET
+    
+    # Skip validation in dev mode if no secret configured
+    if not expected_secret:
+        if settings.ENVIRONMENT == "development":
+            logger.warning("Webhook secret not configured - accepting request in dev mode")
+            return True
+        raise HTTPException(
+            status_code=401,
+            detail="Webhook authentication required"
+        )
+    
+    # Check X-Webhook-Secret header
+    if x_webhook_secret:
+        if secrets.compare_digest(x_webhook_secret, expected_secret):
+            return True
+    
+    # Check Authorization header
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization[7:]
+        if secrets.compare_digest(token, expected_secret):
+            return True
+    
+    logger.warning("Invalid webhook secret attempt")
+    raise HTTPException(
+        status_code=401,
+        detail="Invalid webhook authentication"
+    )
 
 
 # ============================================
@@ -389,11 +441,15 @@ chatbot = WhatsAppChatbot()
 # ============================================
 
 @router.post("/process", response_model=ChatbotResponse)
-async def process_message(request: ChatbotRequest):
+async def process_message(
+    request: ChatbotRequest,
+    _auth: bool = Depends(verify_webhook_secret),
+):
     """
     Processa mensagem do WhatsApp e retorna resposta.
     
     Este endpoint é chamado pelo n8n para processar mensagens.
+    Requer autenticação via X-Webhook-Secret header.
     """
     try:
         response = await chatbot.process_message(
@@ -408,19 +464,35 @@ async def process_message(request: ChatbotRequest):
 
 
 @router.post("/webhook/n8n")
-async def n8n_webhook(request: Request):
+async def n8n_webhook(
+    request: Request,
+    _auth: bool = Depends(verify_webhook_secret),
+):
     """
     Webhook para receber mensagens do n8n.
     
     O n8n envia a mensagem aqui, processamos e retornamos a resposta.
+    Requer autenticação via X-Webhook-Secret ou Authorization header.
     """
     try:
         body = await request.json()
         
         # Extract message data from n8n payload
-        phone = body.get("phone") or body.get("from") or body.get("remoteJid", "")
-        message = body.get("message") or body.get("text") or body.get("body", "")
-        push_name = body.get("pushName") or body.get("senderName") or body.get("name")
+        phone = (
+            body.get("phone") or
+            body.get("from") or
+            body.get("remoteJid", "")
+        )
+        message = (
+            body.get("message") or
+            body.get("text") or
+            body.get("body", "")
+        )
+        push_name = (
+            body.get("pushName") or
+            body.get("senderName") or
+            body.get("name")
+        )
         
         # Clean phone number
         if "@" in phone:
@@ -439,20 +511,25 @@ async def n8n_webhook(request: Request):
             push_name=push_name
         )
         
+        products = None
+        if response.products:
+            products = [p.model_dump() for p in response.products]
+        
         return {
             "success": True,
             "response_text": response.response_text,
-            "products": [p.model_dump() for p in response.products] if response.products else None,
+            "products": products,
             "action": response.action,
             "metadata": response.metadata
         }
         
     except Exception as e:
         logger.error(f"Error in n8n webhook: {e}")
+        error_msg = "Desculpe, ocorreu um erro. Tente novamente."
         return {
             "success": False,
             "error": str(e),
-            "response_text": "Desculpe, ocorreu um erro. Tente novamente mais tarde."
+            "response_text": error_msg
         }
 
 

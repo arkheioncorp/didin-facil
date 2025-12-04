@@ -4,7 +4,7 @@ Testes unitários para camada de serviço do CRM.
 """
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 
@@ -39,10 +39,10 @@ def sample_contact():
         "tags": ["tag1", "tag2"],
         "custom_fields": {},
         "subscribed": True,
-        "subscription_date": datetime.utcnow(),
+        "subscription_date": datetime.now(timezone.utc),
         "score": 0,
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
     }
 
 
@@ -61,8 +61,8 @@ def sample_lead():
         "assigned_to": None,
         "notes": None,
         "custom_fields": {},
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
     }
 
 
@@ -79,12 +79,12 @@ def sample_deal():
         "title": "New Deal",
         "value": 10000.0,
         "status": "open",
-        "expected_close_date": datetime.utcnow() + timedelta(days=30),
+        "expected_close_date": datetime.now(timezone.utc) + timedelta(days=30),
         "assigned_to": None,
         "notes": None,
         "custom_fields": {},
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
     }
 
 
@@ -103,8 +103,8 @@ def sample_pipeline():
             {"id": str(uuid4()), "name": "Negotiation", "order": 3, "probability": 75},
             {"id": str(uuid4()), "name": "Won", "order": 4, "probability": 100},
         ],
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
     }
 
 

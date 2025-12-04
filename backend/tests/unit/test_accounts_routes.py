@@ -4,7 +4,7 @@ Unit tests for Multi-Account Management Routes
 
 import pytest
 from unittest.mock import AsyncMock, patch
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 
@@ -82,8 +82,8 @@ class TestMultiAccountService:
             "status": "active",
             "is_primary": "True",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "metrics": "{}",
             "metadata": "{}"
         }
@@ -114,8 +114,8 @@ class TestMultiAccountService:
             "status": "active",
             "is_primary": "True",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "last_used_at": "",
             "metrics": json.dumps({"followers": 1000}),
             "metadata": "{}"
@@ -153,8 +153,8 @@ class TestMultiAccountService:
                 "status": "active",
                 "is_primary": "True",
                 "user_id": "user_123",
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
                 "metrics": "{}",
                 "metadata": "{}"
             },
@@ -166,8 +166,8 @@ class TestMultiAccountService:
                 "status": "active",
                 "is_primary": "False",
                 "user_id": "user_123",
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
                 "metrics": "{}",
                 "metadata": "{}"
             }
@@ -193,8 +193,8 @@ class TestMultiAccountService:
             "status": "active",
             "is_primary": "True",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "metrics": "{}",
             "metadata": "{}"
         }
@@ -220,8 +220,8 @@ class TestMultiAccountService:
             "status": "active",
             "is_primary": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "metrics": "{}",
             "metadata": "{}"
         }
@@ -252,8 +252,8 @@ class TestMultiAccountService:
             "status": "active",
             "is_primary": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "metrics": "{}",
             "metadata": "{}"
         }
@@ -278,8 +278,8 @@ class TestMultiAccountService:
             "status": "active",
             "is_primary": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "last_used_at": "",
             "metrics": "{}",
             "metadata": "{}"
@@ -306,8 +306,8 @@ class TestMultiAccountService:
             "status": "active",
             "is_primary": "True",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "metrics": "{}",
             "metadata": "{}"
         }
@@ -332,8 +332,8 @@ class TestMultiAccountService:
             "status": "active",
             "is_primary": "True",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "metrics": "{}",
             "metadata": "{}"
         }
@@ -357,8 +357,8 @@ class TestMultiAccountService:
             "status": "active",
             "is_primary": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "metrics": "{}",
             "metadata": "{}"
         }
@@ -393,8 +393,8 @@ class TestMultiAccountService:
                 "status": "active",
                 "is_primary": "True",
                 "user_id": "user_123",
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
                 "metrics": json.dumps({"followers": 1000}),
                 "metadata": "{}"
             },
@@ -406,8 +406,8 @@ class TestMultiAccountService:
                 "status": "needs_reauth",
                 "is_primary": "True",
                 "user_id": "user_123",
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
                 "metrics": json.dumps({"followers": 2000}),
                 "metadata": "{}"
             }

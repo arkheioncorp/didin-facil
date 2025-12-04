@@ -4,7 +4,7 @@ Tests for Analytics Routes
 
 import pytest
 from unittest.mock import AsyncMock, patch
-from datetime import datetime
+from datetime import datetime, timezone
 from modules.analytics.social_analytics import (
     DashboardOverview,
     PlatformAnalytics,
@@ -36,8 +36,8 @@ def mock_analytics_service():
     # Setup default return for get_dashboard_overview
     overview = DashboardOverview(
         period=MetricPeriod.LAST_30_DAYS,
-        start_date=datetime.utcnow(),
-        end_date=datetime.utcnow(),
+        start_date=datetime.now(timezone.utc),
+        end_date=datetime.now(timezone.utc),
         total_posts=100,
         total_engagement=5000,
         total_reach=20000,
@@ -46,8 +46,8 @@ def mock_analytics_service():
             "instagram": PlatformAnalytics(
                 platform=Platform.INSTAGRAM,
                 period=MetricPeriod.LAST_30_DAYS,
-                start_date=datetime.utcnow(),
-                end_date=datetime.utcnow(),
+                start_date=datetime.now(timezone.utc),
+                end_date=datetime.now(timezone.utc),
                 total_posts=50,
                 total_likes=2000,
                 total_comments=500,
@@ -70,7 +70,7 @@ def mock_analytics_service():
             PostAnalytics(
                 post_id="post_1",
                 platform=Platform.INSTAGRAM,
-                published_at=datetime.utcnow(),
+                published_at=datetime.now(timezone.utc),
                 content_type="image",
                 caption="Test Post",
                 metrics=EngagementMetrics(

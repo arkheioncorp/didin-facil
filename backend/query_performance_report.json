@@ -1,0 +1,62 @@
+{
+  "timestamp": "2025-12-04T16:27:35.888161",
+  "results": [
+    {
+      "name": "auth_get_user_by_email",
+      "success": false,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "name": "auth_get_license",
+      "success": false,
+      "error": "Coluna n\u00e3o existe: column \"hwid\" does not exist\nHINT:  Perhaps you meant to reference the column \"licenses.id\"."
+    },
+    {
+      "name": "products_list_paginated",
+      "success": false,
+      "error": "Tabela n\u00e3o existe: relation \"shops\" does not exist"
+    },
+    {
+      "name": "products_search",
+      "success": false,
+      "error": "Tabela n\u00e3o existe: relation \"shops\" does not exist"
+    },
+    {
+      "name": "financial_transactions_by_user",
+      "success": false,
+      "error": "operator does not exist: uuid = integer\nHINT:  No operator matches the given name and argument types. You might need to add explicit type casts."
+    },
+    {
+      "name": "credits_balance",
+      "success": false,
+      "error": "Tabela n\u00e3o existe: relation \"user_credits\" does not exist"
+    },
+    {
+      "name": "crm_active_leads",
+      "success": false,
+      "error": "Coluna n\u00e3o existe: column l.pipeline_id does not exist"
+    },
+    {
+      "name": "active_subscriptions",
+      "success": false,
+      "error": "'str' object has no attribute 'get'"
+    },
+    {
+      "name": "metrics_daily_aggregation",
+      "success": false,
+      "error": "Coluna n\u00e3o existe: column \"type\" does not exist"
+    },
+    {
+      "name": "products_trending",
+      "success": false,
+      "error": "Coluna n\u00e3o existe: column p.is_active does not exist"
+    }
+  ],
+  "summary": {
+    "excellent": 0,
+    "good": 0,
+    "acceptable": 0,
+    "slow": 0,
+    "failed": 10
+  }
+}

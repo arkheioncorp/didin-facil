@@ -3,7 +3,7 @@ Testes para o módulo de subscription/planos.
 Atualizado para os novos schemas (FeatureLimit, PlanFeatures, Subscription, UsageRecord).
 """
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -204,9 +204,9 @@ class TestSubscription:
             plan=PlanTier.BUSINESS,
             status=SubscriptionStatus.ACTIVE,
             billing_cycle=BillingCycle.MONTHLY,
-            created_at=datetime.utcnow() - timedelta(days=15),
-            current_period_start=datetime.utcnow() - timedelta(days=15),
-            current_period_end=datetime.utcnow() + timedelta(days=15),
+            created_at=datetime.now(timezone.utc) - timedelta(days=15),
+            current_period_start=datetime.now(timezone.utc) - timedelta(days=15),
+            current_period_end=datetime.now(timezone.utc) + timedelta(days=15),
         )
     
     @pytest.fixture
@@ -218,10 +218,10 @@ class TestSubscription:
             plan=PlanTier.STARTER,
             status=SubscriptionStatus.TRIAL,
             billing_cycle=BillingCycle.MONTHLY,
-            created_at=datetime.utcnow(),
-            current_period_start=datetime.utcnow(),
-            current_period_end=datetime.utcnow() + timedelta(days=14),
-            trial_ends_at=datetime.utcnow() + timedelta(days=14),
+            created_at=datetime.now(timezone.utc),
+            current_period_start=datetime.now(timezone.utc),
+            current_period_end=datetime.now(timezone.utc) + timedelta(days=14),
+            trial_ends_at=datetime.now(timezone.utc) + timedelta(days=14),
         )
     
     def test_subscription_creation(self, active_subscription):
@@ -239,12 +239,12 @@ class TestSubscription:
             plan=PlanTier.STARTER,
             status=SubscriptionStatus.ACTIVE,
             billing_cycle=BillingCycle.MONTHLY,
-            created_at=datetime.utcnow(),
-            current_period_start=datetime.utcnow(),
-            current_period_end=datetime.utcnow() + timedelta(days=30),
+            created_at=datetime.now(timezone.utc),
+            current_period_start=datetime.now(timezone.utc),
+            current_period_end=datetime.now(timezone.utc) + timedelta(days=30),
             mercadopago_subscription_id="MP-SUB-123456",
-            last_payment_at=datetime.utcnow(),
-            next_payment_at=datetime.utcnow() + timedelta(days=30),
+            last_payment_at=datetime.now(timezone.utc),
+            next_payment_at=datetime.now(timezone.utc) + timedelta(days=30),
         )
         
         assert sub.mercadopago_subscription_id == "MP-SUB-123456"
@@ -273,7 +273,7 @@ class TestUsageRecord:
     
     def test_usage_record_creation(self):
         """Testa criação de UsageRecord."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         record = UsageRecord(
             user_id="user-123",
             feature="price_searches",
@@ -288,7 +288,7 @@ class TestUsageRecord:
     
     def test_usage_record_multiple_features(self):
         """Testa múltiplos registros de uso."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         records = [
             UsageRecord(
                 user_id="user-123",
@@ -346,9 +346,9 @@ class TestSubscriptionService:
             "plan": "starter",
             "status": "active",
             "billing_cycle": "monthly",
-            "created_at": datetime.utcnow().isoformat(),
-            "current_period_start": datetime.utcnow().isoformat(),
-            "current_period_end": (datetime.utcnow() + timedelta(days=30)).isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "current_period_start": datetime.now(timezone.utc).isoformat(),
+            "current_period_end": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
             "usage": {},
         })
         mock_redis.get = AsyncMock(return_value=cached_data)

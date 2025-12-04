@@ -3,7 +3,7 @@ Testes extensivos para Automation Dashboard Routes
 Aumenta cobertura de api/routes/automation_dashboard.py
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
@@ -112,7 +112,7 @@ class TestAutomationMetrics:
             pending=10,
             success_rate=95.0,
             avg_delay_ms=100.0,
-            last_triggered=datetime.utcnow(),
+            last_triggered=datetime.now(timezone.utc),
             channels=["whatsapp", "telegram"]
         )
         
@@ -134,10 +134,10 @@ class TestScheduledEventResponse:
             schedule_type="delayed",
             user_id="user-123",
             status="pending",
-            scheduled_for=datetime.utcnow(),
+            scheduled_for=datetime.now(timezone.utc),
             priority="high",
             retry_count=0,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             processed_at=None,
             error_message=None
         )
@@ -451,11 +451,11 @@ class TestListQueuedEvents:
         mock_event.user_id = "user-1"
         mock_event.status = MagicMock()
         mock_event.status.value = "pending"
-        mock_event.scheduled_for = datetime.utcnow()
+        mock_event.scheduled_for = datetime.now(timezone.utc)
         mock_event.priority = MagicMock()
         mock_event.priority.value = "normal"
         mock_event.retry_count = 0
-        mock_event.created_at = datetime.utcnow()
+        mock_event.created_at = datetime.now(timezone.utc)
         mock_event.processed_at = None
         mock_event.error_message = None
         
@@ -490,7 +490,7 @@ class TestTimeSeriesDataPoint:
         from api.routes.automation_dashboard import TimeSeriesDataPoint
         
         point = TimeSeriesDataPoint(
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             value=42.5
         )
         

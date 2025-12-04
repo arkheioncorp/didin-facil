@@ -3,7 +3,7 @@ Unit tests for Content Templates Routes
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
@@ -78,8 +78,8 @@ class TestTemplateService:
             "variables": json.dumps([]),
             "is_public": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "usage_count": "5"
         }
         
@@ -118,8 +118,8 @@ class TestTemplateService:
                 "variables": json.dumps([]),
                 "is_public": "False",
                 "user_id": "user_123",
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
                 "usage_count": "10"
             },
             {
@@ -132,8 +132,8 @@ class TestTemplateService:
                 "variables": json.dumps([]),
                 "is_public": "False",
                 "user_id": "user_123",
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
                 "usage_count": "5"
             }
         ]
@@ -160,8 +160,8 @@ class TestTemplateService:
             "variables": json.dumps([]),
             "is_public": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "usage_count": "0"
         }
         
@@ -202,8 +202,8 @@ class TestTemplateService:
             "variables": json.dumps([]),
             "is_public": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "usage_count": "0"
         }
         
@@ -234,8 +234,8 @@ class TestTemplateService:
             "variables": json.dumps([]),
             "is_public": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "usage_count": "0"
         }
         
@@ -264,8 +264,8 @@ class TestTemplateService:
             "variables": json.dumps([]),
             "is_public": "True",
             "user_id": "other_user",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "usage_count": "100"
         }
         

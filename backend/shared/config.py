@@ -114,6 +114,10 @@ class Settings(BaseSettings):
     N8N_API_URL: str = _URLS["n8n"]
     N8N_API_KEY: Optional[str] = None
     N8N_WEBHOOK_URL: str = f"{_URLS['n8n']}/webhook"
+    N8N_WEBHOOK_SECRET: Optional[str] = None  # For webhook auth
+    
+    # General Webhook Security
+    WEBHOOK_SECRET: Optional[str] = None  # Fallback for all webhooks
     
     # Typebot Integration
     TYPEBOT_API_URL: Optional[str] = None

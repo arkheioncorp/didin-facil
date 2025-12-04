@@ -49,7 +49,7 @@ def sample_event_data():
         "user_name": "João Teste",
         "user_email": "joao@teste.com",
         "channel": "whatsapp",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -192,7 +192,7 @@ class TestAutomationScheduler:
             delay_minutes=60,
         )
         
-        new_time = datetime.utcnow() + timedelta(hours=3)
+        new_time = datetime.now(timezone.utc) + timedelta(hours=3)
         rescheduled = await scheduler.reschedule(event.id, new_time)
         
         assert rescheduled is not None
@@ -325,7 +325,7 @@ class TestErrorHandling:
         """Testa reagendar evento inexistente."""
         result = await scheduler.reschedule(
             "nonexistent_id",
-            datetime.utcnow() + timedelta(hours=1)
+            datetime.now(timezone.utc) + timedelta(hours=1)
         )
         assert result is None
 

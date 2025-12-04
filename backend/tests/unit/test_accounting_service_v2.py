@@ -4,7 +4,7 @@ Aumenta cobertura de api/services/accounting.py
 """
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
@@ -155,8 +155,8 @@ class TestGetActivePackages:
             "is_featured": False,
             "sort_order": 1,
             "is_active": True,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
         }
         mock_row.__getitem__ = lambda self, key: self._mapping[key]
         
@@ -188,8 +188,8 @@ class TestGetActivePackages:
             "is_featured": False,
             "sort_order": 1,
             "is_active": True,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
         }
         mock_row.__getitem__ = lambda self, key: self._mapping[key]
         
@@ -221,8 +221,8 @@ class TestGetActivePackages:
             "is_featured": False,
             "sort_order": 1,
             "is_active": True,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
         }
         mock_row.__getitem__ = lambda self, key: self._mapping[key]
         
@@ -257,8 +257,8 @@ class TestGetPackageBySlug:
             "is_featured": False,
             "sort_order": 1,
             "is_active": True,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
         }
         mock_row.__getitem__ = lambda self, key: self._mapping[key]
         

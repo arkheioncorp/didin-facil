@@ -3,7 +3,7 @@ Tests for WebSocket Notifications Routes
 Real-time notifications via WebSocket.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
@@ -36,7 +36,7 @@ class TestWebSocketNotificationModel:
         """Test notification model with all fields"""
         from api.routes.websocket_notifications import WebSocketNotification
 
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         notification = WebSocketNotification(
             id=str(uuid4()),
             type="post_published",

@@ -4,7 +4,7 @@ Content Templates Routes
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -144,8 +144,8 @@ class TestTemplateModel:
             variables=[{"name": "{{name}}", "description": "Name"}],
             is_public=False,
             user_id="user_123",
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         
         assert template.id == "uuid-123"
@@ -229,8 +229,8 @@ class TestTemplateService:
             "variables": "[]",
             "is_public": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "usage_count": "5"
         })
         
@@ -269,8 +269,8 @@ class TestTemplateService:
                 "variables": "[]",
                 "is_public": "True",
                 "user_id": "other_user",
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat()
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat()
             }
         ])
         mock_redis_client.keys = AsyncMock(
@@ -300,8 +300,8 @@ class TestTemplateService:
             "variables": "[]",
             "is_public": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "usage_count": "10"
         }
         mock_redis_client.hgetall = AsyncMock(return_value=template_data)
@@ -326,8 +326,8 @@ class TestTemplateService:
             "variables": "[]",
             "is_public": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
         })
         mock_redis_client.keys = AsyncMock(return_value=[])
         
@@ -353,8 +353,8 @@ class TestTemplateService:
             "variables": "[]",
             "is_public": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
         })
         mock_redis_client.hset = AsyncMock()
         
@@ -416,8 +416,8 @@ class TestTemplateService:
             "variables": "[]",
             "is_public": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
         })
         mock_redis_client.hincrby = AsyncMock()
         
@@ -446,8 +446,8 @@ class TestTemplateService:
             "variables": "[]",
             "is_public": "False",
             "user_id": "user_123",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
         })
         mock_redis_client.hincrby = AsyncMock()
         
@@ -484,8 +484,8 @@ class TestTemplateService:
             "variables": '[{"name": "{{var}}", "description": "test", "required": true}]',
             "is_public": "True",
             "user_id": "other_user",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
         })
         mock_redis_client.hset = AsyncMock()
         mock_redis_client.sadd = AsyncMock()
@@ -591,8 +591,8 @@ class TestTemplateRoutes:
             variables=[],
             is_public=False,
             user_id="user_123",
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         mock_service.list = AsyncMock(return_value=[mock_template])
         
@@ -622,8 +622,8 @@ class TestTemplateRoutes:
             variables=[],
             is_public=False,
             user_id="user_123",
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         mock_service.create = AsyncMock(return_value=mock_template)
         
@@ -673,8 +673,8 @@ class TestTemplateRoutes:
             variables=[],
             is_public=False,
             user_id="user_123",
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         mock_service.get = AsyncMock(return_value=mock_template)
         
@@ -712,8 +712,8 @@ class TestTemplateRoutes:
             variables=[],
             is_public=False,
             user_id="user_123",
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         mock_service.update = AsyncMock(return_value=mock_template)
         
@@ -805,8 +805,8 @@ class TestTemplateRoutes:
             variables=[],
             is_public=False,
             user_id="user_123",
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         mock_service.clone = AsyncMock(return_value=mock_template)
         

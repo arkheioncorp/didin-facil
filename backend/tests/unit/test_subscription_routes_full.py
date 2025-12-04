@@ -1,6 +1,6 @@
 """Testes abrangentes para Subscription Routes."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -15,7 +15,7 @@ class MockUsageStats:
         self.limit = limit
         self.percentage = (current / limit) * 100 if limit > 0 else 0
         self.is_unlimited = limit == -1
-        self.resets_at = datetime.utcnow() + timedelta(days=30)
+        self.resets_at = datetime.now(timezone.utc) + timedelta(days=30)
 
 
 class MockSubscriptionV2:
@@ -37,8 +37,8 @@ class MockSubscriptionV2:
         self.billing_cycle.value = billing_cycle
         self.execution_mode = MagicMock()
         self.execution_mode.value = execution_mode
-        self.current_period_start = datetime.utcnow()
-        self.current_period_end = datetime.utcnow() + timedelta(days=30)
+        self.current_period_start = datetime.now(timezone.utc)
+        self.current_period_end = datetime.now(timezone.utc) + timedelta(days=30)
         self.canceled_at = None
 
 
@@ -123,7 +123,7 @@ class TestModels:
     def test_subscription_response(self):
         """Teste do modelo SubscriptionResponse."""
         from api.routes.subscription import SubscriptionResponse
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         resp = SubscriptionResponse(
             id="sub-123",
             plan="pro",
@@ -189,7 +189,7 @@ class TestModels:
             limit=100,
             percentage=25.0,
             is_unlimited=False,
-            resets_at=datetime.utcnow()
+            resets_at=datetime.now(timezone.utc)
         )
         assert resp.percentage == 25.0
 
