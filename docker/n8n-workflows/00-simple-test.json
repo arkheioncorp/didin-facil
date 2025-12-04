@@ -19,7 +19,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.first().json;\n\n// Verificar se é mensagem válida\nif (data.event !== 'message_created' || data.message_type !== 'incoming') {\n  return [];\n}\n\nconst convId = data.conversation?.id;\nif (!convId) {\n  return [];\n}\n\nconst msg = (data.content || '').toLowerCase().trim();\nlet response = 'Digite MENU para opcoes.';\n\nif (/^(oi|ola|bom|hello|hi)/.test(msg)) {\n  response = 'Ola! Bem-vindo ao Didin Facil!';\n} else if (msg.includes('menu')) {\n  response = '1-Precos 2-Ofertas 3-Atendente';\n}\n\nreturn [{\n  json: {\n    convId: convId,\n    msg: response\n  }\n}];"
+        "jsCode": "const data = $input.first().json;\n\n// Verificar se é mensagem válida\nif (data.event !== 'message_created' || data.message_type !== 'incoming') {\n  return [];\n}\n\nconst convId = data.conversation?.id;\nif (!convId) {\n  return [];\n}\n\nconst msg = (data.content || '').toLowerCase().trim();\nlet response = 'Digite MENU para opcoes.';\n\nif (/^(oi|ola|bom|hello|hi)/.test(msg)) {\n  response = 'Ola! Bem-vindo ao TikTrend Finder!';\n} else if (msg.includes('menu')) {\n  response = '1-Precos 2-Ofertas 3-Atendente';\n}\n\nreturn [{\n  json: {\n    convId: convId,\n    msg: response\n  }\n}];"
       },
       "id": "code",
       "name": "Code",

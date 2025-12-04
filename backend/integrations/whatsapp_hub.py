@@ -1,7 +1,7 @@
 """
 WhatsApp Integration Hub
 ========================
-Ponto central de integração do WhatsApp para o Didin Fácil.
+Ponto central de integração do WhatsApp para o TikTrend Finder.
 
 Este módulo consolida todas as integrações com WhatsApp via Evolution API:
 - Gerenciamento de instâncias
@@ -10,7 +10,7 @@ Este módulo consolida todas as integrações com WhatsApp via Evolution API:
 - Integração com Seller Bot
 - Integração com Chatwoot
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.2.0 (com alertas e métricas)
 """
 
@@ -43,7 +43,7 @@ class WhatsAppHubConfig:
     # Evolution API
     evolution_api_url: str = "http://localhost:8082"
     evolution_api_key: str = ""
-    default_instance: str = "didin-bot"
+    default_instance: str = "tiktrend-bot"
     
     # Webhook callbacks
     on_message: Optional[Callable[[Dict], Awaitable[None]]] = None
@@ -169,7 +169,7 @@ class WhatsAppHub:
         config = WhatsAppHubConfig(
             evolution_api_url=getattr(settings, 'EVOLUTION_API_URL', 'http://localhost:8082'),
             evolution_api_key=getattr(settings, 'EVOLUTION_API_KEY', ''),
-            default_instance=getattr(settings, 'EVOLUTION_INSTANCE', 'didin-bot'),
+            default_instance=getattr(settings, 'EVOLUTION_INSTANCE', 'tiktrend-bot'),
         )
         return cls(config)
     

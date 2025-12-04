@@ -29,11 +29,11 @@ CREATE INDEX IF NOT EXISTS idx_faqs_category ON faqs (category);
 
 -- FAQs iniciais
 INSERT INTO faqs (question, answer, category, keywords) VALUES
-('Como funciona o Didin Fácil?', 'O Didin Fácil é uma plataforma de comparação de preços. Buscamos os melhores preços em diversas lojas e mostramos onde você pode economizar mais! 💰', 'geral', 'funciona como usar plataforma'),
-('O Didin Fácil é gratuito?', 'Sim! O Didin Fácil é 100% gratuito para você. Ganhamos uma pequena comissão das lojas quando você compra através dos nossos links.', 'geral', 'preço custo gratuito grátis pagar'),
+('Como funciona o TikTrend Finder?', 'O TikTrend Finder é uma plataforma de comparação de preços. Buscamos os melhores preços em diversas lojas e mostramos onde você pode economizar mais! 💰', 'geral', 'funciona como usar plataforma'),
+('O TikTrend Finder é gratuito?', 'Sim! O TikTrend Finder é 100% gratuito para você. Ganhamos uma pequena comissão das lojas quando você compra através dos nossos links.', 'geral', 'preço custo gratuito grátis pagar'),
 ('Como criar alerta de preço?', 'Para criar um alerta, basta buscar o produto desejado e clicar em "Criar Alerta". Você será notificado quando o preço baixar! 🔔', 'alertas', 'alerta notificação avisar baixar preço'),
 ('Quais lojas vocês comparam?', 'Comparamos preços de várias lojas como Amazon, Mercado Livre, Magazine Luiza, Americanas, Casas Bahia e muitas outras!', 'lojas', 'lojas parceiros onde comprar'),
-('Como entrar em contato?', 'Você pode nos contatar por:\n📧 Email: contato@didin.com.br\n📱 WhatsApp: (92) 98844-9768\n🌐 Site: didin.com.br/contato', 'contato', 'contato email telefone whatsapp'),
+('Como entrar em contato?', 'Você pode nos contatar por:\n📧 Email: contato@tiktrendfinder.com\n📱 WhatsApp: (92) 98844-9768\n🌐 Site: tiktrendfinder.com/contato', 'contato', 'contato email telefone whatsapp'),
 ('Qual o horário de atendimento?', '📅 Segunda a Sexta: 8h às 18h\n📅 Sábado: 8h às 12h\n📅 Domingo: Fechado\n\nAtendimento online 24h pelo app!', 'atendimento', 'horário funcionamento atendimento aberto'),
 ('É seguro comprar pelos links?', 'Sim! Todos os nossos links direcionam para as lojas oficiais. O pagamento é feito diretamente na loja escolhida, com toda segurança. 🔒', 'segurança', 'seguro confiável golpe fraude'),
 ('Como cancelar alerta de preço?', 'Acesse seu perfil, vá em "Meus Alertas" e clique em "Cancelar" no alerta desejado. Você também pode responder "PARAR" a qualquer notificação.', 'alertas', 'cancelar parar desativar alerta');

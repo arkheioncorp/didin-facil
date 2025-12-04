@@ -1,4 +1,4 @@
-# Política de Uso Aceitável - Didin Fácil / TikTrend Finder
+# Política de Uso Aceitável - TikTrend Finder / TikTrend Finder
 
 **Última atualização:** 30 de novembro de 2025
 

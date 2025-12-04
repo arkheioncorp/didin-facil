@@ -62,7 +62,7 @@ def evolution_payload():
         data={},
         key={"remoteJid": "5511999999999@s.whatsapp.net"},
         pushName="Maria",
-        instance="didin-bot"
+        instance="tiktrend-bot"
     )
 
 

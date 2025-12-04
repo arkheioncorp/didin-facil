@@ -415,7 +415,7 @@ async def test_mercado_livre_api() -> TestResult:
             response = await client.get(
                 "https://api.mercadolibre.com/sites",
                 headers={
-                    "User-Agent": "DidinFacil/1.0",
+                    "User-Agent": "TikTrendFinder/1.0",
                     "Accept": "application/json",
                 }
             )
@@ -474,7 +474,7 @@ async def run_all_tests(only: Optional[str] = None, verbose: bool = False) -> li
     results = []
     
     print("\n" + "=" * 60)
-    print("🔧 TESTE DE INTEGRAÇÕES - Didin Fácil")
+    print("🔧 TESTE DE INTEGRAÇÕES - TikTrend Finder")
     print("=" * 60 + "\n")
     
     for name, test_fn in tests.items():
@@ -524,7 +524,7 @@ def print_summary(results: list[TestResult]):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Testa integrações do Didin Fácil")
+    parser = argparse.ArgumentParser(description="Testa integrações do TikTrend Finder")
     parser.add_argument("--only", "-o", help="Testar apenas uma integração")
     parser.add_argument("--verbose", "-v", action="store_true", help="Modo verboso")
     parser.add_argument("--list", "-l", action="store_true", help="Lista integrações")

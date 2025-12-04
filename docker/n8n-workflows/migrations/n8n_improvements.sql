@@ -1,7 +1,7 @@
 -- ================================================
 -- n8n Improvements - Database Schema
 -- ================================================
--- Author: Didin Fácil Team
+-- Author: TikTrend Finder Team
 -- Date: 2025-11-30
 -- Description: Schema para melhorias nas automações n8n
 -- ================================================

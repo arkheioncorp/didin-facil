@@ -66,8 +66,8 @@
       "position": [690, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -163,8 +163,8 @@
       "position": [1350, 400],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     }

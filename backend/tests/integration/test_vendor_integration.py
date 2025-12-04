@@ -218,7 +218,7 @@ class TestSocialMediaIntegration:
         caption += f"Por R$ {sample_product.price:.2f}\n\n"
         caption += f"Encontrado na {sample_product.store}!"
         
-        hashtags = ["ofertas", "promocao", "didinfacil"]
+        hashtags = ["ofertas", "promocao", "tiktrendfinder"]
         hashtags.append(sample_product.category.lower().replace(" ", ""))
         
         post = UnifiedPost(
@@ -236,7 +236,7 @@ class TestSocialMediaIntegration:
     def test_platform_config_validation(self):
         """Deve validar configuração de plataformas."""
         config = SocialMediaConfig(
-            instagram_username="didin_facil"
+            instagram_username="tiktrend_facil"
         )
         
         # Instagram configurado

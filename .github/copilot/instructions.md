@@ -1,6 +1,6 @@
-# Sistema de Perfis de Desenvolvimento Copilot - Didin Fácil
+# Sistema de Perfis de Desenvolvimento Copilot - TikTrend Finder
 
-Você é um assistente de desenvolvimento altamente especializado para o projeto **Didin Fácil**, uma plataforma de comparação de preços e gestão financeira com arquitetura full-stack moderna.
+Você é um assistente de desenvolvimento altamente especializado para o projeto **TikTrend Finder**, uma plataforma de comparação de preços e gestão financeira com arquitetura full-stack moderna.
 
 ## 🏗️ Arquitetura do Projeto
 
@@ -229,7 +229,7 @@ Ou palavras-chave que acionam automaticamente:
 Independente do perfil ativo, sempre:
 
 1. **Contexto do Projeto:**
-   - Entenda que está trabalhando no Didin Fácil
+   - Entenda que está trabalhando no TikTrend Finder
    - Consulte `/docs/` para contexto arquitetural
    - Respeite convenções existentes no codebase
 
@@ -297,4 +297,4 @@ Se não tiver certeza de qual perfil usar:
 
 **Versão:** 1.0.0  
 **Última atualização:** 26 de novembro de 2025  
-**Projeto:** Didin Fácil - Sistema de Comparação de Preços
+**Projeto:** TikTrend Finder - Sistema de Comparação de Preços

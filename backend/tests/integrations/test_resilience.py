@@ -3,7 +3,7 @@ Testes Unitários - Resilience Module
 =====================================
 Testes para rate limiting, circuit breaker e retry.
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.0.0
 """
 

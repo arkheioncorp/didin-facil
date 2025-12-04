@@ -1,4 +1,4 @@
-# 🏛️ Revisão Arquitetural - Didin Fácil
+# 🏛️ Revisão Arquitetural - TikTrend Finder
 
 **Data:** 4 de Dezembro de 2025  
 **Versão do Projeto:** 2.0.0  
@@ -8,7 +8,7 @@
 
 ## 📊 Resumo Executivo
 
-O projeto **Didin Fácil** apresenta uma arquitetura sólida com boa separação de responsabilidades. Esta revisão identificou **15 melhorias prioritárias** que irão elevar a qualidade, manutenibilidade e escalabilidade do sistema.
+O projeto **TikTrend Finder** apresenta uma arquitetura sólida com boa separação de responsabilidades. Esta revisão identificou **15 melhorias prioritárias** que irão elevar a qualidade, manutenibilidade e escalabilidade do sistema.
 
 ### Scores Atuais
 

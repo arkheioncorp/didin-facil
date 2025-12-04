@@ -181,4 +181,4 @@ class TestPrometheusMetricsEndpoint:
             
             assert "text/plain" in response.media_type
             assert b"# HELP" in response.body
-            assert b"didin_" in response.body
+            assert b"tiktrend_" in response.body

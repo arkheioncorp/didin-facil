@@ -3,7 +3,7 @@ Testes Unitários - WhatsApp Hub
 ===============================
 Testes para o hub centralizado de WhatsApp.
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.0.0
 """
 
@@ -67,7 +67,7 @@ class TestWhatsAppHubConfig:
         
         assert config.evolution_api_url == "http://localhost:8082"
         assert config.evolution_api_key == ""
-        assert config.default_instance == "didin-bot"
+        assert config.default_instance == "tiktrend-bot"
         assert config.max_retries == 3
         assert config.retry_delay == 1.0
         assert config.messages_per_minute == 60

@@ -189,7 +189,7 @@ curl -X POST http://localhost:8000/seller-bot/message \
 
 ```typescript
 // Frontend connection
-const ws = new WebSocket(`wss://api.didinfacil.com/ws/notifications?token=${accessToken}`);
+const ws = new WebSocket(`wss://api.tiktrendfinder.com/ws/notifications?token=${accessToken}`);
 ```
 
 ### Tipos de Notificação Bot
@@ -362,7 +362,7 @@ POST /seller-bot/webhook/chatwoot
 }
 
 # Resposta enviada via API
-POST https://chatwoot.didinfacil.com/api/v1/conversations/{id}/messages
+POST https://chatwoot.tiktrendfinder.com/api/v1/conversations/{id}/messages
 ```
 
 ### Evolution API (WhatsApp)
@@ -379,7 +379,7 @@ POST /seller-bot/webhook/evolution
 }
 
 # Resposta enviada
-POST https://evolution.didinfacil.com/message/sendText/{instance}
+POST https://evolution.tiktrendfinder.com/message/sendText/{instance}
 ```
 
 ### Instagram Graph API
@@ -565,5 +565,5 @@ curl -X POST http://localhost:8000/seller-bot/webhook/evolution \
 
 ---
 
-**Mantido por:** Equipe Didin Fácil  
+**Mantido por:** Equipe TikTrend Finder  
 **Última atualização:** Novembro 2025

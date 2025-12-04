@@ -330,7 +330,7 @@ class CookieMonitor:
                     {"title": "Severity", "value": alert.severity.value.upper(), "short": True},
                     {"title": "Time", "value": alert.timestamp.strftime("%Y-%m-%d %H:%M UTC"), "short": True}
                 ],
-                "footer": "Didin Fácil Cookie Monitor"
+                "footer": "TikTrend Finder Cookie Monitor"
             }]
         }
         
@@ -355,7 +355,7 @@ class CookieMonitor:
                 "description": alert.message,
                 "color": color_map.get(alert.severity, 0x808080),
                 "timestamp": alert.timestamp.isoformat(),
-                "footer": {"text": "Didin Fácil Cookie Monitor"}
+                "footer": {"text": "TikTrend Finder Cookie Monitor"}
             }]
         }
         

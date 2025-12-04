@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "didin/reengagement",
+        "path": "tiktrend/reengagement",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -37,8 +37,8 @@
       "position": [690, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -55,7 +55,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/tiktrend-whatsapp",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -99,8 +99,8 @@
       "position": [1350, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },

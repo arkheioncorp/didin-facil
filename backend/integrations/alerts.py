@@ -19,7 +19,7 @@ Uso:
         hub="whatsapp"
     )
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.0.0
 """
 
@@ -143,7 +143,7 @@ class SlackChannel(AlertChannel):
 
             payload = {
                 "channel": self.channel,
-                "username": "Didin Hub Monitor",
+                "username": "TikTrend Hub Monitor",
                 "icon_emoji": ":robot_face:",
                 "attachments": [{
                     "color": color,
@@ -155,7 +155,7 @@ class SlackChannel(AlertChannel):
                         {"title": "Type", "value": alert.alert_type.value, "short": True},
                         {"title": "Time", "value": alert.timestamp.strftime("%H:%M:%S UTC"), "short": True}
                     ],
-                    "footer": "Didin Fácil Hub Monitor",
+                    "footer": "TikTrend Finder Hub Monitor",
                     "ts": int(alert.timestamp.timestamp())
                 }]
             }
@@ -196,7 +196,7 @@ class DiscordChannel(AlertChannel):
             }.get(alert.severity, 0x9E9E9E)
 
             payload = {
-                "username": "Didin Hub Monitor",
+                "username": "TikTrend Hub Monitor",
                 "embeds": [{
                     "title": f"{alert.get_emoji()} {alert.title}",
                     "description": alert.message,
@@ -206,7 +206,7 @@ class DiscordChannel(AlertChannel):
                         {"name": "Severity", "value": alert.severity.value.upper(), "inline": True},
                         {"name": "Type", "value": alert.alert_type.value, "inline": True}
                     ],
-                    "footer": {"text": "Didin Fácil Hub Monitor"},
+                    "footer": {"text": "TikTrend Finder Hub Monitor"},
                     "timestamp": alert.timestamp.isoformat()
                 }]
             }

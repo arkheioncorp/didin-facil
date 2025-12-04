@@ -407,7 +407,7 @@ export const Workflows = () => {
   });
 
   const openN8nEditor = (n8nWorkflowId: string) => {
-    const n8nUrl = import.meta.env.VITE_N8N_URL || 'https://n8n.didin.app';
+    const n8nUrl = import.meta.env.VITE_N8N_URL || 'https://n8n.tiktrendfinder.app';
     window.open(`${n8nUrl}/workflow/${n8nWorkflowId}`, '_blank');
   };
 

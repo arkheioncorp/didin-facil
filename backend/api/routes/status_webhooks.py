@@ -182,7 +182,7 @@ async def test_webhook(webhook_id: str, background_tasks: BackgroundTasks):
         event_type="test",
         timestamp=datetime.now(timezone.utc),
         data={
-            "message": "This is a test webhook event from Didin Fácil",
+            "message": "This is a test webhook event from TikTrend Finder",
             "webhook_id": webhook_id
         }
     )
@@ -216,8 +216,8 @@ async def send_webhook(webhook: WebhookConfig, event: WebhookEvent):
     
     headers = {
         "Content-Type": "application/json",
-        "X-Didin-Event": event.event_type,
-        "X-Didin-Delivery": datetime.now(timezone.utc).isoformat(),
+        "X-TikTrend-Event": event.event_type,
+        "X-TikTrend-Delivery": datetime.now(timezone.utc).isoformat(),
     }
     
     # Add HMAC signature if secret is configured
@@ -227,7 +227,7 @@ async def send_webhook(webhook: WebhookConfig, event: WebhookEvent):
             payload_bytes,
             hashlib.sha256
         ).hexdigest()
-        headers["X-Didin-Signature"] = f"sha256={signature}"
+        headers["X-TikTrend-Signature"] = f"sha256={signature}"
     
     result = {
         "timestamp": datetime.now(timezone.utc).isoformat(),

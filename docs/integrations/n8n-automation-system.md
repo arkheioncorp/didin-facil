@@ -1,8 +1,8 @@
-# Sistema de Automações n8n - Didin Fácil
+# Sistema de Automações n8n - TikTrend Finder
 
 ## Visão Geral
 
-O sistema de automações do Didin Fácil integra com n8n para orquestrar workflows automatizados de marketing, vendas e suporte ao cliente.
+O sistema de automações do TikTrend Finder integra com n8n para orquestrar workflows automatizados de marketing, vendas e suporte ao cliente.
 
 ## Arquitetura
 

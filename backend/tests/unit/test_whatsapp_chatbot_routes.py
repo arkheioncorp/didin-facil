@@ -109,7 +109,7 @@ class TestModels:
             phone="5511999999999",
             message="Hello"
         )
-        assert request.instance_name == "didin-whatsapp"
+        assert request.instance_name == "tiktrend-whatsapp"
         assert request.push_name is None
 
     def test_chatbot_response(self):
@@ -145,7 +145,7 @@ class TestWhatsAppChatbot:
         """Test welcome message."""
         response = await chatbot_instance._show_welcome("João")
         assert "João" in response.response_text
-        assert "Didin Fácil" in response.response_text
+        assert "TikTrend Finder" in response.response_text
         assert response.action == "show_menu"
 
     @pytest.mark.asyncio
@@ -347,7 +347,7 @@ class TestWhatsAppChatbot:
             push_name="João"
         )
         assert "Bem-vindo" in response.response_text
-        assert "Didin Fácil" in response.response_text
+        assert "TikTrend Finder" in response.response_text
 
     @pytest.mark.asyncio
     async def test_process_message_no_push_name(self, chatbot_instance):

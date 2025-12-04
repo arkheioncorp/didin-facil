@@ -15,9 +15,9 @@ async def send_welcome_message(phone_number: str):
     hub = get_whatsapp_hub()
     
     await hub.send_message(
-        instance_name="didin-whatsapp",
+        instance_name="tiktrend-whatsapp",
         to=phone_number,
-        message="Bem-vindo ao Didin Fácil! 🎉"
+        message="Bem-vindo ao TikTrend Finder! 🎉"
     )
 ```
 
@@ -79,7 +79,7 @@ from modules.chatbot import WhatsAppHubAdapter, create_seller_bot
 async def handle_whatsapp_conversation(webhook_payload: dict):
     # Setup
     hub = get_whatsapp_hub()
-    adapter = WhatsAppHubAdapter(hub, "didin-whatsapp")
+    adapter = WhatsAppHubAdapter(hub, "tiktrend-whatsapp")
     bot = await create_seller_bot()
     
     # Parse incoming
@@ -299,7 +299,7 @@ async def send_promotion_multi_channel(
     whatsapp = get_whatsapp_hub()
     for phone in whatsapp_numbers:
         await whatsapp.send_message(
-            instance_name="didin-whatsapp",
+            instance_name="tiktrend-whatsapp",
             to=phone,
             message=f"🎉 PROMOÇÃO 🎉\n\n{promotion_text}"
         )
@@ -333,7 +333,7 @@ async def setup_multi_channel_bot():
     
     # Setup WhatsApp
     whatsapp_hub = get_whatsapp_hub()
-    whatsapp_adapter = WhatsAppHubAdapter(whatsapp_hub, "didin-whatsapp")
+    whatsapp_adapter = WhatsAppHubAdapter(whatsapp_hub, "tiktrend-whatsapp")
     
     # Setup Instagram
     instagram_hub = get_instagram_hub()

@@ -78,7 +78,7 @@ AUTOMATION_TEMPLATES: Dict[str, AutomationTemplate] = {
         tags=["whatsapp", "leads", "onboarding"],
         required_integrations=["evolution-api"],
         variables=[
-            {"name": "WELCOME_MESSAGE", "description": "Mensagem de boas-vindas", "default": "Olá! Bem-vindo ao Didin Fácil!"},
+            {"name": "WELCOME_MESSAGE", "description": "Mensagem de boas-vindas", "default": "Olá! Bem-vindo ao TikTrend Finder!"},
             {"name": "DELAY_MINUTES", "description": "Delay entre mensagens (minutos)", "default": "5"},
         ],
         workflow_json={
@@ -143,7 +143,7 @@ AUTOMATION_TEMPLATES: Dict[str, AutomationTemplate] = {
                         },
                         "body": {
                             "number": "={{$node.set_variables.json.phone}}",
-                            "text": "Você já conhece nossas ofertas? 🔥\n\nAcesse: https://didin.app/ofertas"
+                            "text": "Você já conhece nossas ofertas? 🔥\n\nAcesse: https://tiktrendfinder.app/ofertas"
                         }
                     }
                 }
@@ -772,7 +772,7 @@ AUTOMATION_TEMPLATES: Dict[str, AutomationTemplate] = {
                             "name": "={{$json.name}}",
                             "email": "={{$json.email}}",
                             "phone": "={{$json.phone}}",
-                            "source": "didin_facil"
+                            "source": "tiktrend_facil"
                         }
                     }
                 }
@@ -839,7 +839,7 @@ def export_n8n_workflow(template_id: str, variables: Dict[str, str] = None) -> D
     # Adicionar metadados
     workflow["meta"] = {
         "instanceId": "",
-        "templateCreatedBy": "didin-facil",
+        "templateCreatedBy": "tiktrend-facil",
         "templateId": template_id
     }
     

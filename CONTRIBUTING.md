@@ -8,7 +8,7 @@ Obrigado pelo interesse em contribuir com o TikTrend Finder!
 
 ## 📋 Para Desenvolvedores Internos
 
-Se você é um desenvolvedor da equipe Didin Facil, siga as diretrizes abaixo.
+Se você é um desenvolvedor da equipe TikTrend Finder, siga as diretrizes abaixo.
 
 ### Ambiente de Desenvolvimento
 
@@ -260,7 +260,7 @@ tests/
 - **NUNCA** commitar secrets, tokens ou credenciais
 - Use variáveis de ambiente para configuração sensível
 - Revise dependências antes de adicionar
-- Reporte vulnerabilidades em privado para security@didinfacil.com.br
+- Reporte vulnerabilidades em privado para security@tiktrendfinder.com.br
 
 ---
 
@@ -268,9 +268,9 @@ tests/
 
 Para dúvidas sobre contribuições:
 
-- **Email:** dev@didinfacil.com.br
+- **Email:** dev@tiktrendfinder.com.br
 - **Slack:** #tiktrend-dev
 
 ---
 
-© 2025 Didin Facil. Todos os direitos reservados.
+© 2025 TikTrend Finder. Todos os direitos reservados.

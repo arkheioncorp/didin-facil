@@ -1,6 +1,6 @@
 """
 Accounting & Financial Models
-Complete financial tracking system for Didin Fácil
+Complete financial tracking system for TikTrend Finder
 
 Note: Using datetime.now(timezone.utc) instead of deprecated datetime.utcnow()
 """

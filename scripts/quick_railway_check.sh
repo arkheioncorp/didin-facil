@@ -18,7 +18,7 @@ railway status || echo "❌ Projeto não linkado"
 
 echo ""
 echo "4. Listando variáveis críticas..."
-railway variables 2>/dev/null | grep -E "DATABASE_URL|REDIS_URL|JWT_SECRET" || echo "⚠️ Execute: railway link -p didin-facil"
+railway variables 2>/dev/null | grep -E "DATABASE_URL|REDIS_URL|JWT_SECRET" || echo "⚠️ Execute: railway link -p tiktrend-facil"
 
 echo ""
 echo "5. Verificando serviços..."

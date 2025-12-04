@@ -1,4 +1,4 @@
-# Código de Conduta - Didin Fácil / TikTrend Finder
+# Código de Conduta - TikTrend Finder / TikTrend Finder
 
 ## Nosso Compromisso
 

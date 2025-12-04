@@ -741,7 +741,7 @@ export const Copy: React.FC = () => {
             position: [250, 300],
             parameters: isSchedule
               ? { cronExpression: "0 9 * * *" }
-              : { httpMethod: "POST", path: `/didin/${workflow.id}` },
+              : { httpMethod: "POST", path: `/tiktrend/${workflow.id}` },
           },
           ...(workflow.steps || []).map((step, index) => ({
             id: `step_${index}`,

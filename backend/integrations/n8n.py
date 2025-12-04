@@ -75,7 +75,7 @@ class N8nClient:
         
         # Trigger webhook
         result = await client.trigger_webhook(
-            webhook_path="/didin/new-deal",
+            webhook_path="/tiktrend/new-deal",
             data={"product": "iPhone 15", "price": 4999}
         )
         
@@ -137,7 +137,7 @@ class N8nClient:
         Dispara um webhook do n8n.
         
         Args:
-            webhook_path: Caminho do webhook (ex: /didin/new-deal)
+            webhook_path: Caminho do webhook (ex: /tiktrend/new-deal)
             data: Dados a enviar
             method: Método HTTP (POST, GET)
         
@@ -344,7 +344,7 @@ DIDIN_N8N_WORKFLOWS = {
         "name": "Alerta de Queda de Preço",
         "description": "Envia notificação quando um produto monitorado baixa de preço",
         "trigger": TriggerType.WEBHOOK,
-        "webhook_path": "/didin/price-drop",
+        "webhook_path": "/tiktrend/price-drop",
         "actions": [
             "Verificar usuários interessados",
             "Enviar WhatsApp via Evolution API",
@@ -369,7 +369,7 @@ DIDIN_N8N_WORKFLOWS = {
         "name": "Onboarding de Novo Usuário",
         "description": "Sequência de boas-vindas para novos usuários",
         "trigger": TriggerType.WEBHOOK,
-        "webhook_path": "/didin/new-user",
+        "webhook_path": "/tiktrend/new-user",
         "actions": [
             "Enviar email de boas-vindas",
             "Enviar WhatsApp de apresentação",
@@ -394,7 +394,7 @@ DIDIN_N8N_WORKFLOWS = {
         "name": "Qualificação de Leads",
         "description": "Qualifica leads automaticamente com base em interações",
         "trigger": TriggerType.WEBHOOK,
-        "webhook_path": "/didin/lead-action",
+        "webhook_path": "/tiktrend/lead-action",
         "actions": [
             "Calcular score do lead",
             "Atualizar status no CRM",

@@ -1,9 +1,9 @@
 #!/bin/bash
 # ============================================================================
-# Script de Verificação Rápida - Didin Fácil
+# Script de Verificação Rápida - TikTrend Finder
 # ============================================================================
 
-echo "🔍 Verificando Serviços Didin Fácil..."
+echo "🔍 Verificando Serviços TikTrend Finder..."
 echo "========================================"
 
 # Verificar Docker

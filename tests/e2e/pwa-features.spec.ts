@@ -20,8 +20,8 @@ test.describe("PWA Features", () => {
     expect(response?.status()).toBe(200);
     
     const manifest = await response?.json();
-    expect(manifest.name).toBe("Didin Fácil");
-    expect(manifest.short_name).toBe("Didin");
+    expect(manifest.name).toBe("TikTrend Finder");
+    expect(manifest.short_name).toBe("TikTrend");
     expect(manifest.display).toBe("standalone");
     expect(manifest.icons.length).toBeGreaterThan(0);
   });

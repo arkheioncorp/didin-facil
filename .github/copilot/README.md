@@ -1,6 +1,6 @@
-# 🎯 Sistema de Perfis Copilot - Didin Fácil
+# 🎯 Sistema de Perfis Copilot - TikTrend Finder
 
-Este diretório contém o sistema completo de perfis especializados do GitHub Copilot para elevar o nível de desenvolvimento do projeto Didin Fácil.
+Este diretório contém o sistema completo de perfis especializados do GitHub Copilot para elevar o nível de desenvolvimento do projeto TikTrend Finder.
 
 ## 📁 Estrutura
 
@@ -335,7 +335,7 @@ Use os perfis como material de estudo:
 ## 📞 Suporte
 
 Dúvidas sobre os perfis?
-- Abra uma [issue](https://github.com/org/didin-facil/issues)
+- Abra uma [issue](https://github.com/org/tiktrend-facil/issues)
 - Consulte a [documentação principal](instructions.md)
 - Entre em contato com a equipe
 
@@ -343,6 +343,6 @@ Dúvidas sobre os perfis?
 
 **Versão:** 1.0.0  
 **Última atualização:** 26 de novembro de 2025  
-**Mantido por:** Didin Fácil Team
+**Mantido por:** TikTrend Finder Team
 
 🚀 **Desenvolva melhor, mais rápido e com mais qualidade usando os perfis Copilot!**

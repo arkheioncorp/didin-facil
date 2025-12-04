@@ -1,6 +1,6 @@
 [Unit]
-Description=Didin Fácil Post Scheduler Worker
-Documentation=https://github.com/arkheioncorp/didin-facil
+Description=TikTrend Finder Post Scheduler Worker
+Documentation=https://github.com/arkheioncorp/tiktrend-facil
 After=network.target redis.service postgresql.service
 Wants=redis.service postgresql.service
 
@@ -8,7 +8,7 @@ Wants=redis.service postgresql.service
 Type=notify
 User=didin
 Group=didin
-WorkingDirectory=/var/www/didin-facil/backend
+WorkingDirectory=/var/www/tiktrend-facil/backend
 
 # Ambiente
 Environment=PYTHONUNBUFFERED=1
@@ -16,10 +16,10 @@ Environment=ENVIRONMENT=production
 Environment=SCHEDULER_CHECK_INTERVAL=30
 Environment=SCHEDULER_MAX_RETRIES=3
 Environment=SCHEDULER_HEALTH_PORT=8001
-EnvironmentFile=-/etc/didin-facil/scheduler.env
+EnvironmentFile=-/etc/tiktrend-facil/scheduler.env
 
 # Comando
-ExecStart=/var/www/didin-facil/venv/bin/python -m workers.scheduler_runner
+ExecStart=/var/www/tiktrend-facil/venv/bin/python -m workers.scheduler_runner
 
 # Restart automático
 Restart=always
@@ -44,13 +44,13 @@ NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 PrivateTmp=true
-ReadWritePaths=/var/www/didin-facil/logs
+ReadWritePaths=/var/www/tiktrend-facil/logs
 ReadWritePaths=/tmp
 
 # Logging via journald
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=didin-scheduler
+SyslogIdentifier=tiktrend-scheduler
 
 [Install]
 WantedBy=multi-user.target

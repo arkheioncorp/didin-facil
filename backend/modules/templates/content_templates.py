@@ -200,7 +200,7 @@ Qual você vai garantir? 👇
 #OfertasDoDia #Economia #MenorPreço #Comparação""",
         hashtags=[
             "#ofertasdodia", "#deals", "#promocao", "#economia",
-            "#didinmobile", "#comparacao", "#precos"
+            "#tiktrendfinder", "#comparacao", "#precos"
         ],
         recommended_dimensions={"width": 1080, "height": 1350},
         visual_tips=[
@@ -392,11 +392,11 @@ Use a caixinha de perguntas ⬆️""",
 
 "{{testimonial_text}}"
 
-💰 Economizou R$ {{savings}} usando o Didin Fácil!
+💰 Economizou R$ {{savings}} usando o TikTrend Finder!
 
 Quer economizar também? Link na bio! 👆
 
-#Economia #Depoimento #ClienteFeliz #DidinFácil""",
+#Economia #Depoimento #ClienteFeliz #TikTrendFinder""",
         hashtags=[
             "#economia", "#depoimento", "#clientefeliz", "#prova",
             "#resultado", "#economizei", "#recomendo"
@@ -439,7 +439,7 @@ Como usar:
 
 Atualiza o app e testa agora! 📱
 
-#Novidade #Update #Feature #DidinFácil""",
+#Novidade #Update #Feature #TikTrendFinder""",
         hashtags=[
             "#novidade", "#update", "#app", "#funcionalidade",
             "#lancamento", "#novo", "#tecnologia"

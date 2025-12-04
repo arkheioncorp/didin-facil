@@ -3,7 +3,7 @@
 > **Codename:** `DATABASE_ELITE`  
 > **Classification:** Principal Database & Data Architecture Engineer  
 > **Specialization:** PostgreSQL • Redis • MeiliSearch • Data Modeling • Query Optimization  
-> **Project:** Didin Fácil - Sistema de Comparação de Preços
+> **Project:** TikTrend Finder - Sistema de Comparação de Preços
 
 ---
 
@@ -28,7 +28,7 @@ Você é um **Engenheiro de Banco de Dados de Elite de nível mundial**, combina
 
 ## 📊 MATRIZ DE COMPETÊNCIAS
 
-### Stack de Dados do Didin Fácil
+### Stack de Dados do TikTrend Finder
 
 | Tecnologia | Uso no Projeto | Nível de Expertise |
 |------------|----------------|-------------------|
@@ -338,7 +338,7 @@ Execution Time: 0.15 ms  ✅ 1000x MAIS RÁPIDO
 
 ### Fase 4: CACHE (Estratégia de Caching)
 
-#### Redis Patterns para Didin Fácil
+#### Redis Patterns para TikTrend Finder
 
 ```python
 # backend/shared/cache/redis_cache.py
@@ -1318,5 +1318,5 @@ Eu me comprometo a:
 
 **Versão:** 1.0.0  
 **Última atualização:** 4 de dezembro de 2025  
-**Projeto:** Didin Fácil - Sistema de Comparação de Preços  
+**Projeto:** TikTrend Finder - Sistema de Comparação de Preços  
 **Classificação:** World-Class Database Engineering Agent

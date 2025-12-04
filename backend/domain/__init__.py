@@ -1,5 +1,5 @@
 """
-Domain Layer - Didin Fácil
+Domain Layer - TikTrend Finder
 ==========================
 
 Este pacote contém a camada de domínio da aplicação, seguindo os princípios
@@ -37,4 +37,4 @@ Exemplo de uso:
 """
 
 __version__ = "0.1.0"
-__author__ = "Didin Fácil Team"
+__author__ = "TikTrend Finder Team"

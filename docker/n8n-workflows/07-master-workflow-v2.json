@@ -256,7 +256,7 @@
                 "nodeCredentialType": "httpHeaderAuth",
                 "sendBody": true,
                 "specifyBody": "json",
-                "jsonBody": "{\"content\": \"👋 Olá! Bem-vindo ao *Didin Fácil*!\\n\\nSou seu assistente virtual de comparação de preços.\\n\\n📋 *Menu Principal:*\\n\\n1️⃣ 🔍 Buscar produtos\\n2️⃣ 🏷️ Ver ofertas do dia\\n3️⃣ 🔔 Criar alerta de preço\\n4️⃣ 📅 Agendar atendimento\\n5️⃣ 👤 Falar com atendente\\n6️⃣ ❓ Perguntas frequentes\\n\\n✍️ Digite o número da opção desejada!\", \"message_type\": \"outgoing\", \"private\": false}",
+                "jsonBody": "{\"content\": \"👋 Olá! Bem-vindo ao *TikTrend Finder*!\\n\\nSou seu assistente virtual de comparação de preços.\\n\\n📋 *Menu Principal:*\\n\\n1️⃣ 🔍 Buscar produtos\\n2️⃣ 🏷️ Ver ofertas do dia\\n3️⃣ 🔔 Criar alerta de preço\\n4️⃣ 📅 Agendar atendimento\\n5️⃣ 👤 Falar com atendente\\n6️⃣ ❓ Perguntas frequentes\\n\\n✍️ Digite o número da opção desejada!\", \"message_type\": \"outgoing\", \"private\": false}",
                 "options": {}
             },
             "id": "send-greeting",
@@ -385,7 +385,7 @@
                     "values": [
                         {
                             "role": "system",
-                            "content": "Você é o assistente virtual do Didin Fácil, uma plataforma de comparação de preços. Responda de forma curta, amigável e útil. Use emojis moderadamente. Se não entender a pergunta, sugira o menu principal digitando 'menu'."
+                            "content": "Você é o assistente virtual do TikTrend Finder, uma plataforma de comparação de preços. Responda de forma curta, amigável e útil. Use emojis moderadamente. Se não entender a pergunta, sugira o menu principal digitando 'menu'."
                         },
                         {
                             "role": "user",
@@ -408,8 +408,8 @@
             ],
             "credentials": {
                 "openAiApi": {
-                    "id": "openai-didin",
-                    "name": "OpenAI Didin"
+                    "id": "openai-tiktrend",
+                    "name": "OpenAI TikTrend"
                 }
             }
         },

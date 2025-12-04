@@ -10,7 +10,7 @@ Implementar CI/CD, monitoramento, logging e práticas de SRE para garantir dispo
 ## 🏗️ Infraestrutura Atual
 
 ```
-Didin Fácil - Infrastructure
+TikTrend Finder - Infrastructure
 │
 ├── Application Tier
 │   ├── Frontend (Vue 3 + Tauri)
@@ -82,7 +82,7 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: didin_facil
+      POSTGRES_DB: tiktrend_facil
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
@@ -123,7 +123,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/didin_facil
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/tiktrend_facil
       REDIS_URL: redis://redis:6379/0
       MEILISEARCH_URL: http://meilisearch:7700
     depends_on:
@@ -278,8 +278,8 @@ jobs:
           file: docker/api.Dockerfile
           push: true
           tags: |
-            didin-facil/backend:latest
-            didin-facil/backend:${{ github.sha }}
+            tiktrend-facil/backend:latest
+            tiktrend-facil/backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -296,7 +296,7 @@ jobs:
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /opt/didin-facil
+            cd /opt/tiktrend-facil
             docker-compose pull
             docker-compose up -d --no-deps backend
             docker system prune -f

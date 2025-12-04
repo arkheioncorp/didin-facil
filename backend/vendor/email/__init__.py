@@ -118,10 +118,10 @@ class EmailConfig:
     provider: EmailProvider = EmailProvider.RESEND
     api_key: str = field(default_factory=lambda: os.getenv("EMAIL_API_KEY", ""))
     from_email: str = field(
-        default_factory=lambda: os.getenv("EMAIL_FROM", "noreply@didin.com.br")
+        default_factory=lambda: os.getenv("EMAIL_FROM", "noreply@tiktrendfinder.com")
     )
     from_name: str = field(
-        default_factory=lambda: os.getenv("EMAIL_FROM_NAME", "Didin Fácil")
+        default_factory=lambda: os.getenv("EMAIL_FROM_NAME", "TikTrend Finder")
     )
     templates_dir: str = "./templates/email"
     track_opens: bool = True
@@ -429,12 +429,12 @@ class EmailTemplateEngine:
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🛒 Didin Fácil</div>
+            <div class="logo">🛒 TikTrend Finder</div>
         </div>
         <div class="content">
             <h1>Bem-vindo(a), {{ name }}!</h1>
-            <p>Obrigado por se cadastrar no Didin Fácil. Estamos felizes em ter você conosco!</p>
-            <p>Com o Didin Fácil você pode:</p>
+            <p>Obrigado por se cadastrar no TikTrend Finder. Estamos felizes em ter você conosco!</p>
+            <p>Com o TikTrend Finder você pode:</p>
             <ul>
                 <li>Comparar preços de milhares de produtos</li>
                 <li>Receber alertas de ofertas imperdíveis</li>
@@ -445,7 +445,7 @@ class EmailTemplateEngine:
             </p>
         </div>
         <div class="footer">
-            <p>© 2024 Didin Fácil. Todos os direitos reservados.</p>
+            <p>© 2024 TikTrend Finder. Todos os direitos reservados.</p>
             <p><a href="{{ unsubscribe_url }}">Cancelar inscrição</a></p>
         </div>
     </div>
@@ -872,12 +872,12 @@ class EmailMarketingService:
         )
 
     async def send_welcome(
-        self, to: str, name: str, cta_url: str = "https://didin.com.br"
+        self, to: str, name: str, cta_url: str = "https://tiktrendfinder.com"
     ) -> EmailResult:
         """Envia email de boas-vindas."""
         return await self.send(
             to=to,
-            subject=f"Bem-vindo(a) ao Didin Fácil, {name}! 🎉",
+            subject=f"Bem-vindo(a) ao TikTrend Finder, {name}! 🎉",
             template="welcome",
             context={"name": name, "cta_url": cta_url, "unsubscribe_url": "#"},
             tags=["welcome", "transactional"],
@@ -887,11 +887,11 @@ class EmailMarketingService:
         """Envia newsletter com ofertas da semana."""
         return await self.send_campaign(
             recipients=recipients,
-            subject="🔥 Ofertas da Semana - Didin Fácil",
+            subject="🔥 Ofertas da Semana - TikTrend Finder",
             template="weekly_deals",
             context={
                 "deals": deals,
-                "view_all_url": "https://didin.com.br/ofertas",
+                "view_all_url": "https://tiktrendfinder.com/ofertas",
                 "unsubscribe_url": "#",
                 "preferences_url": "#",
             },
@@ -907,8 +907,8 @@ async def example_usage():
     config = EmailConfig(
         provider=EmailProvider.RESEND,
         api_key="re_xxxxxxxxxxxxx",
-        from_email="ofertas@didin.com.br",
-        from_name="Didin Fácil",
+        from_email="ofertas@tiktrendfinder.com",
+        from_name="TikTrend Finder",
     )
 
     async with EmailMarketingService(config) as service:
@@ -922,7 +922,7 @@ async def example_usage():
             product_name="iPhone 15 Pro Max 256GB",
             old_price=9999.00,
             new_price=7999.00,
-            product_url="https://didin.com.br/p/iphone-15",
+            product_url="https://tiktrendfinder.com/p/iphone-15",
             product_image="https://example.com/iphone.jpg",
             store_name="Amazon",
         )

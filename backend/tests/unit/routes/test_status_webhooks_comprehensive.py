@@ -682,8 +682,8 @@ class TestSendWebhook:
             # Verify signature header was included
             call_args = mock_client_instance.post.call_args
             headers = call_args[1]["headers"]
-            assert "X-Didin-Signature" in headers
-            assert headers["X-Didin-Signature"].startswith("sha256=")
+            assert "X-TikTrend-Signature" in headers
+            assert headers["X-TikTrend-Signature"].startswith("sha256=")
     
     @pytest.mark.asyncio
     async def test_send_webhook_failure(self):

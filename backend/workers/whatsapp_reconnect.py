@@ -209,7 +209,7 @@ def setup_signal_handlers(
 def main():
     """Entry point principal."""
     logger.info("=" * 50)
-    logger.info("Didin Fácil - WhatsApp Reconnect Worker")
+    logger.info("TikTrend Finder - WhatsApp Reconnect Worker")
     logger.info("=" * 50)
 
     worker = WhatsAppReconnectWorker()

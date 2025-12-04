@@ -227,7 +227,7 @@
 > Esta é a estrutura real do projeto conforme implementado. A pasta `backend/` e `docker/` serão criados nas próximas fases.
 
 ```plaintext
-didin-facil/
+tiktrend-facil/
 ├── .github/                        # GitHub Config & CI/CD
 │   ├── workflows/                 # GitHub Actions
 │   │   ├── build.yml              # Build multiplatform
@@ -615,7 +615,7 @@ CREATE TABLE license_cache (
 
 **Propósito:** Dados compartilhados, analytics, jobs.
 
-Ver [DATABASE-SCHEMA.md](file:///home/jhonslife/Didin%20Facil/docs/DATABASE-SCHEMA.md) para schema completo.
+Ver [DATABASE-SCHEMA.md](file:///home/jhonslife/TikTrend%20Finder/docs/DATABASE-SCHEMA.md) para schema completo.
 
 ---
 
@@ -1054,7 +1054,7 @@ jobs:
 
 ## 📈 Scaling Considerations
 
-Ver [SCALING.md](file:///home/jhonslife/Didin%20Facil/docs/SCALING.md) para detalhes completos.
+Ver [SCALING.md](file:///home/jhonslife/TikTrend%20Finder/docs/SCALING.md) para detalhes completos.
 
 ### Horizontal Scaling
 
@@ -1074,13 +1074,13 @@ Ver [SCALING.md](file:///home/jhonslife/Didin%20Facil/docs/SCALING.md) para deta
 
 ## 📚 Documentos Relacionados
 
-- [PRD.md](file:///home/jhonslife/Didin%20Facil/docs/PRD.md) - Product Requirements
-- [DATABASE-SCHEMA.md](file:///home/jhonslife/Didin%20Facil/docs/DATABASE-SCHEMA.md) - Database schemas
-- [API-REFERENCE.md](file:///home/jhonslife/Didin%20Facil/docs/API-REFERENCE.md) - API endpoints
-- [SECURITY.md](file:///home/jhonslife/Didin%20Facil/docs/SECURITY.md) - Security measures
-- [DEPLOYMENT.md](file:///home/jhonslife/Didin%20Facil/docs/DEPLOYMENT.md) - Deployment guide
-- [SCALING.md](file:///home/jhonslife/Didin%20Facil/docs/SCALING.md) - Scaling strategies
-- [TESTING.md](file:///home/jhonslife/Didin%20Facil/docs/TESTING.md) - Testing strategy
+- [PRD.md](file:///home/jhonslife/TikTrend%20Finder/docs/PRD.md) - Product Requirements
+- [DATABASE-SCHEMA.md](file:///home/jhonslife/TikTrend%20Finder/docs/DATABASE-SCHEMA.md) - Database schemas
+- [API-REFERENCE.md](file:///home/jhonslife/TikTrend%20Finder/docs/API-REFERENCE.md) - API endpoints
+- [SECURITY.md](file:///home/jhonslife/TikTrend%20Finder/docs/SECURITY.md) - Security measures
+- [DEPLOYMENT.md](file:///home/jhonslife/TikTrend%20Finder/docs/DEPLOYMENT.md) - Deployment guide
+- [SCALING.md](file:///home/jhonslife/TikTrend%20Finder/docs/SCALING.md) - Scaling strategies
+- [TESTING.md](file:///home/jhonslife/TikTrend%20Finder/docs/TESTING.md) - Testing strategy
 
 ---
 

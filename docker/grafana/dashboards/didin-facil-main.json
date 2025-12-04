@@ -2,7 +2,7 @@
   "annotations": {
     "list": []
   },
-  "description": "Monitoramento completo do Didin Fácil Marketing Suite",
+  "description": "Monitoramento completo do TikTrend Finder Marketing Suite",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -72,7 +72,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_workers_active",
+          "expr": "tiktrend_workers_active",
           "legendFormat": "Workers",
           "refId": "A"
         }
@@ -125,7 +125,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_posts_pending",
+          "expr": "tiktrend_posts_pending",
           "legendFormat": "Pendentes",
           "refId": "A"
         }
@@ -186,7 +186,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_dlq_size",
+          "expr": "tiktrend_dlq_size",
           "legendFormat": "DLQ",
           "refId": "A"
         }
@@ -248,7 +248,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_api_response_time_avg_ms",
+          "expr": "tiktrend_api_response_time_avg_ms",
           "legendFormat": "Latência",
           "refId": "A"
         }
@@ -301,7 +301,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_api_requests_total",
+          "expr": "tiktrend_api_requests_total",
           "legendFormat": "Total",
           "refId": "A"
         }
@@ -358,7 +358,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_api_errors_5xx_total",
+          "expr": "tiktrend_api_errors_5xx_total",
           "legendFormat": "Erros 5xx",
           "refId": "A"
         }
@@ -464,12 +464,12 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_youtube_quota_used",
+          "expr": "tiktrend_youtube_quota_used",
           "legendFormat": "Quota Usada",
           "refId": "A"
         },
         {
-          "expr": "didin_youtube_quota_limit",
+          "expr": "tiktrend_youtube_quota_limit",
           "legendFormat": "Limite",
           "refId": "B"
         }
@@ -531,7 +531,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_youtube_quota_remaining",
+          "expr": "tiktrend_youtube_quota_remaining",
           "legendFormat": "Restante",
           "refId": "A"
         }
@@ -588,7 +588,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_platform_sessions_active{platform=\"youtube\"}",
+          "expr": "tiktrend_platform_sessions_active{platform=\"youtube\"}",
           "legendFormat": "Sessões",
           "refId": "A"
         }
@@ -641,7 +641,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_platform_posts_today{platform=\"youtube\"}",
+          "expr": "tiktrend_platform_posts_today{platform=\"youtube\"}",
           "legendFormat": "Posts",
           "refId": "A"
         }
@@ -711,7 +711,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_platform_sessions_active",
+          "expr": "tiktrend_platform_sessions_active",
           "legendFormat": "{{platform}}",
           "refId": "A"
         }
@@ -794,7 +794,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_platform_posts_today",
+          "expr": "tiktrend_platform_posts_today",
           "legendFormat": "{{platform}}",
           "refId": "A"
         }
@@ -855,7 +855,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_instagram_challenges_pending",
+          "expr": "tiktrend_instagram_challenges_pending",
           "legendFormat": "Challenges",
           "refId": "A"
         }
@@ -960,7 +960,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_api_response_time_avg_ms",
+          "expr": "tiktrend_api_response_time_avg_ms",
           "legendFormat": "Latência Média",
           "refId": "A"
         }
@@ -1074,12 +1074,12 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "rate(didin_api_errors_5xx_total[5m])",
+          "expr": "rate(tiktrend_api_errors_5xx_total[5m])",
           "legendFormat": "Erros 5xx",
           "refId": "A"
         },
         {
-          "expr": "rate(didin_api_errors_4xx_total[5m])",
+          "expr": "rate(tiktrend_api_errors_4xx_total[5m])",
           "legendFormat": "Erros 4xx",
           "refId": "B"
         }
@@ -1175,7 +1175,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "rate(didin_rate_limit_blocked_total[5m])",
+          "expr": "rate(tiktrend_rate_limit_blocked_total[5m])",
           "legendFormat": "Requests Bloqueadas",
           "refId": "A"
         }
@@ -1228,7 +1228,7 @@
       "pluginVersion": "10.2.3",
       "targets": [
         {
-          "expr": "didin_rate_limit_unique_ips",
+          "expr": "tiktrend_rate_limit_unique_ips",
           "legendFormat": "IPs Únicos",
           "refId": "A"
         }
@@ -1239,7 +1239,7 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["didin-facil", "marketing-suite"],
+  "tags": ["tiktrend-facil", "marketing-suite"],
   "templating": {
     "list": []
   },
@@ -1249,8 +1249,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Didin Fácil - Marketing Suite",
-  "uid": "didin-facil-main",
+  "title": "TikTrend Finder - Marketing Suite",
+  "uid": "tiktrend-facil-main",
   "version": 1,
   "weekStart": ""
 }

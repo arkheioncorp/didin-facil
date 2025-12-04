@@ -500,7 +500,7 @@ async def get_api_overview():
     total_endpoints = sum(len(cat.get("endpoints", [])) for cat in API_CATEGORIES)
     
     return {
-        "api_name": "Didin Fácil API",
+        "api_name": "TikTrend Finder API",
         "version": "2.0.0",
         "description": "API completa para automação de redes sociais e comparação de preços",
         "base_url": "/api/v1",
@@ -538,7 +538,7 @@ DOCS_HTML = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Didin Fácil API - Documentação Interativa</title>
+    <title>TikTrend Finder API - Documentação Interativa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
@@ -549,7 +549,7 @@ DOCS_HTML = """
     <div class="max-w-7xl mx-auto px-4 py-8">
         <header class="mb-8">
             <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
-                🚀 Didin Fácil API
+                🚀 TikTrend Finder API
             </h1>
             <p class="text-gray-400 mt-2">Documentação interativa da API</p>
             <div class="flex gap-4 mt-4">
@@ -579,7 +579,7 @@ DOCS_HTML = """
             <div class="bg-gray-800 rounded-lg p-4">
                 <h3 class="text-lg font-semibold text-purple-400">Base URL</h3>
                 <p class="text-sm text-gray-400">Produção</p>
-                <code class="text-xs text-green-400">https://api.didinfacil.com/v1</code>
+                <code class="text-xs text-green-400">https://api.tiktrendfinder.com/v1</code>
             </div>
         </div>
         

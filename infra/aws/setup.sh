@@ -2,7 +2,7 @@
 # ============================================================================
 # AWS Infrastructure Setup Script
 # ============================================================================
-# This script helps you set up the AWS infrastructure for Didin Fácil
+# This script helps you set up the AWS infrastructure for TikTrend Finder
 # Usage: ./setup.sh
 # ============================================================================
 
@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}"
 echo "============================================"
-echo "  Didin Fácil - AWS Infrastructure Setup"
+echo "  TikTrend Finder - AWS Infrastructure Setup"
 echo "============================================"
 echo -e "${NC}"
 

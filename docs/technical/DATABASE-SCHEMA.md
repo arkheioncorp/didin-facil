@@ -43,7 +43,7 @@ erDiagram
 
 ### Complete Schema
 
-Ver [ARCHITECTURE.md](file:///home/jhonslife/Didin%20Facil/docs/ARCHITECTURE.md#-banco-de-dados) para detalhes completos do schema PostgreSQL.
+Ver [ARCHITECTURE.md](file:///home/jhonslife/TikTrend%20Finder/docs/ARCHITECTURE.md#-banco-de-dados) para detalhes completos do schema PostgreSQL.
 
 **Principais Tabelas:**
 - `users` - Usuários registrados

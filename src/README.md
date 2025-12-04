@@ -1,4 +1,4 @@
-# ⚛️ Frontend do Didin Fácil
+# ⚛️ Frontend do TikTrend Finder
 
 Este diretório contém o código fonte da interface do usuário, construída com React, TypeScript e Vite.
 

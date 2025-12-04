@@ -1,13 +1,13 @@
 #!/bin/bash
 # ============================================================================
-# Railway Deployment Helper - Didin Fácil / TikTrend
+# Railway Deployment Helper - TikTrend Finder / TikTrend
 # ============================================================================
 # Usage: ./scripts/railway-deploy.sh
 # ============================================================================
 
 set -e
 
-echo "🚀 Didin Fácil - Railway Deployment Helper"
+echo "🚀 TikTrend Finder - Railway Deployment Helper"
 echo "==========================================="
 
 # Check if Railway CLI is installed
@@ -36,7 +36,7 @@ echo "3. Add Redis plugin:"
 echo "   - Click '+ New' → 'Database' → 'Add Redis'"
 echo ""
 echo "4. Link this repository:"
-echo "   - Click '+ New' → 'GitHub Repo' → Select 'didin-facil'"
+echo "   - Click '+ New' → 'GitHub Repo' → Select 'tiktrend-facil'"
 echo ""
 echo "5. Configure environment variables:"
 echo "   - Go to your service → 'Variables'"

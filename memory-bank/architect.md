@@ -1,4 +1,4 @@
-# System Architect - Didin Fácil
+# System Architect - TikTrend Finder
 
 **Última Atualização:** 4 de Dezembro de 2025
 
@@ -6,7 +6,7 @@
 
 ## Overview
 
-Este arquivo contém as decisões arquiteturais e padrões de design do projeto Didin Fácil.
+Este arquivo contém as decisões arquiteturais e padrões de design do projeto TikTrend Finder.
 
 ---
 

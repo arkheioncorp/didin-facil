@@ -354,8 +354,8 @@ X-RateLimit-Reset: 1700000000
 
 ## 📚 Related Documents
 
-- [ARCHITECTURE.md](file:///home/jhonslife/Didin%20Facil/docs/ARCHITECTURE.md)
-- [SECURITY.md](file:///home/jhonslife/Didin%20Facil/docs/SECURITY.md)
+- [ARCHITECTURE.md](file:///home/jhonslife/TikTrend%20Finder/docs/ARCHITECTURE.md)
+- [SECURITY.md](file:///home/jhonslife/TikTrend%20Finder/docs/SECURITY.md)
 
 ---
 

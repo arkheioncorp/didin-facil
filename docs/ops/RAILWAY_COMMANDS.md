@@ -1,4 +1,4 @@
-# 🚀 Comandos Railway - Didin Fácil
+# 🚀 Comandos Railway - TikTrend Finder
 
 Execute estes comandos no terminal para verificar e corrigir a configuração do Railway.
 
@@ -13,7 +13,7 @@ railway whoami
 ```bash
 # Se aparecer erro de "service not found", relinke:
 railway unlink
-railway link -p didin-facil -e production
+railway link -p tiktrend-facil -e production
 ```
 
 ## 3. Listar TODOS os Serviços
@@ -194,7 +194,7 @@ for k in optional:
 ### Erro: "the linked service doesn't exist"
 ```bash
 railway unlink
-railway link -p didin-facil -e production
+railway link -p tiktrend-facil -e production
 ```
 
 ### Erro: "Database connection failed"

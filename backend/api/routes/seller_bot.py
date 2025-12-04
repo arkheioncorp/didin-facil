@@ -68,7 +68,7 @@ def get_channel_router() -> ChannelRouter:
             _channel_router.register_adapter(MessageChannel.WHATSAPP, chatwoot)
         
         if settings.EVOLUTION_API_KEY:
-            instance = getattr(settings, 'EVOLUTION_INSTANCE', 'didin-bot')
+            instance = getattr(settings, 'EVOLUTION_INSTANCE', 'tiktrend-bot')
             evolution = create_evolution_adapter(
                 api_url=settings.EVOLUTION_API_URL,
                 api_key=settings.EVOLUTION_API_KEY,

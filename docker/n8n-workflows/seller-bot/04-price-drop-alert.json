@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "didin/price-drop",
+        "path": "tiktrend/price-drop",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -38,7 +38,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/tiktrend-whatsapp",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -74,8 +74,8 @@
       "position": [1130, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -107,8 +107,8 @@
       "position": [1130, 500],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },

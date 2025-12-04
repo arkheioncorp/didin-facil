@@ -1,6 +1,6 @@
 """
 Accounting Service
-Complete financial tracking and reporting for Didin Fácil
+Complete financial tracking and reporting for TikTrend Finder
 """
 
 import uuid

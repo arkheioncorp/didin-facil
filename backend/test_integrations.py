@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script de teste para verificar todas as integrações do Didin Fácil.
+Script de teste para verificar todas as integrações do TikTrend Finder.
 """
 
 import asyncio

@@ -84,11 +84,11 @@ class EmailTemplates:
             <div class="container">
                 <div class="card">
                     <div class="logo">
-                        <h1>🛒 Didin Fácil</h1>
+                        <h1>🛒 TikTrend Finder</h1>
                     </div>
                     <div class="content">
                         <h2>Olá, {name}! 👋</h2>
-                        <p>Obrigado por se cadastrar no <span class="highlight">Didin Fácil</span>!</p>
+                        <p>Obrigado por se cadastrar no <span class="highlight">TikTrend Finder</span>!</p>
                         <p>Para ativar sua conta, clique no botão abaixo:</p>
                         
                         <div style="text-align: center;">
@@ -104,10 +104,10 @@ class EmailTemplates:
                         </p>
                     </div>
                     <div class="footer">
-                        <p>© 2025 Didin Fácil - Comparador de Preços</p>
+                        <p>© 2025 TikTrend Finder - Comparador de Preços</p>
                         <p>
-                            <a href="https://didin.com.br/terms">Termos</a> · 
-                            <a href="https://didin.com.br/privacy">Privacidade</a>
+                            <a href="https://tiktrendfinder.com/terms">Termos</a> · 
+                            <a href="https://tiktrendfinder.com/privacy">Privacidade</a>
                         </p>
                     </div>
                 </div>
@@ -127,7 +127,7 @@ class EmailTemplates:
             <div class="container">
                 <div class="card">
                     <div class="logo">
-                        <h1>🔐 Didin Fácil</h1>
+                        <h1>🔐 TikTrend Finder</h1>
                     </div>
                     <div class="content">
                         <h2>Olá, {name}!</h2>
@@ -148,7 +148,7 @@ class EmailTemplates:
                         </p>
                     </div>
                     <div class="footer">
-                        <p>© 2025 Didin Fácil</p>
+                        <p>© 2025 TikTrend Finder</p>
                     </div>
                 </div>
             </div>
@@ -167,7 +167,7 @@ class EmailTemplates:
             <div class="container">
                 <div class="card">
                     <div class="logo">
-                        <h1>🎉 Didin Fácil</h1>
+                        <h1>🎉 TikTrend Finder</h1>
                     </div>
                     <div class="content">
                         <h2>Bem-vindo(a), {name}! 🚀</h2>
@@ -182,7 +182,7 @@ class EmailTemplates:
                         </ul>
                         
                         <div style="text-align: center;">
-                            <a href="https://didin.com.br" class="button">
+                            <a href="https://tiktrendfinder.com" class="button">
                                 Começar a Economizar
                             </a>
                         </div>
@@ -190,7 +190,7 @@ class EmailTemplates:
                         <p>Dúvidas? Responda este email ou acesse nosso suporte.</p>
                     </div>
                     <div class="footer">
-                        <p>© 2025 Didin Fácil</p>
+                        <p>© 2025 TikTrend Finder</p>
                     </div>
                 </div>
             </div>
@@ -234,15 +234,15 @@ class EmailTemplates:
                         <p>Os créditos já estão disponíveis em sua conta!</p>
                         
                         <div style="text-align: center;">
-                            <a href="https://didin.com.br/dashboard" class="button">
+                            <a href="https://tiktrendfinder.com/dashboard" class="button">
                                 Acessar Dashboard
                             </a>
                         </div>
                     </div>
                     <div class="footer">
-                        <p>© 2025 Didin Fácil</p>
+                        <p>© 2025 TikTrend Finder</p>
                         <p>
-                            Precisa de ajuda? <a href="mailto:suporte@didin.com.br">suporte@didin.com.br</a>
+                            Precisa de ajuda? <a href="mailto:suporte@tiktrendfinder.com">suporte@tiktrendfinder.com</a>
                         </p>
                     </div>
                 </div>
@@ -439,9 +439,9 @@ class EmailService:
     
     def __init__(self):
         self.provider = self._get_provider()
-        self.app_url = getattr(settings, 'APP_URL', 'https://didin.com.br')
+        self.app_url = getattr(settings, 'APP_URL', 'https://tiktrendfinder.com')
         self.support_email = getattr(
-            settings, 'SUPPORT_EMAIL', 'suporte@didin.com.br'
+            settings, 'SUPPORT_EMAIL', 'suporte@tiktrendfinder.com'
         )
     
     def _get_provider(self) -> BaseEmailProvider:
@@ -453,9 +453,9 @@ class EmailService:
             return ResendProvider(
                 api_key=resend_key,
                 from_email=getattr(
-                    settings, 'EMAIL_FROM', 'noreply@didin.com.br'
+                    settings, 'EMAIL_FROM', 'noreply@tiktrendfinder.com'
                 ),
-                from_name=getattr(settings, 'EMAIL_FROM_NAME', 'Didin Fácil')
+                from_name=getattr(settings, 'EMAIL_FROM_NAME', 'TikTrend Finder')
             )
         
         smtp_host = getattr(settings, 'SMTP_HOST', None)
@@ -466,9 +466,9 @@ class EmailService:
                 user=getattr(settings, 'SMTP_USER', ''),
                 password=getattr(settings, 'SMTP_PASSWORD', ''),
                 from_email=getattr(
-                    settings, 'SMTP_FROM', 'noreply@didin.com.br'
+                    settings, 'SMTP_FROM', 'noreply@tiktrendfinder.com'
                 ),
-                from_name=getattr(settings, 'EMAIL_FROM_NAME', 'Didin Fácil'),
+                from_name=getattr(settings, 'EMAIL_FROM_NAME', 'TikTrend Finder'),
                 use_tls=getattr(settings, 'SMTP_TLS', True)
             )
         
@@ -503,7 +503,7 @@ class EmailService:
         
         return await self.provider.send(
             to=to,
-            subject="✓ Verifique seu email - Didin Fácil",
+            subject="✓ Verifique seu email - TikTrend Finder",
             html=html,
             reply_to=self.support_email
         )
@@ -526,7 +526,7 @@ class EmailService:
         
         return await self.provider.send(
             to=to,
-            subject="🔐 Redefinir senha - Didin Fácil",
+            subject="🔐 Redefinir senha - TikTrend Finder",
             html=html,
             reply_to=self.support_email
         )
@@ -537,7 +537,7 @@ class EmailService:
         
         return await self.provider.send(
             to=to,
-            subject="🎉 Bem-vindo ao Didin Fácil!",
+            subject="🎉 Bem-vindo ao TikTrend Finder!",
             html=html,
             reply_to=self.support_email
         )
@@ -562,7 +562,7 @@ class EmailService:
         
         return await self.provider.send(
             to=to,
-            subject="✅ Compra confirmada - Didin Fácil",
+            subject="✅ Compra confirmada - TikTrend Finder",
             html=html,
             reply_to=self.support_email
         )

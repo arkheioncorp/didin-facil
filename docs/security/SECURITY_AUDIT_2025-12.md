@@ -8,7 +8,7 @@
 
 ## 📋 Resumo Executivo
 
-Auditoria completa de segurança do projeto Didin Fácil abrangendo:
+Auditoria completa de segurança do projeto TikTrend Finder abrangendo:
 - Middleware de segurança
 - Rate limiting
 - Autenticação e autorização

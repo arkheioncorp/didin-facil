@@ -1,5 +1,5 @@
 """
-Monitoring module for Didin Fácil
+Monitoring module for TikTrend Finder
 """
 
 from .cookie_monitor import (

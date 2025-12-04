@@ -102,7 +102,7 @@ class Settings(BaseSettings):
     # Evolution API (WhatsApp)
     EVOLUTION_API_URL: str = _URLS["evolution"]
     EVOLUTION_API_KEY: str = "429683C4C977415CAAFCCE10F7D57E11"
-    EVOLUTION_INSTANCE: str = "didin-whatsapp"
+    EVOLUTION_INSTANCE: str = "tiktrend-whatsapp"
     EVOLUTION_WEBHOOK_URL: str = f"{_URLS['api']}/webhooks/evolution"
     
     # Chatwoot (Customer Support)
@@ -175,11 +175,11 @@ class Settings(BaseSettings):
     RESEND_API_KEY: Optional[str] = None
     
     # Contact & Support Configuration
-    SUPPORT_EMAIL: str = "suporte@didinfacil.com.br"
-    CONTACT_EMAIL: str = "contato@didinfacil.com.br"
-    NOREPLY_EMAIL: str = "noreply@didinfacil.com.br"
-    COMPANY_NAME: str = "Didin Fácil"
-    COMPANY_WEBSITE: str = "https://didinfacil.com.br"
+    SUPPORT_EMAIL: str = "suporte@tiktrendfinder.com.br"
+    CONTACT_EMAIL: str = "contato@tiktrendfinder.com.br"
+    NOREPLY_EMAIL: str = "noreply@tiktrendfinder.com.br"
+    COMPANY_NAME: str = "TikTrend Finder"
+    COMPANY_WEBSITE: str = "https://tiktrendfinder.com.br"
     COMPANY_ADDRESS: str = "São Paulo, Brasil"
     
     # MercadoPago (alias for compatibility)
@@ -187,7 +187,7 @@ class Settings(BaseSettings):
     MP_PUBLIC_KEY: Optional[str] = None
     
     # CORS
-    CORS_ORIGINS: str = "http://localhost:1420,http://localhost:3000,tauri://localhost,https://didin-facil.vercel.app"
+    CORS_ORIGINS: str = "http://localhost:1420,http://localhost:3000,tauri://localhost,https://tiktrend-facil.vercel.app"
     CORS_ORIGIN_REGEX: Optional[str] = r"https://.*\.vercel\.app"
     FRONTEND_URL: str = "http://localhost:5173"
 

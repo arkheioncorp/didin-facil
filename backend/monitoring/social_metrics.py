@@ -448,7 +448,7 @@ def init_metrics():
     """Inicializa métricas com valores padrão."""
     SERVICE_INFO.info({
         'version': '1.0.0',
-        'service': 'didin-facil-social',
+        'service': 'tiktrend-facil-social',
         'platforms': 'instagram,tiktok,youtube,whatsapp'
     })
     

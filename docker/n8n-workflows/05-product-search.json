@@ -131,7 +131,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"content\": \"🔍 *Encontrei {{ $json.productCount }} produtos:*\\n\\n{{ $json.formattedProducts }}\\n\\n---\\n✍️ Digite o número para mais detalhes\\n🔗 Ou acesse: didin.com.br/busca\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "jsonBody": "={\n  \"content\": \"🔍 *Encontrei {{ $json.productCount }} produtos:*\\n\\n{{ $json.formattedProducts }}\\n\\n---\\n✍️ Digite o número para mais detalhes\\n🔗 Ou acesse: tiktrendfinder.com/busca\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
         "options": {}
       },
       "id": "send-products",

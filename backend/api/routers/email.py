@@ -53,7 +53,7 @@ class PriceAlertRequest(BaseModel):
 class WelcomeEmailRequest(BaseModel):
     to: EmailStr
     name: str
-    cta_url: str = "https://didin.com.br"
+    cta_url: str = "https://tiktrendfinder.com"
 
 
 class WeeklyDealsRequest(BaseModel):
@@ -82,8 +82,8 @@ def get_email_config() -> EmailConfig:
     return EmailConfig(
         provider=provider,
         api_key=api_key,
-        from_email=getattr(settings, 'EMAIL_FROM', 'noreply@didin.com.br'),
-        from_name=getattr(settings, 'EMAIL_FROM_NAME', 'Didin Fácil')
+        from_email=getattr(settings, 'EMAIL_FROM', 'noreply@tiktrendfinder.com'),
+        from_name=getattr(settings, 'EMAIL_FROM_NAME', 'TikTrend Finder')
     )
 
 

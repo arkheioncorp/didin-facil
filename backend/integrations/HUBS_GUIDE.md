@@ -1,8 +1,8 @@
-# Guia de Hubs Centralizados - Didin Fácil
+# Guia de Hubs Centralizados - TikTrend Finder
 
 ## 📋 Visão Geral
 
-Este guia documenta a arquitetura centralizada de integração com redes sociais e plataformas de mensagens do Didin Fácil.
+Este guia documenta a arquitetura centralizada de integração com redes sociais e plataformas de mensagens do TikTrend Finder.
 
 ## 🏗️ Arquitetura
 
@@ -62,7 +62,7 @@ hub = get_whatsapp_hub()
 
 # Enviar mensagem
 await hub.send_message(
-    instance_name="didin-whatsapp",
+    instance_name="tiktrend-whatsapp",
     to="5511999999999",
     message="Olá!"
 )
@@ -71,7 +71,7 @@ await hub.send_message(
 instance = await hub.create_instance("nova-instancia")
 
 # Obter QR Code
-qr_code = await hub.get_qr_code("didin-whatsapp")
+qr_code = await hub.get_qr_code("tiktrend-whatsapp")
 ```
 
 **Configuração:**
@@ -82,7 +82,7 @@ from integrations.whatsapp_hub import WhatsAppHubConfig
 config = WhatsAppHubConfig(
     evolution_api_url="http://localhost:8082",
     evolution_api_key="seu-api-key",
-    default_instance="didin-whatsapp"
+    default_instance="tiktrend-whatsapp"
 )
 ```
 
@@ -204,7 +204,7 @@ from modules.chatbot import WhatsAppHubAdapter
 from integrations.whatsapp_hub import get_whatsapp_hub
 
 hub = get_whatsapp_hub()
-adapter = WhatsAppHubAdapter(hub, instance_name="didin-whatsapp")
+adapter = WhatsAppHubAdapter(hub, instance_name="tiktrend-whatsapp")
 
 # O adapter implementa a interface ChannelAdapter
 incoming_msg = await adapter.parse_incoming(webhook_payload)
@@ -260,7 +260,7 @@ from integrations import get_whatsapp_hub, get_instagram_hub
 from modules.chatbot import WhatsAppHubAdapter, InstagramHubAdapter
 
 whatsapp_hub = get_whatsapp_hub()
-whatsapp_adapter = WhatsAppHubAdapter(whatsapp_hub, "didin-whatsapp")
+whatsapp_adapter = WhatsAppHubAdapter(whatsapp_hub, "tiktrend-whatsapp")
 
 instagram_hub = get_instagram_hub()
 instagram_hub.configure(access_token="...", page_id="...")

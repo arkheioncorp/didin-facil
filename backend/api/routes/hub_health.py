@@ -9,7 +9,7 @@ Endpoints:
 - GET /hub/metrics - Métricas em formato JSON
 - GET /hub/metrics/prometheus - Métricas em formato Prometheus
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.0.0
 """
 

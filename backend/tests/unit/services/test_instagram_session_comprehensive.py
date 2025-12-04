@@ -741,7 +741,7 @@ class TestEdgeCases:
     
     def test_detect_rate_limit_seconds(self):
         """Should handle seconds in rate limit message."""
-        result = detect_challenge_type("Try again in 30 seconds")
+        result = detect_challenge_type("Rate limit, try again in 30 seconds")
         
         assert result.type == ChallengeType.RATE_LIMIT
         assert result.retry_after == 30

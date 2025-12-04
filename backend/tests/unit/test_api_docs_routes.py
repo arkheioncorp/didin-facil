@@ -115,7 +115,7 @@ class TestAPIDocsRoutes:
         
         # Should return HTML
         assert "<!DOCTYPE html>" in result
-        assert "Didin Fácil API" in result
+        assert "TikTrend Finder API" in result
         assert "Documentação" in result.lower() or "API" in result
 
 

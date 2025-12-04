@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "didin/cart-abandoned",
+        "path": "tiktrend/cart-abandoned",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -17,7 +17,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const payload = $input.first().json.body || $input.first().json;\nconst data = payload.data || {};\n\n// Calcular economia potencial\nconst price = parseFloat(data.price) || 0;\nconst savings = Math.round(price * 0.1); // 10% de desconto incentivo\n\nreturn {\n  json: {\n    event_id: payload.event_id,\n    user_id: payload.user_id,\n    name: data.name || 'Cliente',\n    product_name: data.product_name || 'seu produto',\n    product_url: data.product_url || 'https://didinfacil.com.br',\n    product_image: data.product_image,\n    price: price,\n    price_formatted: price.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}),\n    savings: savings,\n    savings_formatted: savings.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}),\n    phone: data.phone,\n    email: data.email,\n    channel: payload.channel || 'whatsapp',\n    timestamp: payload.timestamp,\n    cart_id: data.cart_id\n  }\n};"
+        "jsCode": "const payload = $input.first().json.body || $input.first().json;\nconst data = payload.data || {};\n\n// Calcular economia potencial\nconst price = parseFloat(data.price) || 0;\nconst savings = Math.round(price * 0.1); // 10% de desconto incentivo\n\nreturn {\n  json: {\n    event_id: payload.event_id,\n    user_id: payload.user_id,\n    name: data.name || 'Cliente',\n    product_name: data.product_name || 'seu produto',\n    product_url: data.product_url || 'https://tiktrendfinder.com.br',\n    product_image: data.product_image,\n    price: price,\n    price_formatted: price.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}),\n    savings: savings,\n    savings_formatted: savings.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}),\n    phone: data.phone,\n    email: data.email,\n    channel: payload.channel || 'whatsapp',\n    timestamp: payload.timestamp,\n    cart_id: data.cart_id\n  }\n};"
       },
       "id": "parse-cart-data",
       "name": "Parse Cart Data",
@@ -40,8 +40,8 @@
       "position": [690, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -87,7 +87,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/tiktrend-whatsapp",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -123,8 +123,8 @@
       "position": [1570, 200],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },

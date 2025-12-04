@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "didin/post-purchase",
+        "path": "tiktrend/post-purchase",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -27,7 +27,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.first().json;\n\n// Mensagem de agradecimento\nconst message = `🎉 *Parabéns pela compra, ${data.name}!*\\n\\nObrigado por usar o Didin Fácil para encontrar a melhor oferta! 🙏\\n\\n📦 *Pedido:* #${data.order_id}\\n🛍️ *Produto:* ${data.product_name}\\n💰 *Total:* ${data.total_formatted}\\n🏪 *Loja:* ${data.store}\\n🚚 *Previsão:* ${data.estimated_delivery}\\n\\n📲 *Dica:* Acompanhe seu pedido diretamente no site da loja.\\n\\n❓ *Precisa de ajuda?*\\nDigite *AJUDA* que te auxilio!\\n\\n⭐ Não esqueça de avaliar sua experiência!`;\n\n// Calcular data para pedir review (7 dias)\nconst reviewDate = new Date();\nreviewDate.setDate(reviewDate.getDate() + 7);\n\nreturn {\n  json: {\n    ...data,\n    message: message,\n    review_request_date: reviewDate.toISOString()\n  }\n};"
+        "jsCode": "const data = $input.first().json;\n\n// Mensagem de agradecimento\nconst message = `🎉 *Parabéns pela compra, ${data.name}!*\\n\\nObrigado por usar o TikTrend Finder para encontrar a melhor oferta! 🙏\\n\\n📦 *Pedido:* #${data.order_id}\\n🛍️ *Produto:* ${data.product_name}\\n💰 *Total:* ${data.total_formatted}\\n🏪 *Loja:* ${data.store}\\n🚚 *Previsão:* ${data.estimated_delivery}\\n\\n📲 *Dica:* Acompanhe seu pedido diretamente no site da loja.\\n\\n❓ *Precisa de ajuda?*\\nDigite *AJUDA* que te auxilio!\\n\\n⭐ Não esqueça de avaliar sua experiência!`;\n\n// Calcular data para pedir review (7 dias)\nconst reviewDate = new Date();\nreviewDate.setDate(reviewDate.getDate() + 7);\n\nreturn {\n  json: {\n    ...data,\n    message: message,\n    review_request_date: reviewDate.toISOString()\n  }\n};"
       },
       "id": "format-thank-you",
       "name": "Formatar Agradecimento",
@@ -38,7 +38,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/tiktrend-whatsapp",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -76,8 +76,8 @@
       "position": [910, 500],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -96,8 +96,8 @@
       "position": [1130, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -116,8 +116,8 @@
       "position": [1130, 500],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -144,8 +144,8 @@
       "position": [1350, 400],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },

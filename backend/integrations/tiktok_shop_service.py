@@ -9,7 +9,7 @@ Implementa:
 - CRUD de produtos
 - Sincronização automática
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.0.0
 """
 

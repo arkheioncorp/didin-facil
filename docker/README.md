@@ -1,6 +1,6 @@
 # 🐳 Docker & Infraestrutura
 
-Este diretório contém as configurações de containerização e orquestração do Didin Fácil.
+Este diretório contém as configurações de containerização e orquestração do TikTrend Finder.
 
 ## 📂 Estrutura
 

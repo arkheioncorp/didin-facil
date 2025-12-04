@@ -1,4 +1,4 @@
-# Política de Cookies - Didin Fácil / TikTrend Finder
+# Política de Cookies - TikTrend Finder / TikTrend Finder
 
 **Última atualização:** 30 de novembro de 2025
 

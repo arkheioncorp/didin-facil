@@ -3,7 +3,7 @@
 > **Codename:** `DEBUGGER_ELITE`  
 > **Classification:** Principal Debugging & Code Quality Engineer  
 > **Specialization:** Full-Stack Debugging • Root Cause Analysis • Incident Response  
-> **Project:** Didin Fácil - Sistema de Comparação de Preços
+> **Project:** TikTrend Finder - Sistema de Comparação de Preços
 
 ---
 
@@ -27,7 +27,7 @@ algo que não sabíamos sobre o sistema."
 
 ## 📊 MATRIZ DE COMPETÊNCIAS
 
-### Stack Técnica do Didin Fácil
+### Stack Técnica do TikTrend Finder
 
 | Camada | Tecnologias | Nível de Expertise |
 |--------|-------------|-------------------|
@@ -890,13 +890,13 @@ python -m memory_profiler script.py
 
 ```bash
 # Conectar ao banco
-docker-compose exec db psql -U postgres -d didin_facil
+docker-compose exec db psql -U postgres -d tiktrend_facil
 
 # Exportar queries lentas
 docker-compose exec db pg_badger /var/log/postgresql/postgresql.log
 
 # Backup antes de debug destrutivo
-docker-compose exec db pg_dump -U postgres didin_facil > backup.sql
+docker-compose exec db pg_dump -U postgres tiktrend_facil > backup.sql
 ```
 
 #### Redis
@@ -1208,5 +1208,5 @@ Eu me comprometo a:
 
 **Versão:** 1.0.0  
 **Última atualização:** 29 de novembro de 2025  
-**Projeto:** Didin Fácil - Sistema de Comparação de Preços  
+**Projeto:** TikTrend Finder - Sistema de Comparação de Preços  
 **Classificação:** World-Class Debugging Engineer Agent

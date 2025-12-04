@@ -12,20 +12,20 @@ Produzir documentação de excelência que facilite onboarding, desenvolvimento 
 ### 1. README.md (Project Overview)
 
 ```markdown
-# Didin Fácil
+# TikTrend Finder
 
 > Sistema de comparação de preços com IA e gestão financeira pessoal.
 
-[![CI/CD](https://github.com/org/didin-facil/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/org/didin-facil/actions)
-[![Coverage](https://codecov.io/gh/org/didin-facil/branch/main/graph/badge.svg)](https://codecov.io/gh/org/didin-facil)
+[![CI/CD](https://github.com/org/tiktrend-facil/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/org/tiktrend-facil/actions)
+[![Coverage](https://codecov.io/gh/org/tiktrend-facil/branch/main/graph/badge.svg)](https://codecov.io/gh/org/tiktrend-facil)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## 🚀 Quick Start
 
 ```bash
 # Clonar repositório
-git clone https://github.com/org/didin-facil.git
-cd didin-facil
+git clone https://github.com/org/tiktrend-facil.git
+cd tiktrend-facil
 
 # Setup com Docker
 docker-compose up -d
@@ -57,7 +57,7 @@ open http://localhost:5173
 
 ## 📄 License
 
-MIT © 2025 Didin Fácil
+MIT © 2025 TikTrend Finder
 ```
 
 ### 2. API Documentation (OpenAPI/Swagger)
@@ -68,12 +68,12 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
 app = FastAPI(
-    title="Didin Fácil API",
+    title="TikTrend Finder API",
     description="API REST para comparação de preços e gestão financeira",
     version="1.0.0",
     contact={
-        "name": "Didin Fácil Team",
-        "email": "dev@didin-facil.com"
+        "name": "TikTrend Finder Team",
+        "email": "dev@tiktrend-facil.com"
     },
     license_info={
         "name": "MIT",
@@ -355,8 +355,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ...
 
-[Unreleased]: https://github.com/org/didin-facil/compare/v1.2.0...HEAD
-[1.2.0]: https://github.com/org/didin-facil/compare/v1.1.0...v1.2.0
+[Unreleased]: https://github.com/org/tiktrend-facil/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/org/tiktrend-facil/compare/v1.1.0...v1.2.0
 ```
 
 ### 7. Diagramas (Mermaid)
@@ -396,7 +396,7 @@ sequenceDiagram
 graph TB
     User[👤 Usuário]
     
-    subgraph "Didin Fácil System"
+    subgraph "TikTrend Finder System"
         Frontend[Vue 3 SPA<br/>Port: 5173]
         Backend[FastAPI<br/>Port: 8000]
         Worker[Celery Workers<br/>Background Jobs]
@@ -426,7 +426,7 @@ graph TB
 ## 🚀 Getting Started
 
 1. Fork o repositório
-2. Clone seu fork: `git clone https://github.com/seu-usuario/didin-facil.git`
+2. Clone seu fork: `git clone https://github.com/seu-usuario/tiktrend-facil.git`
 3. Crie uma branch: `git checkout -b feature/minha-feature`
 
 ## 📝 Commit Convention
@@ -514,7 +514,7 @@ make lint
 
 ## ❓ Dúvidas
 
-Abra uma [issue](https://github.com/org/didin-facil/issues) ou entre no [Discord](https://discord.gg/didin-facil).
+Abra uma [issue](https://github.com/org/tiktrend-facil/issues) ou entre no [Discord](https://discord.gg/tiktrend-facil).
 ```
 
 ## ✅ Documentation Checklist

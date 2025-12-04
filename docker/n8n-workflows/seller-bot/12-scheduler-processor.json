@@ -30,8 +30,8 @@
       "position": [470, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -96,7 +96,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.N8N_WEBHOOK_URL }}/didin/review-request",
+        "url": "={{ $env.N8N_WEBHOOK_URL }}/tiktrend/review-request",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"event_id\": \"{{ $json.id }}\",\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"data\": {{ $json.data }},\n  \"channel\": \"{{ $json.channel || 'whatsapp' }}\"\n}",
@@ -111,7 +111,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.N8N_WEBHOOK_URL }}/didin/cross-sell",
+        "url": "={{ $env.N8N_WEBHOOK_URL }}/tiktrend/cross-sell",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"event_id\": \"{{ $json.id }}\",\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"data\": {{ $json.data }},\n  \"channel\": \"{{ $json.channel || 'whatsapp' }}\"\n}",
@@ -126,7 +126,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.N8N_WEBHOOK_URL }}/didin/cart-abandoned",
+        "url": "={{ $env.N8N_WEBHOOK_URL }}/tiktrend/cart-abandoned",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"event_id\": \"{{ $json.id }}\",\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"data\": {{ $json.data }},\n  \"channel\": \"{{ $json.channel || 'whatsapp' }}\"\n}",
@@ -141,7 +141,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.N8N_WEBHOOK_URL }}/didin/reengagement",
+        "url": "={{ $env.N8N_WEBHOOK_URL }}/tiktrend/reengagement",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"event_id\": \"{{ $json.id }}\",\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"data\": {{ $json.data }},\n  \"channel\": \"{{ $json.channel || 'whatsapp' }}\"\n}",
@@ -176,8 +176,8 @@
       "position": [1570, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },

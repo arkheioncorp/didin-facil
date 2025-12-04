@@ -96,7 +96,7 @@ class MercadoPagoService:
         cpf: str,
         name: str,
         external_reference: str,
-        description: str = "Didin Fácil - Créditos"
+        description: str = "TikTrend Finder - Créditos"
     ) -> dict:
         """
         Create a PIX payment with QR code.
@@ -246,7 +246,7 @@ class MercadoPagoService:
                 
                 msg = MIMEMultipart('alternative')
                 msg['Subject'] = subject
-                msg['From'] = settings.SMTP_FROM or 'noreply@didinfacil.com'
+                msg['From'] = settings.SMTP_FROM or 'noreply@tiktrendfinder.com'
                 msg['To'] = email
                 
                 html = f"""
@@ -257,7 +257,7 @@ class MercadoPagoService:
                     <p>Olá!</p>
                     <p>Confirmamos a adição de 
                        <strong>{credits_amount} créditos</strong> 
-                       à sua conta Didin Fácil.</p>
+                       à sua conta TikTrend Finder.</p>
                     <p>Você já pode usar para:</p>
                     <ul>
                         <li>Gerar copies com IA</li>
@@ -265,7 +265,7 @@ class MercadoPagoService:
                         <li>Criar automações</li>
                     </ul>
                     <p>Boas vendas!</p>
-                    <p><small>Equipe Didin Fácil</small></p>
+                    <p><small>Equipe TikTrend Finder</small></p>
                 </body>
                 </html>
                 """
@@ -300,7 +300,7 @@ class MercadoPagoService:
                             "Content-Type": "application/json",
                         },
                         json={
-                            "from": "Didin Fácil <noreply@didinfacil.com>",
+                            "from": "TikTrend Finder <noreply@tiktrendfinder.com>",
                             "to": [email],
                             "subject": (
                                 f"🎉 {credits_amount} créditos adicionados!"

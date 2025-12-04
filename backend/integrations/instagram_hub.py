@@ -1,14 +1,14 @@
 """
 Instagram Integration Hub
 =========================
-Ponto central de integração do Instagram para o Didin Fácil.
+Ponto central de integração do Instagram para o TikTrend Finder.
 
 Este módulo consolida todas as integrações com Instagram via Graph API:
 - Envio de mensagens (Direct)
 - Webhooks
 - Gerenciamento de posts/comentários (futuro)
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.1.0 (com alertas e métricas)
 """
 

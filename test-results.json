@@ -6,12 +6,12 @@
 ✅ Global teardown complete
 {
   "config": {
-    "configFile": "/home/jhonslife/Didin Facil/playwright.config.ts",
-    "rootDir": "/home/jhonslife/Didin Facil/tests/e2e",
+    "configFile": "/home/jhonslife/TikTrend Finder/playwright.config.ts",
+    "rootDir": "/home/jhonslife/TikTrend Finder/tests/e2e",
     "forbidOnly": false,
     "fullyParallel": true,
-    "globalSetup": "/home/jhonslife/Didin Facil/tests/e2e/global-setup.ts",
-    "globalTeardown": "/home/jhonslife/Didin Facil/tests/e2e/global-teardown.ts",
+    "globalSetup": "/home/jhonslife/TikTrend Finder/tests/e2e/global-setup.ts",
+    "globalTeardown": "/home/jhonslife/TikTrend Finder/tests/e2e/global-teardown.ts",
     "globalTimeout": 0,
     "grep": {},
     "grepInvert": null,
@@ -32,7 +32,7 @@
     "quiet": false,
     "projects": [
       {
-        "outputDir": "/home/jhonslife/Didin Facil/test-results/artifacts",
+        "outputDir": "/home/jhonslife/TikTrend Finder/test-results/artifacts",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -40,7 +40,7 @@
         },
         "id": "setup",
         "name": "setup",
-        "testDir": "/home/jhonslife/Didin Facil/tests/e2e",
+        "testDir": "/home/jhonslife/TikTrend Finder/tests/e2e",
         "testIgnore": [],
         "testMatch": [
           "/.*\\.setup\\.ts/"
@@ -48,7 +48,7 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/home/jhonslife/Didin Facil/test-results/artifacts",
+        "outputDir": "/home/jhonslife/TikTrend Finder/test-results/artifacts",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -56,7 +56,7 @@
         },
         "id": "chromium",
         "name": "chromium",
-        "testDir": "/home/jhonslife/Didin Facil/tests/e2e",
+        "testDir": "/home/jhonslife/TikTrend Finder/tests/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -64,7 +64,7 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/home/jhonslife/Didin Facil/test-results/artifacts",
+        "outputDir": "/home/jhonslife/TikTrend Finder/test-results/artifacts",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -72,7 +72,7 @@
         },
         "id": "firefox",
         "name": "firefox",
-        "testDir": "/home/jhonslife/Didin Facil/tests/e2e",
+        "testDir": "/home/jhonslife/TikTrend Finder/tests/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -80,7 +80,7 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/home/jhonslife/Didin Facil/test-results/artifacts",
+        "outputDir": "/home/jhonslife/TikTrend Finder/test-results/artifacts",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -88,7 +88,7 @@
         },
         "id": "webkit",
         "name": "webkit",
-        "testDir": "/home/jhonslife/Didin Facil/tests/e2e",
+        "testDir": "/home/jhonslife/TikTrend Finder/tests/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -96,7 +96,7 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/home/jhonslife/Didin Facil/test-results/artifacts",
+        "outputDir": "/home/jhonslife/TikTrend Finder/test-results/artifacts",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -104,7 +104,7 @@
         },
         "id": "mobile-chrome",
         "name": "mobile-chrome",
-        "testDir": "/home/jhonslife/Didin Facil/tests/e2e",
+        "testDir": "/home/jhonslife/TikTrend Finder/tests/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -112,7 +112,7 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/home/jhonslife/Didin Facil/test-results/artifacts",
+        "outputDir": "/home/jhonslife/TikTrend Finder/test-results/artifacts",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -120,7 +120,7 @@
         },
         "id": "mobile-safari",
         "name": "mobile-safari",
-        "testDir": "/home/jhonslife/Didin Facil/tests/e2e",
+        "testDir": "/home/jhonslife/TikTrend Finder/tests/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -128,7 +128,7 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/home/jhonslife/Didin Facil/test-results/artifacts",
+        "outputDir": "/home/jhonslife/TikTrend Finder/test-results/artifacts",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -136,7 +136,7 @@
         },
         "id": "tauri-webview",
         "name": "tauri-webview",
-        "testDir": "/home/jhonslife/Didin Facil/tests/e2e",
+        "testDir": "/home/jhonslife/TikTrend Finder/tests/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -1411,9 +1411,9 @@
                           "duration": 12534,
                           "error": {
                             "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"category-filter\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"category-filter\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:108:61",
+                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"category-filter\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:108:61",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 61,
                               "line": 108
                             },
@@ -1422,11 +1422,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 61,
                                 "line": 108
                               },
-                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"category-filter\"]')\u001b[22m\n\n\n  106 |       await products.goto();\n  107 |\n> 108 |       await page.locator('[data-testid=\"category-filter\"]').click();\n      |                                                             ^\n  109 |       await page.locator('[data-value=\"electronics\"]').click();\n  110 |\n  111 |       await expect(page).toHaveURL(/category=electronics/);\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:108:61"
+                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"category-filter\"]')\u001b[22m\n\n\n  106 |       await products.goto();\n  107 |\n> 108 |       await page.locator('[data-testid=\"category-filter\"]').click();\n      |                                                             ^\n  109 |       await page.locator('[data-value=\"electronics\"]').click();\n  110 |\n  111 |       await expect(page).toHaveURL(/category=electronics/);\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:108:61"
                             }
                           ],
                           "stdout": [],
@@ -1438,16 +1438,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Filtering-should-filter-by-category-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Filtering-should-filter-by-category-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Filtering-should-filter-by-category-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Filtering-should-filter-by-category-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 61,
                             "line": 108
                           }
@@ -1480,9 +1480,9 @@
                           "duration": 12710,
                           "error": {
                             "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-price\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-price\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:118:55",
+                            "stack": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-price\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:118:55",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 55,
                               "line": 118
                             },
@@ -1491,11 +1491,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 55,
                                 "line": 118
                               },
-                              "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-price\"]')\u001b[22m\n\n\n  116 |       await products.goto();\n  117 |\n> 118 |       await page.locator('[data-testid=\"min-price\"]').fill('10');\n      |                                                       ^\n  119 |       await page.locator('[data-testid=\"max-price\"]').fill('100');\n  120 |       await page.locator('[data-testid=\"apply-filters\"]').click();\n  121 |\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:118:55"
+                              "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-price\"]')\u001b[22m\n\n\n  116 |       await products.goto();\n  117 |\n> 118 |       await page.locator('[data-testid=\"min-price\"]').fill('10');\n      |                                                       ^\n  119 |       await page.locator('[data-testid=\"max-price\"]').fill('100');\n  120 |       await page.locator('[data-testid=\"apply-filters\"]').click();\n  121 |\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:118:55"
                             }
                           ],
                           "stdout": [],
@@ -1507,16 +1507,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Fil-fb288-hould-filter-by-price-range-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Fil-fb288-hould-filter-by-price-range-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Fil-fb288-hould-filter-by-price-range-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Fil-fb288-hould-filter-by-price-range-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 55,
                             "line": 118
                           }
@@ -1549,9 +1549,9 @@
                           "duration": 13025,
                           "error": {
                             "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-sales\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-sales\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:129:55",
+                            "stack": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-sales\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:129:55",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 55,
                               "line": 129
                             },
@@ -1560,11 +1560,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 55,
                                 "line": 129
                               },
-                              "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-sales\"]')\u001b[22m\n\n\n  127 |       await products.goto();\n  128 |\n> 129 |       await page.locator('[data-testid=\"min-sales\"]').fill('1000');\n      |                                                       ^\n  130 |       await page.locator('[data-testid=\"apply-filters\"]').click();\n  131 |\n  132 |       await expect(page).toHaveURL(/min_sales=1000/);\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:129:55"
+                              "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-sales\"]')\u001b[22m\n\n\n  127 |       await products.goto();\n  128 |\n> 129 |       await page.locator('[data-testid=\"min-sales\"]').fill('1000');\n      |                                                       ^\n  130 |       await page.locator('[data-testid=\"apply-filters\"]').click();\n  131 |\n  132 |       await expect(page).toHaveURL(/min_sales=1000/);\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:129:55"
                             }
                           ],
                           "stdout": [],
@@ -1576,16 +1576,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Fil-6ae24-hould-filter-by-sales-count-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Fil-6ae24-hould-filter-by-sales-count-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Fil-6ae24-hould-filter-by-sales-count-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Fil-6ae24-hould-filter-by-sales-count-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 55,
                             "line": 129
                           }
@@ -1618,9 +1618,9 @@
                           "duration": 13070,
                           "error": {
                             "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-price\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-price\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:140:55",
+                            "stack": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-price\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:140:55",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 55,
                               "line": 140
                             },
@@ -1629,11 +1629,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 55,
                                 "line": 140
                               },
-                              "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-price\"]')\u001b[22m\n\n\n  138 |\n  139 |       // Apply filters\n> 140 |       await page.locator('[data-testid=\"min-price\"]').fill('10');\n      |                                                       ^\n  141 |       await page.locator('[data-testid=\"apply-filters\"]').click();\n  142 |\n  143 |       // Clear filters\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:140:55"
+                              "message": "TimeoutError: locator.fill: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"min-price\"]')\u001b[22m\n\n\n  138 |\n  139 |       // Apply filters\n> 140 |       await page.locator('[data-testid=\"min-price\"]').fill('10');\n      |                                                       ^\n  141 |       await page.locator('[data-testid=\"apply-filters\"]').click();\n  142 |\n  143 |       // Clear filters\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:140:55"
                             }
                           ],
                           "stdout": [],
@@ -1645,16 +1645,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Filtering-should-clear-all-filters-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Filtering-should-clear-all-filters-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Filtering-should-clear-all-filters-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Filtering-should-clear-all-filters-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 55,
                             "line": 140
                           }
@@ -1687,9 +1687,9 @@
                           "duration": 12493,
                           "error": {
                             "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"results-count\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"results-count\"]')\u001b[22m\n",
-                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"results-count\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"results-count\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:153:67",
+                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"results-count\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"results-count\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:153:67",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 67,
                               "line": 153
                             },
@@ -1698,11 +1698,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 67,
                                 "line": 153
                               },
-                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"results-count\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"results-count\"]')\u001b[22m\n\n\n  151 |       await products.goto();\n  152 |\n> 153 |       await expect(page.locator('[data-testid=\"results-count\"]')).toBeVisible();\n      |                                                                   ^\n  154 |     });\n  155 |   });\n  156 |\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:153:67"
+                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"results-count\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"results-count\"]')\u001b[22m\n\n\n  151 |       await products.goto();\n  152 |\n> 153 |       await expect(page.locator('[data-testid=\"results-count\"]')).toBeVisible();\n      |                                                                   ^\n  154 |     });\n  155 |   });\n  156 |\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:153:67"
                             }
                           ],
                           "stdout": [],
@@ -1714,16 +1714,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Fil-e94fe-show-filtered-results-count-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Fil-e94fe-show-filtered-results-count-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Fil-e94fe-show-filtered-results-count-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Fil-e94fe-show-filtered-results-count-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 67,
                             "line": 153
                           }
@@ -1764,9 +1764,9 @@
                           "duration": 12548,
                           "error": {
                             "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"price_asc\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"price_asc\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:167:54",
+                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"price_asc\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:167:54",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 54,
                               "line": 167
                             },
@@ -1775,11 +1775,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 54,
                                 "line": 167
                               },
-                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"price_asc\"]')\u001b[22m\n\n\n  165 |\n  166 |       await page.locator('[data-testid=\"sort-select\"]').click();\n> 167 |       await page.locator('[data-value=\"price_asc\"]').click();\n      |                                                      ^\n  168 |\n  169 |       await expect(page).toHaveURL(/sort=price_asc/);\n  170 |     });\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:167:54"
+                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"price_asc\"]')\u001b[22m\n\n\n  165 |\n  166 |       await page.locator('[data-testid=\"sort-select\"]').click();\n> 167 |       await page.locator('[data-value=\"price_asc\"]').click();\n      |                                                      ^\n  168 |\n  169 |       await expect(page).toHaveURL(/sort=price_asc/);\n  170 |     });\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:167:54"
                             }
                           ],
                           "stdout": [],
@@ -1791,16 +1791,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Sor-be654-d-sort-by-price-low-to-high-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Sor-be654-d-sort-by-price-low-to-high-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Sor-be654-d-sort-by-price-low-to-high-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Sor-be654-d-sort-by-price-low-to-high-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 54,
                             "line": 167
                           }
@@ -1833,9 +1833,9 @@
                           "duration": 13430,
                           "error": {
                             "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"price_desc\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"price_desc\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:177:55",
+                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"price_desc\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:177:55",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 55,
                               "line": 177
                             },
@@ -1844,11 +1844,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 55,
                                 "line": 177
                               },
-                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"price_desc\"]')\u001b[22m\n\n\n  175 |\n  176 |       await page.locator('[data-testid=\"sort-select\"]').click();\n> 177 |       await page.locator('[data-value=\"price_desc\"]').click();\n      |                                                       ^\n  178 |\n  179 |       await expect(page).toHaveURL(/sort=price_desc/);\n  180 |     });\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:177:55"
+                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"price_desc\"]')\u001b[22m\n\n\n  175 |\n  176 |       await page.locator('[data-testid=\"sort-select\"]').click();\n> 177 |       await page.locator('[data-value=\"price_desc\"]').click();\n      |                                                       ^\n  178 |\n  179 |       await expect(page).toHaveURL(/sort=price_desc/);\n  180 |     });\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:177:55"
                             }
                           ],
                           "stdout": [],
@@ -1860,16 +1860,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Sor-29419-d-sort-by-price-high-to-low-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Sor-29419-d-sort-by-price-high-to-low-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Sor-29419-d-sort-by-price-high-to-low-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Sor-29419-d-sort-by-price-high-to-low-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 55,
                             "line": 177
                           }
@@ -1902,9 +1902,9 @@
                           "duration": 13222,
                           "error": {
                             "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"sales\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"sales\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:187:50",
+                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"sales\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:187:50",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 50,
                               "line": 187
                             },
@@ -1913,11 +1913,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 50,
                                 "line": 187
                               },
-                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"sales\"]')\u001b[22m\n\n\n  185 |\n  186 |       await page.locator('[data-testid=\"sort-select\"]').click();\n> 187 |       await page.locator('[data-value=\"sales\"]').click();\n      |                                                  ^\n  188 |\n  189 |       await expect(page).toHaveURL(/sort=sales/);\n  190 |     });\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:187:50"
+                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"sales\"]')\u001b[22m\n\n\n  185 |\n  186 |       await page.locator('[data-testid=\"sort-select\"]').click();\n> 187 |       await page.locator('[data-value=\"sales\"]').click();\n      |                                                  ^\n  188 |\n  189 |       await expect(page).toHaveURL(/sort=sales/);\n  190 |     });\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:187:50"
                             }
                           ],
                           "stdout": [],
@@ -1929,16 +1929,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Sorting-should-sort-by-sales-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Sorting-should-sort-by-sales-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Sorting-should-sort-by-sales-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Sorting-should-sort-by-sales-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 50,
                             "line": 187
                           }
@@ -1971,9 +1971,9 @@
                           "duration": 13241,
                           "error": {
                             "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"newest\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"newest\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:197:51",
+                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"newest\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:197:51",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 51,
                               "line": 197
                             },
@@ -1982,11 +1982,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 51,
                                 "line": 197
                               },
-                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"newest\"]')\u001b[22m\n\n\n  195 |\n  196 |       await page.locator('[data-testid=\"sort-select\"]').click();\n> 197 |       await page.locator('[data-value=\"newest\"]').click();\n      |                                                   ^\n  198 |\n  199 |       await expect(page).toHaveURL(/sort=newest/);\n  200 |     });\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:197:51"
+                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-value=\"newest\"]')\u001b[22m\n\n\n  195 |\n  196 |       await page.locator('[data-testid=\"sort-select\"]').click();\n> 197 |       await page.locator('[data-value=\"newest\"]').click();\n      |                                                   ^\n  198 |\n  199 |       await expect(page).toHaveURL(/sort=newest/);\n  200 |     });\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:197:51"
                             }
                           ],
                           "stdout": [],
@@ -1998,16 +1998,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Sorting-should-sort-by-newest-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Sorting-should-sort-by-newest-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Sorting-should-sort-by-newest-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Sorting-should-sort-by-newest-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 51,
                             "line": 197
                           }
@@ -2048,9 +2048,9 @@
                           "duration": 13420,
                           "error": {
                             "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n",
-                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:214:49",
+                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:214:49",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 49,
                               "line": 214
                             },
@@ -2059,11 +2059,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 49,
                                 "line": 214
                               },
-                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n\n\n  212 |       await products.productCards.first().click();\n  213 |\n> 214 |       await expect(products.productDetailModal).toBeVisible();\n      |                                                 ^\n  215 |     });\n  216 |\n  217 |     test('should display product images gallery', async ({ mockedPage: page }) => {\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:214:49"
+                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n\n\n  212 |       await products.productCards.first().click();\n  213 |\n> 214 |       await expect(products.productDetailModal).toBeVisible();\n      |                                                 ^\n  215 |     });\n  216 |\n  217 |     test('should display product images gallery', async ({ mockedPage: page }) => {\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:214:49"
                             }
                           ],
                           "stdout": [],
@@ -2075,16 +2075,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-069fb-d-open-product-detail-modal-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-069fb-d-open-product-detail-modal-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-069fb-d-open-product-detail-modal-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-069fb-d-open-product-detail-modal-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 49,
                             "line": 214
                           }
@@ -2117,9 +2117,9 @@
                           "duration": 13306,
                           "error": {
                             "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-gallery\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-gallery\"]')\u001b[22m\n",
-                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-gallery\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-gallery\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:223:69",
+                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-gallery\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-gallery\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:223:69",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 69,
                               "line": 223
                             },
@@ -2128,11 +2128,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 69,
                                 "line": 223
                               },
-                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-gallery\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-gallery\"]')\u001b[22m\n\n\n  221 |       await products.productCards.first().click();\n  222 |\n> 223 |       await expect(page.locator('[data-testid=\"product-gallery\"]')).toBeVisible();\n      |                                                                     ^\n  224 |     });\n  225 |\n  226 |     test('should display product description', async ({ mockedPage: page }) => {\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:223:69"
+                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-gallery\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-gallery\"]')\u001b[22m\n\n\n  221 |       await products.productCards.first().click();\n  222 |\n> 223 |       await expect(page.locator('[data-testid=\"product-gallery\"]')).toBeVisible();\n      |                                                                     ^\n  224 |     });\n  225 |\n  226 |     test('should display product description', async ({ mockedPage: page }) => {\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:223:69"
                             }
                           ],
                           "stdout": [],
@@ -2144,16 +2144,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-01cc1-play-product-images-gallery-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-01cc1-play-product-images-gallery-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-01cc1-play-product-images-gallery-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-01cc1-play-product-images-gallery-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 69,
                             "line": 223
                           }
@@ -2186,9 +2186,9 @@
                           "duration": 13093,
                           "error": {
                             "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-description\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-description\"]')\u001b[22m\n",
-                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-description\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-description\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:232:73",
+                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-description\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-description\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:232:73",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 73,
                               "line": 232
                             },
@@ -2197,11 +2197,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 73,
                                 "line": 232
                               },
-                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-description\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-description\"]')\u001b[22m\n\n\n  230 |       await products.productCards.first().click();\n  231 |\n> 232 |       await expect(page.locator('[data-testid=\"product-description\"]')).toBeVisible();\n      |                                                                         ^\n  233 |     });\n  234 |\n  235 |     test('should display supplier info', async ({ mockedPage: page }) => {\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:232:73"
+                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-description\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-description\"]')\u001b[22m\n\n\n  230 |       await products.productCards.first().click();\n  231 |\n> 232 |       await expect(page.locator('[data-testid=\"product-description\"]')).toBeVisible();\n      |                                                                         ^\n  233 |     });\n  234 |\n  235 |     test('should display supplier info', async ({ mockedPage: page }) => {\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:232:73"
                             }
                           ],
                           "stdout": [],
@@ -2213,16 +2213,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-a830e-display-product-description-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-a830e-display-product-description-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-a830e-display-product-description-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-a830e-display-product-description-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 73,
                             "line": 232
                           }
@@ -2255,9 +2255,9 @@
                           "duration": 13026,
                           "error": {
                             "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"supplier-info\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"supplier-info\"]')\u001b[22m\n",
-                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"supplier-info\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"supplier-info\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:241:67",
+                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"supplier-info\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"supplier-info\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:241:67",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 67,
                               "line": 241
                             },
@@ -2266,11 +2266,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 67,
                                 "line": 241
                               },
-                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"supplier-info\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"supplier-info\"]')\u001b[22m\n\n\n  239 |       await products.productCards.first().click();\n  240 |\n> 241 |       await expect(page.locator('[data-testid=\"supplier-info\"]')).toBeVisible();\n      |                                                                   ^\n  242 |     });\n  243 |\n  244 |     test('should copy product info button', async ({ mockedPage: page }) => {\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:241:67"
+                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"supplier-info\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"supplier-info\"]')\u001b[22m\n\n\n  239 |       await products.productCards.first().click();\n  240 |\n> 241 |       await expect(page.locator('[data-testid=\"supplier-info\"]')).toBeVisible();\n      |                                                                   ^\n  242 |     });\n  243 |\n  244 |     test('should copy product info button', async ({ mockedPage: page }) => {\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:241:67"
                             }
                           ],
                           "stdout": [],
@@ -2282,16 +2282,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-010a4-hould-display-supplier-info-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-010a4-hould-display-supplier-info-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-010a4-hould-display-supplier-info-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-010a4-hould-display-supplier-info-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 67,
                             "line": 241
                           }
@@ -2324,9 +2324,9 @@
                           "duration": 13241,
                           "error": {
                             "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"copy-info\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"copy-info\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:249:55",
+                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"copy-info\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:249:55",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 55,
                               "line": 249
                             },
@@ -2335,11 +2335,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 55,
                                 "line": 249
                               },
-                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"copy-info\"]')\u001b[22m\n\n\n  247 |\n  248 |       await products.productCards.first().click();\n> 249 |       await page.locator('[data-testid=\"copy-info\"]').click();\n      |                                                       ^\n  250 |\n  251 |       await expect(page.locator('[data-testid=\"toast\"]')).toContainText(/copiado|copied/i);\n  252 |     });\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:249:55"
+                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"copy-info\"]')\u001b[22m\n\n\n  247 |\n  248 |       await products.productCards.first().click();\n> 249 |       await page.locator('[data-testid=\"copy-info\"]').click();\n      |                                                       ^\n  250 |\n  251 |       await expect(page.locator('[data-testid=\"toast\"]')).toContainText(/copiado|copied/i);\n  252 |     });\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:249:55"
                             }
                           ],
                           "stdout": [],
@@ -2351,16 +2351,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-df9de-ld-copy-product-info-button-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-df9de-ld-copy-product-info-button-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-df9de-ld-copy-product-info-button-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-df9de-ld-copy-product-info-button-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 55,
                             "line": 249
                           }
@@ -2393,9 +2393,9 @@
                           "duration": 13420,
                           "error": {
                             "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"generate-copy\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"generate-copy\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:259:59",
+                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"generate-copy\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:259:59",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 59,
                               "line": 259
                             },
@@ -2404,11 +2404,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 59,
                                 "line": 259
                               },
-                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"generate-copy\"]')\u001b[22m\n\n\n  257 |\n  258 |       await products.productCards.first().click();\n> 259 |       await page.locator('[data-testid=\"generate-copy\"]').click();\n      |                                                           ^\n  260 |\n  261 |       await expect(page).toHaveURL(/copy/);\n  262 |     });\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:259:59"
+                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"generate-copy\"]')\u001b[22m\n\n\n  257 |\n  258 |       await products.productCards.first().click();\n> 259 |       await page.locator('[data-testid=\"generate-copy\"]').click();\n      |                                                           ^\n  260 |\n  261 |       await expect(page).toHaveURL(/copy/);\n  262 |     });\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:259:59"
                             }
                           ],
                           "stdout": [],
@@ -2420,16 +2420,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-dd901-should-generate-copy-button-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-dd901-should-generate-copy-button-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-dd901-should-generate-copy-button-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-dd901-should-generate-copy-button-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 59,
                             "line": 259
                           }
@@ -2462,9 +2462,9 @@
                           "duration": 13457,
                           "error": {
                             "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n",
-                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:269:49",
+                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:269:49",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 49,
                               "line": 269
                             },
@@ -2473,11 +2473,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 49,
                                 "line": 269
                               },
-                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n\n\n  267 |\n  268 |       await products.productCards.first().click();\n> 269 |       await expect(products.productDetailModal).toBeVisible();\n      |                                                 ^\n  270 |\n  271 |       await page.keyboard.press('Escape');\n  272 |       await expect(products.productDetailModal).not.toBeVisible();\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:269:49"
+                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n\n\n  267 |\n  268 |       await products.productCards.first().click();\n> 269 |       await expect(products.productDetailModal).toBeVisible();\n      |                                                 ^\n  270 |\n  271 |       await page.keyboard.press('Escape');\n  272 |       await expect(products.productDetailModal).not.toBeVisible();\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:269:49"
                             }
                           ],
                           "stdout": [],
@@ -2489,16 +2489,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-94b94-hould-close-modal-on-escape-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-94b94-hould-close-modal-on-escape-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-94b94-hould-close-modal-on-escape-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-94b94-hould-close-modal-on-escape-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 49,
                             "line": 269
                           }
@@ -2531,9 +2531,9 @@
                           "duration": 13505,
                           "error": {
                             "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n",
-                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:280:49",
+                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:280:49",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 49,
                               "line": 280
                             },
@@ -2542,11 +2542,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 49,
                                 "line": 280
                               },
-                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n\n\n  278 |\n  279 |       await products.productCards.first().click();\n> 280 |       await expect(products.productDetailModal).toBeVisible();\n      |                                                 ^\n  281 |\n  282 |       await page.locator('[data-testid=\"modal-backdrop\"]').click({ position: { x: 0, y: 0 }});\n  283 |       await expect(products.productDetailModal).not.toBeVisible();\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:280:49"
+                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-testid=\"product-detail-modal\"], [role=\"dialog\"]')\u001b[22m\n\n\n  278 |\n  279 |       await products.productCards.first().click();\n> 280 |       await expect(products.productDetailModal).toBeVisible();\n      |                                                 ^\n  281 |\n  282 |       await page.locator('[data-testid=\"modal-backdrop\"]').click({ position: { x: 0, y: 0 }});\n  283 |       await expect(products.productDetailModal).not.toBeVisible();\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:280:49"
                             }
                           ],
                           "stdout": [],
@@ -2558,16 +2558,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-407c6-ose-modal-on-backdrop-click-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-407c6-ose-modal-on-backdrop-click-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pro-407c6-ose-modal-on-backdrop-click-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pro-407c6-ose-modal-on-backdrop-click-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 49,
                             "line": 280
                           }
@@ -2608,9 +2608,9 @@
                           "duration": 13837,
                           "error": {
                             "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/page=2/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:5173/products\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"http://localhost:5173/products\"\u001b[22m\n",
-                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/page=2/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:5173/products\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"http://localhost:5173/products\"\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:298:26",
+                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/page=2/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:5173/products\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"http://localhost:5173/products\"\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:298:26",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 26,
                               "line": 298
                             },
@@ -2619,11 +2619,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 26,
                                 "line": 298
                               },
-                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/page=2/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:5173/products\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"http://localhost:5173/products\"\u001b[22m\n\n\n  296 |       await page.locator('[data-testid=\"next-page\"]').click();\n  297 |\n> 298 |       await expect(page).toHaveURL(/page=2/);\n      |                          ^\n  299 |     });\n  300 |\n  301 |     test('should navigate to previous page', async ({ mockedPage: page }) => {\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:298:26"
+                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/page=2/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:5173/products\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    14 × unexpected value \"http://localhost:5173/products\"\u001b[22m\n\n\n  296 |       await page.locator('[data-testid=\"next-page\"]').click();\n  297 |\n> 298 |       await expect(page).toHaveURL(/page=2/);\n      |                          ^\n  299 |     });\n  300 |\n  301 |     test('should navigate to previous page', async ({ mockedPage: page }) => {\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:298:26"
                             }
                           ],
                           "stdout": [],
@@ -2635,16 +2635,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pag-5e2a9-hould-navigate-to-next-page-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pag-5e2a9-hould-navigate-to-next-page-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pag-5e2a9-hould-navigate-to-next-page-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pag-5e2a9-hould-navigate-to-next-page-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 26,
                             "line": 298
                           }
@@ -2677,9 +2677,9 @@
                           "duration": 10880,
                           "error": {
                             "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"prev-page\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-testid=\"prev-page\" class=\"inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98] border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent-foregro…>…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    18 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"prev-page\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-testid=\"prev-page\" class=\"inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98] border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent-foregro…>…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    18 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:304:55",
+                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"prev-page\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-testid=\"prev-page\" class=\"inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98] border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent-foregro…>…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    18 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:304:55",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 55,
                               "line": 304
                             },
@@ -2688,11 +2688,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 55,
                                 "line": 304
                               },
-                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"prev-page\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-testid=\"prev-page\" class=\"inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98] border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent-foregro…>…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    18 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n  302 |       await page.goto('/products?page=2');\n  303 |\n> 304 |       await page.locator('[data-testid=\"prev-page\"]').click();\n      |                                                       ^\n  305 |\n  306 |       await expect(page).toHaveURL(/page=1/);\n  307 |     });\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:304:55"
+                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"prev-page\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-testid=\"prev-page\" class=\"inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98] border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent-foregro…>…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    18 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n  302 |       await page.goto('/products?page=2');\n  303 |\n> 304 |       await page.locator('[data-testid=\"prev-page\"]').click();\n      |                                                       ^\n  305 |\n  306 |       await expect(page).toHaveURL(/page=1/);\n  307 |     });\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:304:55"
                             }
                           ],
                           "stdout": [],
@@ -2704,16 +2704,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pag-ff3b5-d-navigate-to-previous-page-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pag-ff3b5-d-navigate-to-previous-page-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pag-ff3b5-d-navigate-to-previous-page-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pag-ff3b5-d-navigate-to-previous-page-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 55,
                             "line": 304
                           }
@@ -2746,9 +2746,9 @@
                           "duration": 12765,
                           "error": {
                             "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"page-3\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"page-3\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:313:52",
+                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"page-3\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:313:52",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 52,
                               "line": 313
                             },
@@ -2757,11 +2757,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 52,
                                 "line": 313
                               },
-                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"page-3\"]')\u001b[22m\n\n\n  311 |       await products.goto();\n  312 |\n> 313 |       await page.locator('[data-testid=\"page-3\"]').click();\n      |                                                    ^\n  314 |\n  315 |       await expect(page).toHaveURL(/page=3/);\n  316 |     });\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:313:52"
+                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"page-3\"]')\u001b[22m\n\n\n  311 |       await products.goto();\n  312 |\n> 313 |       await page.locator('[data-testid=\"page-3\"]').click();\n      |                                                    ^\n  314 |\n  315 |       await expect(page).toHaveURL(/page=3/);\n  316 |     });\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:313:52"
                             }
                           ],
                           "stdout": [],
@@ -2773,16 +2773,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pag-2b2aa-d-navigate-to-specific-page-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pag-2b2aa-d-navigate-to-specific-page-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Pag-2b2aa-d-navigate-to-specific-page-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Pag-2b2aa-d-navigate-to-specific-page-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 52,
                             "line": 313
                           }
@@ -2857,9 +2857,9 @@
                           "duration": 13230,
                           "error": {
                             "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:335:55",
+                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:335:55",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 55,
                               "line": 335
                             },
@@ -2868,11 +2868,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 55,
                                 "line": 335
                               },
-                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n\n\n  333 |       await products.goto();\n  334 |\n> 335 |       await page.locator('[data-testid=\"list-view\"]').click();\n      |                                                       ^\n  336 |\n  337 |       await expect(page.locator('[data-testid=\"products-list\"]')).toBeVisible();\n  338 |     });\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:335:55"
+                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n\n\n  333 |       await products.goto();\n  334 |\n> 335 |       await page.locator('[data-testid=\"list-view\"]').click();\n      |                                                       ^\n  336 |\n  337 |       await expect(page.locator('[data-testid=\"products-list\"]')).toBeVisible();\n  338 |     });\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:335:55"
                             }
                           ],
                           "stdout": [],
@@ -2884,16 +2884,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-View-Modes-should-switch-to-list-view-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-View-Modes-should-switch-to-list-view-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-View-Modes-should-switch-to-list-view-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-View-Modes-should-switch-to-list-view-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 55,
                             "line": 335
                           }
@@ -2926,9 +2926,9 @@
                           "duration": 13077,
                           "error": {
                             "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:344:55",
+                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:344:55",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 55,
                               "line": 344
                             },
@@ -2937,11 +2937,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 55,
                                 "line": 344
                               },
-                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n\n\n  342 |       await products.goto();\n  343 |\n> 344 |       await page.locator('[data-testid=\"list-view\"]').click();\n      |                                                       ^\n  345 |       await page.locator('[data-testid=\"grid-view\"]').click();\n  346 |\n  347 |       await expect(page.locator('[data-testid=\"products-grid\"]')).toBeVisible();\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:344:55"
+                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n\n\n  342 |       await products.goto();\n  343 |\n> 344 |       await page.locator('[data-testid=\"list-view\"]').click();\n      |                                                       ^\n  345 |       await page.locator('[data-testid=\"grid-view\"]').click();\n  346 |\n  347 |       await expect(page.locator('[data-testid=\"products-grid\"]')).toBeVisible();\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:344:55"
                             }
                           ],
                           "stdout": [],
@@ -2953,16 +2953,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-View-Modes-should-switch-to-grid-view-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-View-Modes-should-switch-to-grid-view-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-View-Modes-should-switch-to-grid-view-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-View-Modes-should-switch-to-grid-view-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 55,
                             "line": 344
                           }
@@ -2995,9 +2995,9 @@
                           "duration": 12323,
                           "error": {
                             "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:354:55",
+                            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:354:55",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 55,
                               "line": 354
                             },
@@ -3006,11 +3006,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 55,
                                 "line": 354
                               },
-                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n\n\n  352 |       await products.goto();\n  353 |\n> 354 |       await page.locator('[data-testid=\"list-view\"]').click();\n      |                                                       ^\n  355 |       await page.reload();\n  356 |\n  357 |       await expect(page.locator('[data-testid=\"products-list\"]')).toBeVisible();\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:354:55"
+                              "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"list-view\"]')\u001b[22m\n\n\n  352 |       await products.goto();\n  353 |\n> 354 |       await page.locator('[data-testid=\"list-view\"]').click();\n      |                                                       ^\n  355 |       await page.reload();\n  356 |\n  357 |       await expect(page.locator('[data-testid=\"products-list\"]')).toBeVisible();\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:354:55"
                             }
                           ],
                           "stdout": [],
@@ -3022,16 +3022,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Vie-d9ae9-ersist-view-mode-preference-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Vie-d9ae9-ersist-view-mode-preference-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Vie-d9ae9-ersist-view-mode-preference-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Vie-d9ae9-ersist-view-mode-preference-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 55,
                             "line": 354
                           }
@@ -3072,9 +3072,9 @@
                           "duration": 12744,
                           "error": {
                             "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n",
-                            "stack": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:370:70",
+                            "stack": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:370:70",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 70,
                               "line": 370
                             },
@@ -3083,11 +3083,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 70,
                                 "line": 370
                               },
-                              "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n\n\n  368 |       await products.goto();\n  369 |\n> 370 |       await page.locator('[data-testid=\"product-checkbox\"]').first().check();\n      |                                                                      ^\n  371 |       await page.locator('[data-testid=\"product-checkbox\"]').nth(1).check();\n  372 |\n  373 |       await expect(page.locator('[data-testid=\"selected-count\"]')).toContainText('2');\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:370:70"
+                              "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n\n\n  368 |       await products.goto();\n  369 |\n> 370 |       await page.locator('[data-testid=\"product-checkbox\"]').first().check();\n      |                                                                      ^\n  371 |       await page.locator('[data-testid=\"product-checkbox\"]').nth(1).check();\n  372 |\n  373 |       await expect(page.locator('[data-testid=\"selected-count\"]')).toContainText('2');\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:370:70"
                             }
                           ],
                           "stdout": [],
@@ -3099,16 +3099,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Bul-62cee-ld-select-multiple-products-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Bul-62cee-ld-select-multiple-products-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Bul-62cee-ld-select-multiple-products-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Bul-62cee-ld-select-multiple-products-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 70,
                             "line": 370
                           }
@@ -3141,9 +3141,9 @@
                           "duration": 12947,
                           "error": {
                             "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"select-all\"]')\u001b[22m\n",
-                            "stack": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"select-all\"]')\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:380:56",
+                            "stack": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"select-all\"]')\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:380:56",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 56,
                               "line": 380
                             },
@@ -3152,11 +3152,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 56,
                                 "line": 380
                               },
-                              "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"select-all\"]')\u001b[22m\n\n\n  378 |       await products.goto();\n  379 |\n> 380 |       await page.locator('[data-testid=\"select-all\"]').check();\n      |                                                        ^\n  381 |\n  382 |       await expect(page.locator('[data-testid=\"product-checkbox\"]:checked')).toHaveCount(\n  383 |         await page.locator('[data-testid=\"product-checkbox\"]').count()\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:380:56"
+                              "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"select-all\"]')\u001b[22m\n\n\n  378 |       await products.goto();\n  379 |\n> 380 |       await page.locator('[data-testid=\"select-all\"]').check();\n      |                                                        ^\n  381 |\n  382 |       await expect(page.locator('[data-testid=\"product-checkbox\"]:checked')).toHaveCount(\n  383 |         await page.locator('[data-testid=\"product-checkbox\"]').count()\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:380:56"
                             }
                           ],
                           "stdout": [],
@@ -3168,16 +3168,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Bul-edea6--should-select-all-products-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Bul-edea6--should-select-all-products-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Bul-edea6--should-select-all-products-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Bul-edea6--should-select-all-products-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 56,
                             "line": 380
                           }
@@ -3210,9 +3210,9 @@
                           "duration": 13118,
                           "error": {
                             "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n",
-                            "stack": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:391:70",
+                            "stack": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:391:70",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 70,
                               "line": 391
                             },
@@ -3221,11 +3221,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 70,
                                 "line": 391
                               },
-                              "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n\n\n  389 |       await products.goto();\n  390 |\n> 391 |       await page.locator('[data-testid=\"product-checkbox\"]').first().check();\n      |                                                                      ^\n  392 |       await page.locator('[data-testid=\"bulk-favorite\"]').click();\n  393 |\n  394 |       await expect(page.locator('[data-testid=\"toast\"]')).toContainText(/adicionado|added/i);\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:391:70"
+                              "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n\n\n  389 |       await products.goto();\n  390 |\n> 391 |       await page.locator('[data-testid=\"product-checkbox\"]').first().check();\n      |                                                                      ^\n  392 |       await page.locator('[data-testid=\"bulk-favorite\"]').click();\n  393 |\n  394 |       await expect(page.locator('[data-testid=\"toast\"]')).toContainText(/adicionado|added/i);\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:391:70"
                             }
                           ],
                           "stdout": [],
@@ -3237,16 +3237,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Bul-ce506-d-add-selected-to-favorites-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Bul-ce506-d-add-selected-to-favorites-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Bul-ce506-d-add-selected-to-favorites-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Bul-ce506-d-add-selected-to-favorites-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 70,
                             "line": 391
                           }
@@ -3279,9 +3279,9 @@
                           "duration": 12747,
                           "error": {
                             "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n",
-                            "stack": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:401:70",
+                            "stack": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:401:70",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 70,
                               "line": 401
                             },
@@ -3290,11 +3290,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 70,
                                 "line": 401
                               },
-                              "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n\n\n  399 |       await products.goto();\n  400 |\n> 401 |       await page.locator('[data-testid=\"product-checkbox\"]').first().check();\n      |                                                                      ^\n  402 |       await page.locator('[data-testid=\"bulk-export\"]').click();\n  403 |\n  404 |       await expect(page.locator('[data-testid=\"export-modal\"]')).toBeVisible();\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:401:70"
+                              "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"product-checkbox\"]').first()\u001b[22m\n\n\n  399 |       await products.goto();\n  400 |\n> 401 |       await page.locator('[data-testid=\"product-checkbox\"]').first().check();\n      |                                                                      ^\n  402 |       await page.locator('[data-testid=\"bulk-export\"]').click();\n  403 |\n  404 |       await expect(page.locator('[data-testid=\"export-modal\"]')).toBeVisible();\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:401:70"
                             }
                           ],
                           "stdout": [],
@@ -3306,16 +3306,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Bul-aebfa-ld-export-selected-products-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Bul-aebfa-ld-export-selected-products-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Bul-aebfa-ld-export-selected-products-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Bul-aebfa-ld-export-selected-products-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 70,
                             "line": 401
                           }
@@ -3356,9 +3356,9 @@
                           "duration": 3984,
                           "error": {
                             "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m8\u001b[39m\nReceived:   \u001b[31m8\u001b[39m",
-                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m8\u001b[39m\nReceived:   \u001b[31m8\u001b[39m\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:426:24",
+                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m8\u001b[39m\nReceived:   \u001b[31m8\u001b[39m\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:426:24",
                             "location": {
-                              "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                              "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                               "column": 24,
                               "line": 426
                             },
@@ -3367,11 +3367,11 @@
                           "errors": [
                             {
                               "location": {
-                                "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                                "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                                 "column": 24,
                                 "line": 426
                               },
-                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m8\u001b[39m\nReceived:   \u001b[31m8\u001b[39m\n\n  424 |\n  425 |       const newCount = await products.productCards.count();\n> 426 |       expect(newCount).toBeGreaterThan(initialCount);\n      |                        ^\n  427 |     });\n  428 |   });\n  429 | });\n    at /home/jhonslife/Didin Facil/tests/e2e/products.spec.ts:426:24"
+                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m8\u001b[39m\nReceived:   \u001b[31m8\u001b[39m\n\n  424 |\n  425 |       const newCount = await products.productCards.count();\n> 426 |       expect(newCount).toBeGreaterThan(initialCount);\n      |                        ^\n  427 |     });\n  428 |   });\n  429 | });\n    at /home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts:426:24"
                             }
                           ],
                           "stdout": [],
@@ -3383,16 +3383,16 @@
                             {
                               "name": "screenshot",
                               "contentType": "image/png",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Inf-6a893-oad-more-products-on-scroll-chromium/test-failed-1.png"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Inf-6a893-oad-more-products-on-scroll-chromium/test-failed-1.png"
                             },
                             {
                               "name": "error-context",
                               "contentType": "text/markdown",
-                              "path": "/home/jhonslife/Didin Facil/test-results/artifacts/products-Products-Flow-Inf-6a893-oad-more-products-on-scroll-chromium/error-context.md"
+                              "path": "/home/jhonslife/TikTrend Finder/test-results/artifacts/products-Products-Flow-Inf-6a893-oad-more-products-on-scroll-chromium/error-context.md"
                             }
                           ],
                           "errorLocation": {
-                            "file": "/home/jhonslife/Didin Facil/tests/e2e/products.spec.ts",
+                            "file": "/home/jhonslife/TikTrend Finder/tests/e2e/products.spec.ts",
                             "column": 24,
                             "line": 426
                           }

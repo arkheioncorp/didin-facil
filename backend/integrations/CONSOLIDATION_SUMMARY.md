@@ -169,7 +169,7 @@ from integrations import get_whatsapp_hub, get_instagram_hub
 # WhatsApp
 whatsapp = get_whatsapp_hub()
 await whatsapp.send_message(
-    instance_name="didin-whatsapp",
+    instance_name="tiktrend-whatsapp",
     to="5511999999999",
     message="Olá!"
 )
@@ -191,7 +191,7 @@ from modules.chatbot import WhatsAppHubAdapter, InstagramHubAdapter
 
 # WhatsApp
 whatsapp_hub = get_whatsapp_hub()
-whatsapp_adapter = WhatsAppHubAdapter(whatsapp_hub, "didin-whatsapp")
+whatsapp_adapter = WhatsAppHubAdapter(whatsapp_hub, "tiktrend-whatsapp")
 
 # Instagram
 instagram_hub = get_instagram_hub()
@@ -212,7 +212,7 @@ from modules.chatbot import EvolutionAdapter, EvolutionConfig
 config = EvolutionConfig(
     api_url="http://localhost:8082",
     api_key="key",
-    instance_name="didin-whatsapp"
+    instance_name="tiktrend-whatsapp"
 )
 adapter = EvolutionAdapter(config)
 # Internamente delega para WhatsAppHubAdapter
@@ -566,7 +566,7 @@ Os hubs disparam alertas automaticamente quando:
 #### prometheus.yml
 ```yaml
 scrape_configs:
-  - job_name: 'didin-hubs'
+  - job_name: 'tiktrend-hubs'
     scrape_interval: 15s
     static_configs:
       - targets: ['api:8000']
@@ -581,7 +581,7 @@ scrape_configs:
 
 ### Dashboard Grafana
 
-Dashboard disponível em `docker/grafana/dashboards/didin-hubs.json`:
+Dashboard disponível em `docker/grafana/dashboards/tiktrend-hubs.json`:
 - Request rate por hub
 - Latência (avg, p95, p99)
 - Status dos circuit breakers

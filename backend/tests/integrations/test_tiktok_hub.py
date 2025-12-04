@@ -3,7 +3,7 @@ Testes Unitários - TikTok Hub
 =============================
 Testes para o hub centralizado de TikTok.
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.0.0
 """
 

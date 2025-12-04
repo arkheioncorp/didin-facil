@@ -167,19 +167,19 @@ class AutomationResult(BaseModel):
 DEFAULT_AUTOMATIONS: Dict[AutomationType, AutomationConfig] = {
     AutomationType.NEW_USER_WELCOME: AutomationConfig(
         automation_type=AutomationType.NEW_USER_WELCOME,
-        webhook_path="/didin/new-user",
+        webhook_path="/tiktrend/new-user",
         channels=[ChannelType.WHATSAPP, ChannelType.EMAIL],
         delay_minutes=0,
         priority=AutomationPriority.HIGH,
         templates={
-            "whatsapp": "Olá {name}! 🎉 Bem-vindo ao Didin Fácil! Sou seu assistente virtual e vou te ajudar a encontrar os melhores produtos com os melhores preços. O que você está procurando hoje?",
-            "email": "Bem-vindo ao Didin Fácil, {name}!",
+            "whatsapp": "Olá {name}! 🎉 Bem-vindo ao TikTrend Finder! Sou seu assistente virtual e vou te ajudar a encontrar os melhores produtos com os melhores preços. O que você está procurando hoje?",
+            "email": "Bem-vindo ao TikTrend Finder, {name}!",
         }
     ),
     
     AutomationType.NEW_LEAD_NURTURING: AutomationConfig(
         automation_type=AutomationType.NEW_LEAD_NURTURING,
-        webhook_path="/didin/lead-nurture",
+        webhook_path="/tiktrend/lead-nurture",
         channels=[ChannelType.WHATSAPP],
         delay_minutes=60,  # 1 hora após primeiro contato
         priority=AutomationPriority.NORMAL,
@@ -190,7 +190,7 @@ DEFAULT_AUTOMATIONS: Dict[AutomationType, AutomationConfig] = {
     
     AutomationType.CART_ABANDONED: AutomationConfig(
         automation_type=AutomationType.CART_ABANDONED,
-        webhook_path="/didin/cart-abandoned",
+        webhook_path="/tiktrend/cart-abandoned",
         channels=[ChannelType.WHATSAPP, ChannelType.EMAIL],
         delay_minutes=120,  # 2 horas
         priority=AutomationPriority.HIGH,
@@ -202,7 +202,7 @@ DEFAULT_AUTOMATIONS: Dict[AutomationType, AutomationConfig] = {
     
     AutomationType.PRICE_DROP_ALERT: AutomationConfig(
         automation_type=AutomationType.PRICE_DROP_ALERT,
-        webhook_path="/didin/price-drop",
+        webhook_path="/tiktrend/price-drop",
         channels=[ChannelType.WHATSAPP, ChannelType.EMAIL, ChannelType.PUSH],
         delay_minutes=0,
         priority=AutomationPriority.URGENT,
@@ -213,7 +213,7 @@ DEFAULT_AUTOMATIONS: Dict[AutomationType, AutomationConfig] = {
     
     AutomationType.POST_PURCHASE_THANKS: AutomationConfig(
         automation_type=AutomationType.POST_PURCHASE_THANKS,
-        webhook_path="/didin/post-purchase",
+        webhook_path="/tiktrend/post-purchase",
         channels=[ChannelType.WHATSAPP],
         delay_minutes=30,
         priority=AutomationPriority.NORMAL,
@@ -224,7 +224,7 @@ DEFAULT_AUTOMATIONS: Dict[AutomationType, AutomationConfig] = {
     
     AutomationType.REVIEW_REQUEST: AutomationConfig(
         automation_type=AutomationType.REVIEW_REQUEST,
-        webhook_path="/didin/review-request",
+        webhook_path="/tiktrend/review-request",
         channels=[ChannelType.WHATSAPP, ChannelType.EMAIL],
         delay_minutes=10080,  # 7 dias
         priority=AutomationPriority.LOW,
@@ -236,7 +236,7 @@ DEFAULT_AUTOMATIONS: Dict[AutomationType, AutomationConfig] = {
     
     AutomationType.CROSS_SELL: AutomationConfig(
         automation_type=AutomationType.CROSS_SELL,
-        webhook_path="/didin/cross-sell",
+        webhook_path="/tiktrend/cross-sell",
         channels=[ChannelType.WHATSAPP],
         delay_minutes=4320,  # 3 dias
         priority=AutomationPriority.LOW,
@@ -247,7 +247,7 @@ DEFAULT_AUTOMATIONS: Dict[AutomationType, AutomationConfig] = {
     
     AutomationType.INACTIVE_USER: AutomationConfig(
         automation_type=AutomationType.INACTIVE_USER,
-        webhook_path="/didin/reengagement",
+        webhook_path="/tiktrend/reengagement",
         channels=[ChannelType.WHATSAPP, ChannelType.EMAIL],
         delay_minutes=0,
         priority=AutomationPriority.LOW,
@@ -259,7 +259,7 @@ DEFAULT_AUTOMATIONS: Dict[AutomationType, AutomationConfig] = {
     
     AutomationType.LEAD_QUALIFIED: AutomationConfig(
         automation_type=AutomationType.LEAD_QUALIFIED,
-        webhook_path="/didin/lead-qualified",
+        webhook_path="/tiktrend/lead-qualified",
         channels=[ChannelType.WHATSAPP],
         delay_minutes=0,
         priority=AutomationPriority.HIGH,
@@ -270,7 +270,7 @@ DEFAULT_AUTOMATIONS: Dict[AutomationType, AutomationConfig] = {
     
     AutomationType.DEAL_WON: AutomationConfig(
         automation_type=AutomationType.DEAL_WON,
-        webhook_path="/didin/deal-won",
+        webhook_path="/tiktrend/deal-won",
         channels=[ChannelType.WHATSAPP, ChannelType.EMAIL],
         delay_minutes=0,
         priority=AutomationPriority.HIGH,
@@ -281,7 +281,7 @@ DEFAULT_AUTOMATIONS: Dict[AutomationType, AutomationConfig] = {
 
     AutomationType.COMPLAINT_ALERT: AutomationConfig(
         automation_type=AutomationType.COMPLAINT_ALERT,
-        webhook_path="/didin/complaint-alert",
+        webhook_path="/tiktrend/complaint-alert",
         channels=[ChannelType.EMAIL],  # Notifica equipe interna
         delay_minutes=0,
         priority=AutomationPriority.URGENT,
@@ -292,7 +292,7 @@ DEFAULT_AUTOMATIONS: Dict[AutomationType, AutomationConfig] = {
 
     AutomationType.HUMAN_HANDOFF: AutomationConfig(
         automation_type=AutomationType.HUMAN_HANDOFF,
-        webhook_path="/didin/handoff",
+        webhook_path="/tiktrend/handoff",
         channels=[ChannelType.EMAIL],  # Notifica atendente
         delay_minutes=0,
         priority=AutomationPriority.HIGH,

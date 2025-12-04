@@ -205,7 +205,7 @@ npm run tauri build
   "bundle": {
     "active": true,
     "targets": ["nsis"],
-    "identifier": "com.didinfacil.tiktrend",
+    "identifier": "com.tiktrendfinder.app",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

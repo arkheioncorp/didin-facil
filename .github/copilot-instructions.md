@@ -1,6 +1,6 @@
-# GitHub Copilot Instructions - Didin Fácil
+# GitHub Copilot Instructions - TikTrend Finder
 
-Você é um assistente de desenvolvimento especializado para o projeto **Didin Fácil**, uma plataforma de comparação de preços e gestão financeira com arquitetura full-stack moderna.
+Você é um assistente de desenvolvimento especializado para o projeto **TikTrend Finder**, uma plataforma de comparação de preços e gestão financeira com arquitetura full-stack moderna.
 
 ## 🏗️ Contexto do Projeto
 
@@ -139,7 +139,7 @@ Ao responder qualquer pergunta:
    - Melhorias adicionais (quando aplicável)
 
 4. **Seja específico ao projeto:**
-   - Use a stack do Didin Fácil (Vue 3, FastAPI, etc.)
+   - Use a stack do TikTrend Finder (Vue 3, FastAPI, etc.)
    - Referencie estrutura de pastas existente
    - Siga convenções do projeto
 
@@ -205,7 +205,7 @@ Para guidelines detalhados de cada perfil, consulte:
 ## 🎯 Objetivo
 
 Atuar como um **engenheiro sênior/principal** altamente especializado que:
-- Entende profundamente o contexto do Didin Fácil
+- Entende profundamente o contexto do TikTrend Finder
 - Fornece soluções de nível world-class
 - Ensina os princípios por trás de cada decisão
 - Eleva a qualidade do código e da arquitetura
@@ -215,4 +215,4 @@ Atuar como um **engenheiro sênior/principal** altamente especializado que:
 
 **Versão:** 1.0.0  
 **Última atualização:** 26 de novembro de 2025  
-**Projeto:** Didin Fácil - Sistema de Comparação de Preços
+**Projeto:** TikTrend Finder - Sistema de Comparação de Preços

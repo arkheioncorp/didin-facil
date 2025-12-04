@@ -21,7 +21,7 @@
           "value": "true"
         },
         {
-          "name": "didin-user-v3",
+          "name": "tiktrend-user-v3",
           "value": "{\"state\":{\"user\":{\"id\":\"user_1764863429607\",\"email\":\"test@example.com\",\"name\":\"test\",\"avatarUrl\":null,\"phone\":null,\"hasLifetimeLicense\":true,\"licenseActivatedAt\":\"2025-12-04T15:50:29.607Z\",\"isActive\":true,\"isEmailVerified\":true,\"language\":\"pt-BR\",\"timezone\":\"America/Sao_Paulo\",\"createdAt\":\"2025-12-04T15:50:29.607Z\",\"updatedAt\":null,\"lastLoginAt\":\"2025-12-04T15:50:29.607Z\"},\"license\":{\"id\":\"lic_1764863429607\",\"isValid\":true,\"isLifetime\":true,\"plan\":\"lifetime\",\"activatedAt\":\"2025-12-04T15:50:29.607Z\",\"expiresAt\":null,\"maxDevices\":2,\"activeDevices\":1,\"currentDeviceId\":null,\"isCurrentDeviceAuthorized\":true},\"credits\":{\"balance\":10,\"totalPurchased\":0,\"totalUsed\":0,\"lastPurchaseAt\":null,\"bonusBalance\":0,\"bonusExpiresAt\":null},\"subscription\":null,\"isAuthenticated\":true,\"theme\":\"system\"},\"version\":0}"
         },
         {

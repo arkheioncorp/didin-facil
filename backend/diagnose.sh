@@ -31,7 +31,7 @@ docker logs tiktrend-api --tail 20 2>&1
 
 echo ""
 echo "[7/7] Testando imports Python..."
-cd /home/jhonslife/"Didin Facil"/backend
+cd /home/jhonslife/"TikTrend Finder"/backend
 python3 -c "
 import sys
 sys.path.insert(0, '.')

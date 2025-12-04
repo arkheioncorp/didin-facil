@@ -1,5 +1,5 @@
 {
-  "name": "Seller Bot Profissional - Didin Fácil",
+  "name": "Seller Bot Profissional - TikTrend Finder",
   "nodes": [
     {
       "parameters": {
@@ -681,6 +681,6 @@
   "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "didin-facil"
+    "instanceId": "tiktrend-facil"
   }
 }

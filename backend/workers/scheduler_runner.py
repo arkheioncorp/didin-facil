@@ -170,7 +170,7 @@ async def health_check_server(runner: SchedulerRunner, port: int = 8001):
 def main():
     """Entry point principal."""
     logger.info("=" * 50)
-    logger.info("Didin Fácil - Post Scheduler Worker")
+    logger.info("TikTrend Finder - Post Scheduler Worker")
     logger.info("=" * 50)
     
     # Cria runner

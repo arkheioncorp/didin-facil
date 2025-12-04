@@ -252,5 +252,5 @@ COMMENT ON TABLE automation_metrics IS 'Métricas agregadas por hora de cada tip
 COMMENT ON TABLE user_automation_preferences IS 'Preferências do usuário para receber automações';
 
 -- Grants (ajustar conforme necessário)
--- GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO didin_api;
--- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO didin_api;
+-- GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO tiktrend_api;
+-- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO tiktrend_api;

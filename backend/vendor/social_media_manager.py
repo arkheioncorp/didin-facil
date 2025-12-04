@@ -96,7 +96,7 @@ class SocialMediaManager:
     
     Uso:
         config = SocialMediaConfig(
-            instagram_username="didin_facil",
+            instagram_username="tiktrend_facil",
             instagram_password="senha",
             tiktok_cookies_file="./sessions/tiktok.json",
             whatsapp_api_url="http://localhost:8080",

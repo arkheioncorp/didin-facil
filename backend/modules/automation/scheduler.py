@@ -4,7 +4,7 @@ Automation Scheduler Service.
 Processa eventos de automação pendentes e agenda execuções futuras.
 Integra com n8n Orchestrator para disparar workflows.
 
-Autor: Didin Fácil Team
+Autor: TikTrend Finder Team
 Data: Novembro 2025
 """
 

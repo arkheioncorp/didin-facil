@@ -1,4 +1,4 @@
-# Configuração do YouTube OAuth - Didin Fácil
+# Configuração do YouTube OAuth - TikTrend Finder
 
 Este guia explica como configurar as credenciais do YouTube para fazer upload de vídeos.
 
@@ -6,7 +6,7 @@ Este guia explica como configurar as credenciais do YouTube para fazer upload de
 
 1. Acesse [Google Cloud Console](https://console.cloud.google.com/)
 2. Clique em **Criar Projeto**
-3. Nome: `Didin Fácil YouTube`
+3. Nome: `TikTrend Finder YouTube`
 4. Clique em **Criar**
 
 ## Passo 2: Ativar YouTube Data API v3
@@ -20,7 +20,7 @@ Este guia explica como configurar as credenciais do YouTube para fazer upload de
 1. Vá em **APIs e Serviços** > **Tela de consentimento OAuth**
 2. Selecione **Externo** (ou Interno se for G Suite)
 3. Preencha:
-   - Nome do app: `Didin Fácil`
+   - Nome do app: `TikTrend Finder`
    - E-mail de suporte: seu email
    - Domínios autorizados: (deixe vazio para dev)
    - E-mail de contato do desenvolvedor: seu email
@@ -44,7 +44,7 @@ Adicione os seguintes escopos:
 1. Vá em **APIs e Serviços** > **Credenciais**
 2. Clique em **Criar credenciais** > **ID do cliente OAuth**
 3. Tipo de aplicativo: **Aplicativo de desktop**
-4. Nome: `Didin Fácil Desktop`
+4. Nome: `TikTrend Finder Desktop`
 5. Clique em **Criar**
 6. **Baixe o JSON** clicando no ícone de download
 
@@ -58,7 +58,7 @@ O arquivo deve ter este formato:
 {
   "installed": {
     "client_id": "xxxxx.apps.googleusercontent.com",
-    "project_id": "didin-facil-youtube",
+    "project_id": "tiktrend-facil-youtube",
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
     "token_uri": "https://oauth2.googleapis.com/token",
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
@@ -97,7 +97,7 @@ A API do YouTube tem limite de 10.000 unidades/dia:
 
 1. Vá em **Tela de consentimento OAuth**
 2. Adicione seu email como **Usuário de teste**
-3. Durante o login, clique em **Avançado** > **Acessar Didin Fácil (não seguro)**
+3. Durante o login, clique em **Avançado** > **Acessar TikTrend Finder (não seguro)**
 
 ### Erro: "Quota exceeded"
 

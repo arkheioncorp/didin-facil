@@ -2,7 +2,7 @@
 # ==================================================
 # Alertas para monitoramento dos Integration Hubs
 # 
-# Autor: Didin Fácil
+# Autor: TikTrend Finder
 # Versão: 1.0.0
 
 groups:
@@ -29,7 +29,7 @@ groups:
             1. Verificar status do serviço externo (Evolution API, Facebook API, TikTok API)
             2. Revisar logs para identificar a causa
             3. Se o serviço externo estiver ok, resetar manualmente via API
-          runbook_url: "https://docs.didin.dev/runbooks/circuit-breaker-open"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/circuit-breaker-open"
 
       - alert: HubCircuitBreakerHalfOpen
         expr: hub_circuit_breaker_state{state="half_open"} == 1
@@ -44,7 +44,7 @@ groups:
             O sistema está tentando recuperar, mas ainda não conseguiu.
             
             Monitorar de perto.
-          runbook_url: "https://docs.didin.dev/runbooks/circuit-breaker-halfopen"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/circuit-breaker-halfopen"
 
       # ========================================
       # SUCCESS RATE ALERTS
@@ -178,7 +178,7 @@ groups:
       # ========================================
       
       - alert: HubMetricsNotAvailable
-        expr: up{job="didin-hubs"} == 0
+        expr: up{job="tiktrend-hubs"} == 0
         for: 5m
         labels:
           severity: critical

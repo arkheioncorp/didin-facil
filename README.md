@@ -1,11 +1,11 @@
 <div align="center">
 
-# 🚀 Didin Fácil
+# 🚀 TikTrend Finder
 
 **Plataforma de Gestão e Inteligência para Dropshipping e Afiliados**
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/arkheioncorp/didin-facil/build.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/arkheioncorp/didin-facil/actions)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)](https://github.com/arkheioncorp/didin-facil/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/arkheioncorp/tiktrend-facil/build.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/arkheioncorp/tiktrend-facil/actions)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)](https://github.com/arkheioncorp/tiktrend-facil/releases)
 [![License](https://img.shields.io/badge/license-Proprietary-red?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20|%20Linux-lightgrey?style=for-the-badge&logo=windows)](https://github.com/didinfacil/tiktrend-finder/releases)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
@@ -18,7 +18,7 @@
 
 <br/>
 
-<img src="docs/assets/screenshot.png" alt="Didin Fácil Screenshot" width="800"/>
+<img src="docs/assets/screenshot.png" alt="TikTrend Finder Screenshot" width="800"/>
 
 </div>
 
@@ -26,7 +26,7 @@
 
 ## 📋 Sobre
 
-**Didin Fácil** (anteriormente TikTrend Finder) é uma plataforma completa de alta performance para **Windows** e **Linux** que automatiza a descoberta de produtos trending no TikTok Shop e oferece ferramentas de gestão financeira. Desenvolvido com arquitetura híbrida (desktop + cloud), oferece velocidade, segurança e escalabilidade para dropshippers, afiliados e empreendedores digitais.
+**TikTrend Finder** (anteriormente TikTrend Finder) é uma plataforma completa de alta performance para **Windows** e **Linux** que automatiza a descoberta de produtos trending no TikTok Shop e oferece ferramentas de gestão financeira. Desenvolvido com arquitetura híbrida (desktop + cloud), oferece velocidade, segurança e escalabilidade para dropshippers, afiliados e empreendedores digitais.
 
 ### ✨ Principais Recursos
 
@@ -50,22 +50,22 @@
 
 ```powershell
 # Opção 1: Instalador (Recomendado)
-# Baixe em: https://github.com/arkheioncorp/didin-facil/releases/latest
+# Baixe em: https://github.com/arkheioncorp/tiktrend-facil/releases/latest
 # Execute: TikTrend-Finder_1.0.0_x64-setup.exe
 
 # Opção 2: Winget (em breve)
-winget install DidinFacil.TikTrendFinder
+winget install TikTrendFinder.TikTrendFinder
 ```
 
 ### Linux
 
 ```bash
 # Debian/Ubuntu (.deb)
-wget https://github.com/arkheioncorp/didin-facil/releases/latest/download/tiktrend-finder_1.0.0_amd64.deb
+wget https://github.com/arkheioncorp/tiktrend-facil/releases/latest/download/tiktrend-finder_1.0.0_amd64.deb
 sudo dpkg -i tiktrend-finder_1.0.0_amd64.deb
 
 # AppImage (Universal)
-wget https://github.com/arkheioncorp/didin-facil/releases/latest/download/TikTrend-Finder_1.0.0_amd64.AppImage
+wget https://github.com/arkheioncorp/tiktrend-facil/releases/latest/download/TikTrend-Finder_1.0.0_amd64.AppImage
 chmod +x TikTrend-Finder_1.0.0_amd64.AppImage
 ./TikTrend-Finder_1.0.0_amd64.AppImage
 ```
@@ -128,8 +128,8 @@ Quem já tem a licença pode comprar apenas o que precisar.
 
 ```bash
 # 1. Clonar repositório
-git clone https://github.com/arkheioncorp/didin-facil.git
-cd didin-facil
+git clone https://github.com/arkheioncorp/tiktrend-facil.git
+cd tiktrend-facil
 
 # 2. Instalar dependências do frontend
 npm install
@@ -207,7 +207,7 @@ make build
 ## 📁 Estrutura do Projeto
 
 ```
-didin-facil/
+tiktrend-facil/
 ├── 📂 src/                     # Frontend React + TypeScript
 │   ├── components/             # Componentes UI (shadcn/ui)
 │   ├── pages/                  # Páginas da aplicação
@@ -314,7 +314,7 @@ didin-facil/
 
 ## 📄 Licença
 
-Copyright © 2025 **Didin Facil**. Todos os direitos reservados.
+Copyright © 2025 **TikTrend Finder**. Todos os direitos reservados.
 
 Este software é **proprietário** e confidencial. Nenhuma parte deste código pode ser copiada, modificada, distribuída ou utilizada sem autorização expressa por escrito.
 
@@ -329,16 +329,16 @@ Este software é **proprietário** e confidencial. Nenhuma parte deste código p
 | 📧 **Email** | suporte@tiktrend.app |
 | 💬 **WhatsApp** | [+55 11 99999-9999](https://wa.me/5511999999999) |
 | 📖 **FAQ** | [docs/FAQ.md](docs/FAQ.md) |
-| 🐛 **Bugs** | [GitHub Issues](https://github.com/arkheioncorp/didin-facil/issues) |
+| 🐛 **Bugs** | [GitHub Issues](https://github.com/arkheioncorp/tiktrend-facil/issues) |
 
 ---
 
 <br/>
 
-**Feito com ❤️ por [Didin Facil](https://didinfacil.com.br)**
+**Feito com ❤️ por [TikTrend Finder](https://tiktrendfinder.com.br)**
 
 <br/>
 
-[![GitHub Stars](https://img.shields.io/github/stars/arkheioncorp/didin-facil?style=social)](https://github.com/arkheioncorp/didin-facil)
+[![GitHub Stars](https://img.shields.io/github/stars/arkheioncorp/tiktrend-facil?style=social)](https://github.com/arkheioncorp/tiktrend-facil)
 
 </div>

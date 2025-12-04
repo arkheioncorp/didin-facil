@@ -156,7 +156,7 @@
 - [x] **[Jan 2025]** pyproject.toml corrigido (Ruff schema)
 - [x] README.md atualizado para v1.0.0
 - [x] Preços sincronizados (Free, Starter R$29,90, Pro R$79,90, Enterprise R$199,90)
-- [x] Links GitHub corrigidos para jhonslife/didin-facil
+- [x] Links GitHub corrigidos para jhonslife/tiktrend-facil
 - [x] Estrutura de pastas refletindo código real
 - [x] Memory Bank consolidado
 

@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "didin/deal-won",
+        "path": "tiktrend/deal-won",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -28,7 +28,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/tiktrend-whatsapp",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -40,7 +40,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"number\": \"{{ $json.phone || $json.user_id }}\",\n  \"textMessage\": {\n    \"text\": \"🎉🎉🎉\\n\\n*PARABÉNS PELA COMPRA, {{ $json.name }}!*\\n\\nSeu pedido foi confirmado com sucesso! ✅\\n\\n📦 Pedido: #{{ $json.order_id }}\\n🛍️ {{ $json.product_name }}\\n💰 Total: {{ $json.total_formatted }}\\n🏪 Loja: {{ $json.store }}\\n\\nObrigado por usar o Didin Fácil! 💜\\n\\nVou acompanhar cada etapa e te manter informado!\\n\\n_Qualquer dúvida, é só me chamar!_\"\n  }\n}",
+        "jsonBody": "={\n  \"number\": \"{{ $json.phone || $json.user_id }}\",\n  \"textMessage\": {\n    \"text\": \"🎉🎉🎉\\n\\n*PARABÉNS PELA COMPRA, {{ $json.name }}!*\\n\\nSeu pedido foi confirmado com sucesso! ✅\\n\\n📦 Pedido: #{{ $json.order_id }}\\n🛍️ {{ $json.product_name }}\\n💰 Total: {{ $json.total_formatted }}\\n🏪 Loja: {{ $json.store }}\\n\\nObrigado por usar o TikTrend Finder! 💜\\n\\nVou acompanhar cada etapa e te manter informado!\\n\\n_Qualquer dúvida, é só me chamar!_\"\n  }\n}",
         "options": {}
       },
       "id": "send-celebration",
@@ -72,8 +72,8 @@
       "position": [910, 400],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -90,8 +90,8 @@
       "position": [910, 200],
       "credentials": {
         "slackApi": {
-          "id": "slack-didin",
-          "name": "Slack Didin"
+          "id": "slack-tiktrend",
+          "name": "Slack TikTrend"
         }
       }
     },

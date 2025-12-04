@@ -1,4 +1,4 @@
-# 🤖 Didin Fácil - Automações WhatsApp com n8n
+# 🤖 TikTrend Finder - Automações WhatsApp com n8n
 
 ## 📋 Índice
 
@@ -95,7 +95,7 @@ Este sistema integra **WhatsApp** via **Evolution API** com **Chatwoot** para at
 **Arquivo:** `05-product-search.json`
 
 **Funcionalidades:**
-- ✅ Busca produtos na API Didin
+- ✅ Busca produtos na API TikTrend
 - ✅ Exibe preços formatados
 - ✅ Mostra economia e descontos
 - ✅ Links para compra
@@ -125,7 +125,7 @@ Este sistema integra **WhatsApp** via **Evolution API** com **Chatwoot** para at
 
 **Funcionalidades:**
 - ✅ Respostas inteligentes com GPT-4
-- ✅ Contexto personalizado para Didin Fácil
+- ✅ Contexto personalizado para TikTrend Finder
 - ✅ Histórico de conversa
 - ✅ Log de uso de tokens
 
@@ -291,7 +291,7 @@ ORDER BY data DESC;
 
 Em caso de dúvidas ou problemas:
 
-- 📧 Email: suporte@didin.com.br
+- 📧 Email: suporte@tiktrendfinder.com
 - 💬 Slack: #automacoes
 - 📖 Wiki: /docs/automacoes
 
@@ -299,4 +299,4 @@ Em caso de dúvidas ou problemas:
 
 **Versão:** 1.0.0  
 **Última atualização:** 30 de novembro de 2025  
-**Autor:** Equipe Didin Fácil
+**Autor:** Equipe TikTrend Finder

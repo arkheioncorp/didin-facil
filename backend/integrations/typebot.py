@@ -376,13 +376,13 @@ class TypebotWebhookHandler:
 
 DIDIN_TYPEBOT_TEMPLATES = {
     "welcome_flow": {
-        "name": "Boas-vindas Didin Fácil",
+        "name": "Boas-vindas TikTrend Finder",
         "description": "Fluxo de onboarding para novos usuários",
         "category": "engagement",
         "preview_url": "",
         "tags": ["onboarding", "bem-vindo", "introdução"],
         "blocks": [
-            {"type": "text", "content": "👋 Olá! Bem-vindo ao Didin Fácil!"},
+            {"type": "text", "content": "👋 Olá! Bem-vindo ao TikTrend Finder!"},
             {"type": "text", "content": "Sou o assistente virtual e vou te ajudar a economizar."},
             {"type": "choice", "content": "O que você procura hoje?", "options": [
                 "🔍 Comparar preços",

@@ -97,7 +97,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"content\": \"👋 Olá! Bem-vindo ao Didin Fácil!\\n\\nSou o assistente virtual e estou aqui para ajudar.\\n\\nDigite uma opção:\\n\\n1️⃣ Comparar preços\\n2️⃣ Ver ofertas\\n3️⃣ Falar com atendente\\n4️⃣ Horário de funcionamento\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "jsonBody": "={\n  \"content\": \"👋 Olá! Bem-vindo ao TikTrend Finder!\\n\\nSou o assistente virtual e estou aqui para ajudar.\\n\\nDigite uma opção:\\n\\n1️⃣ Comparar preços\\n2️⃣ Ver ofertas\\n3️⃣ Falar com atendente\\n4️⃣ Horário de funcionamento\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
         "options": {}
       },
       "id": "send-greeting",
@@ -203,7 +203,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"content\": \"🏷️ *Ofertas do Dia*\\n\\n🔥 iPhone 15 - R$ 4.299 (economia de R$ 700!)\\n🔥 Smart TV 55\\\" - R$ 2.199\\n🔥 Fone Bluetooth - R$ 89,90\\n\\nAcesse: didin.com.br/ofertas\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "jsonBody": "={\n  \"content\": \"🏷️ *Ofertas do Dia*\\n\\n🔥 iPhone 15 - R$ 4.299 (economia de R$ 700!)\\n🔥 Smart TV 55\\\" - R$ 2.199\\n🔥 Fone Bluetooth - R$ 89,90\\n\\nAcesse: tiktrendfinder.com/ofertas\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
         "options": {}
       },
       "id": "send-offers",

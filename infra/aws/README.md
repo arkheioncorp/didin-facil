@@ -1,6 +1,6 @@
-# 🏗️ AWS Infrastructure - Didin Fácil
+# 🏗️ AWS Infrastructure - TikTrend Finder
 
-Infraestrutura como código (IaC) usando Terraform para deploy completo do Didin Fácil na AWS.
+Infraestrutura como código (IaC) usando Terraform para deploy completo do TikTrend Finder na AWS.
 
 ## 📋 Arquitetura
 
@@ -221,13 +221,13 @@ terraform get -update
 
 ```bash
 # Listar serviços ECS
-aws ecs list-services --cluster didin-production
+aws ecs list-services --cluster tiktrend-production
 
 # Ver logs do API
-aws logs tail /ecs/didin-api --follow
+aws logs tail /ecs/tiktrend-api --follow
 
 # Forçar novo deploy
-aws ecs update-service --cluster didin-production --service didin-api --force-new-deployment
+aws ecs update-service --cluster tiktrend-production --service tiktrend-api --force-new-deployment
 
 # Invalidar cache CloudFront
 aws cloudfront create-invalidation --distribution-id XXXXX --paths "/*"
@@ -240,9 +240,9 @@ aws cloudfront create-invalidation --distribution-id XXXXX --paths "/*"
 aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.us-east-2.amazonaws.com
 
 # Build e push manual
-docker build -f docker/api.Dockerfile -t didin-api .
-docker tag didin-api:latest $ECR_URL/didin-api:latest
-docker push $ECR_URL/didin-api:latest
+docker build -f docker/api.Dockerfile -t tiktrend-api .
+docker tag tiktrend-api:latest $ECR_URL/tiktrend-api:latest
+docker push $ECR_URL/tiktrend-api:latest
 ```
 
 ## 🔄 CI/CD Pipeline
@@ -279,10 +279,10 @@ graph LR
 
 ```bash
 # Ver eventos do serviço
-aws ecs describe-services --cluster didin-production --services didin-api
+aws ecs describe-services --cluster tiktrend-production --services tiktrend-api
 
 # Ver logs do task
-aws ecs describe-tasks --cluster didin-production --tasks TASK_ARN
+aws ecs describe-tasks --cluster tiktrend-production --tasks TASK_ARN
 ```
 
 ### RDS conexão recusada

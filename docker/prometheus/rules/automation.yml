@@ -11,7 +11,7 @@ groups:
         annotations:
           summary: "Fila de automação com muitos eventos pendentes"
           description: "A fila de eventos pendentes está com {{ $value }} eventos há mais de 5 minutos."
-          runbook_url: "https://docs.didinfacil.com/runbooks/automation-queue-high"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/automation-queue-high"
 
       # Alerta crítico - fila muito grande
       - alert: AutomationQueueCritical
@@ -23,7 +23,7 @@ groups:
         annotations:
           summary: "CRÍTICO: Fila de automação sobrecarregada"
           description: "A fila de eventos pendentes está com {{ $value }} eventos. Ação imediata necessária!"
-          runbook_url: "https://docs.didinfacil.com/runbooks/automation-queue-critical"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/automation-queue-critical"
 
       # Alerta de taxa de falhas alta
       - alert: AutomationHighFailureRate
@@ -39,7 +39,7 @@ groups:
         annotations:
           summary: "Taxa de falhas de automação alta"
           description: "A taxa de falhas está em {{ $value | printf \"%.1f\" }}% nos últimos 5 minutos."
-          runbook_url: "https://docs.didinfacil.com/runbooks/automation-high-failure-rate"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/automation-high-failure-rate"
 
       # Alerta crítico - taxa de falhas muito alta
       - alert: AutomationCriticalFailureRate
@@ -55,7 +55,7 @@ groups:
         annotations:
           summary: "CRÍTICO: Taxa de falhas de automação muito alta"
           description: "A taxa de falhas está em {{ $value | printf \"%.1f\" }}%. Possível falha sistêmica!"
-          runbook_url: "https://docs.didinfacil.com/runbooks/automation-critical-failure-rate"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/automation-critical-failure-rate"
 
       # Alerta de latência alta
       - alert: AutomationHighLatency
@@ -68,7 +68,7 @@ groups:
         annotations:
           summary: "Latência alta no processamento de automações"
           description: "O p95 de latência está em {{ $value | printf \"%.2f\" }}s. Verificar gargalos."
-          runbook_url: "https://docs.didinfacil.com/runbooks/automation-high-latency"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/automation-high-latency"
 
       # Alerta quando scheduler não está rodando
       - alert: AutomationSchedulerDown
@@ -80,7 +80,7 @@ groups:
         annotations:
           summary: "CRÍTICO: Scheduler de automação está parado"
           description: "O scheduler de automação não está rodando. Eventos não serão processados!"
-          runbook_url: "https://docs.didinfacil.com/runbooks/automation-scheduler-down"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/automation-scheduler-down"
 
       # Alerta quando n8n está inacessível
       - alert: N8nUnreachable
@@ -92,7 +92,7 @@ groups:
         annotations:
           summary: "CRÍTICO: n8n está inacessível"
           description: "A API do n8n não está respondendo. Fluxos de trabalho não serão executados!"
-          runbook_url: "https://docs.didinfacil.com/runbooks/n8n-unreachable"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/n8n-unreachable"
 
       # Alerta de acúmulo de retries
       - alert: AutomationRetryBacklog
@@ -104,7 +104,7 @@ groups:
         annotations:
           summary: "Muitos eventos em retry"
           description: "Há {{ $value }} eventos aguardando retry. Possível problema sistêmico."
-          runbook_url: "https://docs.didinfacil.com/runbooks/automation-retry-backlog"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/automation-retry-backlog"
 
       # Alerta por tipo de automação específico - Carrinho abandonado
       - alert: CartAbandonedAutomationFailing
@@ -118,7 +118,7 @@ groups:
         annotations:
           summary: "Automação de carrinho abandonado com falhas"
           description: "A automação de carrinho abandonado teve {{ $value }} falhas nos últimos 15 minutos."
-          runbook_url: "https://docs.didinfacil.com/runbooks/cart-abandoned-failing"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/cart-abandoned-failing"
 
       # Alerta de recursos do scheduler
       - alert: AutomationSchedulerHighMemory
@@ -131,7 +131,7 @@ groups:
         annotations:
           summary: "Scheduler usando muita memória"
           description: "O scheduler está usando {{ $value | humanize }} de memória."
-          runbook_url: "https://docs.didinfacil.com/runbooks/scheduler-high-memory"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/scheduler-high-memory"
 
   - name: automation_slo
     rules:
@@ -162,7 +162,7 @@ groups:
         annotations:
           summary: "SLO de taxa de sucesso violado"
           description: "A taxa de sucesso está em {{ $value | printf \"%.2f\" }}%, abaixo do SLO de 99%."
-          runbook_url: "https://docs.didinfacil.com/runbooks/slo-success-rate"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/slo-success-rate"
 
       # SLO: Latência p99 < 3s
       - alert: AutomationSLOLatency
@@ -175,4 +175,4 @@ groups:
         annotations:
           summary: "SLO de latência violado"
           description: "O p99 de latência está em {{ $value | printf \"%.2f\" }}s, acima do SLO de 3s."
-          runbook_url: "https://docs.didinfacil.com/runbooks/slo-latency"
+          runbook_url: "https://docs.tiktrendfinder.com/runbooks/slo-latency"

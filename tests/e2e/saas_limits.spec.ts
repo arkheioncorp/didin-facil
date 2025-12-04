@@ -26,7 +26,7 @@ test.describe('SaaS Limits and Blocking', () => {
         },
         version: 0
       };
-      window.localStorage.setItem('didin-user-v3', JSON.stringify(userState));
+      window.localStorage.setItem('tiktrend-user-v3', JSON.stringify(userState));
     });
   });
 

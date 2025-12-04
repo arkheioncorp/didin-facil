@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# Didin Fácil - Systemd Services Installation Script
+# TikTrend Finder - Systemd Services Installation Script
 # Installs and configures systemd services for production deployment
 # =============================================================================
 
@@ -14,9 +14,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-INSTALL_DIR="/opt/didin-facil"
-SERVICE_USER="didin"
-SERVICE_GROUP="didin"
+INSTALL_DIR="/opt/tiktrend-facil"
+SERVICE_USER="tiktrend"
+SERVICE_GROUP="tiktrend"
 SYSTEMD_DIR="/etc/systemd/system"
 
 # Functions
@@ -69,10 +69,10 @@ install_services() {
     log_info "Installing systemd services..."
     
     # Copy service files
-    cp docker/systemd/didin-scraper.service "$SYSTEMD_DIR/"
+    cp docker/systemd/tiktrend-scraper.service "$SYSTEMD_DIR/"
     
     # Set permissions
-    chmod 644 "$SYSTEMD_DIR/didin-scraper.service"
+    chmod 644 "$SYSTEMD_DIR/tiktrend-scraper.service"
     
     # Reload systemd
     systemctl daemon-reload
@@ -83,7 +83,7 @@ install_services() {
 enable_services() {
     log_info "Enabling services..."
     
-    systemctl enable didin-scraper.service
+    systemctl enable tiktrend-scraper.service
     
     log_success "Services enabled"
 }
@@ -91,7 +91,7 @@ enable_services() {
 start_services() {
     log_info "Starting services..."
     
-    systemctl start didin-scraper.service
+    systemctl start tiktrend-scraper.service
     
     log_success "Services started"
 }
@@ -100,20 +100,20 @@ show_status() {
     echo ""
     log_info "Service Status:"
     echo "================================================"
-    systemctl status didin-scraper.service --no-pager || true
+    systemctl status tiktrend-scraper.service --no-pager || true
     echo "================================================"
     echo ""
     log_info "Useful commands:"
-    echo "  - View logs: journalctl -u didin-scraper -f"
-    echo "  - Restart: systemctl restart didin-scraper"
-    echo "  - Stop: systemctl stop didin-scraper"
-    echo "  - Status: systemctl status didin-scraper"
+    echo "  - View logs: journalctl -u tiktrend-scraper -f"
+    echo "  - Restart: systemctl restart tiktrend-scraper"
+    echo "  - Stop: systemctl stop tiktrend-scraper"
+    echo "  - Status: systemctl status tiktrend-scraper"
 }
 
 # Main
 main() {
     echo "================================================"
-    echo "  Didin Fácil - Systemd Services Installer"
+    echo "  TikTrend Finder - Systemd Services Installer"
     echo "================================================"
     echo ""
     

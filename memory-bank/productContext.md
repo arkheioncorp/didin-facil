@@ -1,4 +1,4 @@
-# Contexto do Produto: Didin Fácil
+# Contexto do Produto: TikTrend Finder
 
 **Versão:** 1.1.0  
 **Última Atualização:** 30 de Novembro de 2025
@@ -7,7 +7,7 @@
 
 ## Declaração de Missão
 
-O **Didin Fácil** é uma plataforma completa para dropshippers e afiliados que buscam automatizar a descoberta de produtos virais no TikTok Shop e outras fontes. Nossa missão é reduzir o tempo de pesquisa de horas para minutos, fornecendo dados acionáveis, ferramentas de criação de copy com IA e gestão financeira simplificada.
+O **TikTrend Finder** é uma plataforma completa para dropshippers e afiliados que buscam automatizar a descoberta de produtos virais no TikTok Shop e outras fontes. Nossa missão é reduzir o tempo de pesquisa de horas para minutos, fornecendo dados acionáveis, ferramentas de criação de copy com IA e gestão financeira simplificada.
 
 ---
 

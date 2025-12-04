@@ -313,7 +313,7 @@ def categorize_performance(time_ms: float) -> str:
 async def main():
     """Executa análise de todas as queries."""
     print("=" * 60)
-    print("📊 Query Performance Analyzer - Didin Fácil")
+    print("📊 Query Performance Analyzer - TikTrend Finder")
     print("=" * 60)
     print()
     

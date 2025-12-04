@@ -30,9 +30,9 @@ class ProfileManager:
         """
         Args:
             base_dir: Diretório base para armazenar perfis.
-                     Default: ~/.didin-facil/profiles/
+                     Default: ~/.tiktrend-facil/profiles/
         """
-        self.base_dir = Path(base_dir or Path.home() / ".didin-facil" / "profiles")
+        self.base_dir = Path(base_dir or Path.home() / ".tiktrend-facil" / "profiles")
         self.base_dir.mkdir(parents=True, exist_ok=True)
         
         # Arquivo de índice dos perfis

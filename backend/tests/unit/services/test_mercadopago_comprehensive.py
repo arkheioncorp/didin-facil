@@ -81,8 +81,8 @@ class TestMercadoPagoServicePayments:
             mock_settings.MERCADOPAGO_SANDBOX_TOKEN = None
             mock_settings.MERCADO_PAGO_ACCESS_TOKEN = "test_token"
             mock_settings.MERCADOPAGO_ACCESS_TOKEN = None
-            mock_settings.FRONTEND_URL = "https://app.didinfacil.com"
-            mock_settings.API_URL = "https://api.didinfacil.com"
+            mock_settings.FRONTEND_URL = "https://app.tiktrendfinder.com"
+            mock_settings.API_URL = "https://api.tiktrendfinder.com"
 
             from api.services.mercadopago import MercadoPagoService
 
@@ -161,8 +161,8 @@ class TestMercadoPagoServicePix:
             mock_settings.MERCADOPAGO_SANDBOX_TOKEN = None
             mock_settings.MERCADO_PAGO_ACCESS_TOKEN = "test_token"
             mock_settings.MERCADOPAGO_ACCESS_TOKEN = None
-            mock_settings.FRONTEND_URL = "https://app.didinfacil.com"
-            mock_settings.API_URL = "https://api.didinfacil.com"
+            mock_settings.FRONTEND_URL = "https://app.tiktrendfinder.com"
+            mock_settings.API_URL = "https://api.tiktrendfinder.com"
 
             from api.services.mercadopago import MercadoPagoService
 
@@ -241,8 +241,8 @@ class TestMercadoPagoServiceSubscriptions:
             mock_settings.MERCADOPAGO_SANDBOX_TOKEN = None
             mock_settings.MERCADO_PAGO_ACCESS_TOKEN = "test_token"
             mock_settings.MERCADOPAGO_ACCESS_TOKEN = None
-            mock_settings.FRONTEND_URL = "https://app.didinfacil.com"
-            mock_settings.API_URL = "https://api.didinfacil.com"
+            mock_settings.FRONTEND_URL = "https://app.tiktrendfinder.com"
+            mock_settings.API_URL = "https://api.tiktrendfinder.com"
 
             from api.services.mercadopago import MercadoPagoService
 
@@ -324,8 +324,8 @@ class TestMercadoPagoServiceErrorHandling:
             mock_settings.MERCADOPAGO_SANDBOX_TOKEN = None
             mock_settings.MERCADO_PAGO_ACCESS_TOKEN = "test_token"
             mock_settings.MERCADOPAGO_ACCESS_TOKEN = None
-            mock_settings.FRONTEND_URL = "https://app.didinfacil.com"
-            mock_settings.API_URL = "https://api.didinfacil.com"
+            mock_settings.FRONTEND_URL = "https://app.tiktrendfinder.com"
+            mock_settings.API_URL = "https://api.tiktrendfinder.com"
 
             from api.services.mercadopago import MercadoPagoService
 

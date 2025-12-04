@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔐 Verificador de Credenciais e Integrações - Didin Fácil
+🔐 Verificador de Credenciais e Integrações - TikTrend Finder
 =========================================================
 
 Este script verifica todas as credenciais e integrações do sistema,
@@ -673,7 +673,7 @@ class CredentialVerifier:
         """Executa todas as verificações"""
         print("\n" + "="*60)
         print("🔐 VERIFICADOR DE CREDENCIAIS E INTEGRAÇÕES")
-        print("   Didin Fácil - TikTrend Finder")
+        print("   TikTrend Finder - TikTrend Finder")
         print("="*60)
         print(f"📅 {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
         print("="*60 + "\n")
@@ -789,7 +789,7 @@ async def main():
     """Função principal"""
     import argparse
     
-    parser = argparse.ArgumentParser(description="Verificador de Credenciais - Didin Fácil")
+    parser = argparse.ArgumentParser(description="Verificador de Credenciais - TikTrend Finder")
     parser.add_argument("--json", action="store_true", help="Saída em formato JSON")
     parser.add_argument("--fix", action="store_true", help="Tentar corrigir problemas automaticamente")
     args = parser.parse_args()

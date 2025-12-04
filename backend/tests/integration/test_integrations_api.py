@@ -32,7 +32,7 @@ def typebot_config() -> TypebotConfig:
     return TypebotConfig(
         api_url="https://typebot.example.com",
         api_token="test-token",
-        public_id="didin-bot"
+        public_id="tiktrend-bot"
     )
 
 
@@ -59,7 +59,7 @@ class TestTypebotConversationFlow:
         start_response = {
             "sessionId": "session-123",
             "messages": [
-                {"type": "text", "content": "Olá! Bem-vindo ao Didin Fácil!"},
+                {"type": "text", "content": "Olá! Bem-vindo ao TikTrend Finder!"},
                 {"type": "text", "content": "Qual seu nome?"}
             ],
             "input": {"type": "text input", "placeholder": "Digite seu nome"},
@@ -81,7 +81,7 @@ class TestTypebotConversationFlow:
         choice_response = {
             "messages": [
                 {"type": "text", "content": "Ótimo! Vou te mostrar as melhores ofertas de Smartphones."},
-                {"type": "text", "content": "Confira: https://didin.com/ofertas/smartphones"}
+                {"type": "text", "content": "Confira: https://tiktrendfinder.com/ofertas/smartphones"}
             ],
             "input": None,
             "isCompleted": True

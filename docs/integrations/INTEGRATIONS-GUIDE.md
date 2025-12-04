@@ -1,4 +1,4 @@
-# Guia de Integração Completa - Didin Fácil
+# Guia de Integração Completa - TikTrend Finder
 
 Este documento consolida todas as integrações disponíveis no sistema.
 
@@ -278,17 +278,17 @@ Se aparecer desafio de verificação:
 
 ```bash
 # Ver logs da API
-cd docker && docker logs didin-api -f
+cd docker && docker logs tiktrend-api -f
 
 # Verificar banco
-docker exec -it didin-postgres psql -U tiktrend -d tiktrend
+docker exec -it tiktrend-postgres psql -U tiktrend -d tiktrend
 ```
 
 ### Redis não conecta
 
 ```bash
 # Verificar Redis
-docker exec -it didin-redis redis-cli ping
+docker exec -it tiktrend-redis redis-cli ping
 # Deve retornar: PONG
 ```
 

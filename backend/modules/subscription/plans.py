@@ -1,7 +1,7 @@
 """
 Subscription Plans & Monetization - SaaS Híbrido
 ================================================
-Sistema de planos e monetização do Didin Fácil.
+Sistema de planos e monetização do TikTrend Finder.
 
 Modelo: SaaS Híbrido (Local + Cloud)
 

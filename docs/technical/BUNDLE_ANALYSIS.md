@@ -1,4 +1,4 @@
-# 📦 Análise de Bundle - Frontend Didin Fácil
+# 📦 Análise de Bundle - Frontend TikTrend Finder
 
 > **Data:** 04/12/2025  
 > **Build Time:** 25.84s  

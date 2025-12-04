@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "didin/handoff",
+        "path": "tiktrend/handoff",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -64,8 +64,8 @@
       "position": [690, 400],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -82,8 +82,8 @@
       "position": [910, 300],
       "credentials": {
         "slackApi": {
-          "id": "slack-didin",
-          "name": "Slack Didin"
+          "id": "slack-tiktrend",
+          "name": "Slack TikTrend"
         }
       }
     },

@@ -250,7 +250,7 @@ services:
       - POSTGRES_USERNAME=tiktrend
       - POSTGRES_PASSWORD=tiktrend_dev
       - REDIS_URL=redis://redis:6379/2
-      - MAILER_SENDER_EMAIL=noreply@didin.local
+      - MAILER_SENDER_EMAIL=noreply@tiktrendfinder.local
       - RAILS_LOG_TO_STDOUT=true
       - INSTALLATION_ENV=docker
       - RAILS_SERVE_STATIC_FILES=true

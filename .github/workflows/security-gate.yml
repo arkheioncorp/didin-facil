@@ -29,7 +29,7 @@ jobs:
         env:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
-          POSTGRES_DB: didin_test
+          POSTGRES_DB: tiktrend_test
         ports:
           - 5432:5432
         options: >-
@@ -65,7 +65,7 @@ jobs:
 
       - name: Run Security Tests with Coverage
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/didin_test
+          DATABASE_URL: postgresql://test:test@localhost:5432/tiktrend_test
           REDIS_URL: redis://localhost:6379
           SECRET_KEY: test-secret-key-for-ci
           JWT_SECRET: test-jwt-secret-for-ci
@@ -277,14 +277,14 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           cd backend
-          railway up --service didin-api-staging
+          railway up --service tiktrend-api-staging
 
       - name: Deploy Complete
         run: |
           echo "## 🚂 Staging Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ Backend deployed to Railway Staging" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 URL: https://staging.didinfacil.com.br/api" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 URL: https://staging.tiktrendfinder.com.br/api" >> $GITHUB_STEP_SUMMARY
 
   # ============================================
   # JOB 7: Deploy to Railway (Production)
@@ -307,14 +307,14 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           cd backend
-          railway up --service didin-api
+          railway up --service tiktrend-api
 
       - name: Deploy Complete
         run: |
           echo "## 🚀 Production Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ Backend deployed to Railway Production" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 URL: https://api.didinfacil.com.br" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 URL: https://api.tiktrendfinder.com.br" >> $GITHUB_STEP_SUMMARY
 
   # ============================================
   # JOB 8: Notify Deployment Status

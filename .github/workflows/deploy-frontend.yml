@@ -128,7 +128,7 @@ jobs:
       - name: Build Project
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
         env:
-          VITE_API_URL: https://staging-api.didinfacil.com.br
+          VITE_API_URL: https://staging-api.tiktrendfinder.com.br
           VITE_ENVIRONMENT: staging
 
       - name: Deploy to Vercel (Staging)
@@ -140,7 +140,7 @@ jobs:
           echo "## 🧪 Staging Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ Frontend deployed to Vercel Staging" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 URL: https://staging.didinfacil.com.br" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 URL: https://staging.tiktrendfinder.com.br" >> $GITHUB_STEP_SUMMARY
 
   # ============================================
   # JOB 4: Deploy Production (main branch)
@@ -164,7 +164,7 @@ jobs:
       - name: Build Project
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
-          VITE_API_URL: https://api.didinfacil.com.br
+          VITE_API_URL: https://api.tiktrendfinder.com.br
           VITE_ENVIRONMENT: production
 
       - name: Deploy to Vercel (Production)
@@ -176,7 +176,7 @@ jobs:
           echo "## 🚀 Production Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ Frontend deployed to Vercel Production" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 URL: https://didinfacil.com.br" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 URL: https://tiktrendfinder.com.br" >> $GITHUB_STEP_SUMMARY
 
       - name: Purge CDN Cache
         run: |

@@ -400,7 +400,7 @@ async def create_subscription(
             frequency = 12
             
         response = await mp_service.create_subscription_preference(
-            title=f"Didin Fácil - Plano {plan_config.name}",
+            title=f"TikTrend Finder - Plano {plan_config.name}",
             price=float(price),
             user_email=current_user.get("email"),
             external_reference=f"{user_id}:{plan.value}:{cycle.value}",

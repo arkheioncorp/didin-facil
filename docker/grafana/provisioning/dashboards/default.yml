@@ -4,10 +4,10 @@
 apiVersion: 1
 
 providers:
-  - name: 'Didin Fácil'
+  - name: 'TikTrend Finder'
     orgId: 1
-    folder: 'Didin Fácil'
-    folderUid: 'didin-facil'
+    folder: 'TikTrend Finder'
+    folderUid: 'tiktrend-facil'
     type: file
     disableDeletion: false
     editable: true

@@ -49,8 +49,8 @@
             ],
             "credentials": {
                 "postgres": {
-                    "id": "postgres-didin",
-                    "name": "PostgreSQL Didin"
+                    "id": "postgres-tiktrend",
+                    "name": "PostgreSQL TikTrend"
                 }
             }
         },
@@ -90,8 +90,8 @@
             ],
             "credentials": {
                 "postgres": {
-                    "id": "postgres-didin",
-                    "name": "PostgreSQL Didin"
+                    "id": "postgres-tiktrend",
+                    "name": "PostgreSQL TikTrend"
                 }
             }
         },

@@ -22,14 +22,14 @@ class TestEvolutionWebhookPayload:
 
         payload = EvolutionWebhookPayload(
             event="messages.upsert",
-            instance="didin-whatsapp",
+            instance="tiktrend-whatsapp",
             data={"key": "value"},
             sender="5511999999999",
             destination="5511888888888",
             date_time="2024-01-01T12:00:00Z",
         )
         assert payload.event == "messages.upsert"
-        assert payload.instance == "didin-whatsapp"
+        assert payload.instance == "tiktrend-whatsapp"
         assert payload.data == {"key": "value"}
         assert payload.sender == "5511999999999"
 
@@ -110,7 +110,7 @@ class TestRealProductChatbot:
         result = await chatbot._show_welcome("João")
 
         assert "João" in result["text"]
-        assert "Didin Fácil" in result["text"]
+        assert "TikTrend Finder" in result["text"]
         assert result["action"] == "welcome"
 
     @pytest.mark.asyncio
@@ -362,7 +362,7 @@ class TestProcessMessage:
             phone="5511999999999", message="olá", push_name="João"
         )
 
-        assert "Didin Fácil" in result["text"]
+        assert "TikTrend Finder" in result["text"]
         assert result["action"] == "welcome"
 
     @pytest.mark.asyncio

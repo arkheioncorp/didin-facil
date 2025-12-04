@@ -3,7 +3,7 @@ Testes Unitários - Instagram Hub
 ================================
 Testes para o hub centralizado de Instagram.
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.0.0
 """
 

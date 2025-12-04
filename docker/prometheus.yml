@@ -1,11 +1,11 @@
-# Prometheus Configuration for Didin Fácil
+# Prometheus Configuration for TikTrend Finder
 # https://prometheus.io/docs/prometheus/latest/configuration/configuration/
 
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
   external_labels:
-    monitor: 'didin-facil'
+    monitor: 'tiktrend-facil'
 
 # Alertmanager configuration (optional)
 alerting:
@@ -20,7 +20,7 @@ rule_files:
 # Scrape configuration
 scrape_configs:
   # API Server metrics
-  - job_name: 'didin-api'
+  - job_name: 'tiktrend-api'
     static_configs:
       - targets: ['api:8000']
     metrics_path: '/metrics'
@@ -28,7 +28,7 @@ scrape_configs:
     scrape_timeout: 10s
 
   # Hub Metrics (WhatsApp, Instagram, TikTok)
-  - job_name: 'didin-hubs'
+  - job_name: 'tiktrend-hubs'
     static_configs:
       - targets: ['api:8000']
     metrics_path: '/hub/metrics/prometheus'

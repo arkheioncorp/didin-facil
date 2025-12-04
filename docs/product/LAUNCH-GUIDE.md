@@ -24,7 +24,7 @@ Este guia mostra como lançar seu aplicativo para **Windows, Linux e macOS** sem
 3. Em **Source**, selecione **GitHub Actions**
 4. O workflow `deploy-pages.yml` fará o deploy automático
 
-**URL da sua página:** `https://arkheioncorp.github.io/didin-facil/`
+**URL da sua página:** `https://arkheioncorp.github.io/tiktrend-facil/`
 
 ### 2️⃣ Fazer o Primeiro Release
 
@@ -56,8 +56,8 @@ O GitHub Actions vai automaticamente:
 ### 4️⃣ Testar a Landing Page
 
 Após o push, acesse:
-- **GitHub Pages:** `https://arkheioncorp.github.io/didin-facil/`
-- **Releases:** `https://github.com/arkheioncorp/didin-facil/releases`
+- **GitHub Pages:** `https://arkheioncorp.github.io/tiktrend-facil/`
+- **Releases:** `https://github.com/arkheioncorp/tiktrend-facil/releases`
 
 ---
 
@@ -94,7 +94,7 @@ xcode-select --install
 ## 🌐 Domínio Personalizado (Opcional - Gratuito)
 
 ### Opção A: Usar domínio gratuito do GitHub
-- URL: `https://arkheioncorp.github.io/didin-facil/`
+- URL: `https://arkheioncorp.github.io/tiktrend-facil/`
 
 ### Opção B: Domínio Personalizado + Cloudflare (Gratuito)
 
@@ -190,8 +190,8 @@ chmod +x TikTrend-Finder_amd64.AppImage
 
 ## 📞 Suporte
 
-- **Issues**: https://github.com/arkheioncorp/didin-facil/issues
-- **Discussions**: https://github.com/arkheioncorp/didin-facil/discussions
+- **Issues**: https://github.com/arkheioncorp/tiktrend-facil/issues
+- **Discussions**: https://github.com/arkheioncorp/tiktrend-facil/discussions
 
 ---
 

@@ -31,7 +31,7 @@ nodejs_sdk/
 
 ## 🔌 APIs Disponíveis
 
-### APIs de Produto (Principal para Didin Fácil)
+### APIs de Produto (Principal para TikTrend Finder)
 
 | API | Versão | Funcionalidades |
 |-----|--------|-----------------|
@@ -230,7 +230,7 @@ const searchProducts = async (accessToken: string) => {
 
 ## 💡 Recomendação
 
-Para o **Didin Fácil** (comparação de preços), a melhor abordagem seria:
+Para o **TikTrend Finder** (comparação de preços), a melhor abordagem seria:
 
 1. **Curto prazo:** Continuar com scraper para dados públicos
 2. **Médio prazo:** Integrar Affiliate APIs quando aprovado

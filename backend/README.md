@@ -1,6 +1,6 @@
-# 🐍 Backend do Didin Fácil
+# 🐍 Backend do TikTrend Finder
 
-Este diretório contém a API, workers e scrapers do projeto Didin Fácil.
+Este diretório contém a API, workers e scrapers do projeto TikTrend Finder.
 
 ## 🏗️ Estrutura
 

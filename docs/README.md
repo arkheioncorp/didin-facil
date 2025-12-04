@@ -1,6 +1,6 @@
-# 📚 Documentação do Didin Fácil
+# 📚 Documentação do TikTrend Finder
 
-Bem-vindo à documentação oficial do projeto **Didin Fácil**. Aqui você encontrará todos os recursos necessários para entender, desenvolver e implantar a plataforma.
+Bem-vindo à documentação oficial do projeto **TikTrend Finder**. Aqui você encontrará todos os recursos necessários para entender, desenvolver e implantar a plataforma.
 
 ## 🗂️ Índice de Documentação
 
@@ -64,4 +64,4 @@ Para contribuir com a documentação:
 
 ---
 
-**Didin Fácil** - *Simplificando a gestão financeira e vendas.*
+**TikTrend Finder** - *Simplificando a gestão financeira e vendas.*

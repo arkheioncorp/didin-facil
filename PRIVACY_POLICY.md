@@ -1,4 +1,4 @@
-# Política de Privacidade - Didin Fácil / TikTrend Finder
+# Política de Privacidade - TikTrend Finder / TikTrend Finder
 
 **Última atualização:** 30 de novembro de 2025  
 **Versão:** 1.0.0

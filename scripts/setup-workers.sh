@@ -2,7 +2,7 @@
 # ==============================================================================
 # Worker Supervisor Setup Script
 # ==============================================================================
-# Configura PM2 ou systemd para gerenciar os workers do Didin Fácil
+# Configura PM2 ou systemd para gerenciar os workers do TikTrend Finder
 #
 # Uso:
 #   ./scripts/setup-workers.sh pm2      # Configura PM2 (desenvolvimento)
@@ -86,52 +86,52 @@ setup_systemd() {
         exit 1
     fi
     
-    # Cria usuário didin se não existir
-    if ! id "didin" &>/dev/null; then
-        log_info "Criando usuário 'didin'..."
-        useradd -r -m -s /bin/bash didin
+    # Cria usuário tiktrend se não existir
+    if ! id "tiktrend" &>/dev/null; then
+        log_info "Criando usuário 'tiktrend'..."
+        useradd -r -m -s /bin/bash tiktrend
     fi
     
     # Cria diretórios necessários
-    mkdir -p /etc/didin-facil
-    mkdir -p /var/www/didin-facil/logs
-    chown -R didin:didin /var/www/didin-facil
+    mkdir -p /etc/tiktrend-facil
+    mkdir -p /var/www/tiktrend-facil/logs
+    chown -R didin:didin /var/www/tiktrend-facil
     
     # Copia arquivos de serviço
     log_info "Instalando arquivos de serviço..."
-    cp "$PROJECT_ROOT/docker/systemd/didin-scheduler.service" /etc/systemd/system/
-    cp "$PROJECT_ROOT/docker/systemd/didin-whatsapp-reconnect.service" /etc/systemd/system/
+    cp "$PROJECT_ROOT/docker/systemd/tiktrend-scheduler.service" /etc/systemd/system/
+    cp "$PROJECT_ROOT/docker/systemd/tiktrend-whatsapp-reconnect.service" /etc/systemd/system/
     
     # Cria arquivo de ambiente template
-    if [[ ! -f /etc/didin-facil/scheduler.env ]]; then
-        cat > /etc/didin-facil/scheduler.env << 'EOF'
+    if [[ ! -f /etc/tiktrend-facil/scheduler.env ]]; then
+        cat > /etc/tiktrend-facil/scheduler.env << 'EOF'
 # Scheduler Worker Configuration
-DATABASE_URL=postgresql://user:pass@localhost:5432/didin
+DATABASE_URL=postgresql://user:pass@localhost:5432/tiktrend
 REDIS_URL=redis://localhost:6379/0
 EVOLUTION_API_URL=http://localhost:8080
 EVOLUTION_API_KEY=your-key-here
 EOF
-        chmod 600 /etc/didin-facil/scheduler.env
-        log_warn "Edite /etc/didin-facil/scheduler.env com suas credenciais"
+        chmod 600 /etc/tiktrend-facil/scheduler.env
+        log_warn "Edite /etc/tiktrend-facil/scheduler.env com suas credenciais"
     fi
     
     # Recarrega systemd
     systemctl daemon-reload
     
     # Habilita serviços
-    systemctl enable didin-scheduler.service
-    systemctl enable didin-whatsapp-reconnect.service
+    systemctl enable tiktrend-scheduler.service
+    systemctl enable tiktrend-whatsapp-reconnect.service
     
     log_success "Systemd configurado com sucesso!"
     log_info "Comandos úteis:"
-    echo "  systemctl start didin-scheduler        # Iniciar scheduler"
-    echo "  systemctl stop didin-scheduler         # Parar scheduler"
-    echo "  systemctl restart didin-scheduler      # Reiniciar"
-    echo "  systemctl status didin-scheduler       # Ver status"
-    echo "  journalctl -u didin-scheduler -f       # Ver logs"
+    echo "  systemctl start tiktrend-scheduler        # Iniciar scheduler"
+    echo "  systemctl stop tiktrend-scheduler         # Parar scheduler"
+    echo "  systemctl restart tiktrend-scheduler      # Reiniciar"
+    echo "  systemctl status tiktrend-scheduler       # Ver status"
+    echo "  journalctl -u tiktrend-scheduler -f       # Ver logs"
     echo ""
     echo "  # Para iniciar agora:"
-    echo "  systemctl start didin-scheduler didin-whatsapp-reconnect"
+    echo "  systemctl start tiktrend-scheduler tiktrend-whatsapp-reconnect"
 }
 
 # ==============================================================================
@@ -149,7 +149,7 @@ setup_docker() {
     cd "$PROJECT_ROOT/docker"
     
     # Cria network se não existir
-    docker network create didin-network 2>/dev/null || true
+    docker network create tiktrend-network 2>/dev/null || true
     
     # Inicia os workers
     docker-compose -f docker-compose.yml -f docker-compose.workers.yml up -d scheduler whatsapp-reconnect
@@ -186,7 +186,7 @@ except:
     
     echo ""
     echo "=== Systemd ==="
-    for service in didin-scheduler didin-whatsapp-reconnect; do
+    for service in tiktrend-scheduler tiktrend-whatsapp-reconnect; do
         if systemctl is-active --quiet "$service" 2>/dev/null; then
             echo "  ✅ $service: active"
         elif systemctl is-enabled --quiet "$service" 2>/dev/null; then
@@ -199,7 +199,7 @@ except:
     echo ""
     echo "=== Docker ==="
     if command -v docker &> /dev/null; then
-        for container in didin-scheduler didin-whatsapp-reconnect; do
+        for container in tiktrend-scheduler tiktrend-whatsapp-reconnect; do
             status=$(docker inspect -f '{{.State.Status}}' "$container" 2>/dev/null || echo "not found")
             if [[ "$status" == "running" ]]; then
                 echo "  ✅ $container: running"

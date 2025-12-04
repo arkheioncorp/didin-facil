@@ -115,7 +115,7 @@ class TikTokClient:
             "/path/to/video.mp4",
             VideoConfig(
                 caption="Confira essa oferta!",
-                hashtags=["ofertas", "promocao", "didin"]
+                hashtags=["ofertas", "promocao", "tiktrendfinder"]
             )
         )
     """

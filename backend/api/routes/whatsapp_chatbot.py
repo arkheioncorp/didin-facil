@@ -91,7 +91,7 @@ class ChatbotRequest(BaseModel):
     """Request do chatbot WhatsApp."""
     phone: str = Field(..., description="Número do telefone")
     message: str = Field(..., description="Mensagem recebida")
-    instance_name: str = Field(default="didin-whatsapp")
+    instance_name: str = Field(default="tiktrend-whatsapp")
     push_name: Optional[str] = None
 
 
@@ -212,7 +212,7 @@ class WhatsAppChatbot:
     
     async def _show_welcome(self, name: str) -> ChatbotResponse:
         """Mostra mensagem de boas-vindas."""
-        response = f"""👋 Olá, {name}! Bem-vindo ao *Didin Fácil*!
+        response = f"""👋 Olá, {name}! Bem-vindo ao *TikTrend Finder*!
 
 Sou seu assistente virtual para encontrar os melhores preços. 🛒💰
 

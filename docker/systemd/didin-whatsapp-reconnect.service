@@ -1,6 +1,6 @@
 [Unit]
-Description=Didin Fácil WhatsApp Reconnect Worker
-Documentation=https://github.com/arkheioncorp/didin-facil
+Description=TikTrend Finder WhatsApp Reconnect Worker
+Documentation=https://github.com/arkheioncorp/tiktrend-facil
 After=network.target redis.service
 Wants=redis.service
 
@@ -8,16 +8,16 @@ Wants=redis.service
 Type=simple
 User=didin
 Group=didin
-WorkingDirectory=/var/www/didin-facil/backend
+WorkingDirectory=/var/www/tiktrend-facil/backend
 
 # Ambiente
 Environment=PYTHONUNBUFFERED=1
 Environment=ENVIRONMENT=production
 Environment=RECONNECT_CHECK_INTERVAL=60
-EnvironmentFile=-/etc/didin-facil/whatsapp.env
+EnvironmentFile=-/etc/tiktrend-facil/whatsapp.env
 
 # Comando
-ExecStart=/var/www/didin-facil/venv/bin/python -m workers.whatsapp_reconnect
+ExecStart=/var/www/tiktrend-facil/venv/bin/python -m workers.whatsapp_reconnect
 
 # Restart automático
 Restart=always
@@ -42,7 +42,7 @@ PrivateTmp=true
 # Logging
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=didin-whatsapp-reconnect
+SyslogIdentifier=tiktrend-whatsapp-reconnect
 
 [Install]
 WantedBy=multi-user.target

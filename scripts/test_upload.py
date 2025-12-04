@@ -54,7 +54,7 @@ async def run_youtube_upload(file_path: str, account_name: str, user_id: str = "
 
         metadata = VideoMetadata(
             title=f"Test Upload {datetime.now().strftime('%Y-%m-%d %H:%M')}",
-            description="This is a test upload from Didin Facil automation.",
+            description="This is a test upload from TikTrend Finder automation.",
             tags=["test", "automation"],
             category=Category.HOWTO_STYLE,
             privacy=PrivacyStatus.PRIVATE,

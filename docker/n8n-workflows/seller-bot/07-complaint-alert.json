@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "didin/complaint-alert",
+        "path": "tiktrend/complaint-alert",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -40,8 +40,8 @@
       "position": [690, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -58,15 +58,15 @@
       "position": [910, 200],
       "credentials": {
         "slackApi": {
-          "id": "slack-didin",
-          "name": "Slack Didin"
+          "id": "slack-tiktrend",
+          "name": "Slack TikTrend"
         }
       }
     },
     {
       "parameters": {
-        "fromEmail": "alertas@didinfacil.com.br",
-        "toEmail": "suporte@didinfacil.com.br",
+        "fromEmail": "alertas@tiktrendfinder.com.br",
+        "toEmail": "suporte@tiktrendfinder.com.br",
         "subject": "=🚨 RECLAMAÇÃO {{ $('Parse Complaint').first().json.priority.toUpperCase() }} - {{ $('Parse Complaint').first().json.name }}",
         "emailType": "html",
         "html": "=<h2>🚨 Nova Reclamação Recebida</h2><p><strong>Cliente:</strong> {{ $('Parse Complaint').first().json.name }}</p><p><strong>Telefone:</strong> {{ $('Parse Complaint').first().json.phone }}</p><p><strong>Canal:</strong> {{ $('Parse Complaint').first().json.original_channel }}</p><p><strong>Prioridade:</strong> <span style=\"color: red;\">{{ $('Parse Complaint').first().json.priority }}</span></p><p><strong>Sentimento:</strong> {{ $('Parse Complaint').first().json.sentiment }}</p><hr><h3>Reclamação:</h3><blockquote>{{ $('Parse Complaint').first().json.complaint }}</blockquote><hr><p>Responda o mais rápido possível!</p>",
@@ -79,8 +79,8 @@
       "position": [910, 400],
       "credentials": {
         "smtp": {
-          "id": "smtp-didin",
-          "name": "SMTP Didin"
+          "id": "smtp-tiktrend",
+          "name": "SMTP TikTrend"
         }
       }
     },

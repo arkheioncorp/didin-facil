@@ -9,7 +9,7 @@ Este módulo fornece:
 - Gauges para estado dos circuit breakers
 - Endpoint /metrics compatível com Prometheus
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.0.0
 """
 

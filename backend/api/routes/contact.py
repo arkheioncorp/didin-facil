@@ -17,7 +17,6 @@ from pydantic import BaseModel, EmailStr, Field
 from shared.config import settings
 
 logger = logging.getLogger(__name__)
-settings = get_settings()
 
 router = APIRouter(prefix="/contact", tags=["contact"])
 
@@ -125,9 +124,9 @@ async def get_support_info():
         business_hours="Segunda a Sexta, 9h às 18h (Horário de Brasília)",
         response_time="Até 24 horas úteis",
         social_links={
-            "instagram": "https://instagram.com/didinfacil",
-            "twitter": "https://twitter.com/didinfacil",
-            "youtube": "https://youtube.com/@didinfacil"
+            "instagram": "https://instagram.com/tiktrendfinder",
+            "twitter": "https://twitter.com/tiktrendfinder",
+            "youtube": "https://youtube.com/@tiktrendfinder"
         }
     )
 

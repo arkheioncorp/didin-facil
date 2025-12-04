@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# Railway Health Check Script - Didin Fácil
+# Railway Health Check Script - TikTrend Finder
 # =============================================================================
 # Uso: ./scripts/railway_check.sh
 # =============================================================================
@@ -8,7 +8,7 @@
 set -e
 
 echo "=========================================="
-echo "🚀 Railway Health Check - Didin Fácil"
+echo "🚀 Railway Health Check - TikTrend Finder"
 echo "=========================================="
 echo ""
 
@@ -44,7 +44,7 @@ if railway status &> /dev/null; then
     echo -e "${GREEN}✅ Projeto linkado${NC}"
 else
     echo -e "${YELLOW}⚠️  Projeto não linkado corretamente. Relinkando...${NC}"
-    railway link -p didin-facil -e production || true
+    railway link -p tiktrend-facil -e production || true
 fi
 
 # Listar variáveis

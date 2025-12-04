@@ -180,7 +180,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"content\": \"✅ *Agendamento Confirmado!*\\n\\n📅 Data: {{ $json.selectedSlot.data }}\\n🕐 Horário: {{ $json.selectedSlot.hora }}\\n\\n📧 Você receberá um lembrete por email.\\n\\nObrigado por escolher o Didin Fácil! 🎉\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "jsonBody": "={\n  \"content\": \"✅ *Agendamento Confirmado!*\\n\\n📅 Data: {{ $json.selectedSlot.data }}\\n🕐 Horário: {{ $json.selectedSlot.hora }}\\n\\n📧 Você receberá um lembrete por email.\\n\\nObrigado por escolher o TikTrend Finder! 🎉\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
         "options": {}
       },
       "id": "confirm-booking",

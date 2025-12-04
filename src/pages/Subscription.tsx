@@ -284,7 +284,7 @@ export const Subscription: React.FC = () => {
           <div className="flex items-center justify-center gap-2 mb-4">
             <TikTrendIcon size={40} />
             <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              Didin Fácil
+              TikTrend Finder
             </span>
           </div>
           <h1 className="text-3xl font-bold mb-2">Sua Assinatura</h1>
@@ -523,7 +523,7 @@ export const Subscription: React.FC = () => {
                     Modo de Execução
                   </CardTitle>
                   <CardDescription>
-                    Escolha como o Didin Fácil processa seus dados
+                    Escolha como o TikTrend Finder processa seus dados
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

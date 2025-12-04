@@ -1,4 +1,4 @@
-# 🔌 Integrations - Didin Fácil
+# 🔌 Integrations - TikTrend Finder
 
 ## 📋 Índice de Documentação
 
@@ -46,7 +46,7 @@ from integrations import get_whatsapp_hub
 
 hub = get_whatsapp_hub()
 await hub.send_message(
-    instance_name="didin-whatsapp",
+    instance_name="tiktrend-whatsapp",
     to="5511999999999",
     message="Olá!"
 )
@@ -138,7 +138,7 @@ backend/integrations/
 # WhatsApp (Evolution API)
 EVOLUTION_API_URL=http://evolution-api:8082
 EVOLUTION_API_KEY=sua-chave-secreta
-EVOLUTION_DEFAULT_INSTANCE=didin-whatsapp
+EVOLUTION_DEFAULT_INSTANCE=tiktrend-whatsapp
 
 # Instagram (Graph API)
 INSTAGRAM_ACCESS_TOKEN=seu-token-de-acesso
@@ -254,8 +254,8 @@ pytest --cov=integrations tests/integrations/
 
 ### Dúvidas Técnicas
 - **Slack:** #backend-integrations
-- **Email:** backend@didinfacil.com
-- **Issues:** [GitHub Issues](https://github.com/arkheioncorp/didin-facil/issues)
+- **Email:** backend@tiktrendfinder.com
+- **Issues:** [GitHub Issues](https://github.com/arkheioncorp/tiktrend-facil/issues)
 
 ### Reportar Bugs
 1. Verificar se já existe issue aberta
@@ -315,7 +315,7 @@ pytest --cov=integrations tests/integrations/
 
 ## 📄 Licença
 
-Propriedade de **Didin Fácil** © 2025. Todos os direitos reservados.
+Propriedade de **TikTrend Finder** © 2025. Todos os direitos reservados.
 
 ---
 

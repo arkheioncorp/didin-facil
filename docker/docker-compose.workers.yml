@@ -16,14 +16,14 @@ services:
     build:
       context: ..
       dockerfile: docker/api.Dockerfile
-    container_name: didin-scheduler
+    container_name: tiktrend-scheduler
     command: python -m workers.scheduler_runner
     restart: unless-stopped
     
     environment:
       - PYTHONUNBUFFERED=1
       - ENVIRONMENT=${ENVIRONMENT:-development}
-      - DATABASE_URL=${DATABASE_URL:-postgresql://didin:didin@postgres:5432/didin}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://tiktrend:tiktrend@postgres:5432/tiktrend}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - SCHEDULER_CHECK_INTERVAL=30
       - SCHEDULER_MAX_RETRIES=3
@@ -36,7 +36,7 @@ services:
         condition: service_healthy
     
     networks:
-      - didin-network
+      - tiktrend-network
     
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
@@ -67,7 +67,7 @@ services:
     build:
       context: ..
       dockerfile: docker/api.Dockerfile
-    container_name: didin-whatsapp-reconnect
+    container_name: tiktrend-whatsapp-reconnect
     command: python -m workers.whatsapp_reconnect
     restart: unless-stopped
     
@@ -84,7 +84,7 @@ services:
         condition: service_healthy
     
     networks:
-      - didin-network
+      - tiktrend-network
     
     deploy:
       resources:
@@ -102,5 +102,5 @@ services:
         max-file: "3"
 
 networks:
-  didin-network:
+  tiktrend-network:
     external: true

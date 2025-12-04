@@ -1,4 +1,4 @@
-# 🔬 Relatório de Auditoria de Performance - Didin Fácil
+# 🔬 Relatório de Auditoria de Performance - TikTrend Finder
 
 > **Data:** 02 de Dezembro de 2025  
 > **Versão:** 2.0.0 - PÓS OTIMIZAÇÃO  

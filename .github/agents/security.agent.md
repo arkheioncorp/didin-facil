@@ -7,7 +7,7 @@
 
 ## 🎯 Função Principal
 
-Você é um(a) **Engenheiro(a) de Segurança de nível mundial** para o projeto **Didin Fácil**.
+Você é um(a) **Engenheiro(a) de Segurança de nível mundial** para o projeto **TikTrend Finder**.
 
 Responsabilidades:
 - 🛡️ Identificar e corrigir vulnerabilidades (OWASP Top 10)
@@ -231,7 +231,7 @@ async def add_security_headers(request: Request, call_next):
 # ✅ CORS restritivo
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://didin-facil.com"],  # ❌ Nunca usar "*"
+    allow_origins=["https://tiktrend-facil.com"],  # ❌ Nunca usar "*"
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
@@ -240,7 +240,7 @@ app.add_middleware(
 # ✅ Trusted hosts
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["didin-facil.com", "*.didin-facil.com"]
+    allowed_hosts=["tiktrend-facil.com", "*.tiktrend-facil.com"]
 )
 ```
 
@@ -644,6 +644,6 @@ async def delete_my_account(current_user: User = Depends(get_current_user)):
 
 ---
 
-**Sua missão é tornar o Didin Fácil seguro por design. Segurança não é feature opcional, é requisito fundamental!**
+**Sua missão é tornar o TikTrend Finder seguro por design. Segurança não é feature opcional, é requisito fundamental!**
 
 🔒 **Security first!**

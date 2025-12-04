@@ -116,7 +116,7 @@ class SandboxPixTester:
         # Dados do pagamento de teste
         payment_data = {
             "transaction_amount": 1.00,  # R$ 1,00 para teste
-            "description": "Teste Didin Fácil - Pacote Starter",
+            "description": "Teste TikTrend Finder - Pacote Starter",
             "payment_method_id": "pix",
             "payer": {
                 "email": payer_email,

@@ -101,7 +101,7 @@
 
   "dashboard": {
     "title": "Dashboard",
-    "welcome": "Welcome to Didin Fácil",
+    "welcome": "Welcome to TikTrend Finder",
     "subtitle": "Find the best viral products from TikTok Shop",
     "quick_stats": "Quick Stats",
     "recent_activity": "Recent Activity",
@@ -628,7 +628,7 @@
 
   "settings": {
     "title": "Settings",
-    "subtitle": "Customize Didin Fácil according to your preferences",
+    "subtitle": "Customize TikTrend Finder according to your preferences",
     "general": "General",
     "appearance": {
       "title": "Appearance",
@@ -840,7 +840,7 @@
         "buy": "Buy"
       },
       "payment_info": "Payments processed securely via Mercado Pago 🔒",
-      "support": "Questions? Contact us: suporte@didinfacil.com"
+      "support": "Questions? Contact us: suporte@tiktrendfinder.com"
     },
     "system": {
       "title": "System",
@@ -877,7 +877,7 @@
       },
       "analytics": {
         "title": "Analytics",
-        "description": "Help improve Didin Fácil (optional)",
+        "description": "Help improve TikTrend Finder (optional)",
         "enable": {
           "title": "Anonymous Analytics",
           "description": "Send anonymous usage data for improvements"
@@ -1109,7 +1109,7 @@
   "setup": {
     "title": "Initial Setup",
     "welcome": {
-      "title": "Welcome to Didin Fácil!",
+      "title": "Welcome to TikTrend Finder!",
       "subtitle": "Let's set up your account in a few steps"
     },
     "steps": {
@@ -1147,7 +1147,7 @@
 
   "tutorial": {
     "welcome": {
-      "title": "Welcome to Didin Fácil!",
+      "title": "Welcome to TikTrend Finder!",
       "content": "Let's take a quick tour of the main features."
     },
     "dashboard": {

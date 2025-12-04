@@ -60,7 +60,7 @@ class WhatsAppClient:
         config = WhatsAppConfig(
             api_url="http://localhost:8080",
             api_key="your-api-key",
-            instance_name="didin-facil"
+            instance_name="tiktrend-facil"
         )
         client = WhatsAppClient(config)
         
@@ -69,7 +69,7 @@ class WhatsAppClient:
         qr_code = await client.get_qr_code()
         
         # Enviar mensagem
-        await client.send_text("5511999999999", "Olá! Bem-vindo ao Didin Fácil!")
+        await client.send_text("5511999999999", "Olá! Bem-vindo ao TikTrend Finder!")
     """
     
     def __init__(self, config: WhatsAppConfig):
@@ -520,7 +520,7 @@ class WhatsAppBot:
         
         @bot.command("preço", "quanto custa")
         async def price(message: IncomingMessage):
-            return "Consulte nossos preços em: https://didin.com/precos"
+            return "Consulte nossos preços em: https://tiktrendfinder.com/precos"
         
         # No webhook:
         await bot.process(message)

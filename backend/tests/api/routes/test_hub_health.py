@@ -10,7 +10,7 @@ Testa os 6 endpoints de monitoramento:
 - GET /hub/circuit-breaker/status
 - POST /hub/circuit-breaker/{hub_name}/reset
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.0.0
 """
 

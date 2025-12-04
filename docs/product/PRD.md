@@ -3,7 +3,7 @@
 ## Product Requirements Document
 **Versão:** 1.0.0  
 **Última Atualização:** 26 de Novembro de 2025  
-**Autor:** Didin Facil Team
+**Autor:** TikTrend Finder Team
 
 ---
 

@@ -1,4 +1,4 @@
-# Termos de Serviço - Didin Fácil / TikTrend Finder
+# Termos de Serviço - TikTrend Finder / TikTrend Finder
 
 **Última atualização:** 30 de novembro de 2025  
 **Versão:** 1.0.0

@@ -1,5 +1,5 @@
 """
-Professional Seller Bot - Didin Fácil
+Professional Seller Bot - TikTrend Finder
 ======================================
 Bot de vendas profissional com IA avançada, CRM integrado e multi-canal.
 
@@ -474,11 +474,11 @@ class ResponseTemplates:
     # Saudações dinâmicas
     GREETINGS = {
         "morning": [
-            "Bom dia! ☀️ Sou o assistente da Didin Fácil. Como posso ajudar você hoje?",
-            "Bom dia! Bem-vindo à Didin Fácil! O que você procura hoje?",
+            "Bom dia! ☀️ Sou o assistente da TikTrend Finder. Como posso ajudar você hoje?",
+            "Bom dia! Bem-vindo à TikTrend Finder! O que você procura hoje?",
         ],
         "afternoon": [
-            "Boa tarde! 👋 Sou o assistente virtual da Didin Fácil. Em que posso ajudar?",
+            "Boa tarde! 👋 Sou o assistente virtual da TikTrend Finder. Em que posso ajudar?",
             "Boa tarde! Como posso te ajudar a encontrar a melhor oferta hoje?",
         ],
         "evening": [
@@ -609,7 +609,7 @@ Cada loja tem suas próprias opções:
 • PIX (desconto extra!)
 • Boleto bancário
 
-A Didin Fácil é um comparador - a compra é feita direto na loja escolhida.
+A TikTrend Finder é um comparador - a compra é feita direto na loja escolhida.
 """,
     }
     
@@ -634,7 +634,7 @@ A Didin Fácil é um comparador - a compra é feita direto na loja escolhida.
 
 class ProfessionalSellerBot:
     """
-    Bot de vendas profissional da Didin Fácil.
+    Bot de vendas profissional da TikTrend Finder.
     
     Features:
     - Intent detection (rule-based + AI)
@@ -1043,7 +1043,7 @@ class ProfessionalSellerBot:
         help_text = """
 🆘 *Central de Ajuda*
 
-Sou o assistente virtual da Didin Fácil!
+Sou o assistente virtual da TikTrend Finder!
 
 Eu posso te ajudar a:
 • 🔍 Encontrar produtos com os melhores preços
@@ -1238,7 +1238,7 @@ Digite "atendente" ou "falar com humano".
 📦 *Informações de Entrega*
 
 A entrega depende de cada loja e da sua região.
-A Didin Fácil mostra o frete de cada loja na comparação.
+A TikTrend Finder mostra o frete de cada loja na comparação.
 
 Geralmente:
 • Capitais: 2-5 dias úteis
@@ -1347,7 +1347,7 @@ Acompanhe pelo site dos Correios ou da transportadora.
         refund_info = """
 💸 *Política de Reembolso*
 
-A Didin Fácil é um comparador de preços.
+A TikTrend Finder é um comparador de preços.
 As compras são realizadas diretamente nas lojas.
 
 Para solicitar reembolso, você deve:
@@ -1749,7 +1749,7 @@ Quer buscar algo? Me diga o que procura!
         
         try:
             # Construir prompt para IA
-            system_prompt = """Você é o assistente virtual da Didin Fácil, 
+            system_prompt = """Você é o assistente virtual da TikTrend Finder, 
             um comparador de preços brasileiro. Seja prestativo, 
             educado e objetivo. Use emojis com moderação."""
             
@@ -1868,7 +1868,7 @@ Quer buscar algo? Me diga o que procura!
         
         try:
             await self.n8n_client.trigger_webhook(
-                webhook_path="/didin/support-alert",
+                webhook_path="/tiktrend/support-alert",
                 data={
                     "user_id": context.user_id,
                     "user_name": context.user_name,

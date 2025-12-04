@@ -1,4 +1,4 @@
-# 🤖 Professional Seller Bot - Didin Fácil
+# 🤖 Professional Seller Bot - TikTrend Finder
 
 Sistema de chatbot profissional com IA avançada, multi-canal e integração completa com CRM e Analytics.
 
@@ -179,7 +179,7 @@ CHATWOOT_ACCOUNT_ID=1
 # Evolution API (WhatsApp)
 EVOLUTION_API_URL=http://localhost:8080
 EVOLUTION_API_KEY=your_key
-EVOLUTION_INSTANCE=didin-bot
+EVOLUTION_INSTANCE=tiktrend-bot
 
 # n8n
 N8N_API_URL=http://localhost:5678
@@ -200,14 +200,14 @@ python import_seller_bot_workflow.py
 
 1. Acesse Chatwoot → Settings → Webhooks
 2. Adicione novo webhook:
-   - URL: `https://api.didin.com.br/seller-bot/webhook/chatwoot`
+   - URL: `https://api.tiktrendfinder.com/seller-bot/webhook/chatwoot`
    - Eventos: `message_created`
 
 ### Configurar Webhook Evolution API
 
 1. Acesse painel Evolution API
 2. Configure webhook:
-   - URL: `https://api.didin.com.br/seller-bot/webhook/evolution`
+   - URL: `https://api.tiktrendfinder.com/seller-bot/webhook/evolution`
    - Eventos: `messages.upsert`
 
 ---
@@ -425,7 +425,7 @@ router.register_adapter(MessageChannel.MEU_CANAL, MeuCanalAdapter())
 ### Bot não responde
 
 1. Verificar se webhook está configurado corretamente
-2. Checar logs: `docker logs didin-api`
+2. Checar logs: `docker logs tiktrend-api`
 3. Testar endpoint diretamente: `POST /seller-bot/message`
 
 ### Intenção não detectada
@@ -462,12 +462,12 @@ router.register_adapter(MessageChannel.MEU_CANAL, MeuCanalAdapter())
 
 ## 🆘 Suporte
 
-- 📧 Email: suporte@didin.com.br
-- 💬 Discord: discord.gg/didin
-- 📖 Docs: docs.didin.com.br
+- 📧 Email: suporte@tiktrendfinder.com
+- 💬 Discord: discord.gg/tiktrendfinder
+- 📖 Docs: docs.tiktrendfinder.com
 
 ---
 
 **Versão:** 1.0.0  
 **Última atualização:** 30 de janeiro de 2025  
-**Mantido por:** Equipe Didin Fácil
+**Mantido por:** Equipe TikTrend Finder

@@ -1,4 +1,4 @@
-# Decision Log - Didin Fácil
+# Decision Log - TikTrend Finder
 
 **Última Atualização:** 4 de Dezembro de 2025
 

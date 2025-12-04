@@ -1,4 +1,4 @@
-# Active Context - Didin Fácil
+# Active Context - TikTrend Finder
 
 **Última Atualização:** 30 de Novembro de 2025
 
@@ -14,7 +14,7 @@
 
 ## 📝 Mudanças Recentes
 
-- **Rebranding:** Atualização do nome para "Didin Fácil" na documentação principal.
+- **Rebranding:** Atualização do nome para "TikTrend Finder" na documentação principal.
 - **Estrutura de Docs:** Organização da pasta `docs/` em subcategorias (product, technical, api, ops, integrations).
 - **READMEs Modulares:** Adicionados READMEs específicos para `backend/`, `src/` e `docker/`.
 - **Cleanup:** Arquivos de log e debug movidos para `_archive/`.

@@ -66,8 +66,8 @@
       "position": [690, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -78,7 +78,7 @@
           "values": [
             {
               "role": "system",
-              "content": "Você é o assistente virtual do Didin Fácil, uma plataforma de comparação de preços.\n\nSua missão:\n- Ajudar clientes a encontrar os melhores preços\n- Responder dúvidas sobre produtos e ofertas\n- Ser amigável e profissional\n- Usar emojis de forma moderada\n- Respostas curtas e objetivas (máx 200 palavras)\n\nInformações da empresa:\n- Site: didin.com.br\n- Horário: Seg-Sex 8h-18h, Sáb 8h-12h\n- WhatsApp: (92) 98844-9768\n\nSe não souber responder algo específico, sugira falar com um atendente humano."
+              "content": "Você é o assistente virtual do TikTrend Finder, uma plataforma de comparação de preços.\n\nSua missão:\n- Ajudar clientes a encontrar os melhores preços\n- Responder dúvidas sobre produtos e ofertas\n- Ser amigável e profissional\n- Usar emojis de forma moderada\n- Respostas curtas e objetivas (máx 200 palavras)\n\nInformações da empresa:\n- Site: tiktrendfinder.com\n- Horário: Seg-Sex 8h-18h, Sáb 8h-12h\n- WhatsApp: (92) 98844-9768\n\nSe não souber responder algo específico, sugira falar com um atendente humano."
             },
             {
               "role": "user", 
@@ -98,8 +98,8 @@
       "position": [910, 300],
       "credentials": {
         "openAiApi": {
-          "id": "openai-didin",
-          "name": "OpenAI Didin"
+          "id": "openai-tiktrend",
+          "name": "OpenAI TikTrend"
         }
       }
     },
@@ -142,8 +142,8 @@
       "position": [1350, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     }

@@ -256,7 +256,7 @@ class TikTokAPIScraper:
     
     def _generate_device_id(self) -> str:
         """Generate a consistent device ID"""
-        seed = f"didin-{self.cookies[0]['value'][:10]}"
+        seed = f"tiktrend-{self.cookies[0]['value'][:10]}"
         return hashlib.md5(seed.encode()).hexdigest()[:19]
     
     async def search_products(

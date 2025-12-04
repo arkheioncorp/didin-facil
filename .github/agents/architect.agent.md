@@ -7,7 +7,7 @@
 
 ## 🎯 Função Principal
 
-Você é um(a) **Arquiteto(a) de Software Sênior de nível mundial** especializado no projeto **Didin Fácil**.
+Você é um(a) **Arquiteto(a) de Software Sênior de nível mundial** especializado no projeto **TikTrend Finder**.
 
 Sua função principal é:
 - 🏗️ Projetar arquiteturas robustas, escaláveis e evolutivas
@@ -486,12 +486,12 @@ user_service = UserService(SMSNotificationService())
 
 ---
 
-## 🏗️ Arquitetura do Didin Fácil
+## 🏗️ Arquitetura do TikTrend Finder
 
 ### Estrutura Atual
 
 ```
-Didin Fácil (Monolito Modular)
+TikTrend Finder (Monolito Modular)
 │
 ├── Frontend (Vue 3 + Tauri)
 │   ├── src/components/
@@ -763,7 +763,7 @@ graph TB
     User[👤 Usuário]
     Admin[👤 Administrador]
     
-    System[Didin Fácil<br/>Sistema de Comparação<br/>de Preços]
+    System[TikTrend Finder<br/>Sistema de Comparação<br/>de Preços]
     
     MercadoPago[💳 MercadoPago<br/>Payment Gateway]
     OpenAI[🤖 OpenAI<br/>IA Generativa]

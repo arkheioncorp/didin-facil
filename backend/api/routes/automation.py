@@ -235,7 +235,7 @@ async def list_executions(
 @router.get("/templates")
 async def list_workflow_templates():
     """
-    Lista templates de workflows pré-definidos para Didin Fácil.
+    Lista templates de workflows pré-definidos para TikTrend Finder.
     """
     return {
         "templates": [
@@ -291,7 +291,7 @@ async def trigger_price_drop_alert(
     """
     try:
         result = await n8n_client.trigger_webhook(
-            webhook_path="/didin/price-drop",
+            webhook_path="/tiktrend/price-drop",
             data={
                 "product_name": product_name,
                 "old_price": old_price,
@@ -323,7 +323,7 @@ async def trigger_new_lead(
     """
     try:
         result = await n8n_client.trigger_webhook(
-            webhook_path="/didin/new-lead",
+            webhook_path="/tiktrend/new-lead",
             data={
                 "name": name,
                 "phone": phone,
@@ -352,7 +352,7 @@ async def trigger_post_published(
     """
     try:
         result = await n8n_client.trigger_webhook(
-            webhook_path="/didin/post-published",
+            webhook_path="/tiktrend/post-published",
             data={
                 "platform": platform,
                 "post_id": post_id,

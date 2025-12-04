@@ -188,7 +188,7 @@ async def trigger_new_user_onboarding(user: User = Depends(get_current_user)):
         client = get_n8n_client()
 
         await client.trigger_webhook(
-            webhook_path="/didin/new-user",
+            webhook_path="/tiktrend/new-user",
             data={
                 "user_id": str(user.id),
                 "email": user.email,
@@ -220,7 +220,7 @@ async def trigger_price_drop_alert(
         client = get_n8n_client()
 
         await client.trigger_webhook(
-            webhook_path="/didin/price-drop",
+            webhook_path="/tiktrend/price-drop",
             data={
                 "user_id": str(user.id),
                 "product_id": product_id,

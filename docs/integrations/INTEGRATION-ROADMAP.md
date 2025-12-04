@@ -1,6 +1,6 @@
-# 🚀 ROADMAP DE INTEGRAÇÃO - Didin Fácil Marketing Suite
+# 🚀 ROADMAP DE INTEGRAÇÃO - TikTrend Finder Marketing Suite
 
-> **Objetivo:** Transformar o Didin Fácil em uma plataforma completa de automação de marketing digital, vendas e dropshipping, integrando módulos open-source prontos.
+> **Objetivo:** Transformar o TikTrend Finder em uma plataforma completa de automação de marketing digital, vendas e dropshipping, integrando módulos open-source prontos.
 
 ---
 
@@ -30,7 +30,7 @@
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
 │  │                     SCRAPERS & PRICE COMPARISON                      │   │
-│  │            (Já existente no Didin - Core Business)                   │   │
+│  │            (Já existente no TikTrend Finder - Core Business)                   │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -332,7 +332,7 @@ backend/
         scraper.py
 ```
 
-**💡 Sinergia com Didin:**
+**💡 Sinergia com TikTrend Finder:**
 - Já temos estrutura de scraping → Adicionar mais lojas
 - Integrar com alerta de preços para clientes (via WhatsApp)
 
@@ -548,4 +548,4 @@ Semana 11-12: ⚫ CRM + Dashboard Unificado + Testes
 
 **Versão:** 1.0.0  
 **Data:** 26 de novembro de 2025  
-**Autor:** Didin Fácil Team
+**Autor:** TikTrend Finder Team

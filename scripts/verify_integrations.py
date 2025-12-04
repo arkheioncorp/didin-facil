@@ -74,7 +74,7 @@ async def verify_instagram():
         print("❌ Credenciais do Instagram ausentes no .env")
 
 async def main():
-    print("🚀 Iniciando Verificação de Integrações do Didin Fácil\n")
+    print("🚀 Iniciando Verificação de Integrações do TikTrend Finder\n")
     await verify_whatsapp()
     await verify_youtube()
     await verify_tiktok()

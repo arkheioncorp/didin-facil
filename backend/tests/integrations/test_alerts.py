@@ -7,7 +7,7 @@ Testa:
 - Canais: Slack, Discord, Webhook, Log
 - Alertas específicos: Circuit Breaker, Latência, Success Rate
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.0.0
 """
 
@@ -228,7 +228,7 @@ class TestDiscordChannel:
             payload = call_args.kwargs.get('json', call_args[1].get('json'))
 
             assert "embeds" in payload
-            assert payload["username"] == "Didin Hub Monitor"
+            assert payload["username"] == "TikTrend Hub Monitor"
 
 
 # ============================================

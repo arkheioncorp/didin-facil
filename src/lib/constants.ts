@@ -1,5 +1,5 @@
 // Application constants
-export const APP_NAME = "Didin Fácil";
+export const APP_NAME = "TikTrend Finder";
 export const APP_VERSION = "1.0.0";
 
 // API endpoints
@@ -9,7 +9,7 @@ export const LICENSE_SERVER_URL = import.meta.env.VITE_LICENSE_URL || "http://lo
 // WhatsApp / Evolution API
 export const EVOLUTION_API_URL = import.meta.env.VITE_EVOLUTION_API_URL || "http://localhost:8082";
 export const EVOLUTION_API_KEY = import.meta.env.VITE_EVOLUTION_API_KEY || "429683C4C977415CAAFCCE10F7D57E11";
-export const EVOLUTION_INSTANCE = import.meta.env.VITE_EVOLUTION_INSTANCE || "didin-whatsapp";
+export const EVOLUTION_INSTANCE = import.meta.env.VITE_EVOLUTION_INSTANCE || "tiktrend-whatsapp";
 
 // Pagination
 export const DEFAULT_PAGE_SIZE = 20;

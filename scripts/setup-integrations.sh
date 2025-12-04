@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Setup Script - Didin Fácil Integrations
+# Setup Script - TikTrend Finder Integrations
 # ============================================================================
 # Este script configura todas as integrações do sistema
 # Uso: ./scripts/setup-integrations.sh
@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}"
 echo "=============================================="
-echo "   Didin Fácil - Setup de Integrações"
+echo "   TikTrend Finder - Setup de Integrações"
 echo "=============================================="
 echo -e "${NC}"
 
@@ -47,7 +47,7 @@ if [ ! -f "backend/.env" ]; then
     echo -e "\n${YELLOW}📝 Criando arquivo .env...${NC}"
     cat > backend/.env << 'EOF'
 # ============================================================================
-# Didin Fácil - Environment Variables
+# TikTrend Finder - Environment Variables
 # ============================================================================
 
 # Environment

@@ -61,7 +61,7 @@ class EvolutionConfig:
     """Configuração da Evolution API."""
     api_url: str = "http://localhost:8080"
     api_key: str = ""
-    instance_name: str = "didin-bot"
+    instance_name: str = "tiktrend-bot"
 
 
 class EvolutionAdapter(ChannelAdapter):
@@ -523,7 +523,7 @@ class ChannelRouter:
 def create_evolution_adapter(
     api_url: str = "http://localhost:8080",
     api_key: str = "",
-    instance_name: str = "didin-bot"
+    instance_name: str = "tiktrend-bot"
 ) -> EvolutionAdapter:
     """Cria adaptador Evolution API."""
     config = EvolutionConfig(

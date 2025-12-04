@@ -9,7 +9,7 @@ from uuid import uuid4
 
 import pytest
 
-sys.path.insert(0, '/home/jhonslife/Didin Facil/backend')
+sys.path.insert(0, '/home/jhonslife/TikTrend Finder/backend')
 
 from scripts.migrate_lifetime_users import (MigrationResult,
                                             create_subscription,

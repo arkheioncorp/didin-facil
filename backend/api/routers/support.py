@@ -493,7 +493,7 @@ async def on_message_created(payload: Dict):
                 ai_client = OpenAIClient()
                 
                 # Gerar resposta inteligente
-                system_prompt = """Você é o assistente virtual do Didin Fácil.
+                system_prompt = """Você é o assistente virtual do TikTrend Finder.
                 Responda de forma amigável e objetiva. Se não souber algo,
                 diga que um atendente humano entrará em contato."""
                 

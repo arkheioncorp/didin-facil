@@ -1,7 +1,7 @@
 """
 Automation Module
 =================
-Módulo de automações com n8n para o Didin Fácil.
+Módulo de automações com n8n para o TikTrend Finder.
 """
 
 from .n8n_orchestrator import (DEFAULT_AUTOMATIONS, AutomationConfig,

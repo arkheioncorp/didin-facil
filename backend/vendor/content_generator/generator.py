@@ -308,7 +308,7 @@ class FFmpegVideoGenerator:
                     f"Encontrado na {product.store}",
                     duration=3
                 ),
-                TextSlide("Didin Fácil\nComparador de Preços", duration=3)
+                TextSlide("TikTrend Finder\nComparador de Preços", duration=3)
             ]
         
         else:  # PRODUCT_SHOWCASE

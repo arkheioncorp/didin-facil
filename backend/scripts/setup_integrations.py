@@ -2,7 +2,7 @@
 """
 Script de Configuração de Integrações
 ======================================
-Configura todas as APIs e serviços do Didin Fácil.
+Configura todas as APIs e serviços do TikTrend Finder.
 
 Uso:
     python -m scripts.setup_integrations
@@ -81,7 +81,7 @@ def write_env_file(path: str, env: dict):
     """Escreve arquivo .env."""
     with open(path, 'w') as f:
         f.write("# ===========================================\n")
-        f.write("# Didin Fácil - Environment Variables\n")
+        f.write("# TikTrend Finder - Environment Variables\n")
         f.write("# Gerado automaticamente por setup_integrations\n")
         f.write("# ===========================================\n\n")
         
@@ -401,7 +401,7 @@ def setup_marketplace_apis(env: dict) -> dict:
 2. Crie uma conta de afiliado
 3. Acesse: https://affiliate-program.amazon.com.br/assoc_credentials/home
 4. Gere Access Key e Secret Key
-5. Seu Partner Tag é o ID de associado (ex: didinfacil-20)
+5. Seu Partner Tag é o ID de associado (ex: tiktrendfinder-20)
 """)
         env["AMAZON_ACCESS_KEY"] = get_input(
             "Access Key", 
@@ -421,7 +421,7 @@ def setup_marketplace_apis(env: dict) -> dict:
 
 
 def main():
-    print_header("Configuração de Integrações - Didin Fácil")
+    print_header("Configuração de Integrações - TikTrend Finder")
     
     # Detectar diretório
     script_dir = Path(__file__).parent.parent

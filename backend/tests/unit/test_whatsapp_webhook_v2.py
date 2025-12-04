@@ -37,7 +37,7 @@ class TestEvolutionWebhookPayload:
 
         payload = EvolutionWebhookPayload(
             event="CONNECTION_UPDATE",
-            instance="didin-whatsapp",
+            instance="tiktrend-whatsapp",
             data={"state": "open"}
         )
 
@@ -260,7 +260,7 @@ class TestRealProductChatbot:
 
         assert result["action"] == "welcome"
         assert "João" in result["text"]
-        assert "Didin Fácil" in result["text"]
+        assert "TikTrend Finder" in result["text"]
 
     @pytest.mark.asyncio
     async def test_show_main_menu(self):

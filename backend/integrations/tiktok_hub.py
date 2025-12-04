@@ -1,7 +1,7 @@
 """
 TikTok Integration Hub
 ======================
-Ponto central de integração do TikTok para o Didin Fácil.
+Ponto central de integração do TikTok para o TikTrend Finder.
 
 Este módulo consolida todas as integrações com TikTok:
 - Gerenciamento de Sessões (Cookies)
@@ -9,7 +9,7 @@ Este módulo consolida todas as integrações com TikTok:
 - Analytics (futuro)
 - Mensagens (futuro)
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.1.0 (com alertas e métricas)
 """
 

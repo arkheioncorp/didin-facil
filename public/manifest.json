@@ -1,6 +1,6 @@
 {
-  "name": "Didin Fácil",
-  "short_name": "Didin",
+  "name": "TikTrend Finder",
+  "short_name": "TikTrend",
   "description": "Plataforma de comparação de preços e gestão de vendas",
   "start_url": "/",
   "display": "standalone",
@@ -124,14 +124,14 @@
   },
   "protocol_handlers": [
     {
-      "protocol": "web+didin",
+      "protocol": "web+tiktrend",
       "url": "/protocol?url=%s"
     }
   ],
   "related_applications": [
     {
       "platform": "windows",
-      "url": "https://github.com/arkheioncorp/didin-facil/releases"
+      "url": "https://github.com/arkheioncorp/tiktrend-facil/releases"
     }
   ],
   "prefer_related_applications": false

@@ -6,7 +6,7 @@ Testes end-to-end para os hubs de integração.
 Estes testes verificam fluxos completos de integração
 simulando cenários reais de uso.
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.0.0
 """
 
@@ -397,7 +397,7 @@ class TestCrossHubIntegration:
                 wa_result = await mock_wa_hub.send_text(
                     to="5511999999999",
                     text=message,
-                    instance_name="didin-bot"
+                    instance_name="tiktrend-bot"
                 )
                 
                 # Broadcast para Instagram
@@ -420,7 +420,7 @@ class TestCrossHubIntegration:
         # Webhook do WhatsApp
         wa_webhook = {
             "event": "messages.upsert",
-            "instance": "didin-bot",
+            "instance": "tiktrend-bot",
             "data": {
                 "key": {"remoteJid": "5511999999999@s.whatsapp.net", "fromMe": False, "id": "123"},
                 "message": {"conversation": "Olá via WhatsApp"}

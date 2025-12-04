@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "didin/new-user",
+        "path": "tiktrend/new-user",
         "responseMode": "responseNode",
         "options": {}
       },
@@ -57,7 +57,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/didin-whatsapp",
+        "url": "={{ $env.EVOLUTION_API_URL }}/message/sendText/tiktrend-whatsapp",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -69,7 +69,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"number\": \"{{ $json.phone }}\",\n  \"textMessage\": {\n    \"text\": \"Olá {{ $json.name }}! 🎉\\n\\nBem-vindo ao *Didin Fácil*!\\n\\nSou seu assistente virtual e vou te ajudar a encontrar os melhores produtos com os melhores preços. 💰\\n\\n🔎 O que posso fazer por você:\\n• Comparar preços entre lojas\\n• Criar alertas de preço\\n• Recomendar ofertas\\n• Acompanhar seus pedidos\\n\\nO que você está procurando hoje?\\n\\n_Digite o nome do produto ou escolha uma opção:_\\n\\n*1* - Buscar produto\\n*2* - Ver ofertas do dia\\n*3* - Meus alertas\\n*4* - Falar com atendente\"\n  }\n}",
+        "jsonBody": "={\n  \"number\": \"{{ $json.phone }}\",\n  \"textMessage\": {\n    \"text\": \"Olá {{ $json.name }}! 🎉\\n\\nBem-vindo ao *TikTrend Finder*!\\n\\nSou seu assistente virtual e vou te ajudar a encontrar os melhores produtos com os melhores preços. 💰\\n\\n🔎 O que posso fazer por você:\\n• Comparar preços entre lojas\\n• Criar alertas de preço\\n• Recomendar ofertas\\n• Acompanhar seus pedidos\\n\\nO que você está procurando hoje?\\n\\n_Digite o nome do produto ou escolha uma opção:_\\n\\n*1* - Buscar produto\\n*2* - Ver ofertas do dia\\n*3* - Meus alertas\\n*4* - Falar com atendente\"\n  }\n}",
         "options": {
           "timeout": 10000
         }
@@ -95,8 +95,8 @@
       "position": [1130, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -131,11 +131,11 @@
     },
     {
       "parameters": {
-        "fromEmail": "noreply@didinfacil.com.br",
+        "fromEmail": "noreply@tiktrendfinder.com.br",
         "toEmail": "={{ $json.email }}",
-        "subject": "Bem-vindo ao Didin Fácil! 🎉",
+        "subject": "Bem-vindo ao TikTrend Finder! 🎉",
         "emailType": "html",
-        "html": "<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; }\n    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; }\n    .header h1 { color: white; margin: 0; }\n    .content { padding: 30px; background: #f9f9f9; }\n    .feature { display: flex; align-items: center; margin: 15px 0; }\n    .feature-icon { font-size: 24px; margin-right: 15px; }\n    .cta { background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }\n    .footer { padding: 20px; text-align: center; font-size: 12px; color: #666; }\n  </style>\n</head>\n<body>\n  <div class=\"header\">\n    <h1>🎉 Bem-vindo ao Didin Fácil!</h1>\n  </div>\n  <div class=\"content\">\n    <p>Olá <strong>{{ $json.name }}</strong>,</p>\n    <p>Ficamos muito felizes em ter você conosco! O Didin Fácil é o seu comparador de preços inteligente.</p>\n    \n    <h3>O que você pode fazer:</h3>\n    <div class=\"feature\"><span class=\"feature-icon\">🔎</span> Comparar preços de milhares de lojas</div>\n    <div class=\"feature\"><span class=\"feature-icon\">🔔</span> Criar alertas quando o preço baixar</div>\n    <div class=\"feature\"><span class=\"feature-icon\">💰</span> Economizar em todas as suas compras</div>\n    <div class=\"feature\"><span class=\"feature-icon\">📱</span> Receber ofertas personalizadas</div>\n    \n    <a href=\"https://didinfacil.com.br\" class=\"cta\">Começar a Economizar</a>\n  </div>\n  <div class=\"footer\">\n    <p>Didin Fácil - Compare preços, economize sempre!</p>\n  </div>\n</body>\n</html>",
+        "html": "<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; }\n    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; }\n    .header h1 { color: white; margin: 0; }\n    .content { padding: 30px; background: #f9f9f9; }\n    .feature { display: flex; align-items: center; margin: 15px 0; }\n    .feature-icon { font-size: 24px; margin-right: 15px; }\n    .cta { background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }\n    .footer { padding: 20px; text-align: center; font-size: 12px; color: #666; }\n  </style>\n</head>\n<body>\n  <div class=\"header\">\n    <h1>🎉 Bem-vindo ao TikTrend Finder!</h1>\n  </div>\n  <div class=\"content\">\n    <p>Olá <strong>{{ $json.name }}</strong>,</p>\n    <p>Ficamos muito felizes em ter você conosco! O TikTrend Finder é o seu comparador de preços inteligente.</p>\n    \n    <h3>O que você pode fazer:</h3>\n    <div class=\"feature\"><span class=\"feature-icon\">🔎</span> Comparar preços de milhares de lojas</div>\n    <div class=\"feature\"><span class=\"feature-icon\">🔔</span> Criar alertas quando o preço baixar</div>\n    <div class=\"feature\"><span class=\"feature-icon\">💰</span> Economizar em todas as suas compras</div>\n    <div class=\"feature\"><span class=\"feature-icon\">📱</span> Receber ofertas personalizadas</div>\n    \n    <a href=\"https://tiktrendfinder.com.br\" class=\"cta\">Começar a Economizar</a>\n  </div>\n  <div class=\"footer\">\n    <p>TikTrend Finder - Compare preços, economize sempre!</p>\n  </div>\n</body>\n</html>",
         "options": {}
       },
       "id": "send-email-welcome",
@@ -145,8 +145,8 @@
       "position": [910, 500],
       "credentials": {
         "smtp": {
-          "id": "smtp-didin",
-          "name": "SMTP Didin"
+          "id": "smtp-tiktrend",
+          "name": "SMTP TikTrend"
         }
       }
     },
@@ -179,8 +179,8 @@
       "position": [910, 350],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     }

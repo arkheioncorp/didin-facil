@@ -4,7 +4,7 @@ Sistema de integração com múltiplos e-commerces para comparação de preços.
 
 ## Overview
 
-O Didin Fácil integra com os principais marketplaces brasileiros através de APIs oficiais e SDKs de terceiros. Isso permite buscar produtos, comparar preços e encontrar as melhores ofertas automaticamente.
+O TikTrend Finder integra com os principais marketplaces brasileiros através de APIs oficiais e SDKs de terceiros. Isso permite buscar produtos, comparar preços e encontrar as melhores ofertas automaticamente.
 
 ## Marketplaces Suportados
 

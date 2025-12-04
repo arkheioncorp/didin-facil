@@ -353,7 +353,7 @@ export const useUserStore = create<UserStoreState>()(
         set({ hasHydrated: state }),
     }),
     {
-      name: "didin-user-v3", // Updated storage key for subscription support
+      name: "tiktrend-user-v3", // Updated storage key for subscription support
       storage: createJSONStorage(() => localStorage),
       partialize: (state: UserStoreState) => ({
         user: state.user,

@@ -31,8 +31,8 @@
       "position": [470, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -50,7 +50,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://localhost:8082/message/sendText/didin-whatsapp",
+        "url": "http://localhost:8082/message/sendText/tiktrend-whatsapp",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -62,7 +62,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"number\": \"{{ $json.user_phone }}\",\n  \"textMessage\": {\n    \"text\": \"🔔 *ALERTA DE PREÇO!*\\n\\n🎯 O produto que você estava esperando baixou de preço!\\n\\n📦 *{{ $json.name }}*\\n💰 Preço atual: {{ $json.current_price.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}) }}\\n🎯 Seu alerta: {{ $json.target_price.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}) }}\\n🏪 Loja: {{ $json.store }}\\n\\n⚡ Corra! Preços podem mudar a qualquer momento.\\n\\n🔗 Compre agora: didin.com.br/produto/{{ $json.product_id }}\"\n  }\n}",
+        "jsonBody": "={\n  \"number\": \"{{ $json.user_phone }}\",\n  \"textMessage\": {\n    \"text\": \"🔔 *ALERTA DE PREÇO!*\\n\\n🎯 O produto que você estava esperando baixou de preço!\\n\\n📦 *{{ $json.name }}*\\n💰 Preço atual: {{ $json.current_price.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}) }}\\n🎯 Seu alerta: {{ $json.target_price.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}) }}\\n🏪 Loja: {{ $json.store }}\\n\\n⚡ Corra! Preços podem mudar a qualquer momento.\\n\\n🔗 Compre agora: tiktrendfinder.com/produto/{{ $json.product_id }}\"\n  }\n}",
         "options": {}
       },
       "id": "send-alert",
@@ -94,8 +94,8 @@
       "position": [1130, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     },
@@ -114,8 +114,8 @@
       "position": [1350, 300],
       "credentials": {
         "postgres": {
-          "id": "postgres-didin",
-          "name": "PostgreSQL Didin"
+          "id": "postgres-tiktrend",
+          "name": "PostgreSQL TikTrend"
         }
       }
     }

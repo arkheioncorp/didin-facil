@@ -217,7 +217,7 @@ async def get_analytics_overview(
             escalation_rate = (total_transfers / total_messages_received) * 100
         
         # Status da conexão
-        connection = await cache.get(f"whatsapp:connection:didin-whatsapp")
+        connection = await cache.get(f"whatsapp:connection:tiktrend-whatsapp")
         connection_status = connection.get("state", "unknown") if connection else "unknown"
         
         return AnalyticsOverview(
@@ -320,7 +320,7 @@ async def get_alerts(
     
     try:
         # Verifica conexão WhatsApp
-        connection = await cache.get(f"whatsapp:connection:didin-whatsapp")
+        connection = await cache.get(f"whatsapp:connection:tiktrend-whatsapp")
         if not connection or connection.get("state") != "open":
             alerts.append(Alert(
                 id="conn-1",

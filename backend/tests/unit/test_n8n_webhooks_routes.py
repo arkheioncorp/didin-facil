@@ -288,7 +288,7 @@ class TestTriggerNewUserOnboarding:
         await trigger_new_user_onboarding(user=mock_user)
 
         call_args = mock_client.trigger_webhook.call_args
-        assert call_args[1]["webhook_path"] == "/didin/new-user"
+        assert call_args[1]["webhook_path"] == "/tiktrend/new-user"
         assert call_args[1]["data"]["user_id"] == "user-123"
         assert call_args[1]["data"]["email"] == "test@example.com"
 

@@ -1,4 +1,4 @@
-# System Patterns - Didin Fácil
+# System Patterns - TikTrend Finder
 
 **Última Atualização:** 30 de Novembro de 2025
 

@@ -1,4 +1,4 @@
-# Guia de Deploy no Railway - Didin Fácil
+# Guia de Deploy no Railway - TikTrend Finder
 
 Este guia descreve os passos para realizar o deploy da aplicação (Backend + Frontend) no Railway.
 
@@ -17,7 +17,7 @@ Você precisará criar **dois serviços** no seu projeto do Railway: um para o B
 
 ### Serviço 1: Backend (API)
 
-1.  **Novo Serviço:** Selecione "GitHub Repo" e escolha o repositório `didin-facil`.
+1.  **Novo Serviço:** Selecione "GitHub Repo" e escolha o repositório `tiktrend-facil`.
 2.  **Configurações (Settings):**
     *   **Root Directory:** `/` (pode deixar vazio/padrão)
     *   **Build Command:** (Deixe vazio, usaremos Dockerfile)
@@ -29,19 +29,19 @@ Você precisará criar **dois serviços** no seu projeto do Railway: um para o B
     *   Adicione o plugin **PostgreSQL** no Railway. O Railway injetará `DATABASE_URL` automaticamente.
     *   Adicione o plugin **Redis** no Railway. O Railway injetará `REDIS_URL` automaticamente.
 4.  **Networking:**
-    *   Gere um domínio (ex: `didin-backend.up.railway.app`).
+    *   Gere um domínio (ex: `tiktrend-backend.up.railway.app`).
 
 ### Serviço 2: Frontend (React) - Opção Railway
 
-1.  **Novo Serviço:** Selecione o **mesmo** repositório `didin-facil`.
+1.  **Novo Serviço:** Selecione o **mesmo** repositório `tiktrend-facil`.
 2.  **Configurações (Settings):**
     *   **Root Directory:** `/`
     *   **Dockerfile Path:** `docker/frontend.Dockerfile`
 3.  **Variáveis (Variables):**
-    *   `VITE_API_URL`: A URL do seu backend (ex: `https://didin-backend.up.railway.app`).
+    *   `VITE_API_URL`: A URL do seu backend (ex: `https://tiktrend-backend.up.railway.app`).
     *   **Nota:** Como é um build estático (Vite), essa variável precisa estar presente **durante o build**. Se mudar a URL, precisa redeployar o frontend.
 4.  **Networking:**
-    *   Gere um domínio (ex: `didin-facil.up.railway.app`).
+    *   Gere um domínio (ex: `tiktrend-facil.up.railway.app`).
 
 ### Serviço 2: Frontend (React) - Opção Vercel (Recomendado)
 
@@ -49,12 +49,12 @@ Se você já conectou o frontend no Vercel:
 
 1.  **Environment Variables:**
     *   Vá em **Settings > Environment Variables**.
-    *   Adicione `VITE_API_URL` com o valor da URL do seu backend no Railway (ex: `https://didin-backend.up.railway.app`).
+    *   Adicione `VITE_API_URL` com o valor da URL do seu backend no Railway (ex: `https://tiktrend-backend.up.railway.app`).
 2.  **Redeploy:**
     *   Vá em **Deployments** e force um redeploy para que a nova variável seja injetada no build.
 3.  **CORS (Backend):**
     *   O backend já foi configurado para aceitar conexões de `https://*.vercel.app`.
-    *   Se tiver problemas de CORS, adicione a variável `CORS_ORIGINS` no Railway com o domínio exato do seu frontend (ex: `https://didin-facil.vercel.app`).
+    *   Se tiver problemas de CORS, adicione a variável `CORS_ORIGINS` no Railway com o domínio exato do seu frontend (ex: `https://tiktrend-facil.vercel.app`).
 
 ## 3. Testando o Deploy
 

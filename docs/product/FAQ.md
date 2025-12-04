@@ -48,7 +48,7 @@ Atualmente, o TikTrend Finder está disponível para **Windows 10+** e **Linux (
 
 ### Como instalar no Windows?
 
-1. Baixe o instalador em [Releases](https://github.com/arkheioncorp/didin-facil/releases)
+1. Baixe o instalador em [Releases](https://github.com/arkheioncorp/tiktrend-facil/releases)
 2. Execute o arquivo `TikTrend-Finder_1.0.0_x64-setup.exe`
 3. Siga as instruções do instalador
 4. O app será instalado e um atalho criado na área de trabalho
@@ -58,14 +58,14 @@ Atualmente, o TikTrend Finder está disponível para **Windows 10+** e **Linux (
 **Ubuntu/Debian (.deb):**
 
 ```bash
-wget https://github.com/arkheioncorp/didin-facil/releases/latest/download/tiktrend-finder_1.0.0_amd64.deb
+wget https://github.com/arkheioncorp/tiktrend-facil/releases/latest/download/tiktrend-finder_1.0.0_amd64.deb
 sudo dpkg -i tiktrend-finder_1.0.0_amd64.deb
 ```
 
 **AppImage (Universal):**
 
 ```bash
-wget https://github.com/arkheioncorp/didin-facil/releases/latest/download/TikTrend-Finder_1.0.0_amd64.AppImage
+wget https://github.com/arkheioncorp/tiktrend-facil/releases/latest/download/TikTrend-Finder_1.0.0_amd64.AppImage
 chmod +x TikTrend-Finder_1.0.0_amd64.AppImage
 ./TikTrend-Finder_1.0.0_amd64.AppImage
 ```
@@ -274,7 +274,7 @@ Os produtos coletados são cacheados em nosso servidor para melhorar a performan
 |-------|---------|
 | 📧 Email | suporte@tiktrend.app |
 | 💬 WhatsApp | +55 11 99999-9999 |
-| 🐛 Bugs | [GitHub Issues](https://github.com/arkheioncorp/didin-facil/issues) |
+| 🐛 Bugs | [GitHub Issues](https://github.com/arkheioncorp/tiktrend-facil/issues) |
 
 ### Qual o tempo de resposta?
 

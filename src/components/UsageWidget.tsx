@@ -430,7 +430,7 @@ export const UsageWidget: React.FC<UsageWidgetProps> = ({
             <Zap className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="font-semibold mb-2">Nenhuma assinatura ativa</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Escolha um plano para começar a usar o Didin Fácil.
+              Escolha um plano para começar a usar o TikTrend Finder.
             </p>
             <Button onClick={handleUpgrade}>
               Ver Planos

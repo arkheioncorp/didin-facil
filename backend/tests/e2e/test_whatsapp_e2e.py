@@ -41,7 +41,7 @@ def evolution_webhook_payload():
     """Simula payload real da Evolution API."""
     return {
         "event": "MESSAGES_UPSERT",
-        "instance": "didin-whatsapp",
+        "instance": "tiktrend-whatsapp",
         "data": {
             "key": {
                 "remoteJid": "5511999999999@s.whatsapp.net",
@@ -63,7 +63,7 @@ def menu_message_payload():
     """Payload com mensagem de menu (opção 1)."""
     return {
         "event": "messages.upsert",
-        "instance": "didin-whatsapp",
+        "instance": "tiktrend-whatsapp",
         "data": {
             "key": {
                 "remoteJid": "5511888888888@s.whatsapp.net",
@@ -131,7 +131,7 @@ class TestWebhookReceive:
         """Webhook processa eventos de conexão."""
         payload = {
             "event": "connection.update",
-            "instance": "didin-whatsapp",
+            "instance": "tiktrend-whatsapp",
             "data": {
                 "state": "open"
             }

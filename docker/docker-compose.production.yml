@@ -1,5 +1,5 @@
 # ============================================================================
-# Didin Fácil - Docker Compose (Production)
+# TikTrend Finder - Docker Compose (Production)
 # ============================================================================
 # Configuração para produção com todas as integrações
 # Uso: docker compose -f docker-compose.production.yml up -d
@@ -16,7 +16,7 @@ services:
       context: ..
       dockerfile: docker/api.Dockerfile
       target: production
-    container_name: didin-api
+    container_name: tiktrend-api
     restart: always
     ports:
       - "8000:8000"
@@ -51,7 +51,7 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - didin-network
+      - tiktrend-network
     deploy:
       resources:
         limits:
@@ -69,7 +69,7 @@ services:
       context: ..
       dockerfile: docker/scraper.Dockerfile
       target: production
-    container_name: didin-scraper
+    container_name: tiktrend-scraper
     restart: always
     environment:
       - ENVIRONMENT=production
@@ -81,7 +81,7 @@ services:
       - postgres
       - redis
     networks:
-      - didin-network
+      - tiktrend-network
     deploy:
       replicas: 2
       resources:
@@ -97,7 +97,7 @@ services:
       context: ..
       dockerfile: docker/api.Dockerfile
       target: production
-    container_name: didin-social-worker
+    container_name: tiktrend-social-worker
     restart: always
     environment:
       - ENVIRONMENT=production
@@ -113,7 +113,7 @@ services:
       - postgres
       - redis
     networks:
-      - didin-network
+      - tiktrend-network
     deploy:
       resources:
         limits:
@@ -125,7 +125,7 @@ services:
   # ============================================================================
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: didin-postgres
+    container_name: tiktrend-postgres
     restart: always
     ports:
       - "5432:5432"
@@ -142,7 +142,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - didin-network
+      - tiktrend-network
     deploy:
       resources:
         limits:
@@ -154,7 +154,7 @@ services:
   # ============================================================================
   redis:
     image: redis:7.4-alpine
-    container_name: didin-redis
+    container_name: tiktrend-redis
     restart: always
     ports:
       - "6379:6379"
@@ -167,14 +167,14 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - didin-network
+      - tiktrend-network
 
   # ============================================================================
   # MeiliSearch (Full-text Search)
   # ============================================================================
   meilisearch:
     image: getmeili/meilisearch:v1.6
-    container_name: didin-meilisearch
+    container_name: tiktrend-meilisearch
     restart: always
     ports:
       - "7700:7700"
@@ -184,14 +184,14 @@ services:
     volumes:
       - meilisearch-data:/meili_data
     networks:
-      - didin-network
+      - tiktrend-network
 
   # ============================================================================
   # Typebot (Chatbot Builder) - Self-hosted
   # ============================================================================
   typebot-builder:
     image: baptistearno/typebot-builder:latest
-    container_name: didin-typebot-builder
+    container_name: tiktrend-typebot-builder
     restart: always
     ports:
       - "3001:3000"
@@ -204,11 +204,11 @@ services:
     depends_on:
       - postgres
     networks:
-      - didin-network
+      - tiktrend-network
 
   typebot-viewer:
     image: baptistearno/typebot-viewer:latest
-    container_name: didin-typebot-viewer
+    container_name: tiktrend-typebot-viewer
     restart: always
     ports:
       - "3002:3000"
@@ -219,14 +219,14 @@ services:
     depends_on:
       - postgres
     networks:
-      - didin-network
+      - tiktrend-network
 
   # ============================================================================
   # n8n (Workflow Automation)
   # ============================================================================
   n8n:
     image: n8nio/n8n:latest
-    container_name: didin-n8n
+    container_name: tiktrend-n8n
     restart: always
     ports:
       - "5678:5678"
@@ -250,14 +250,14 @@ services:
     depends_on:
       - postgres
     networks:
-      - didin-network
+      - tiktrend-network
 
   # ============================================================================
   # Evolution API (WhatsApp)
   # ============================================================================
   evolution-api:
     image: atendai/evolution-api:latest
-    container_name: didin-evolution
+    container_name: tiktrend-evolution
     restart: always
     ports:
       - "8080:8080"
@@ -279,14 +279,14 @@ services:
       - postgres
       - redis
     networks:
-      - didin-network
+      - tiktrend-network
 
   # ============================================================================
   # Nginx Reverse Proxy
   # ============================================================================
   nginx:
     image: nginx:alpine
-    container_name: didin-nginx
+    container_name: tiktrend-nginx
     restart: always
     ports:
       - "80:80"
@@ -298,14 +298,14 @@ services:
     depends_on:
       - api
     networks:
-      - didin-network
+      - tiktrend-network
 
   # ============================================================================
   # Prometheus (Metrics)
   # ============================================================================
   prometheus:
     image: prom/prometheus:latest
-    container_name: didin-prometheus
+    container_name: tiktrend-prometheus
     restart: always
     ports:
       - "9090:9090"
@@ -317,14 +317,14 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--storage.tsdb.retention.time=15d'
     networks:
-      - didin-network
+      - tiktrend-network
 
   # ============================================================================
   # Grafana (Dashboards)
   # ============================================================================
   grafana:
     image: grafana/grafana:latest
-    container_name: didin-grafana
+    container_name: tiktrend-grafana
     restart: always
     ports:
       - "3000:3000"
@@ -338,13 +338,13 @@ services:
     depends_on:
       - prometheus
     networks:
-      - didin-network
+      - tiktrend-network
 
 # ============================================================================
 # Networks
 # ============================================================================
 networks:
-  didin-network:
+  tiktrend-network:
     driver: bridge
 
 # ============================================================================

@@ -527,10 +527,10 @@ class TestPrometheusMetricsEndpoint:
                         assert response.status_code == 200
                         content = response.body.decode()
                         
-                        assert "didin_scheduled_posts_total" in content
-                        assert "didin_workers_active" in content
-                        assert "didin_youtube_quota_used" in content
-                        assert "didin_api_requests_total" in content
+                        assert "tiktrend_scheduled_posts_total" in content
+                        assert "tiktrend_workers_active" in content
+                        assert "tiktrend_youtube_quota_used" in content
+                        assert "tiktrend_api_requests_total" in content
 
 
 class TestMetricsHealthEndpoint:

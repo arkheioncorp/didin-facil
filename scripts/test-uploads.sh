@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Script de Teste de Uploads - Didin Fácil
+# Script de Teste de Uploads - TikTrend Finder
 # ============================================================================
 # Testa todas as integrações de upload (WhatsApp, YouTube, Instagram, TikTok)
 # Uso: ./scripts/test-uploads.sh
@@ -20,7 +20,7 @@ NC='\033[0m'
 
 echo -e "${BLUE}"
 echo "=============================================="
-echo "   Didin Fácil - Teste de Uploads"
+echo "   TikTrend Finder - Teste de Uploads"
 echo "=============================================="
 echo -e "${NC}"
 
@@ -112,7 +112,7 @@ echo -e "${BLUE}5. TESTE DE UPLOAD (Simulação)${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 # Create test video
-TEST_VIDEO="/tmp/test_upload_didin.mp4"
+TEST_VIDEO="/tmp/test_upload_tiktrend.mp4"
 if [ ! -f "$TEST_VIDEO" ]; then
     echo -e "${YELLOW}📹 Criando vídeo de teste...${NC}"
     # Create a 3-second test video with ffmpeg if available

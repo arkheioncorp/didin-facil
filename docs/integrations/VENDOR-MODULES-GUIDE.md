@@ -1,4 +1,4 @@
-# 📋 IMPLEMENTAÇÃO ATUAL - Didin Fácil Marketing Suite
+# 📋 IMPLEMENTAÇÃO ATUAL - TikTrend Finder Marketing Suite
 
 > **Status:** Estrutura completa implementada ✅
 > **Última atualização:** 2025-01-XX
@@ -127,7 +127,7 @@ from backend.vendor.whatsapp.client import EvolutionAPIClient
 config = {
     "api_url": "http://localhost:8080",
     "api_key": "sua-api-key",
-    "instance_name": "didin-facil"
+    "instance_name": "tiktrend-facil"
 }
 
 async with EvolutionAPIClient(**config) as client:
@@ -163,7 +163,7 @@ async with InstagramClient(username="user", password="pass") as client:
     # Story com link
     await client.upload_story(
         media_path="/path/to/image.jpg",
-        link="https://didin.com/ofertas"
+        link="https://tiktrendfinder.com/ofertas"
     )
 ```
 
@@ -243,7 +243,7 @@ from backend.vendor.email import EmailMarketingService, EmailConfig
 config = EmailConfig(
     provider="resend",  # ou "sendgrid"
     api_key="re_xxxxx",
-    from_email="ofertas@didin.com.br"
+    from_email="ofertas@tiktrendfinder.com"
 )
 
 async with EmailMarketingService(config) as service:
@@ -353,7 +353,7 @@ async with N8nClient(api_url="https://...", api_key="...") as client:
 # ==================== WhatsApp ====================
 WHATSAPP_API_URL=http://localhost:8080
 WHATSAPP_API_KEY=your-evolution-api-key
-WHATSAPP_INSTANCE=didin-facil
+WHATSAPP_INSTANCE=tiktrend-facil
 
 # ==================== Instagram ====================
 INSTAGRAM_USERNAME=your_username
@@ -374,8 +374,8 @@ CHATWOOT_ACCOUNT_ID=1
 # ==================== Email ====================
 EMAIL_PROVIDER=resend  # ou sendgrid
 EMAIL_API_KEY=re_xxxxxx
-EMAIL_FROM=ofertas@didin.com.br
-EMAIL_FROM_NAME=Didin Fácil
+EMAIL_FROM=ofertas@tiktrendfinder.com
+EMAIL_FROM_NAME=TikTrend Finder
 
 # ==================== Typebot ====================
 TYPEBOT_API_URL=https://typebot.io

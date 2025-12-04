@@ -137,7 +137,7 @@ CHATBOT_TEMPLATES: Dict[str, ChatbotTemplate] = {
         tags=["atendimento", "suporte", "menu"],
         required_integrations=["whatsapp"],
         variables=[
-            {"name": "COMPANY_NAME", "description": "Nome da empresa", "default": "Didin Fácil"},
+            {"name": "COMPANY_NAME", "description": "Nome da empresa", "default": "TikTrend Finder"},
             {"name": "SUPPORT_PHONE", "description": "Telefone do suporte", "default": ""},
         ],
         flow_json={
@@ -953,7 +953,7 @@ CHATBOT_TEMPLATES: Dict[str, ChatbotTemplate] = {
         tags=["faq", "dúvidas", "autoatendimento"],
         required_integrations=[],
         variables=[
-            {"name": "COMPANY_NAME", "description": "Nome da empresa", "default": "Didin Fácil"},
+            {"name": "COMPANY_NAME", "description": "Nome da empresa", "default": "TikTrend Finder"},
         ],
         flow_json={
             "version": "6",
@@ -1019,7 +1019,7 @@ CHATBOT_TEMPLATES: Dict[str, ChatbotTemplate] = {
                             "type": "text",
                             "content": {
                                 "richText": [
-                                    {"type": "p", "children": [{"text": "💰 ", "bold": True}, {"text": "Quanto custa usar o Didin Fácil?"}]},
+                                    {"type": "p", "children": [{"text": "💰 ", "bold": True}, {"text": "Quanto custa usar o TikTrend Finder?"}]},
                                     {"type": "p", "children": [{"text": ""}]},
                                     {"type": "p", "children": [{"text": "🆓 ", "bold": True}, {"text": "Gratuito para sempre:"}]},
                                     {"type": "p", "children": [{"text": "• Comparação ilimitada de preços"}]},
@@ -1152,7 +1152,7 @@ CHATBOT_TEMPLATES: Dict[str, ChatbotTemplate] = {
         tags=["suporte", "ticket", "problema"],
         required_integrations=["zendesk", "freshdesk"],
         variables=[
-            {"name": "SUPPORT_EMAIL", "description": "Email do suporte", "default": "suporte@didin.app"},
+            {"name": "SUPPORT_EMAIL", "description": "Email do suporte", "default": "suporte@tiktrendfinder.app"},
         ],
         flow_json={
             "version": "6",

@@ -241,43 +241,43 @@ async def prometheus_metrics():
     
     # === Worker Metrics ===
     collector.add_gauge(
-        "didin_scheduled_posts_total",
+        "tiktrend_scheduled_posts_total",
         worker_metrics["posts_scheduled"],
         "Total number of scheduled posts"
     )
     
     collector.add_gauge(
-        "didin_posts_pending",
+        "tiktrend_posts_pending",
         worker_metrics["posts_pending"],
         "Posts waiting to be processed"
     )
     
     collector.add_gauge(
-        "didin_posts_processing",
+        "tiktrend_posts_processing",
         worker_metrics["posts_processing"],
         "Posts currently being processed"
     )
     
     collector.add_counter(
-        "didin_posts_completed_total",
+        "tiktrend_posts_completed_total",
         worker_metrics["posts_completed"],
         "Total posts completed successfully"
     )
     
     collector.add_counter(
-        "didin_posts_failed_total",
+        "tiktrend_posts_failed_total",
         worker_metrics["posts_failed"],
         "Total posts failed"
     )
     
     collector.add_gauge(
-        "didin_dlq_size",
+        "tiktrend_dlq_size",
         worker_metrics["dlq_size"],
         "Number of entries in Dead Letter Queue"
     )
     
     collector.add_gauge(
-        "didin_workers_active",
+        "tiktrend_workers_active",
         worker_metrics["workers_active"],
         "Number of active worker processes"
     )
@@ -285,14 +285,14 @@ async def prometheus_metrics():
     # === Platform Metrics ===
     for platform, data in platform_metrics.items():
         collector.add_gauge(
-            "didin_platform_sessions_active",
+            "tiktrend_platform_sessions_active",
             data["sessions_active"],
             "Active sessions per platform",
             {"platform": platform}
         )
         
         collector.add_gauge(
-            "didin_platform_posts_today",
+            "tiktrend_platform_posts_today",
             data.get("posts_today", 0),
             "Posts published today per platform",
             {"platform": platform}
@@ -300,71 +300,71 @@ async def prometheus_metrics():
     
     # YouTube specific
     collector.add_gauge(
-        "didin_youtube_quota_used",
+        "tiktrend_youtube_quota_used",
         platform_metrics["youtube"]["quota_used"],
         "YouTube API quota used today"
     )
     
     collector.add_gauge(
-        "didin_youtube_quota_limit",
+        "tiktrend_youtube_quota_limit",
         platform_metrics["youtube"]["quota_limit"],
         "YouTube API daily quota limit"
     )
     
     collector.add_gauge(
-        "didin_youtube_quota_remaining",
+        "tiktrend_youtube_quota_remaining",
         platform_metrics["youtube"]["quota_limit"] - platform_metrics["youtube"]["quota_used"],
         "YouTube API quota remaining"
     )
     
     # Instagram specific
     collector.add_gauge(
-        "didin_instagram_challenges_pending",
+        "tiktrend_instagram_challenges_pending",
         platform_metrics["instagram"]["challenges_pending"],
         "Instagram security challenges awaiting resolution"
     )
     
     # === Rate Limiting Metrics ===
     collector.add_counter(
-        "didin_rate_limit_blocked_total",
+        "tiktrend_rate_limit_blocked_total",
         rate_limit_metrics["requests_blocked"],
         "Total requests blocked by rate limiter"
     )
     
     collector.add_gauge(
-        "didin_rate_limit_unique_ips",
+        "tiktrend_rate_limit_unique_ips",
         rate_limit_metrics["unique_ips"],
         "Unique IPs tracked by rate limiter"
     )
     
     # === API Metrics ===
     collector.add_counter(
-        "didin_api_requests_total",
+        "tiktrend_api_requests_total",
         api_metrics["requests_total"],
         "Total API requests"
     )
     
     collector.add_counter(
-        "didin_api_errors_5xx_total",
+        "tiktrend_api_errors_5xx_total",
         api_metrics["requests_5xx"],
         "Total 5xx server errors"
     )
     
     collector.add_counter(
-        "didin_api_errors_4xx_total",
+        "tiktrend_api_errors_4xx_total",
         api_metrics["requests_4xx"],
         "Total 4xx client errors"
     )
     
     collector.add_gauge(
-        "didin_api_response_time_avg_ms",
+        "tiktrend_api_response_time_avg_ms",
         api_metrics["avg_response_time_ms"],
         "Average API response time in milliseconds"
     )
     
     # === Application Info ===
     collector.add_gauge(
-        "didin_app_info",
+        "tiktrend_app_info",
         1,
         "Application information",
         {"version": "2.0.0", "env": settings.environment if hasattr(settings, 'environment') else "production"}

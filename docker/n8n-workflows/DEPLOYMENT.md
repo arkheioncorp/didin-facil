@@ -92,25 +92,25 @@ AND table_name LIKE '%workflow%' OR table_name LIKE '%conversation%';
 - Header Name: `api_access_token`
 - Header Value: `{{$env.CHATWOOT_API_TOKEN}}`
 
-#### PostgreSQL Didin
+#### PostgreSQL TikTrend
 - Tipo: **Postgres**
-- Name: `PostgreSQL Didin`
+- Name: `PostgreSQL TikTrend`
 - Host: `tiktrend-postgres`
 - Port: `5432`
 - Database: `tiktrend`
 - User: `tiktrend`
 - Password: `{{$env.N8N_DB_POSTGRESDB_PASSWORD}}`
 
-#### Redis Didin
+#### Redis TikTrend
 - Tipo: **Redis**
-- Name: `Redis Didin`
+- Name: `Redis TikTrend`
 - Host: `{{$env.REDIS_HOST}}`
 - Port: `6379`
 - Password: `{{$env.REDIS_PASSWORD}}` (deixe vazio se não tiver)
 
-#### OpenAI Didin
+#### OpenAI TikTrend
 - Tipo: **OpenAI**
-- Name: `OpenAI Didin`
+- Name: `OpenAI TikTrend`
 - API Key: `{{$env.OPENAI_API_KEY}}`
 
 ### Passo 4: Importar Workflows
@@ -368,4 +368,4 @@ RATE_LIMIT_MESSAGES_PER_MINUTE=20  # aumentar de 10 para 20
 
 **Versão:** 2.0.0  
 **Data:** 2025-11-30  
-**Autor:** Didin Fácil Team
+**Autor:** TikTrend Finder Team

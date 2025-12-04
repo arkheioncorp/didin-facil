@@ -579,7 +579,7 @@ Origem: ${lead.source || 'Website'}
     
     # Enviar WhatsApp
     builder.add_http_request_node(
-        url=f"{whatsapp_api_url}/message/sendText/didin-facil",
+        url=f"{whatsapp_api_url}/message/sendText/tiktrend-facil",
         method="POST",
         body={
             "number": "={{ $json.to }}",
@@ -643,7 +643,7 @@ return results;
     
     # Enviar notificações
     builder.add_http_request_node(
-        url=f"{whatsapp_api_url}/message/sendText/didin-facil",
+        url=f"{whatsapp_api_url}/message/sendText/tiktrend-facil",
         method="POST",
         body={
             "number": "={{ $json.to }}",

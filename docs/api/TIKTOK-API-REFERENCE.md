@@ -2,7 +2,7 @@
 
 > **Versão:** 2.0.0  
 > **Última Atualização:** 07 de Julho de 2025  
-> **Autores:** Didin Fácil Team
+> **Autores:** TikTrend Finder Team
 
 ## 📋 Visão Geral
 
@@ -81,7 +81,7 @@ Busca produtos no TikTok Shop usando API direta.
 
 **Request:**
 ```bash
-curl -X GET "https://api.didinfacil.com/api/v1/tiktok/api/search?q=iphone+case&max_results=10" \
+curl -X GET "https://api.tiktrendfinder.com/api/v1/tiktok/api/search?q=iphone+case&max_results=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -134,7 +134,7 @@ Retorna produtos em alta no TikTok Shop.
 
 **Request:**
 ```bash
-curl -X GET "https://api.didinfacil.com/api/v1/tiktok/api/trending?max_results=20" \
+curl -X GET "https://api.tiktrendfinder.com/api/v1/tiktok/api/trending?max_results=20" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -204,7 +204,7 @@ Limpa o cache de produtos.
 
 **Request:**
 ```bash
-curl -X POST "https://api.didinfacil.com/api/v1/tiktok/api/cache/clear?all=true" \
+curl -X POST "https://api.tiktrendfinder.com/api/v1/tiktok/api/cache/clear?all=true" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -234,7 +234,7 @@ Força atualização dos dados de produtos.
 
 **Request:**
 ```bash
-curl -X POST "https://api.didinfacil.com/api/v1/tiktok/api/refresh?category=electronics" \
+curl -X POST "https://api.tiktrendfinder.com/api/v1/tiktok/api/refresh?category=electronics" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -304,7 +304,7 @@ Para atualizar cookies manualmente:
 3. Envie via endpoint `/api/v1/tiktok/sessions`:
 
 ```bash
-curl -X POST "https://api.didinfacil.com/api/v1/tiktok/sessions" \
+curl -X POST "https://api.tiktrendfinder.com/api/v1/tiktok/sessions" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -442,7 +442,7 @@ After=network.target redis.service
 
 [Service]
 Type=simple
-User=didin
+User=tiktrend
 WorkingDirectory=/app/backend
 ExecStart=/app/.venv/bin/python -m workers.scraping_worker
 Restart=always
@@ -460,7 +460,7 @@ WantedBy=multi-user.target
 
 ```bash
 # Verificar se API está saudável
-curl -s "https://api.didinfacil.com/api/v1/tiktok/api/health" \
+curl -s "https://api.tiktrendfinder.com/api/v1/tiktok/api/health" \
   -H "Authorization: Bearer $TOKEN" | jq .
 
 # Resposta esperada
@@ -475,11 +475,11 @@ curl -s "https://api.didinfacil.com/api/v1/tiktok/api/health" \
 
 ```bash
 # Buscar produtos
-curl -s "https://api.didinfacil.com/api/v1/tiktok/api/search?q=fone+bluetooth&max_results=5" \
+curl -s "https://api.tiktrendfinder.com/api/v1/tiktok/api/search?q=fone+bluetooth&max_results=5" \
   -H "Authorization: Bearer $TOKEN" | jq .
 
 # Verificar cache
-curl -s "https://api.didinfacil.com/api/v1/tiktok/api/cache/stats" \
+curl -s "https://api.tiktrendfinder.com/api/v1/tiktok/api/cache/stats" \
   -H "Authorization: Bearer $TOKEN" | jq .
 ```
 
@@ -490,7 +490,7 @@ import httpx
 import asyncio
 
 async def test_tiktok_api():
-    base_url = "https://api.didinfacil.com/api/v1/tiktok/api"
+    base_url = "https://api.tiktrendfinder.com/api/v1/tiktok/api"
     headers = {"Authorization": f"Bearer {TOKEN}"}
     
     async with httpx.AsyncClient() as client:

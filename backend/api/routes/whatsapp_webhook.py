@@ -22,7 +22,7 @@ router = APIRouter(prefix="/whatsapp-webhook", tags=["WhatsApp Webhook"])
 # Constants
 EVOLUTION_API_URL = settings.EVOLUTION_API_URL or "http://tiktrend-whatsapp:8080"
 EVOLUTION_API_KEY = settings.EVOLUTION_API_KEY or "429683C4C977415CAAFCCE10F7D57E11"
-EVOLUTION_INSTANCE = settings.EVOLUTION_INSTANCE or "didin-whatsapp"
+EVOLUTION_INSTANCE = settings.EVOLUTION_INSTANCE or "tiktrend-whatsapp"
 
 # Services
 cache = CacheService()
@@ -117,7 +117,7 @@ class RealProductChatbot:
     
     async def _show_welcome(self, name: str) -> Dict[str, Any]:
         """Mostra mensagem de boas-vindas."""
-        response = f"""👋 Olá, {name}! Bem-vindo ao *Didin Fácil*!
+        response = f"""👋 Olá, {name}! Bem-vindo ao *TikTrend Finder*!
 
 Sou seu assistente virtual para encontrar os melhores preços. 🛒💰
 

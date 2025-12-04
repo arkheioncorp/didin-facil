@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# Railway Setup Script - Didin Fácil
+# Railway Setup Script - TikTrend Finder
 # =============================================================================
 # Script para configurar o ambiente Railway do zero
 # Uso: ./scripts/railway_setup.sh
@@ -9,7 +9,7 @@
 set -e
 
 echo "=========================================="
-echo "🚀 Railway Setup - Didin Fácil"
+echo "🚀 Railway Setup - TikTrend Finder"
 echo "=========================================="
 echo ""
 
@@ -46,7 +46,7 @@ echo -e "${GREEN}✅ Autenticado como: $(railway whoami)${NC}"
 # 3. Linkar projeto
 echo ""
 echo -e "${BLUE}📋 3. Linkando projeto...${NC}"
-railway link -p didin-facil -e production 2>/dev/null || railway link
+railway link -p tiktrend-facil -e production 2>/dev/null || railway link
 echo -e "${GREEN}✅ Projeto linkado${NC}"
 
 # 4. Verificar/Adicionar PostgreSQL
@@ -92,7 +92,7 @@ echo -e "${BLUE}📋 6. Variáveis opcionais...${NC}"
 CORS=$(railway variables --json 2>/dev/null | grep '"CORS_ORIGINS"' || echo "")
 if [[ -z "$CORS" ]]; then
     echo "Configurando CORS_ORIGINS padrão..."
-    railway variables set CORS_ORIGINS="https://didin-facil.vercel.app,https://tiktrend.com.br,http://localhost:1420"
+    railway variables set CORS_ORIGINS="https://tiktrend-facil.vercel.app,https://tiktrend.com.br,http://localhost:1420"
     echo -e "${GREEN}✅ CORS_ORIGINS configurado${NC}"
 fi
 

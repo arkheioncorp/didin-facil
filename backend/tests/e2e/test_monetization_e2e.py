@@ -27,7 +27,7 @@ def test_user():
     """Dados de usuário de teste"""
     return {
         "id": str(uuid.uuid4()),
-        "email": "teste.pix@didinfacil.com",
+        "email": "teste.pix@tiktrendfinder.com",
         "name": "Teste PIX",
         "credits_balance": 0,
         "credits_purchased": 0,
@@ -81,7 +81,7 @@ def mercadopago_pix_payment(test_user, starter_package):
         "status": "approved",
         "status_detail": "accredited",
         "currency_id": "BRL",
-        "description": f"Didin Fácil - Pacote {starter_package['name']}",
+        "description": f"TikTrend Finder - Pacote {starter_package['name']}",
         "live_mode": False,  # Sandbox
         "sponsor_id": None,
         "authorization_code": "1234567",

@@ -33,14 +33,14 @@ from vendor.social_media_manager import (
 def social_config() -> SocialMediaConfig:
     """Configuração padrão do Social Media Manager."""
     return SocialMediaConfig(
-        instagram_username="didin_facil",
+        instagram_username="tiktrend_facil",
         instagram_password="test-password",
         instagram_session_file="./sessions/instagram.json",
         tiktok_cookies_file="./sessions/tiktok.json",
         tiktok_headless=True,
         whatsapp_api_url="http://localhost:8080",
         whatsapp_api_key="whatsapp-api-key",
-        whatsapp_instance="didin-instance"
+        whatsapp_instance="tiktrend-instance"
     )
 
 
@@ -48,7 +48,7 @@ def social_config() -> SocialMediaConfig:
 def instagram_only_config() -> SocialMediaConfig:
     """Configuração apenas com Instagram."""
     return SocialMediaConfig(
-        instagram_username="didin_facil",
+        instagram_username="tiktrend_facil",
         instagram_password="test-password"
     )
 
@@ -60,7 +60,7 @@ def unified_post() -> UnifiedPost:
         content_type=ContentType.IMAGE,
         media_paths=["/path/to/image.jpg"],
         caption="Confira essa oferta incrível!",
-        hashtags=["ofertas", "promocao", "didinfacil"],
+        hashtags=["ofertas", "promocao", "tiktrendfinder"],
         platforms=[Platform.INSTAGRAM, Platform.TIKTOK]
     )
 
@@ -119,7 +119,7 @@ class TestSocialMediaConfig:
     
     def test_config_creation(self, social_config):
         """Deve criar config com todos os valores."""
-        assert social_config.instagram_username == "didin_facil"
+        assert social_config.instagram_username == "tiktrend_facil"
         assert social_config.tiktok_cookies_file == "./sessions/tiktok.json"
         assert social_config.whatsapp_api_url == "http://localhost:8080"
     

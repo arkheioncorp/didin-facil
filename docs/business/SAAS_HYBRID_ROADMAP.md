@@ -1,6 +1,6 @@
 # 🚀 ROADMAP COMPLETO: Migração para SaaS Híbrido
 
-> **Projeto:** Didin Fácil - Sistema de Comparação de Preços Multi-Marketplace  
+> **Projeto:** TikTrend Finder - Sistema de Comparação de Preços Multi-Marketplace  
 > **Versão:** 2.0.0  
 > **Data:** Dezembro 2024  
 > **Modelo:** SaaS Híbrido (Local + Cloud)
@@ -1099,5 +1099,5 @@ async def search_products(
 ---
 
 **Documento criado:** Dezembro 2024  
-**Autor:** GitHub Copilot + Didin Fácil Team  
+**Autor:** GitHub Copilot + TikTrend Finder Team  
 **Versão:** 1.0.0

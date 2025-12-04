@@ -9,7 +9,7 @@ Implementa:
 - Retry com Exponential Backoff
 - Métricas Prometheus (opcional)
 
-Autor: Didin Fácil
+Autor: TikTrend Finder
 Versão: 1.0.0
 """
 

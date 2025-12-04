@@ -10,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../backend'))
 from shared.config import settings
 
 def get_qr_code():
-    instance_name = "didin-whatsapp"
+    instance_name = "tiktrend-whatsapp"
     print(f"🔄 Buscando QR Code para instância '{instance_name}'...")
     
     url = f"{settings.EVOLUTION_API_URL}/instance/connect/{instance_name}"

@@ -85,7 +85,7 @@ class InstagramClient:
     
     Uso:
         config = InstagramConfig(
-            username="didin_facil",
+            username="tiktrend_facil",
             password="senha",
             session_file="./sessions/instagram.json"
         )
