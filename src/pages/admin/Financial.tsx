@@ -153,11 +153,6 @@ export function FinancialDashboard() {
     }).format(value);
   };
 
-  // Format percentage
-  const formatPercent = (value: number) => {
-    return `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -369,16 +364,16 @@ export function FinancialDashboard() {
                     <LazyCartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <LazyXAxis
                       dataKey="date"
-                      tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                      tickFormatter={(value: string) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                       className="text-xs"
                     />
                     <LazyYAxis
-                      tickFormatter={(value) => `R$ ${value}`}
+                      tickFormatter={(value: number) => `R$ ${value}`}
                       className="text-xs"
                     />
                     <LazyTooltip
-                      formatter={(value) => formatBRL(Number(value))}
-                      labelFormatter={(label) => new Date(label).toLocaleDateString('pt-BR')}
+                      formatter={(value: number) => formatBRL(Number(value))}
+                      labelFormatter={(label: string) => new Date(label).toLocaleDateString('pt-BR')}
                       contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
                     />
                     <LazyBar dataKey="revenue" name="Receita" fill="#10b981" radius={[4, 4, 0, 0]} />
