@@ -73,6 +73,32 @@ async def lifespan(app: FastAPI):
         # In strict mode, we might want to exit:
         # os._exit(1)
 
+    # Run database migrations on startup
+    logger.info("📦 Running database migrations...")
+    try:
+        from alembic import command
+        from alembic.config import Config
+        
+        alembic_cfg = Config(os.path.join(base_path, "alembic.ini"))
+        alembic_cfg.set_main_option(
+            "script_location", 
+            os.path.join(base_path, "alembic")
+        )
+        
+        # Set the database URL
+        db_url = settings.DATABASE_URL
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif db_url.startswith("postgresql://") and "+asyncpg" not in db_url:
+            db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        
+        alembic_cfg.set_main_option("sqlalchemy.url", db_url)
+        
+        command.upgrade(alembic_cfg, "head")
+        logger.info("✅ Database migrations applied successfully")
+    except Exception as e:
+        logger.error(f"⚠️ Migration error (may be already up to date): {e}")
+
     # Startup
     logger.info(f"🚀 Starting TikTrend API (env: {settings.ENVIRONMENT})")
     logger.info(f"🔌 PORT env var: {os.environ.get('PORT', 'Not Set')}")
