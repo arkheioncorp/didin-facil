@@ -673,6 +673,101 @@ async def list_database_tables(secret: str = ""):
         }
 
 
+@app.post("/admin/seed-products")
+async def seed_products(secret: str = "", count: int = 20):
+    """Seed database with sample products for testing"""
+    import random
+    import uuid
+    from datetime import datetime, timezone
+
+    from api.database.connection import database
+
+    expected_secret = os.environ.get(
+        "MIGRATION_SECRET", "tiktrend-migrate-2025"
+    )
+    if secret != expected_secret:
+        return {"status": "error", "message": "Invalid secret"}
+
+    PRODUCTS = [
+        ("Máscara de Cílios 4D Volume", "Beleza", 29.90, 15000),
+        ("Sérum Vitamina C Clareador", "Beleza", 45.90, 12000),
+        ("Fone Bluetooth TWS Pro", "Eletrônicos", 59.90, 25000),
+        ("Ring Light Profissional 26cm", "Eletrônicos", 79.90, 18000),
+        ("Organizador de Maquiagem Acrílico", "Casa", 49.90, 8000),
+        ("Luz LED RGB Fita 5m", "Casa", 29.90, 22000),
+        ("Bolsa Crossbody Mini Trendy", "Moda", 49.90, 11000),
+        ("Óculos de Sol Vintage Retrô", "Moda", 39.90, 9000),
+        ("Kit Faixa Elástica Fitness", "Fitness", 34.90, 14000),
+        ("Garrafa Motivacional 2L", "Fitness", 24.90, 20000),
+        ("Massageador Facial Elétrico", "Beleza", 69.90, 7500),
+        ("Carregador Wireless 15W Rápido", "Eletrônicos", 39.90, 16000),
+        ("Umidificador de Ar Aroma", "Casa", 59.90, 13000),
+        ("Tênis Chunky Branco", "Moda", 119.90, 6000),
+        ("Rolo Massageador Muscular", "Fitness", 29.90, 10000),
+        ("Lip Gloss Hidratante Glossy", "Beleza", 19.90, 28000),
+        ("Microfone USB Condensador", "Eletrônicos", 89.90, 5500),
+        ("Espelho LED Aumento 10x", "Casa", 44.90, 9500),
+        ("Bucket Hat Unissex Trend", "Moda", 24.90, 17000),
+        ("Corda de Pular Profissional", "Fitness", 19.90, 21000),
+        ("Kit Skincare Coreano 7 Steps", "Beleza", 129.90, 8500),
+        ("Smartwatch Fitness Pro", "Eletrônicos", 149.90, 12000),
+        ("Luminária Moon 3D", "Casa", 54.90, 15500),
+        ("Jaqueta Corta Vento Unissex", "Moda", 79.90, 9800),
+        ("Tapete Yoga Antiderrapante", "Fitness", 49.90, 11200),
+    ]
+
+    try:
+        if not database.is_connected:
+            await database.connect()
+
+        inserted = 0
+        for title, category, price, sales in PRODUCTS[:count]:
+            product_id = str(uuid.uuid4())
+            try:
+                await database.execute(
+                    """
+                    INSERT INTO products (id, title, description, price, category, 
+                        sales_count, source, status, created_at, updated_at)
+                    VALUES (:id, :title, :desc, :price, :category, 
+                        :sales, :source, :status, :created, :updated)
+                    """,
+                    {
+                        "id": product_id,
+                        "title": title,
+                        "desc": f"{title} - Produto viral do TikTok com milhares de vendas!",
+                        "price": price,
+                        "category": category,
+                        "sales": sales + random.randint(-1000, 1000),
+                        "source": "tiktok",
+                        "status": "active",
+                        "created": datetime.now(timezone.utc),
+                        "updated": datetime.now(timezone.utc),
+                    }
+                )
+                inserted += 1
+            except Exception as e:
+                logger.warning(f"Skip duplicate: {title} - {e}")
+
+        # Get total count
+        count_result = await database.fetch_one(
+            "SELECT COUNT(*) as total FROM products"
+        )
+        total = count_result["total"] if count_result else 0
+
+        return {
+            "status": "success",
+            "inserted": inserted,
+            "total_products": total
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()[-500:]
+        }
+
+
 @app.get("/")
 async def root():
     """Root endpoint"""
