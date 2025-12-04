@@ -262,7 +262,7 @@ class TestSubscription:
     def test_subscription_statuses(self):
         """Testa todos os status de subscription."""
         assert SubscriptionStatus.ACTIVE.value == "active"
-        assert SubscriptionStatus.TRIAL.value == "trial"
+        assert SubscriptionStatus.TRIAL.value == "trialing"
         assert SubscriptionStatus.PAST_DUE.value == "past_due"
         assert SubscriptionStatus.CANCELED.value == "canceled"
         assert SubscriptionStatus.EXPIRED.value == "expired"

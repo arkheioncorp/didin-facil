@@ -62,3 +62,5 @@ builds/windows/**/*.exe
 builds/**/*.dmg
 builds/**/*.AppImage
 src-tauri/test_parsing
+.vercel
+.env*.local

@@ -4,7 +4,7 @@ Automation Integration Tests
 Testes de integração para o sistema de automações n8n.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -167,7 +167,7 @@ class TestAutomationScheduler:
         )
         
         assert event is not None
-        assert event.scheduled_for <= datetime.utcnow() + timedelta(seconds=5)
+        assert event.scheduled_for <= datetime.now(timezone.utc) + timedelta(seconds=5)
 
     @pytest.mark.asyncio
     async def test_cancel_event(self, scheduler, sample_event_data):
@@ -304,7 +304,7 @@ class TestAutomationIntegration:
             data=cart_data,
         )
         
-        assert event.scheduled_for > datetime.utcnow()
+        assert event.scheduled_for > datetime.now(timezone.utc)
 
 
 # ============================================

@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, ComponentType } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,29 +6,37 @@ import { ProductHistory } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Lazy load recharts components for better performance (-385KB initial bundle)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyAreaChart = lazy(() => 
-  import('recharts').then(m => ({ default: m.AreaChart }))
+  import('recharts').then(m => ({ default: m.AreaChart as ComponentType<any> }))
 );
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyArea = lazy(() => 
-  import('recharts').then(m => ({ default: m.Area }))
+  import('recharts').then(m => ({ default: m.Area as ComponentType<any> }))
 );
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyXAxis = lazy(() => 
-  import('recharts').then(m => ({ default: m.XAxis }))
+  import('recharts').then(m => ({ default: m.XAxis as ComponentType<any> }))
 );
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyYAxis = lazy(() => 
-  import('recharts').then(m => ({ default: m.YAxis }))
+  import('recharts').then(m => ({ default: m.YAxis as ComponentType<any> }))
 );
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyCartesianGrid = lazy(() => 
-  import('recharts').then(m => ({ default: m.CartesianGrid }))
+  import('recharts').then(m => ({ default: m.CartesianGrid as ComponentType<any> }))
 );
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyTooltip = lazy(() => 
-  import('recharts').then(m => ({ default: m.Tooltip }))
+  import('recharts').then(m => ({ default: m.Tooltip as ComponentType<any> }))
 );
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyLegend = lazy(() => 
-  import('recharts').then(m => ({ default: m.Legend }))
+  import('recharts').then(m => ({ default: m.Legend as ComponentType<any> }))
 );
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyResponsiveContainer = lazy(() => 
-  import('recharts').then(m => ({ default: m.ResponsiveContainer }))
+  import('recharts').then(m => ({ default: m.ResponsiveContainer as ComponentType<any> }))
 );
 
 // Chart loading skeleton

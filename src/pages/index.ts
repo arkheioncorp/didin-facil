@@ -29,7 +29,7 @@ export { default as FinancialDashboard } from "./admin/Financial";
 
 // CRM
 export { CRMDashboard } from "./crm/CRMDashboard";
-export { Pipeline } from "./crm/Pipeline";
+export { default as Pipeline } from "./crm/Pipeline";
 export { Contacts } from "./crm/Contacts";
 
 // Analytics

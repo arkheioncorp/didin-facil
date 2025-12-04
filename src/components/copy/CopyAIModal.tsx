@@ -18,8 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Sparkles, ExternalLink, Loader2, Copy } from "lucide-react";
-import type { Product } from "@/types";
-import type { CopyType, CopyTone } from "../types";
+import type { Product, CopyType, CopyTone } from "@/types";
 
 interface CopyAIModalProps {
   open: boolean;

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, ComponentType } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
@@ -42,15 +42,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load recharts for better initial bundle size (-385KB)
-const LazyBarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart })));
-const LazyBar = lazy(() => import('recharts').then(m => ({ default: m.Bar })));
-const LazyLineChart = lazy(() => import('recharts').then(m => ({ default: m.LineChart })));
-const LazyLine = lazy(() => import('recharts').then(m => ({ default: m.Line })));
-const LazyXAxis = lazy(() => import('recharts').then(m => ({ default: m.XAxis })));
-const LazyYAxis = lazy(() => import('recharts').then(m => ({ default: m.YAxis })));
-const LazyCartesianGrid = lazy(() => import('recharts').then(m => ({ default: m.CartesianGrid })));
-const LazyTooltip = lazy(() => import('recharts').then(m => ({ default: m.Tooltip })));
-const LazyResponsiveContainer = lazy(() => import('recharts').then(m => ({ default: m.ResponsiveContainer })));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LazyBarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart as ComponentType<any> })));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LazyBar = lazy(() => import('recharts').then(m => ({ default: m.Bar as ComponentType<any> })));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LazyLineChart = lazy(() => import('recharts').then(m => ({ default: m.LineChart as ComponentType<any> })));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LazyLine = lazy(() => import('recharts').then(m => ({ default: m.Line as ComponentType<any> })));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LazyXAxis = lazy(() => import('recharts').then(m => ({ default: m.XAxis as ComponentType<any> })));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LazyYAxis = lazy(() => import('recharts').then(m => ({ default: m.YAxis as ComponentType<any> })));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LazyCartesianGrid = lazy(() => import('recharts').then(m => ({ default: m.CartesianGrid as ComponentType<any> })));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LazyTooltip = lazy(() => import('recharts').then(m => ({ default: m.Tooltip as ComponentType<any> })));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LazyResponsiveContainer = lazy(() => import('recharts').then(m => ({ default: m.ResponsiveContainer as ComponentType<any> })));
 
 // Chart loading skeleton
 const ChartSkeleton = () => (
@@ -372,7 +381,7 @@ export function FinancialDashboard() {
                       className="text-xs"
                     />
                     <LazyTooltip
-                      formatter={(value: number) => formatBRL(value)}
+                      formatter={(value) => formatBRL(Number(value))}
                       labelFormatter={(label) => new Date(label).toLocaleDateString('pt-BR')}
                       contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
                     />
@@ -726,7 +735,7 @@ export function FinancialDashboard() {
                         className="text-xs"
                       />
                       <LazyTooltip
-                        formatter={(value: number) => formatBRL(value)}
+                        formatter={(value) => formatBRL(Number(value))}
                         labelFormatter={(label) => new Date(label).toLocaleDateString('pt-BR')}
                         contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}
                       />

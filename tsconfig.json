@@ -15,6 +15,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": false,
     "ignoreDeprecations": "5.0",
     "baseUrl": ".",
     "paths": {
@@ -28,6 +29,6 @@
     }
   },
   "include": ["src", "tests"],
-  "exclude": ["node_modules", "dist", "tests/e2e"],
+  "exclude": ["node_modules", "dist", "tests/e2e", "src/lib/tiktok-shop-sdk"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

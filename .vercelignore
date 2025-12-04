@@ -1,12 +1,17 @@
 # Backend - não necessário para frontend
-backend/
-docker/
-infra/
-docs/
-memory-bank/
-scripts/
-builds/
-_archive/
+backend/**
+docker/**
+infra/**
+docs/**
+memory-bank/**
+scripts/**
+builds/**
+_archive/**
+
+# Coverage files
+.coverage
+*.coverage
+.coverage.*
 
 # Python
 *.py

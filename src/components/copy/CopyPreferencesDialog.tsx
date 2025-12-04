@@ -240,7 +240,7 @@ export function CopyPreferencesDialog({
                     <SelectContent>
                       {COPY_TYPES.map((type) => (
                         <SelectItem key={type.id} value={type.id}>
-                          {type.label}
+                          {type.icon} {type.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -265,7 +265,7 @@ export function CopyPreferencesDialog({
                     <SelectContent>
                       {COPY_TONES.map((tone) => (
                         <SelectItem key={tone.id} value={tone.id}>
-                          {tone.label}
+                          {tone.icon} {tone.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -119,6 +119,7 @@ export async function getProducts(
     minSales?: number;
     sortBy?: string;
     sortOrder?: string;
+    source?: string;
   }
 ): Promise<PaginatedResponse<Product>> {
   const currentPage = page || 1;
