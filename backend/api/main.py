@@ -416,6 +416,7 @@ async def health_check_db():
 @app.post("/admin/run-migrations")
 async def run_migrations(secret: str = ""):
     """Run database migrations manually (emergency endpoint)"""
+    import subprocess
     import traceback
 
     # Simple secret check (use settings.SECRET_KEY in production)
@@ -426,29 +427,38 @@ async def run_migrations(secret: str = ""):
         return {"status": "error", "message": "Invalid secret"}
     
     try:
-        from alembic import command
-        from alembic.config import Config
-        
-        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        alembic_cfg = Config(os.path.join(base_path, "alembic.ini"))
-        alembic_cfg.set_main_option(
-            "script_location",
-            os.path.join(base_path, "alembic")
+        # Get the backend directory
+        base_path = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))
         )
         
-        # Set the database URL (sync version for alembic)
-        db_url = settings.DATABASE_URL
-        # Alembic needs sync driver, not asyncpg
-        if "+asyncpg" in db_url:
-            db_url = db_url.replace("+asyncpg", "")
+        # Run alembic upgrade in subprocess to avoid event loop conflict
+        result = subprocess.run(
+            ["python", "-m", "alembic", "upgrade", "head"],
+            cwd=base_path,
+            capture_output=True,
+            text=True,
+            timeout=120,
+            env={**os.environ, "DATABASE_URL": settings.DATABASE_URL}
+        )
         
-        alembic_cfg.set_main_option("sqlalchemy.url", db_url)
-        
-        command.upgrade(alembic_cfg, "head")
-        
+        if result.returncode == 0:
+            return {
+                "status": "success",
+                "message": "Migrations applied successfully",
+                "output": result.stdout[-500:] if result.stdout else None
+            }
+        else:
+            return {
+                "status": "error",
+                "message": "Migration failed",
+                "stdout": result.stdout[-500:] if result.stdout else None,
+                "stderr": result.stderr[-500:] if result.stderr else None
+            }
+    except subprocess.TimeoutExpired:
         return {
-            "status": "success",
-            "message": "Migrations applied successfully"
+            "status": "error",
+            "message": "Migration timed out after 120 seconds"
         }
     except Exception as e:
         return {
