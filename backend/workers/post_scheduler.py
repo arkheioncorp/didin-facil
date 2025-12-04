@@ -21,6 +21,12 @@ from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
+
+def _utc_now() -> datetime:
+    """Return current UTC datetime (timezone-aware)."""
+    return datetime.now(timezone.utc)
+
+
 # Prometheus Metrics
 try:
     from monitoring.social_metrics import (DLQ_SIZE, PENDING_POSTS,
@@ -83,7 +89,7 @@ class ScheduledPost(BaseModel):
     platform_config: Dict[str, Any] = {}
     
     # Metadados
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=_utc_now)
     published_at: Optional[datetime] = None
     error_message: Optional[str] = None
     result: Optional[Dict[str, Any]] = None

@@ -1,10 +1,10 @@
 from fastapi import Request
+from shared.security_config import get_security_config
 from starlette.middleware.base import BaseHTTPMiddleware
-import os
 
-# Generate a session secret if not provided (fallback)
-# In production, this should be passed from the Tauri app via env vars
-APP_SECRET = os.getenv("APP_SECRET", "default-insecure-secret")
+# Get security configuration (cached singleton)
+_security = get_security_config()
+APP_SECRET = _security.app_secret
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):

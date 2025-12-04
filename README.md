@@ -4,8 +4,8 @@
 
 **Plataforma de Gestão e Inteligência para Dropshipping e Afiliados**
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/jhonslife/didin-facil/build.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/jhonslife/didin-facil/actions)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)](https://github.com/jhonslife/didin-facil/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/arkheioncorp/didin-facil/build.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/arkheioncorp/didin-facil/actions)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)](https://github.com/arkheioncorp/didin-facil/releases)
 [![License](https://img.shields.io/badge/license-Proprietary-red?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20|%20Linux-lightgrey?style=for-the-badge&logo=windows)](https://github.com/didinfacil/tiktrend-finder/releases)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
@@ -50,7 +50,7 @@
 
 ```powershell
 # Opção 1: Instalador (Recomendado)
-# Baixe em: https://github.com/jhonslife/didin-facil/releases/latest
+# Baixe em: https://github.com/arkheioncorp/didin-facil/releases/latest
 # Execute: TikTrend-Finder_1.0.0_x64-setup.exe
 
 # Opção 2: Winget (em breve)
@@ -61,11 +61,11 @@ winget install DidinFacil.TikTrendFinder
 
 ```bash
 # Debian/Ubuntu (.deb)
-wget https://github.com/jhonslife/didin-facil/releases/latest/download/tiktrend-finder_1.0.0_amd64.deb
+wget https://github.com/arkheioncorp/didin-facil/releases/latest/download/tiktrend-finder_1.0.0_amd64.deb
 sudo dpkg -i tiktrend-finder_1.0.0_amd64.deb
 
 # AppImage (Universal)
-wget https://github.com/jhonslife/didin-facil/releases/latest/download/TikTrend-Finder_1.0.0_amd64.AppImage
+wget https://github.com/arkheioncorp/didin-facil/releases/latest/download/TikTrend-Finder_1.0.0_amd64.AppImage
 chmod +x TikTrend-Finder_1.0.0_amd64.AppImage
 ./TikTrend-Finder_1.0.0_amd64.AppImage
 ```
@@ -128,7 +128,7 @@ Quem já tem a licença pode comprar apenas o que precisar.
 
 ```bash
 # 1. Clonar repositório
-git clone https://github.com/jhonslife/didin-facil.git
+git clone https://github.com/arkheioncorp/didin-facil.git
 cd didin-facil
 
 # 2. Instalar dependências do frontend
@@ -329,7 +329,7 @@ Este software é **proprietário** e confidencial. Nenhuma parte deste código p
 | 📧 **Email** | suporte@tiktrend.app |
 | 💬 **WhatsApp** | [+55 11 99999-9999](https://wa.me/5511999999999) |
 | 📖 **FAQ** | [docs/FAQ.md](docs/FAQ.md) |
-| 🐛 **Bugs** | [GitHub Issues](https://github.com/jhonslife/didin-facil/issues) |
+| 🐛 **Bugs** | [GitHub Issues](https://github.com/arkheioncorp/didin-facil/issues) |
 
 ---
 
@@ -339,6 +339,6 @@ Este software é **proprietário** e confidencial. Nenhuma parte deste código p
 
 <br/>
 
-[![GitHub Stars](https://img.shields.io/github/stars/jhonslife/didin-facil?style=social)](https://github.com/jhonslife/didin-facil)
+[![GitHub Stars](https://img.shields.io/github/stars/arkheioncorp/didin-facil?style=social)](https://github.com/arkheioncorp/didin-facil)
 
 </div>

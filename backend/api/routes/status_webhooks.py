@@ -3,20 +3,25 @@ Publication Status Webhooks
 Notifies external services about post status changes
 """
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks
-from pydantic import BaseModel, HttpUrl, Field
-from typing import Optional, List
-from datetime import datetime, timezone
-import httpx
-import hmac
 import hashlib
+import hmac
 import json
 import logging
+from datetime import datetime, timezone
+from typing import List, Optional
 
+import httpx
+from fastapi import APIRouter, BackgroundTasks, HTTPException
+from pydantic import BaseModel, Field, HttpUrl
 from shared.redis import redis_client
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+def _utc_now() -> datetime:
+    """Return current UTC datetime (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 
 class WebhookConfig(BaseModel):
@@ -29,7 +34,7 @@ class WebhookConfig(BaseModel):
     )
     secret: Optional[str] = None
     active: bool = True
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=_utc_now)
     last_triggered: Optional[datetime] = None
     failure_count: int = 0
 

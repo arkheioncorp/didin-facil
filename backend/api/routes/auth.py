@@ -1,23 +1,23 @@
-"""
-Authentication Routes
+"""Authentication Routes
 JWT-based authentication for desktop app
+
+Uses centralized security configuration from shared/security_config.py
 """
 
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, EmailStr
-from jose import jwt, JWTError
-
-from api.services.auth import AuthService
 from api.middleware.auth import get_current_user
+from api.services.auth import AuthService
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
+from pydantic import BaseModel, EmailStr
+from shared.security_config import get_security_config
 
-# JWT Settings from environment
-import os
-
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-key-change-in-production")
-JWT_ALGORITHM = "HS256"
+# Get security configuration (cached singleton)
+_security = get_security_config()
+JWT_SECRET_KEY = _security.jwt_secret_key
+JWT_ALGORITHM = _security.jwt_algorithm
 
 
 router = APIRouter()
@@ -80,7 +80,8 @@ async def login(request: LoginRequest):
     user = await auth_service.authenticate(request.email, request.password)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
         )
 
     # Validate HWID for license
@@ -115,7 +116,8 @@ async def register(request: RegisterRequest):
     existing = await auth_service.get_user_by_email(request.email)
     if existing:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered",
         )
 
     # Create user
@@ -139,22 +141,31 @@ async def refresh_token(
             credentials.credentials, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM]
         )
         user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: missing user ID",
+            )
 
         # Verify HWID matches
         if payload.get("hwid") != request.hwid:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="HWID mismatch"
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="HWID mismatch",
             )
 
         user = await auth_service.get_user_by_id(user_id)
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
             )
 
         # Generate new token
         expires_at = datetime.now(timezone.utc) + timedelta(hours=12)
-        token = auth_service.create_token(user_id, request.hwid, expires_at)
+        token = auth_service.create_token(
+            str(user_id), request.hwid, expires_at
+        )
 
         return LoginResponse(
             access_token=token,
@@ -208,7 +219,8 @@ async def reset_password(request: ResetPasswordRequest):
     """Reset password"""
     if request.new_password != request.confirm_password:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Passwords do not match"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Passwords do not match",
         )
     # Stub implementation
     return {"message": "Password reset successfully"}

@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from "react";
-import { Monitor, Maximize2, Minimize2, RefreshCw, Eye, EyeOff, Loader2, XCircle, CheckCircle2, Clock, Package } from "lucide-react";
+import { Monitor, Maximize2, Minimize2, RefreshCw, Eye, EyeOff, Loader2, Package } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

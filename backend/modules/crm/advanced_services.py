@@ -14,20 +14,21 @@ Baseado em best practices de CRM 2024:
 - Automated recommendations
 """
 
-from typing import Optional, List, Dict, Any
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-import logging
+from typing import Any, Dict, List, Optional
 
-from .models import (
-    Lead, LeadStatus,
-    Deal, DealStatus, Activity, ActivityType
-)
-from .repository import (
-    ContactRepository, LeadRepository, DealRepository,
-    ActivityRepository, PipelineRepository
-)
+
+def _utc_now() -> datetime:
+    """Return current UTC datetime (timezone-aware)."""
+    return datetime.now(timezone.utc)
+
+
+from .models import Activity, ActivityType, Deal, DealStatus, Lead, LeadStatus
+from .repository import (ActivityRepository, ContactRepository, DealRepository,
+                         LeadRepository, PipelineRepository)
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ class RiskSignal:
     signal_type: str
     severity: RiskLevel
     message: str
-    detected_at: datetime = field(default_factory=datetime.utcnow)
+    detected_at: datetime = field(default_factory=_utc_now)
     data: Dict[str, Any] = field(default_factory=dict)
     
     def to_dict(self) -> Dict[str, Any]:
@@ -97,7 +98,7 @@ class RiskAssessment:
     risk_score: int  # 0-100
     signals: List[RiskSignal]
     recommendations: List[str]
-    assessed_at: datetime = field(default_factory=datetime.utcnow)
+    assessed_at: datetime = field(default_factory=_utc_now)
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -1227,8 +1228,8 @@ class Workflow:
     run_once_per_entity: bool = False
     
     # Metadata
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
+    updated_at: datetime = field(default_factory=_utc_now)
     last_triggered_at: Optional[datetime] = None
     trigger_count: int = 0
     
@@ -1264,7 +1265,7 @@ class WorkflowExecutionLog:
     status: str = "pending"  # pending, running, completed, failed
     actions_executed: List[Dict[str, Any]] = field(default_factory=list)
     error_message: Optional[str] = None
-    started_at: datetime = field(default_factory=datetime.utcnow)
+    started_at: datetime = field(default_factory=_utc_now)
     completed_at: Optional[datetime] = None
     
     def to_dict(self) -> Dict[str, Any]:

@@ -1,22 +1,22 @@
-"""
-Authentication Service
+"""Authentication Service
 User authentication and JWT token management
+
+Uses centralized security configuration from shared/security_config.py
 """
 
-import os
+import secrets
 from datetime import datetime, timezone
 from typing import Optional
-import secrets
-
-from jose import jwt
-from passlib.context import CryptContext
 
 from api.database.connection import database
+from jose import jwt
+from passlib.context import CryptContext
+from shared.security_config import get_security_config
 
-
-# JWT settings from environment
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-key-change-in-production")
-JWT_ALGORITHM = "HS256"
+# Get security configuration (cached singleton)
+_security = get_security_config()
+JWT_SECRET_KEY = _security.jwt_secret_key
+JWT_ALGORITHM = _security.jwt_algorithm
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

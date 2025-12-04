@@ -13,11 +13,16 @@ Entidades:
 - Segment: Segmentação dinâmica
 """
 
-from typing import Optional, List, Dict, Any
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-import uuid
+from typing import Any, Dict, List, Optional
+
+
+def _utc_now() -> datetime:
+    """Return current UTC datetime (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 
 # ==================== ENUMS ====================
@@ -133,7 +138,7 @@ class Tag:
     color: str = "#3B82F6"  # Blue default
     description: Optional[str] = None
     user_id: str = ""
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -216,8 +221,8 @@ class Contact:
     engagement_score: int = 0
     
     # Timestamps
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
+    updated_at: datetime = field(default_factory=_utc_now)
     last_activity_at: Optional[datetime] = None
     
     @property
@@ -362,8 +367,8 @@ class Lead:
     custom_fields: Dict[str, Any] = field(default_factory=dict)
     
     # Timestamps
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
+    updated_at: datetime = field(default_factory=_utc_now)
     last_contact_at: Optional[datetime] = None
     next_follow_up: Optional[datetime] = None
     
@@ -515,8 +520,8 @@ class Pipeline:
     total_value: float = 0.0
     
     # Timestamps
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
+    updated_at: datetime = field(default_factory=_utc_now)
     
     @classmethod
     def default_pipeline(cls, user_id: str) -> "Pipeline":
@@ -657,10 +662,10 @@ class Deal:
     custom_fields: Dict[str, Any] = field(default_factory=dict)
     
     # Timestamps
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
+    updated_at: datetime = field(default_factory=_utc_now)
     last_activity_at: Optional[datetime] = None
-    stage_entered_at: datetime = field(default_factory=datetime.utcnow)
+    stage_entered_at: datetime = field(default_factory=_utc_now)
     
     @property
     def is_open(self) -> bool:
@@ -796,8 +801,8 @@ class Activity:
     performed_by: Optional[str] = None
     
     # Timestamps
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
+    updated_at: datetime = field(default_factory=_utc_now)
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -894,8 +899,8 @@ class Segment:
     last_computed_at: Optional[datetime] = None
     
     # Timestamps
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_utc_now)
+    updated_at: datetime = field(default_factory=_utc_now)
     
     def to_dict(self) -> Dict[str, Any]:
         return {

@@ -49,7 +49,6 @@ import {
 import { COPY_TYPES, COPY_TONES } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import { generateCopy, getCopyHistory, getFavorites } from "@/lib/tauri";
-import { api } from "@/lib/api";
 import { saveUserTemplate } from "@/services/copy";
 import { CopyPreferencesDialog, UserSavedTemplates } from "@/components/copy";
 import type { FavoriteWithProduct, CopyHistory } from "@/types";

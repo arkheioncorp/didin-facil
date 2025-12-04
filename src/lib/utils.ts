@@ -50,3 +50,25 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * Development-only logger that gets stripped in production builds
+ */
+export const logger = {
+  debug: (...args: unknown[]) => {
+    if (import.meta.env.DEV) {
+      console.log("[DEBUG]", ...args);
+    }
+  },
+  info: (...args: unknown[]) => {
+    if (import.meta.env.DEV) {
+      console.info("[INFO]", ...args);
+    }
+  },
+  warn: (...args: unknown[]) => {
+    console.warn("[WARN]", ...args);
+  },
+  error: (...args: unknown[]) => {
+    console.error("[ERROR]", ...args);
+  },
+};

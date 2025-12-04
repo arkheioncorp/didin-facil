@@ -185,6 +185,58 @@ async def transaction():
         yield session
 
 
+# Allowed column names for ORDER BY (whitelist for SQL injection prevention)
+ALLOWED_ORDER_COLUMNS = {
+    "created_at", "updated_at", "id", "name", "email", "status",
+    "price", "sales_count", "sales_7d", "sales_30d", "priority",
+    "collected_at", "timestamp", "amount", "credits"
+}
+
+ALLOWED_ORDER_DIRECTIONS = {"ASC", "DESC", "asc", "desc"}
+
+
+def _validate_order_by(order_by: str) -> str:
+    """
+    Validate and sanitize ORDER BY clause to prevent SQL injection.
+    
+    Args:
+        order_by: String like "created_at DESC" or "name ASC"
+    
+    Returns:
+        Sanitized order_by string
+    
+    Raises:
+        ValueError: If column or direction is not allowed
+    """
+    parts = order_by.strip().split()
+    
+    if len(parts) == 1:
+        column = parts[0]
+        direction = "ASC"
+    elif len(parts) == 2:
+        column, direction = parts
+    else:
+        raise ValueError(f"Invalid order_by format: {order_by}")
+    
+    if column.lower() not in {c.lower() for c in ALLOWED_ORDER_COLUMNS}:
+        raise ValueError(f"Column '{column}' not allowed in ORDER BY")
+    
+    if direction.upper() not in ALLOWED_ORDER_DIRECTIONS:
+        raise ValueError(f"Direction '{direction}' not allowed")
+    
+    return f"{column} {direction.upper()}"
+
+
+def _validate_column_names(columns: list) -> bool:
+    """
+    Validate that all column names are allowed.
+    Only alphanumeric characters and underscores allowed.
+    """
+    import re
+    pattern = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$')
+    return all(pattern.match(col) for col in columns)
+
+
 class Repository:
     """Base repository class for database operations"""
     
@@ -193,6 +245,10 @@ class Repository:
     def __init__(self):
         if not self.table_name:
             raise ValueError("table_name must be set")
+        # Validate table name format
+        import re
+        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', self.table_name):
+            raise ValueError(f"Invalid table name: {self.table_name}")
     
     async def find_by_id(self, id: str) -> Optional[Dict]:
         """Find record by ID"""
@@ -209,11 +265,14 @@ class Repository:
         order_by: str = "created_at DESC",
     ) -> List[Dict]:
         """Find all records with pagination"""
+        # Validate and sanitize order_by
+        safe_order_by = _validate_order_by(order_by)
+        
         async with get_db() as db:
             rows = await db.fetch_all(
                 f"""
                 SELECT * FROM {self.table_name}
-                ORDER BY {order_by}
+                ORDER BY {safe_order_by}
                 LIMIT :limit OFFSET :offset
                 """,
                 {"limit": limit, "offset": offset}
@@ -226,6 +285,10 @@ class Repository:
         limit: int = 100,
     ) -> List[Dict]:
         """Find records by filters"""
+        # Validate column names to prevent SQL injection
+        if not _validate_column_names(list(filters.keys())):
+            raise ValueError("Invalid column names in filters")
+        
         conditions = " AND ".join([f"{k} = :{k}" for k in filters.keys()])
         
         async with get_db() as db:
@@ -245,6 +308,9 @@ class Repository:
         values = {}
         
         if filters:
+            # Validate column names
+            if not _validate_column_names(list(filters.keys())):
+                raise ValueError("Invalid column names in filters")
             conditions = " AND ".join([f"{k} = :{k}" for k in filters.keys()])
             query += f" WHERE {conditions}"
             values = filters

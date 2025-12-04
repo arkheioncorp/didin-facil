@@ -19,10 +19,16 @@ import json
 import logging
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timezone, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+
+
+def _utc_now() -> datetime:
+    """Return current UTC datetime (timezone-aware)."""
+    return datetime.now(timezone.utc)
+
 
 # Import do context store Redis
 from modules.chatbot.context_store import context_store
@@ -143,7 +149,7 @@ class IncomingMessage(BaseModel):
     content: str
     media_url: Optional[str] = None
     media_type: Optional[str] = None  # image, video, audio, document
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=_utc_now)
     metadata: Dict[str, Any] = Field(default_factory=dict)
     
     # Contexto adicional
@@ -183,7 +189,7 @@ class ConversationContext(BaseModel):
     
     # Estado
     is_active: bool = True
-    last_interaction: datetime = Field(default_factory=datetime.utcnow)
+    last_interaction: datetime = Field(default_factory=_utc_now)
     message_count: int = 0
     
     # Informações coletadas
@@ -213,8 +219,8 @@ class ConversationContext(BaseModel):
     variables: Dict[str, Any] = Field(default_factory=dict)
     
     # Timestamps
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=_utc_now)
+    updated_at: datetime = Field(default_factory=_utc_now)
 
 
 class IntentAnalysis(BaseModel):

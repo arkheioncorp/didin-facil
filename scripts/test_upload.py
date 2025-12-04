@@ -20,17 +20,14 @@ from datetime import datetime
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "backend"))
 
 from shared.config import settings
-from vendor.youtube.client import (
-    YouTubeClient,
-    YouTubeConfig,
-    VideoMetadata,
-    PrivacyStatus,
-    Category,
-)
-from vendor.tiktok.client import TikTokClient, TikTokConfig, VideoConfig, Privacy
+from vendor.tiktok.client import (Privacy, TikTokClient, TikTokConfig,
+                                  VideoConfig)
+from vendor.youtube.client import (Category, PrivacyStatus, VideoMetadata,
+                                   YouTubeClient, YouTubeConfig)
 
 
-async def test_youtube(file_path: str, account_name: str, user_id: str = "user_123"):
+async def run_youtube_upload(file_path: str, account_name: str, user_id: str = "user_123"):
+    """Execute YouTube upload test - not a pytest test function."""
     print(f"🎥 Iniciando teste de upload para YouTube (Conta: {account_name})...")
 
     # Verificar credenciais
@@ -77,7 +74,8 @@ async def test_youtube(file_path: str, account_name: str, user_id: str = "user_1
         print(f"❌ Erro durante execução: {str(e)}")
 
 
-async def test_tiktok(file_path: str, account_name: str, user_id: str = "user_123"):
+async def run_tiktok_upload(file_path: str, account_name: str, user_id: str = "user_123"):
+    """Execute TikTok upload test - not a pytest test function."""
     print(f"🎵 Iniciando teste de upload para TikTok (Conta: {account_name})...")
 
     # Verificar sessão
@@ -145,9 +143,9 @@ async def main():
         return
 
     if args.platform == "youtube":
-        await test_youtube(args.file, args.account, args.user_id)
+        await run_youtube_upload(args.file, args.account, args.user_id)
     elif args.platform == "tiktok":
-        await test_tiktok(args.file, args.account, args.user_id)
+        await run_tiktok_upload(args.file, args.account, args.user_id)
 
 
 if __name__ == "__main__":

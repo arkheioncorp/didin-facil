@@ -1,25 +1,22 @@
-"""
-Authentication Middleware
+"""Authentication Middleware
 JWT validation and user extraction
+
+Uses centralized security configuration from shared/security_config.py
 """
 
-import os
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, JWTError
-
 from api.database.connection import database
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
+from shared.security_config import get_security_config
 
-
-# JWT settings from environment
-JWT_SECRET_KEY = os.getenv(
-    "JWT_SECRET_KEY",
-    "dev-secret-key-change-in-production"
-)
-JWT_ALGORITHM = "HS256"
+# Get security configuration (cached singleton)
+_security = get_security_config()
+JWT_SECRET_KEY = _security.jwt_secret_key
+JWT_ALGORITHM = _security.jwt_algorithm
 
 
 security = HTTPBearer()

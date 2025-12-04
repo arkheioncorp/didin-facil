@@ -4,16 +4,15 @@ Coverage target: Cover all quota-related functions and edge cases.
 """
 
 import json
-from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from api.routes.youtube import (QUOTA_COSTS, YOUTUBE_DAILY_QUOTA,
                                 _check_quota_alerts, _track_quota_usage,
-                                get_quota_history, get_quota_status,
-                                upload_video)
+                                get_quota_history, get_quota_status)
 
 # ==================== FIXTURES ====================
+
 
 @pytest.fixture
 def mock_user():
@@ -101,7 +100,9 @@ class TestTrackQuotaUsage:
     @pytest.mark.asyncio
     async def test_track_quota_incremental_usage(self, mock_redis):
         """Test tracking quota increments existing usage."""
-        existing_data = json.dumps({"total": 1000, "operations": {"list": 1000}})
+        existing_data = json.dumps(
+            {"total": 1000, "operations": {"list": 1000}}
+        )
         mock_redis.get = AsyncMock(return_value=existing_data)
         
         with patch('api.routes.youtube.get_redis', return_value=mock_redis):
@@ -145,7 +146,9 @@ class TestTrackQuotaUsage:
     @pytest.mark.asyncio
     async def test_track_quota_same_operation_twice(self, mock_redis):
         """Test tracking same operation multiple times."""
-        existing_data = json.dumps({"total": 1600, "operations": {"upload": 1600}})
+        existing_data = json.dumps(
+            {"total": 1600, "operations": {"upload": 1600}}
+        )
         mock_redis.get = AsyncMock(return_value=existing_data)
         
         with patch('api.routes.youtube.get_redis', return_value=mock_redis):

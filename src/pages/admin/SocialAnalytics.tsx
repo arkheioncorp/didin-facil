@@ -26,7 +26,6 @@ import {
   BarChart3,
   TrendingUp,
   TrendingDown,
-  Users,
   Eye,
   Heart,
   MessageCircle,

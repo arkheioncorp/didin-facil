@@ -4,12 +4,17 @@ Base classes e tipos compartilhados para integrações de marketplaces.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_serializer
+
+
+def _utc_now() -> datetime:
+    """Return current UTC datetime (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 
 class MarketplaceType(str, Enum):
@@ -112,7 +117,7 @@ class Product(BaseModel):
     
     # Metadados
     attributes: dict[str, Any] = Field(default_factory=dict)
-    fetched_at: datetime = Field(default_factory=datetime.utcnow)
+    fetched_at: datetime = Field(default_factory=_utc_now)
     
     model_config = ConfigDict(ser_json_timedelta="iso8601")
     

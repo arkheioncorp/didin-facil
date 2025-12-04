@@ -609,7 +609,7 @@ const TutorialOverlay: React.FC = () => {
   const [targetRect, setTargetRect] = React.useState<DOMRect | null>(null);
 
   React.useEffect(() => {
-    const updateTargetRect = () => {
+    const updateTargetRect = (): void => {
       if (currentStep.target) {
         // Pequeno delay para garantir que o DOM foi atualizado
         const findElement = () => {

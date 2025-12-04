@@ -42,6 +42,7 @@ export const ProtectedRoute = () => {
     };
     
     checkSetup();
+    return undefined;
   }, []);
 
   // Ensure hydration completes within a reasonable time

@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 from api.database.connection import database
@@ -75,7 +75,7 @@ class AnalyticsPipeline:
 
     async def _store_metrics(self, user_id: str, metrics: Dict[str, Dict]):
         """Store aggregated metrics in Redis"""
-        today = datetime.utcnow().strftime("%Y-%m-%d")
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
         # Get the actual redis client from the manager
         redis = await get_redis()
@@ -113,7 +113,7 @@ class AnalyticsPipeline:
             
             # Populate history for trend chart (last 30 days)
             for i in range(30):
-                date = (datetime.utcnow() - timedelta(days=i)).strftime("%Y-%m-%d")
+                date = (datetime.now(timezone.utc) - timedelta(days=i)).strftime("%Y-%m-%d")
                 hist_data = {
                     "total": base_followers - (i * random.randint(5, 20)),
                     "gained": random.randint(10, 50),

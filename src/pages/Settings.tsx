@@ -162,7 +162,7 @@ export const Settings: React.FC = () => {
   });
   const [tiktokShopStatus, setTiktokShopStatus] = React.useState<"connected" | "disconnected" | "connecting">("disconnected");
   const [tiktokShopAuthCode, setTiktokShopAuthCode] = React.useState("");
-  const [showTiktokShopAuthModal, setShowTiktokShopAuthModal] = React.useState(false);
+  const [_showTiktokShopAuthModal, setShowTiktokShopAuthModal] = React.useState(false);
   const [tiktokShopInfo, setTiktokShopInfo] = React.useState<{
     shopName?: string;
     productsCount?: number;

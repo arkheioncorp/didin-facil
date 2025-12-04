@@ -10,7 +10,6 @@
  */
 
 import * as React from "react";
-import { useTranslation } from "react-i18next";
 import { 
   Card, 
   CardContent, 
@@ -51,7 +50,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { TikTrendIcon } from "@/components/icons";
 import { useNavigate } from "react-router-dom";
-import { useSubscription, useUsageAlerts, useFeatureGate } from "@/hooks";
+import { useSubscription, useUsageAlerts } from "@/hooks";
 import { subscriptionApi, formatPrice, getPlanDisplayName, getPlanColor } from "@/services/subscription";
 import { useToast } from "@/hooks/use-toast";
 import type { PlanTier, BillingCycle, PlanInfo, ExecutionMode } from "@/types";
@@ -59,7 +58,6 @@ import {
   Crown,
   Zap,
   Building2,
-  Sparkles,
   Check,
   X,
   ArrowRight,
@@ -69,7 +67,6 @@ import {
   Monitor,
   Server,
   CreditCard,
-  Calendar,
   RefreshCw,
   Shield,
   Star,
@@ -122,7 +119,6 @@ const EXECUTION_MODE_LABELS: Record<ExecutionMode, { name: string; description: 
 // ============================================
 
 export const Subscription: React.FC = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -132,7 +128,7 @@ export const Subscription: React.FC = () => {
     plan: currentPlan, 
     usage, 
     isLoading, 
-    error, 
+    error: _subscriptionError, 
     isActive, 
     isPaid,
     planTier,

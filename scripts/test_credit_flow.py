@@ -5,11 +5,11 @@ Simulates the complete flow without requiring real MercadoPago credentials
 """
 
 import asyncio
-import sys
 import os
-from decimal import Decimal
-from datetime import datetime, timezone
+import sys
 import uuid
+from datetime import datetime, timezone
+from decimal import Decimal
 
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
@@ -17,8 +17,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 from api.database.connection import database
 
 
-async def test_credit_flow():
-    """Test the complete credit purchase and usage flow"""
+async def run_credit_flow_test():
+    """Test the complete credit purchase and usage flow - not a pytest test function."""
     
     print("=" * 60)
     print("🧪 TESTE DE FLUXO DE CRÉDITOS - DIDIN FÁCIL")
@@ -254,4 +254,4 @@ async def test_credit_flow():
 
 
 if __name__ == "__main__":
-    asyncio.run(test_credit_flow())
+    asyncio.run(run_credit_flow_test())

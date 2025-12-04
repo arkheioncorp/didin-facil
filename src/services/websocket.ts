@@ -8,6 +8,8 @@
  * - Atualizações de métricas
  */
 
+import { logger } from "@/lib/utils";
+
 // ==================== Types ====================
 
 export type NotificationType =
@@ -77,7 +79,7 @@ class WebSocketService {
 
   connect(token?: string): void {
     if (this.isConnecting || this._isConnected) {
-      console.log("[WS] Already connected or connecting");
+      logger.debug("[WS] Already connected or connecting");
       return;
     }
 
@@ -120,7 +122,7 @@ class WebSocketService {
   // ==================== Event Handlers ====================
 
   private handleOpen(): void {
-    console.log("[WS] Connected to notification server");
+    logger.debug("[WS] Connected to notification server");
     this._isConnected = true;
     this.isConnecting = false;
     this.reconnectAttempts = 0;
@@ -136,7 +138,7 @@ class WebSocketService {
   }
 
   private handleClose(event: CloseEvent): void {
-    console.log("[WS] Connection closed:", event.code, event.reason);
+    logger.debug("[WS] Connection closed:", event.code, event.reason);
     this._isConnected = false;
     this.isConnecting = false;
     this.clearTimers();
@@ -206,7 +208,7 @@ class WebSocketService {
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
     
-    console.log(`[WS] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+    logger.debug(`[WS] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
     
     this.reconnectTimer = setTimeout(() => {
       this.emit("reconnecting", { attempt: this.reconnectAttempts });

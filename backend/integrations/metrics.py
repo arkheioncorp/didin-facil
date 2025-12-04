@@ -13,14 +13,14 @@ Autor: Didin Fácil
 Versão: 1.0.0
 """
 
-import time
 import asyncio
 import logging
-from typing import Dict, Any, Optional, Callable, Awaitable
+import time
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from functools import wraps
+from typing import Any, Awaitable, Callable, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -410,7 +410,7 @@ class HubHealthChecker:
         
         return {
             "status": overall,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "hubs": {
                 name: {
                     "status": health.status,

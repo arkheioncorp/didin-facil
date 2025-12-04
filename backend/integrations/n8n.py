@@ -13,13 +13,13 @@ Funcionalidades:
 - Monitorar execuções
 """
 
-from typing import Optional, Dict, Any, List
-from dataclasses import dataclass
-from datetime import datetime
-from enum import Enum
-import httpx
 import logging
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
+import httpx
 from shared.config import settings
 
 logger = logging.getLogger(__name__)
@@ -196,8 +196,8 @@ class N8nClient:
                 id=result.get("executionId", ""),
                 workflow_id=workflow_id,
                 status=WorkflowStatus.SUCCESS if result.get("success") else WorkflowStatus.ERROR,
-                started_at=datetime.utcnow(),
-                finished_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
+                finished_at=datetime.now(timezone.utc),
                 data=result.get("data")
             )
             

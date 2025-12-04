@@ -19,7 +19,7 @@ import json
 import logging
 import time
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -306,7 +306,7 @@ class TikTokShopService:
             )
         
         token_data = data["data"]
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         return TikTokShopToken(
             access_token=token_data["access_token"],
@@ -343,7 +343,7 @@ class TikTokShopService:
             )
         
         token_data = data["data"]
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         return TikTokShopToken(
             access_token=token_data["access_token"],

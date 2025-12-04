@@ -1,17 +1,26 @@
 """
 SQLAlchemy Database Models
 Used for migrations with Alembic
+
+Note: Using datetime.now(timezone.utc) instead of deprecated datetime.utcnow()
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import (JSON, Boolean, Column, DateTime, Float, ForeignKey,
-                        Index, Integer, String, Text, UniqueConstraint)
+                        Index, Integer, Numeric, String, Text,
+                        UniqueConstraint, func)
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
+
+
+# Helper for timezone-aware datetime default
+def utc_now():
+    """Return current UTC time with timezone info."""
+    return datetime.now(timezone.utc)
 
 
 class User(Base):
@@ -42,9 +51,13 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     is_email_verified = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False)
-    last_login_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_login_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=utc_now
+    )
     
     # Relationships
     licenses = relationship("License", back_populates="user")
@@ -56,20 +69,28 @@ class License(Base):
     __tablename__ = "licenses"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=False
+    )
     license_key = Column(String(50), unique=True, nullable=False, index=True)
     is_lifetime = Column(Boolean, default=True)
     max_devices = Column(Integer, default=2)
-    expires_at = Column(DateTime, nullable=True)  # NULL for lifetime
-    activated_at = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    activated_at = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, default=True)
     auto_renew = Column(Boolean, default=True)
     payment_id = Column(String(255), nullable=True)
     last_payment_id = Column(String(255), nullable=True)
     deactivation_reason = Column(String(255), nullable=True)
-    deactivated_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deactivated_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=utc_now
+    )
     
     # Relationships
     user = relationship("User", back_populates="licenses")
@@ -81,13 +102,17 @@ class LicenseDevice(Base):
     __tablename__ = "license_devices"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    license_id = Column(UUID(as_uuid=True), ForeignKey("licenses.id"), nullable=False)
+    license_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("licenses.id"),
+        nullable=False
+    )
     hwid = Column(String(255), nullable=False)
     app_version = Column(String(50), nullable=True)
-    first_seen_at = Column(DateTime, default=datetime.utcnow)
-    last_seen_at = Column(DateTime, default=datetime.utcnow)
+    first_seen_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_seen_at = Column(DateTime(timezone=True), server_default=func.now())
     is_active = Column(Boolean, default=True)
-    deactivated_at = Column(DateTime, nullable=True)
+    deactivated_at = Column(DateTime(timezone=True), nullable=True)
     deactivation_reason = Column(String(255), nullable=True)
     
     # Relationships
@@ -106,8 +131,9 @@ class Product(Base):
     tiktok_id = Column(String(100), unique=True, nullable=False, index=True)
     title = Column(String(500), nullable=False)
     description = Column(Text, nullable=True)
-    price = Column(Float, nullable=False)
-    original_price = Column(Float, nullable=True)
+    # Use Numeric for precise monetary values
+    price = Column(Numeric(10, 2), nullable=False)
+    original_price = Column(Numeric(10, 2), nullable=True)
     currency = Column(String(10), default="BRL")
     category = Column(String(100), nullable=True, index=True)
     subcategory = Column(String(100), nullable=True)
@@ -128,8 +154,12 @@ class Product(Base):
     is_trending = Column(Boolean, default=False, index=True)
     is_on_sale = Column(Boolean, default=False)
     in_stock = Column(Boolean, default=True)
-    collected_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    collected_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=utc_now
+    )
     
     __table_args__ = (
         Index("ix_products_sales_trending", "sales_30d", "is_trending"),
@@ -142,13 +172,17 @@ class CopyHistory(Base):
     __tablename__ = "copy_history"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=False
+    )
     product_id = Column(String(100), nullable=False)
     product_title = Column(String(500), nullable=False)
     copy_type = Column(String(50), nullable=False)
     tone = Column(String(50), nullable=False)
     copy_text = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
     user = relationship("User", back_populates="copy_history")
@@ -165,7 +199,7 @@ class PaymentEvent(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     event_type = Column(String(100), nullable=False)
     data = Column(JSON, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class Payment(Base):
@@ -173,15 +207,24 @@ class Payment(Base):
     __tablename__ = "payments"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    external_id = Column(String(255), nullable=True)  # Mercado Pago ID
-    amount = Column(Float, nullable=False)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=False
+    )
+    external_id = Column(String(255), nullable=True)
+    amount = Column(Numeric(10, 2), nullable=False)
     currency = Column(String(10), default="BRL")
     plan = Column(String(50), nullable=False)
-    status = Column(String(50), nullable=False)  # pending, approved, cancelled, refunded
+    # Status: pending, approved, cancelled, refunded
+    status = Column(String(50), nullable=False)
     payment_method = Column(String(100), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=utc_now
+    )
 
 
 class ScrapingJob(Base):
@@ -189,15 +232,17 @@ class ScrapingJob(Base):
     __tablename__ = "scraping_jobs"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    job_type = Column(String(50), nullable=False)  # refresh, category, trending
+    # Job types: refresh, category, trending
+    job_type = Column(String(50), nullable=False)
     category = Column(String(100), nullable=True)
-    status = Column(String(50), default="pending")  # pending, running, completed, failed
+    # Status: pending, running, completed, failed
+    status = Column(String(50), default="pending")
     priority = Column(Integer, default=0)
-    started_at = Column(DateTime, nullable=True)
-    completed_at = Column(DateTime, nullable=True)
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
     error_message = Column(Text, nullable=True)
     products_scraped = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     __table_args__ = (
         Index("ix_scraping_jobs_status", "status", "priority"),
@@ -209,12 +254,21 @@ class WhatsAppInstance(Base):
     __tablename__ = "whatsapp_instances"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=False
+    )
     name = Column(String(100), nullable=False, unique=True)
-    status = Column(String(50), default="disconnected")  # disconnected, connecting, connected
+    # Status: disconnected, connecting, connected
+    status = Column(String(50), default="disconnected")
     webhook_url = Column(String(500), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=utc_now
+    )
 
     # Relationships
     messages = relationship("WhatsAppMessage", back_populates="instance")
@@ -225,14 +279,21 @@ class WhatsAppMessage(Base):
     __tablename__ = "whatsapp_messages"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    instance_id = Column(UUID(as_uuid=True), ForeignKey("whatsapp_instances.id"), nullable=False)
-    remote_jid = Column(String(100), nullable=False)  # The phone number (remote JID)
+    instance_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("whatsapp_instances.id"),
+        nullable=False
+    )
+    # The phone number (remote JID)
+    remote_jid = Column(String(100), nullable=False)
     from_me = Column(Boolean, default=False)
     content = Column(Text, nullable=True)
     message_type = Column(String(50), default="text")
-    status = Column(String(50), default="pending")  # pending, sent, delivered, read, failed
-    timestamp = Column(DateTime, default=datetime.utcnow)
-    message_id = Column(String(100), nullable=True, index=True)  # ID from WhatsApp
+    # Status: pending, sent, delivered, read, failed
+    status = Column(String(50), default="pending")
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    # ID from WhatsApp
+    message_id = Column(String(100), nullable=True, index=True)
 
     # Relationships
     instance = relationship("WhatsAppInstance", back_populates="messages")
@@ -246,7 +307,12 @@ class TikTokShopConnection(Base):
     __tablename__ = "tiktok_shop_connections"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=False,
+        index=True
+    )
     
     # App credentials (encrypted in production)
     app_key = Column(String(100), nullable=False)
@@ -256,13 +322,13 @@ class TikTokShopConnection(Base):
     # OAuth tokens
     access_token = Column(String(500), nullable=True)
     refresh_token = Column(String(500), nullable=True)
-    access_token_expires_at = Column(DateTime, nullable=True)
-    refresh_token_expires_at = Column(DateTime, nullable=True)
+    access_token_expires_at = Column(DateTime(timezone=True), nullable=True)
+    refresh_token_expires_at = Column(DateTime(timezone=True), nullable=True)
     
     # Seller info
     open_id = Column(String(100), nullable=True)
     seller_name = Column(String(255), nullable=True)
-    seller_region = Column(String(10), nullable=True)  # BR, US, etc.
+    seller_region = Column(String(10), nullable=True)
     user_type = Column(Integer, default=0)  # 0=Seller, 1=Creator
     
     # Shop info (JSON array of shops)
@@ -270,14 +336,19 @@ class TikTokShopConnection(Base):
     
     # Sync status
     is_connected = Column(Boolean, default=False)
-    last_sync_at = Column(DateTime, nullable=True)
-    sync_status = Column(String(50), default="idle")  # idle, syncing, error
+    last_sync_at = Column(DateTime(timezone=True), nullable=True)
+    # Sync status: idle, syncing, error
+    sync_status = Column(String(50), default="idle")
     sync_error = Column(Text, nullable=True)
     products_synced = Column(Integer, default=0)
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=utc_now
+    )
     
     __table_args__ = (
         UniqueConstraint("user_id", name="uq_tiktok_shop_user"),
@@ -292,7 +363,11 @@ class TikTokShopProduct(Base):
     __tablename__ = "tiktok_shop_products"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    connection_id = Column(UUID(as_uuid=True), ForeignKey("tiktok_shop_connections.id"), nullable=False)
+    connection_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("tiktok_shop_connections.id"),
+        nullable=False
+    )
     
     # TikTok Shop identifiers
     tiktok_product_id = Column(String(100), nullable=False, index=True)
@@ -300,29 +375,39 @@ class TikTokShopProduct(Base):
     
     # Product info
     title = Column(String(500), nullable=False)
-    status = Column(String(50), nullable=False)  # ACTIVATE, DRAFT, etc.
+    # Status: ACTIVATE, DRAFT, etc.
+    status = Column(String(50), nullable=False)
     sales_regions = Column(ARRAY(String), default=[])
-    listing_quality_tier = Column(String(20), nullable=True)  # POOR, FAIR, GOOD
+    # Listing quality: POOR, FAIR, GOOD
+    listing_quality_tier = Column(String(20), nullable=True)
     has_draft = Column(Boolean, default=False)
     
     # SKUs (JSON array)
     skus = Column(JSON, default=[])
     
     # Aggregated price info (from first/main SKU)
-    price = Column(Float, nullable=True)
+    price = Column(Numeric(10, 2), nullable=True)
     currency = Column(String(10), default="BRL")
     total_inventory = Column(Integer, default=0)
     
     # Timestamps from TikTok
-    tiktok_created_at = Column(DateTime, nullable=True)
-    tiktok_updated_at = Column(DateTime, nullable=True)
+    tiktok_created_at = Column(DateTime(timezone=True), nullable=True)
+    tiktok_updated_at = Column(DateTime(timezone=True), nullable=True)
     
     # Local timestamps
-    synced_at = Column(DateTime, default=datetime.utcnow)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    synced_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=utc_now
+    )
     
     __table_args__ = (
-        UniqueConstraint("connection_id", "tiktok_product_id", name="uq_tiktok_shop_product"),
+        UniqueConstraint(
+            "connection_id",
+            "tiktok_product_id",
+            name="uq_tiktok_shop_product"
+        ),
         Index("ix_tiktok_shop_products_status", "status"),
     )

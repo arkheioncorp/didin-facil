@@ -20,10 +20,6 @@ import {
   exportFinancialReport,
   generateDailyReport,
   type FinancialSummary,
-  type DailyRevenueItem,
-  type TopUser,
-  type PackageSales,
-  type OperationsBreakdown,
 } from "@/services/accounting";
 import { Download, FileSpreadsheet, FileJson, FileText, RefreshCw, Calendar } from "lucide-react";
 import { toast } from "sonner";

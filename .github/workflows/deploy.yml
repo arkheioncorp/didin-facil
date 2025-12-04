@@ -249,7 +249,7 @@ jobs:
     name: Deploy to Staging
     runs-on: ubuntu-latest
     needs: [docker-build]
-    environment: staging
+    # environment: staging  # Requires GitHub environment setup
     
     steps:
       - name: Checkout code

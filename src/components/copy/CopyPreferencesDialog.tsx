@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useTranslation } from "react-i18next";
 import { Settings, Save, RotateCcw, Sparkles } from "lucide-react";
 import {
   Dialog,
@@ -20,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -42,7 +41,6 @@ export function CopyPreferencesDialog({
   trigger,
   onPreferencesUpdate,
 }: CopyPreferencesDialogProps) {
-  const { t } = useTranslation();
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);

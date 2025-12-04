@@ -15,7 +15,7 @@ Funcionalidades:
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -43,7 +43,7 @@ class TypebotMessage:
     
     def __post_init__(self):
         if self.timestamp is None:
-            self.timestamp = datetime.utcnow()
+            self.timestamp = datetime.now(timezone.utc)
 
 
 @dataclass
@@ -65,9 +65,9 @@ class TypebotSession:
         if self.messages is None:
             self.messages = []
         if self.created_at is None:
-            self.created_at = datetime.utcnow()
+            self.created_at = datetime.now(timezone.utc)
         if self.updated_at is None:
-            self.updated_at = datetime.utcnow()
+            self.updated_at = datetime.now(timezone.utc)
 
 
 class TypebotClient:

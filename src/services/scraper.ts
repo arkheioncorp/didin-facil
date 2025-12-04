@@ -1,4 +1,5 @@
 import type { ScraperConfig, ScraperStatus } from "@/types";
+import { logger } from "@/lib/utils";
 
 // Check if running in Tauri environment
 const isTauri = (): boolean => {
@@ -37,10 +38,8 @@ export async function startScraper(config: ScraperConfig): Promise<ScraperStatus
     
     // Browser mode: call backend API
     const url = `${API_BASE_URL}/scraper/start`;
-    console.log('[Scraper] Starting scraper with URL:', url);
-    console.log('[Scraper] API_BASE_URL:', API_BASE_URL);
-    console.log('[Scraper] Config:', config);
-    console.log('[Scraper] Token present:', !!localStorage.getItem('auth_token'));
+    logger.debug('[Scraper] Starting scraper with URL:', url);
+    logger.debug('[Scraper] Config:', config);
     
     const response = await fetch(url, {
       method: 'POST',
@@ -51,17 +50,17 @@ export async function startScraper(config: ScraperConfig): Promise<ScraperStatus
       body: JSON.stringify(config)
     });
     
-    console.log('[Scraper] Response status:', response.status);
+    logger.debug('[Scraper] Response status:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('[Scraper] Error response:', errorText);
+      logger.error('[Scraper] Error response:', errorText);
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
     return await response.json();
   } catch (error) {
-    console.error("Error starting scraper:", error);
+    logger.error("Error starting scraper:", error);
     throw error;
   }
 }

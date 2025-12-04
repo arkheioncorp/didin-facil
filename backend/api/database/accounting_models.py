@@ -1,22 +1,20 @@
 """
 Accounting & Financial Models
 Complete financial tracking system for Didin Fácil
+
+Note: Using datetime.now(timezone.utc) instead of deprecated datetime.utcnow()
 """
 
-from datetime import datetime
+import uuid
+from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 
-from sqlalchemy import (
-    Column, String, Integer, Float, Boolean, DateTime,
-    Text, ForeignKey, Index, UniqueConstraint, Numeric, Enum as SQLEnum
-)
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from api.database.models import Base, utc_now
+from sqlalchemy import (Boolean, Column, DateTime, Float, ForeignKey, Index,
+                        Integer, Numeric, String, Text, UniqueConstraint, func)
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
-import uuid
-
-from api.database.models import Base
-
 
 # =============================================================================
 # ENUMS
@@ -77,13 +75,17 @@ class CreditPackage(Base):
     is_featured = Column(Boolean, default=False)
     sort_order = Column(Integer, default=0)
     
-    # License inclusion
-    includes_license = Column(Boolean, default=False)  # First purchase includes lifetime license
+    # License inclusion (first purchase includes lifetime license)
+    includes_license = Column(Boolean, default=False)
     
     # Status
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=utc_now
+    )
 
     @property
     def price_per_credit(self) -> Decimal:
@@ -105,29 +107,36 @@ class OperationCost(Base):
     __tablename__ = "operation_costs"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    operation_type = Column(String(50), nullable=False)  # copy_generation, trend_analysis, etc.
+    # Operation types: copy_generation, trend_analysis, etc.
+    operation_type = Column(String(50), nullable=False)
     
-    # Cost breakdown
-    base_cost_brl = Column(Numeric(10, 6), nullable=False)  # Base cost per operation
+    # Cost breakdown (base cost per operation)
+    base_cost_brl = Column(Numeric(10, 6), nullable=False)
     avg_tokens_input = Column(Integer, default=0)
     avg_tokens_output = Column(Integer, default=0)
-    cost_per_1k_tokens_input = Column(Numeric(10, 6), default=0)  # OpenAI pricing
+    # OpenAI pricing
+    cost_per_1k_tokens_input = Column(Numeric(10, 6), default=0)
     cost_per_1k_tokens_output = Column(Numeric(10, 6), default=0)
     
-    # Additional costs
-    infrastructure_cost = Column(Numeric(10, 6), default=0)  # Proxy, server, etc.
+    # Additional costs (proxy, server, etc.)
+    infrastructure_cost = Column(Numeric(10, 6), default=0)
     
-    # Pricing
-    credits_charged = Column(Integer, nullable=False)  # How many credits we charge
-    margin_percent = Column(Numeric(5, 2), default=0)  # Calculated margin
+    # Pricing (how many credits we charge)
+    credits_charged = Column(Integer, nullable=False)
+    # Calculated margin
+    margin_percent = Column(Numeric(5, 2), default=0)
     
     # Timestamps
-    effective_from = Column(DateTime, default=datetime.utcnow)
-    effective_until = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    effective_from = Column(DateTime(timezone=True), server_default=func.now())
+    effective_until = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (
-        Index("ix_operation_costs_type_date", "operation_type", "effective_from"),
+        Index(
+            "ix_operation_costs_type_date",
+            "operation_type",
+            "effective_from"
+        ),
     )
 
 
@@ -143,43 +152,59 @@ class FinancialTransaction(Base):
     __tablename__ = "financial_transactions"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=True
+    )
     
     # Transaction details
-    transaction_type = Column(String(50), nullable=False)  # credit_purchase, license_purchase, etc.
-    operation_type = Column(String(50), nullable=True)  # For credit_usage: copy_generation, etc.
+    # Types: credit_purchase, license_purchase, etc.
+    transaction_type = Column(String(50), nullable=False)
+    # For credit_usage: copy_generation, etc.
+    operation_type = Column(String(50), nullable=True)
     
-    # Amounts
-    amount_brl = Column(Numeric(10, 2), nullable=False)  # Revenue/expense in BRL
+    # Amounts (Revenue/expense in BRL)
+    amount_brl = Column(Numeric(10, 2), nullable=False)
     amount_usd = Column(Numeric(10, 2), nullable=True)
-    credits_amount = Column(Integer, default=0)  # Credits involved
+    credits_amount = Column(Integer, default=0)
     
     # Cost tracking (for operations that have costs)
-    cost_brl = Column(Numeric(10, 6), default=0)  # Our actual cost
+    cost_brl = Column(Numeric(10, 6), default=0)
     tokens_input = Column(Integer, default=0)
     tokens_output = Column(Integer, default=0)
     
     # Profit calculation
-    gross_profit = Column(Numeric(10, 2), default=0)  # amount - cost
+    gross_profit = Column(Numeric(10, 2), default=0)
     
     # Payment info
-    payment_id = Column(String(255), nullable=True)  # External payment ID
-    payment_method = Column(String(50), nullable=True)  # pix, card, boleto
+    payment_id = Column(String(255), nullable=True)
+    # Payment methods: pix, card, boleto
+    payment_method = Column(String(50), nullable=True)
     payment_status = Column(String(50), default="completed")
     
     # Metadata
     description = Column(Text, nullable=True)
-    extra_data = Column(JSONB, default={})  # Renamed from 'metadata' (reserved by SQLAlchemy)
+    # Renamed from 'metadata' (reserved by SQLAlchemy)
+    extra_data = Column(JSONB, default={})
     
     # Reference to related entities
-    package_id = Column(UUID(as_uuid=True), ForeignKey("credit_packages.id"), nullable=True)
+    package_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("credit_packages.id"),
+        nullable=True
+    )
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (
         Index("ix_financial_transactions_user", "user_id", "created_at"),
-        Index("ix_financial_transactions_type", "transaction_type", "created_at"),
+        Index(
+            "ix_financial_transactions_type",
+            "transaction_type",
+            "created_at"
+        ),
         Index("ix_financial_transactions_date", "created_at"),
     )
 
@@ -208,7 +233,8 @@ class DailyFinancialReport(Base):
     total_costs = Column(Numeric(10, 2), default=0)
     openai_costs = Column(Numeric(10, 6), default=0)
     infrastructure_costs = Column(Numeric(10, 2), default=0)
-    payment_fees = Column(Numeric(10, 2), default=0)  # MercadoPago fees
+    # MercadoPago fees
+    payment_fees = Column(Numeric(10, 2), default=0)
     
     # Profit
     gross_profit = Column(Numeric(10, 2), default=0)
@@ -235,8 +261,12 @@ class DailyFinancialReport(Base):
     refunds_count = Column(Integer, default=0)
     refunds_amount = Column(Numeric(10, 2), default=0)
     
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=utc_now
+    )
 
     __table_args__ = (
         Index("ix_daily_financial_reports_date", "report_date"),
@@ -287,11 +317,19 @@ class MonthlyFinancialSummary(Base):
     avg_revenue_per_user = Column(Numeric(10, 2), default=0)
     avg_credits_per_user = Column(Numeric(10, 2), default=0)
     
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=utc_now
+    )
 
     __table_args__ = (
-        UniqueConstraint("year", "month", name="uq_monthly_summary_year_month"),
+        UniqueConstraint(
+            "year",
+            "month",
+            name="uq_monthly_summary_year_month"
+        ),
         Index("ix_monthly_summary_year_month", "year", "month"),
     )
 
@@ -305,7 +343,12 @@ class UserFinancialSummary(Base):
     __tablename__ = "user_financial_summaries"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        unique=True,
+        nullable=False
+    )
     
     # Lifetime value
     total_spent = Column(Numeric(10, 2), default=0)
@@ -313,8 +356,8 @@ class UserFinancialSummary(Base):
     total_credits_used = Column(Integer, default=0)
     
     # Purchase history
-    first_purchase_at = Column(DateTime, nullable=True)
-    last_purchase_at = Column(DateTime, nullable=True)
+    first_purchase_at = Column(DateTime(timezone=True), nullable=True)
+    last_purchase_at = Column(DateTime(timezone=True), nullable=True)
     purchase_count = Column(Integer, default=0)
     
     # Average metrics
@@ -333,12 +376,17 @@ class UserFinancialSummary(Base):
     lifetime_profit = Column(Numeric(10, 2), default=0)
     profit_margin_percent = Column(Numeric(5, 2), default=0)
     
-    # Status
-    is_high_value = Column(Boolean, default=False)  # Top 10% spenders
-    churn_risk = Column(String(20), default="low")  # low, medium, high
+    # Status (Top 10% spenders)
+    is_high_value = Column(Boolean, default=False)
+    # Churn risk: low, medium, high
+    churn_risk = Column(String(20), default="low")
     
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=utc_now
+    )
 
     __table_args__ = (
         Index("ix_user_financial_summary_ltv", "total_spent"),
@@ -355,11 +403,16 @@ class APIUsageLog(Base):
     __tablename__ = "api_usage_logs"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=True
+    )
     
-    # API details
-    provider = Column(String(50), nullable=False)  # openai, anthropic, etc.
-    model = Column(String(100), nullable=False)  # gpt-4-turbo, gpt-3.5-turbo
+    # API details (providers: openai, anthropic, etc.)
+    provider = Column(String(50), nullable=False)
+    # Models: gpt-4-turbo, gpt-3.5-turbo
+    model = Column(String(100), nullable=False)
     operation_type = Column(String(50), nullable=False)
     
     # Token usage
@@ -378,7 +431,7 @@ class APIUsageLog(Base):
     # Metadata
     extra_data = Column(JSONB, default={})
     
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (
         Index("ix_api_usage_logs_user", "user_id", "created_at"),
