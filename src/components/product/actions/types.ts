@@ -1,5 +1,8 @@
-import type { Product } from "@/types";
+import type { Product, CopyType, CopyTone } from "@/types";
 import type { ReactNode } from "react";
+
+// Re-export CopyType and CopyTone for backwards compatibility
+export type { CopyType, CopyTone };
 
 // ============================================
 // CORE TYPES
@@ -59,10 +62,6 @@ export interface BaseModalProps {
 // ============================================
 // COPY AI TYPES
 // ============================================
-
-// CopyType and CopyTone are defined in @/types/index.ts - importing from there
-import type { CopyType, CopyTone } from "@/types";
-export type { CopyType, CopyTone };
 
 export interface CopyModalProps extends BaseModalProps {
   copyType: CopyType;
