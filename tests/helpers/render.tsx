@@ -6,6 +6,47 @@ import { ReactElement, ReactNode, createContext, useState } from "react";
 import { render, RenderOptions } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { vi } from "vitest";
+
+// ============================================
+// MOCK TUTORIAL PROVIDER
+// ============================================
+
+const TutorialContext = createContext({
+  isActive: false,
+  currentTutorial: null,
+  currentStepIndex: 0,
+  completedTutorials: [] as string[],
+  startTutorial: vi.fn(),
+  endTutorial: vi.fn(),
+  nextStep: vi.fn(),
+  prevStep: vi.fn(),
+  skipTutorial: vi.fn(),
+  resetTutorial: vi.fn(),
+  markTutorialComplete: vi.fn(),
+  isTutorialComplete: () => false,
+});
+
+const MockTutorialProvider = ({ children }: { children: ReactNode }) => {
+  return (
+    <TutorialContext.Provider value={{
+      isActive: false,
+      currentTutorial: null,
+      currentStepIndex: 0,
+      completedTutorials: [],
+      startTutorial: vi.fn(),
+      endTutorial: vi.fn(),
+      nextStep: vi.fn(),
+      prevStep: vi.fn(),
+      skipTutorial: vi.fn(),
+      resetTutorial: vi.fn(),
+      markTutorialComplete: vi.fn(),
+      isTutorialComplete: () => false,
+    }}>
+      {children}
+    </TutorialContext.Provider>
+  );
+};
 
 // ============================================
 // MOCK THEME PROVIDER
@@ -51,9 +92,11 @@ const AllProviders = ({ children }: AllProvidersProps) => {
   return (
     <BrowserRouter>
       <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          {children}
-        </TooltipProvider>
+        <MockTutorialProvider>
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
+        </MockTutorialProvider>
       </ThemeProvider>
     </BrowserRouter>
   );

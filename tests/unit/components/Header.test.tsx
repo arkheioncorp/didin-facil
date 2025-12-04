@@ -9,6 +9,17 @@ import { BrowserRouter } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { NotificationsProvider } from '@/hooks/use-notifications';
 
+// Mock TutorialProvider
+vi.mock('@/components/tutorial', () => ({
+  TutorialHelpButton: () => <button data-testid="tutorial-help">Help</button>,
+  TutorialProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useTutorial: () => ({
+    isActive: false,
+    startTutorial: vi.fn(),
+    endTutorial: vi.fn(),
+  }),
+}));
+
 // Mock icons
 vi.mock('@/components/icons', () => ({
   SearchIcon: ({ size: _size }: { size: number }) => <span data-testid="search-icon">SearchIcon</span>,

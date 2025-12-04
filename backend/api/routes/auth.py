@@ -140,7 +140,7 @@ async def refresh_token(
         payload = jwt.decode(
             credentials.credentials, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM]
         )
-        user_id = payload.get("sub")
+        user_id: str | None = payload.get("sub")
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -163,9 +163,7 @@ async def refresh_token(
 
         # Generate new token
         expires_at = datetime.now(timezone.utc) + timedelta(hours=12)
-        token = auth_service.create_token(
-            str(user_id), request.hwid, expires_at
-        )
+        token = auth_service.create_token(user_id, request.hwid, expires_at)
 
         return LoginResponse(
             access_token=token,

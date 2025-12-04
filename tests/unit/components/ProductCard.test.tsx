@@ -232,7 +232,7 @@ describe("ProductCard", () => {
         />
       );
 
-      const favoriteButton = screen.getByRole("button");
+      const favoriteButton = screen.getByTestId("favorite-button");
       fireEvent.click(favoriteButton);
 
       expect(mockOnFavorite).toHaveBeenCalledWith(product);
@@ -248,7 +248,7 @@ describe("ProductCard", () => {
         />
       );
 
-      const favoriteButton = screen.getByRole("button");
+      const favoriteButton = screen.getByTestId("favorite-button");
       fireEvent.click(favoriteButton);
 
       expect(mockOnFavorite).toHaveBeenCalled();
@@ -259,7 +259,7 @@ describe("ProductCard", () => {
       const product = createMockProduct();
       render(<ProductCard product={product} />);
 
-      expect(screen.queryByRole("button")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("favorite-button")).not.toBeInTheDocument();
     });
   });
 
@@ -274,7 +274,7 @@ describe("ProductCard", () => {
         />
       );
 
-      const button = screen.getByRole("button");
+      const button = screen.getByTestId("favorite-button");
       const icon = button.querySelector("svg");
       expect(icon).toHaveClass("fill-tiktrend-primary");
     });
@@ -289,7 +289,7 @@ describe("ProductCard", () => {
         />
       );
 
-      const button = screen.getByRole("button");
+      const button = screen.getByTestId("favorite-button");
       const icon = button.querySelector("svg");
       expect(icon).not.toHaveClass("fill-tiktrend-primary");
     });

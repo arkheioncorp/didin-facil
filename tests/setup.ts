@@ -3,6 +3,7 @@
  * This file runs before all tests
  */
 import "@testing-library/jest-dom/vitest";
+import React from "react";
 import { cleanup } from "@testing-library/react";
 import { vi, beforeAll, afterEach, afterAll, expect } from "vitest";
 import { server } from "./mocks/server";
@@ -39,6 +40,26 @@ vi.mock("@tauri-apps/plugin-notification", () => ({
   isPermissionGranted: vi.fn(() => Promise.resolve(true)),
   requestPermission: vi.fn(() => Promise.resolve("granted")),
   sendNotification: vi.fn(() => Promise.resolve()),
+}));
+
+// Mock TutorialProvider and related components
+vi.mock("@/components/tutorial", () => ({
+  TutorialProvider: ({ children }: { children: React.ReactNode }) => children,
+  TutorialHelpButton: () => null,
+  useTutorial: () => ({
+    isActive: false,
+    currentTutorial: null,
+    currentStepIndex: 0,
+    completedTutorials: [],
+    startTutorial: vi.fn(),
+    endTutorial: vi.fn(),
+    nextStep: vi.fn(),
+    prevStep: vi.fn(),
+    skipTutorial: vi.fn(),
+    resetTutorial: vi.fn(),
+    markTutorialComplete: vi.fn(),
+    isTutorialComplete: () => false,
+  }),
 }));
 
 vi.mock("@tauri-apps/plugin-store", () => ({
