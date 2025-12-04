@@ -45,11 +45,36 @@ exit(0 if success else 1)
 
 # Run database migrations
 echo "📦 Running database migrations..."
-if alembic upgrade head 2>&1; then
-    echo "✅ Migrations applied successfully"
-else
-    echo "⚠️ Migration warning (may be already up to date)"
-fi
+echo "📍 Alembic config check:"
+python3 -c "
+from shared.config import settings
+print(f'DATABASE_URL set: {bool(settings.DATABASE_URL)}')
+print(f'URL preview: {settings.DATABASE_URL[:50]}...' if settings.DATABASE_URL else 'NOT SET')
+"
+
+# Run migrations with full output
+echo "🔄 Executing: alembic upgrade head"
+alembic upgrade head 2>&1 || {
+    echo "❌ Migration failed! Checking tables..."
+    python3 -c "
+import asyncio
+import asyncpg
+import os
+
+async def check_tables():
+    url = os.environ.get('DATABASE_URL', '')
+    try:
+        conn = await asyncpg.connect(url)
+        tables = await conn.fetch(\"SELECT tablename FROM pg_tables WHERE schemaname = 'public'\")
+        print(f'Existing tables: {[t[\"tablename\"] for t in tables]}')
+        await conn.close()
+    except Exception as e:
+        print(f'Error checking tables: {e}')
+
+asyncio.run(check_tables())
+"
+    echo "⚠️ Continuing despite migration error..."
+}
 
 # List applied migrations
 echo "📋 Current migration status:"
