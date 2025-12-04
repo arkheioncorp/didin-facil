@@ -577,6 +577,102 @@ async def run_migrations(secret: str = ""):
         }
 
 
+@app.post("/admin/stamp-migrations")
+async def stamp_migrations(secret: str = "", revision: str = "head"):
+    """
+    Mark migrations as applied without running them.
+    Use when tables already exist in the database.
+    """
+    import subprocess
+    import traceback
+
+    expected_secret = os.environ.get(
+        "MIGRATION_SECRET", "tiktrend-migrate-2025"
+    )
+    if secret != expected_secret:
+        return {"status": "error", "message": "Invalid secret"}
+
+    try:
+        base_path = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))
+        )
+
+        result = subprocess.run(
+            ["alembic", "stamp", revision],
+            capture_output=True,
+            text=True,
+            cwd=base_path,
+            timeout=60,
+            env={**os.environ, "DATABASE_URL": settings.DATABASE_URL}
+        )
+
+        if result.returncode == 0:
+            return {
+                "status": "success",
+                "message": f"Stamped migrations at: {revision}",
+                "output": result.stdout[-500:] if result.stdout else None
+            }
+        else:
+            return {
+                "status": "error",
+                "message": "Stamp failed",
+                "stdout": result.stdout[-500:] if result.stdout else None,
+                "stderr": result.stderr[-500:] if result.stderr else None
+            }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()[-500:]
+        }
+
+
+@app.get("/admin/db-tables")
+async def list_database_tables(secret: str = ""):
+    """List all tables in the database"""
+    from api.database.connection import database
+
+    expected_secret = os.environ.get(
+        "MIGRATION_SECRET", "tiktrend-migrate-2025"
+    )
+    if secret != expected_secret:
+        return {"status": "error", "message": "Invalid secret"}
+
+    try:
+        if not database.is_connected:
+            await database.connect()
+
+        result = await database.fetch_all("""
+            SELECT tablename 
+            FROM pg_tables 
+            WHERE schemaname = 'public'
+            ORDER BY tablename
+        """)
+
+        tables = [r["tablename"] for r in result]
+
+        # Check alembic version
+        try:
+            version = await database.fetch_one(
+                "SELECT version_num FROM alembic_version"
+            )
+            current_version = version["version_num"] if version else None
+        except Exception:
+            current_version = None
+
+        return {
+            "status": "success",
+            "tables": tables,
+            "table_count": len(tables),
+            "alembic_version": current_version
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+
 @app.get("/")
 async def root():
     """Root endpoint"""
