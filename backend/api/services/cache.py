@@ -7,16 +7,80 @@ not created/closed per operation. This avoids connection leaks and improves
 performance.
 
 Gracefully degrades when Redis is unavailable.
+
+Features:
+- Automatic cache key generation
+- TTL-based expiration
+- Pattern-based invalidation
+- Decorator for easy endpoint caching
 """
 
 import hashlib
 import json
 import logging
-from typing import Any, Optional
+from functools import wraps
+from typing import Any, Callable, Optional
 
 from api.services.redis import get_redis_pool
 
 logger = logging.getLogger(__name__)
+
+
+# Cache TTL constants (in seconds)
+CACHE_TTL_SHORT = 300      # 5 min - user session data
+CACHE_TTL_MEDIUM = 3600    # 1 hour - product listings
+CACHE_TTL_LONG = 86400     # 24 hours - static data
+
+
+def cached(
+    key_prefix: str,
+    ttl: int = CACHE_TTL_MEDIUM,
+    key_builder: Optional[Callable] = None
+):
+    """
+    Decorator for caching async function results.
+    
+    Usage:
+        @cached("products:list", ttl=3600)
+        async def get_products(category: str, page: int):
+            ...
+    
+    Args:
+        key_prefix: Prefix for cache key
+        ttl: Time-to-live in seconds
+        key_builder: Optional function to build cache key from args
+    """
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            cache = CacheService()
+            
+            # Build cache key
+            if key_builder:
+                cache_key = f"{key_prefix}:{key_builder(*args, **kwargs)}"
+            else:
+                # Auto-generate key from args
+                params = {"args": args, "kwargs": kwargs}
+                params_str = json.dumps(params, sort_keys=True, default=str)
+                hash_key = hashlib.md5(params_str.encode()).hexdigest()[:12]
+                cache_key = f"{key_prefix}:{hash_key}"
+            
+            # Try cache first
+            cached_result = await cache.get(cache_key)
+            if cached_result is not None:
+                logger.debug(f"Cache HIT: {cache_key}")
+                return cached_result
+            
+            # Execute function
+            logger.debug(f"Cache MISS: {cache_key}")
+            result = await func(*args, **kwargs)
+            
+            # Cache result
+            await cache.set(cache_key, result, ttl)
+            
+            return result
+        return wrapper
+    return decorator
 
 
 class CacheService:

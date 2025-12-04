@@ -200,37 +200,44 @@ QUERIES_TO_ANALYZE: List[Tuple[str, str, Dict[str, Any]]] = [
 
 
 async def analyze_query(
-    conn: asyncpg.Connection, 
-    name: str, 
-    query: str, 
+    conn: asyncpg.Connection,
+    name: str,
+    query: str,
     params: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Executa EXPLAIN ANALYZE e retorna métricas."""
-    # Preparar query para EXPLAIN
     explain_query = f"EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) {query.strip()}"
-    
-    # Substituir placeholders por valores de teste
-    test_query = query.strip()
-    for i, (key, value) in enumerate(params.items(), 1):
-        if isinstance(value, str):
-            test_query = test_query.replace(f"${i}", f"'{value}'")
-        else:
-            test_query = test_query.replace(f"${i}", str(value))
-    
-    explain_test = f"EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) {test_query}"
-    
+
     try:
-        result = await conn.fetchval(explain_test)
-        plan = result[0] if result else {}
-        
+        result = await conn.fetchval(explain_query)
+        if result:
+            # O resultado é uma string JSON que precisa ser parseada
+            if isinstance(result, str):
+                plan_list = json.loads(result)
+            else:
+                plan_list = result
+
+            if isinstance(plan_list, list) and len(plan_list) > 0:
+                plan = plan_list[0]
+            else:
+                plan = plan_list
+
+            return {
+                "name": name,
+                "success": True,
+                "execution_time_ms": plan.get("Execution Time", 0),
+                "planning_time_ms": plan.get("Planning Time", 0),
+                "total_time_ms": (
+                    plan.get("Execution Time", 0) +
+                    plan.get("Planning Time", 0)
+                ),
+                "plan": plan.get("Plan", {}),
+                "issues": analyze_plan_issues(plan.get("Plan", {})),
+            }
         return {
             "name": name,
-            "success": True,
-            "execution_time_ms": plan.get("Execution Time", 0),
-            "planning_time_ms": plan.get("Planning Time", 0),
-            "total_time_ms": plan.get("Execution Time", 0) + plan.get("Planning Time", 0),
-            "plan": plan.get("Plan", {}),
-            "issues": analyze_plan_issues(plan.get("Plan", {})),
+            "success": False,
+            "error": "No result from EXPLAIN",
         }
     except asyncpg.UndefinedTableError as e:
         return {

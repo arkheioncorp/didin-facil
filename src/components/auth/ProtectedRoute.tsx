@@ -42,24 +42,25 @@ export const ProtectedRoute = () => {
     };
     
     checkSetup();
-    return undefined;
   }, []);
 
   // Ensure hydration completes within a reasonable time
   useEffect(() => {
     if (hasHydrated && setupComplete !== null) {
       setIsReady(true);
-    } else {
-      // Fallback: if hydration takes too long, consider it complete
-      const timeout = setTimeout(() => {
-        // Force hydration if it hasn't completed
-        if (!hasHydrated) {
-          setHasHydrated(true);
-        }
-        setIsReady(true);
-      }, 300); // Reduced timeout for faster loading
-      return () => clearTimeout(timeout);
+      return;
     }
+    
+    // Fallback: if hydration takes too long, consider it complete
+    const timeout = setTimeout(() => {
+      // Force hydration if it hasn't completed
+      if (!hasHydrated) {
+        setHasHydrated(true);
+      }
+      setIsReady(true);
+    }, 300); // Reduced timeout for faster loading
+    
+    return () => clearTimeout(timeout);
   }, [hasHydrated, setupComplete, setHasHydrated]);
 
   if (!isReady) {

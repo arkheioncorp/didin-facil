@@ -64,3 +64,4 @@ builds/**/*.AppImage
 src-tauri/test_parsing
 .vercel
 .env*.local
+_railway_info.txt

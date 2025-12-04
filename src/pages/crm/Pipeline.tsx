@@ -31,7 +31,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 // Import new API hooks and types  
 import { usePipelines, usePipeline, usePipelineMetrics } from "./hooks/usePipeline";
 import { useDeals, useMoveDeal, useCreateDeal, useUpdateDeal, useDeleteDeal, useWinDeal, useLoseDeal } from "./hooks/useDeals";
-import type { Pipeline, Deal, PipelineStage } from "@/lib/api/crm";
+import type { Deal, PipelineStage } from "@/lib/api/crm";
 import { formatCurrency, getTagColor, calculateDaysInStage } from "@/lib/api/crm";
 
 // ==================== UTILITY FUNCTIONS ====================
@@ -294,6 +294,7 @@ const PipelinePage = () => {
   const moveDeal = useMoveDeal();
   const createDeal = useCreateDeal();
   const updateDeal = useUpdateDeal();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _deleteDeal = useDeleteDeal();
   const winDeal = useWinDeal();
   const loseDeal = useLoseDeal();

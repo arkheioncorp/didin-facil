@@ -609,6 +609,9 @@ const TutorialOverlay: React.FC = () => {
   const [targetRect, setTargetRect] = React.useState<DOMRect | null>(null);
 
   React.useEffect(() => {
+    let retryTimeout: NodeJS.Timeout | undefined;
+    let retryTimeout2: NodeJS.Timeout | undefined;
+
     const updateTargetRect = (): void => {
       if (currentStep.target) {
         // Pequeno delay para garantir que o DOM foi atualizado
@@ -628,14 +631,9 @@ const TutorialOverlay: React.FC = () => {
         // Tentar imediatamente
         findElement();
         
-        // Tentar novamente após um curto delay (para elementos que podem demorar a renderizar)
-        const retryTimeout = setTimeout(findElement, 100);
-        const retryTimeout2 = setTimeout(findElement, 300);
-        
-        return () => {
-          clearTimeout(retryTimeout);
-          clearTimeout(retryTimeout2);
-        };
+        // Tentar novamente após um curto delay
+        retryTimeout = setTimeout(findElement, 100);
+        retryTimeout2 = setTimeout(findElement, 300);
       } else {
         setTargetRect(null);
       }
@@ -659,6 +657,8 @@ const TutorialOverlay: React.FC = () => {
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleResize, true);
+      if (retryTimeout) clearTimeout(retryTimeout);
+      if (retryTimeout2) clearTimeout(retryTimeout2);
     };
   }, [currentStep]);
 
