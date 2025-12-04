@@ -10,7 +10,7 @@ watchPatterns = ["backend/**", "nixpacks.toml", "railway.toml"]
 
 [deploy]
 numReplicas = 1
-startCommand = "cd backend && echo 'Starting with PORT=$PORT' && python3 -c 'print(\"Python OK\")' && python3 -c 'from api.main import app; print(\"Import OK\")' && python3 -m uvicorn api.main:app --host 0.0.0.0 --port $PORT"
+startCommand = "cd backend && chmod +x start.sh && ./start.sh"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
