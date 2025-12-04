@@ -171,15 +171,23 @@ class Settings(BaseSettings):
     SMTP_FROM: Optional[str] = None
     SMTP_TLS: bool = True
     
-    # Resend (alternative email service)
+    # Resend (primary email service)
     RESEND_API_KEY: Optional[str] = None
     
+    # Email Configuration
+    EMAIL_FROM: str = "noreply@arkheion-tiktrend.com.br"
+    EMAIL_FROM_NAME: str = "TikTrend"
+    
     # Contact & Support Configuration
-    SUPPORT_EMAIL: str = "suporte@tiktrendfinder.com.br"
-    CONTACT_EMAIL: str = "contato@tiktrendfinder.com.br"
-    NOREPLY_EMAIL: str = "noreply@tiktrendfinder.com.br"
-    COMPANY_NAME: str = "TikTrend Finder"
-    COMPANY_WEBSITE: str = "https://tiktrendfinder.com.br"
+    SUPPORT_EMAIL: str = "suporte@arkheion-tiktrend.com.br"
+    CONTACT_EMAIL: str = "contato@arkheion-tiktrend.com.br"
+    NOREPLY_EMAIL: str = "noreply@arkheion-tiktrend.com.br"
+    FINANCEIRO_EMAIL: str = "financeiro@arkheion-tiktrend.com.br"
+    PARCEIROS_EMAIL: str = "parceiros@arkheion-tiktrend.com.br"
+    
+    # Company Info
+    COMPANY_NAME: str = "TikTrend"
+    COMPANY_WEBSITE: str = "https://arkheion-tiktrend.com.br"
     COMPANY_ADDRESS: str = "São Paulo, Brasil"
     
     # MercadoPago (alias for compatibility)
@@ -187,7 +195,7 @@ class Settings(BaseSettings):
     MP_PUBLIC_KEY: Optional[str] = None
     
     # CORS
-    CORS_ORIGINS: str = "http://localhost:1420,http://localhost:3000,tauri://localhost,https://tiktrend-facil.vercel.app"
+    CORS_ORIGINS: str = "http://localhost:1420,http://localhost:3000,tauri://localhost,https://arkheion-tiktrend.com.br"
     CORS_ORIGIN_REGEX: Optional[str] = r"https://.*\.vercel\.app"
     FRONTEND_URL: str = "http://localhost:5173"
 

@@ -873,6 +873,90 @@ async def test_single_insert(secret: str = ""):
         }
 
 
+@app.post("/admin/import-products")
+async def import_products(secret: str = "", products: list = None):
+    """Import products from JSON array"""
+    import uuid
+
+    from api.database.connection import database
+    
+    expected_secret = os.environ.get(
+        "MIGRATION_SECRET", "tiktrend-migrate-2025"
+    )
+    if secret != expected_secret:
+        return {"status": "error", "message": "Invalid secret"}
+    
+    if not products:
+        return {"status": "error", "message": "No products provided"}
+    
+    try:
+        if not database.is_connected:
+            await database.connect()
+        
+        inserted = 0
+        errors = []
+        
+        for p in products:
+            try:
+                product_id = p.get('id', str(uuid.uuid4()))
+                tiktok_id = p.get('tiktok_id', f"TT{uuid.uuid4().hex[:12].upper()}")
+                
+                await database.execute(
+                    """
+                    INSERT INTO products (id, tiktok_id, title, description, price,
+                        original_price, currency, category, seller_name,
+                        product_rating, reviews_count, sales_count, sales_7d, sales_30d,
+                        commission_rate, image_url, product_url, has_free_shipping, is_trending)
+                    VALUES (:id, :tiktok_id, :title, :desc, :price,
+                        :original_price, :currency, :category, :seller_name,
+                        :rating, :reviews, :sales, :sales_7d, :sales_30d,
+                        :commission, :image_url, :product_url, :free_shipping, :is_trending)
+                    ON CONFLICT (tiktok_id) DO NOTHING
+                    """,
+                    {
+                        "id": product_id,
+                        "tiktok_id": tiktok_id,
+                        "title": p.get('title', 'Unknown Product'),
+                        "desc": p.get('description', ''),
+                        "price": p.get('price', 0),
+                        "original_price": p.get('original_price'),
+                        "currency": p.get('currency', 'BRL'),
+                        "category": p.get('category'),
+                        "seller_name": p.get('seller_name'),
+                        "rating": p.get('product_rating'),
+                        "reviews": p.get('reviews_count'),
+                        "sales": p.get('sales_count'),
+                        "sales_7d": p.get('sales_7d'),
+                        "sales_30d": p.get('sales_30d'),
+                        "commission": p.get('commission_rate'),
+                        "image_url": p.get('image_url'),
+                        "product_url": p.get('product_url', f"https://tiktok.com/shop/{tiktok_id}"),
+                        "free_shipping": p.get('has_free_shipping', False),
+                        "is_trending": p.get('is_trending', False),
+                    }
+                )
+                inserted += 1
+            except Exception as e:
+                errors.append(f"{p.get('title', 'unknown')}: {str(e)[:50]}")
+        
+        count_result = await database.fetch_one("SELECT COUNT(*) as total FROM products")
+        total = count_result["total"] if count_result else 0
+        
+        return {
+            "status": "success",
+            "inserted": inserted,
+            "errors": errors[:5],
+            "total_products": total
+        }
+    except Exception as e:
+        import traceback
+        return {
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()[-500:]
+        }
+
+
 @app.get("/")
 async def root():
     """Root endpoint"""

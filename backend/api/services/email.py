@@ -84,11 +84,11 @@ class EmailTemplates:
             <div class="container">
                 <div class="card">
                     <div class="logo">
-                        <h1>🛒 TikTrend Finder</h1>
+                        <h1>📈 TikTrend</h1>
                     </div>
                     <div class="content">
                         <h2>Olá, {name}! 👋</h2>
-                        <p>Obrigado por se cadastrar no <span class="highlight">TikTrend Finder</span>!</p>
+                        <p>Obrigado por se cadastrar no <span class="highlight">TikTrend</span>!</p>
                         <p>Para ativar sua conta, clique no botão abaixo:</p>
                         
                         <div style="text-align: center;">
@@ -104,10 +104,10 @@ class EmailTemplates:
                         </p>
                     </div>
                     <div class="footer">
-                        <p>© 2025 TikTrend Finder - Comparador de Preços</p>
+                        <p>© 2025 TikTrend - Encontre Produtos Virais</p>
                         <p>
-                            <a href="https://tiktrendfinder.com/terms">Termos</a> · 
-                            <a href="https://tiktrendfinder.com/privacy">Privacidade</a>
+                            <a href="https://arkheion-tiktrend.com.br/terms">Termos</a> · 
+                            <a href="https://arkheion-tiktrend.com.br/privacy">Privacidade</a>
                         </p>
                     </div>
                 </div>
@@ -127,7 +127,7 @@ class EmailTemplates:
             <div class="container">
                 <div class="card">
                     <div class="logo">
-                        <h1>🔐 TikTrend Finder</h1>
+                        <h1>🔐 TikTrend</h1>
                     </div>
                     <div class="content">
                         <h2>Olá, {name}!</h2>
@@ -148,7 +148,7 @@ class EmailTemplates:
                         </p>
                     </div>
                     <div class="footer">
-                        <p>© 2025 TikTrend Finder</p>
+                        <p>© 2025 TikTrend</p>
                     </div>
                 </div>
             </div>
@@ -167,7 +167,7 @@ class EmailTemplates:
             <div class="container">
                 <div class="card">
                     <div class="logo">
-                        <h1>🎉 TikTrend Finder</h1>
+                        <h1>🎉 TikTrend</h1>
                     </div>
                     <div class="content">
                         <h2>Bem-vindo(a), {name}! 🚀</h2>
@@ -175,22 +175,22 @@ class EmailTemplates:
                         
                         <p>Agora você pode:</p>
                         <ul>
-                            <li>🔍 Comparar preços de milhares de produtos</li>
-                            <li>🔔 Receber alertas de queda de preço</li>
+                            <li>🔍 Encontrar produtos virais do TikTok</li>
+                            <li>📈 Analisar tendências de mercado</li>
                             <li>❤️ Salvar produtos favoritos</li>
-                            <li>📊 Ver histórico de preços</li>
+                            <li>💰 Descobrir oportunidades de lucro</li>
                         </ul>
                         
                         <div style="text-align: center;">
-                            <a href="https://tiktrendfinder.com" class="button">
-                                Começar a Economizar
+                            <a href="https://arkheion-tiktrend.com.br" class="button">
+                                Começar a Explorar
                             </a>
                         </div>
                         
                         <p>Dúvidas? Responda este email ou acesse nosso suporte.</p>
                     </div>
                     <div class="footer">
-                        <p>© 2025 TikTrend Finder</p>
+                        <p>© 2025 TikTrend</p>
                     </div>
                 </div>
             </div>
@@ -234,15 +234,15 @@ class EmailTemplates:
                         <p>Os créditos já estão disponíveis em sua conta!</p>
                         
                         <div style="text-align: center;">
-                            <a href="https://tiktrendfinder.com/dashboard" class="button">
+                            <a href="https://arkheion-tiktrend.com.br/dashboard" class="button">
                                 Acessar Dashboard
                             </a>
                         </div>
                     </div>
                     <div class="footer">
-                        <p>© 2025 TikTrend Finder</p>
+                        <p>© 2025 TikTrend</p>
                         <p>
-                            Precisa de ajuda? <a href="mailto:suporte@tiktrendfinder.com">suporte@tiktrendfinder.com</a>
+                            Precisa de ajuda? <a href="mailto:suporte@arkheion-tiktrend.com.br">suporte@arkheion-tiktrend.com.br</a>
                         </p>
                     </div>
                 </div>
@@ -439,9 +439,11 @@ class EmailService:
     
     def __init__(self):
         self.provider = self._get_provider()
-        self.app_url = getattr(settings, 'APP_URL', 'https://tiktrendfinder.com')
+        self.app_url = getattr(
+            settings, 'APP_URL', 'https://arkheion-tiktrend.com.br'
+        )
         self.support_email = getattr(
-            settings, 'SUPPORT_EMAIL', 'suporte@tiktrendfinder.com'
+            settings, 'SUPPORT_EMAIL', 'suporte@arkheion-tiktrend.com.br'
         )
     
     def _get_provider(self) -> BaseEmailProvider:
@@ -453,9 +455,9 @@ class EmailService:
             return ResendProvider(
                 api_key=resend_key,
                 from_email=getattr(
-                    settings, 'EMAIL_FROM', 'noreply@tiktrendfinder.com'
+                    settings, 'EMAIL_FROM', 'noreply@arkheion-tiktrend.com.br'
                 ),
-                from_name=getattr(settings, 'EMAIL_FROM_NAME', 'TikTrend Finder')
+                from_name=getattr(settings, 'EMAIL_FROM_NAME', 'TikTrend')
             )
         
         smtp_host = getattr(settings, 'SMTP_HOST', None)
@@ -466,9 +468,9 @@ class EmailService:
                 user=getattr(settings, 'SMTP_USER', ''),
                 password=getattr(settings, 'SMTP_PASSWORD', ''),
                 from_email=getattr(
-                    settings, 'SMTP_FROM', 'noreply@tiktrendfinder.com'
+                    settings, 'SMTP_FROM', 'noreply@arkheion-tiktrend.com.br'
                 ),
-                from_name=getattr(settings, 'EMAIL_FROM_NAME', 'TikTrend Finder'),
+                from_name=getattr(settings, 'EMAIL_FROM_NAME', 'TikTrend'),
                 use_tls=getattr(settings, 'SMTP_TLS', True)
             )
         
