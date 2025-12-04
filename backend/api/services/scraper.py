@@ -17,7 +17,7 @@ def format_product(row) -> dict:
     product = dict(row)
     product["id"] = str(product["id"])  # Convert UUID to string
     
-    # Parse JSONB fields if they are strings
+    # Parse ARRAY fields if they are strings
     if isinstance(product.get("images"), str):
         try:
             product["images"] = json.loads(product["images"])
@@ -25,14 +25,21 @@ def format_product(row) -> dict:
             product["images"] = []
     elif product.get("images") is None:
         product["images"] = []
-        
-    if isinstance(product.get("metadata"), str):
-        try:
-            product["metadata"] = json.loads(product["metadata"])
-        except Exception:
-            product["metadata"] = {}
-    elif product.get("metadata") is None:
-        product["metadata"] = {}
+    
+    # Add default empty metadata (column was removed in migration)
+    product["metadata"] = {}
+    
+    # Add compatibility fields that were removed but may be expected by API
+    product["source"] = "tiktok_shop"
+    product["status"] = "active"
+    product["rating"] = product.get("product_rating")
+    product["review_count"] = product.get("reviews_count", 0)
+    product["trending_score"] = 1.0 if product.get("is_trending") else 0.0
+    product["created_at"] = product.get("collected_at")
+    product["last_scraped_at"] = product.get("updated_at")
+    product["external_id"] = product.get("tiktok_id")
+    product["shop_name"] = product.get("seller_name")
+    product["shop_url"] = None
         
     return product
 
@@ -54,7 +61,7 @@ class ScraperOrchestrator:
         min_sales: Optional[int] = None,
         sort_by: str = "sales_30d",
         sort_order: str = "desc",
-        source: Optional[str] = None
+        source: Optional[str] = None  # Not used - column removed in migration
     ) -> dict:
         """Get paginated products with filters"""
         
@@ -82,17 +89,15 @@ class ScraperOrchestrator:
             count_params["min_sales"] = min_sales
             query_params["min_sales"] = min_sales
 
-        if source:
-            conditions.append("source = :source")
-            count_params["source"] = source
-            query_params["source"] = source
+        # Note: 'source' column was removed in migration f8c935eb4759
+        # Ignoring source filter
         
         where_clause = " AND ".join(conditions)
         
-        # Validate sort column
+        # Validate sort column - only use columns that exist in the table
         valid_sorts = [
-            "sales_count", "price", "rating", 
-            "trending_score", "created_at", "sales_30d"
+            "sales_count", "price", "product_rating",
+            "sales_7d", "sales_30d", "collected_at", "updated_at"
         ]
         if sort_by not in valid_sorts:
             sort_by = "sales_30d"
