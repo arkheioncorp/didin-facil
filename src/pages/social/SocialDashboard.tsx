@@ -168,7 +168,7 @@ export const SocialDashboard = () => {
       // Transform posts to activity
       const activities: RecentActivity[] = (postsResponse.data.posts || []).map(post => ({
         id: post.id,
-        type: post.status === "published" ? "post_published" : post.status === "failed" ? "post_failed" : "post_scheduled",
+        type: (post.status === "published" ? "post_published" : post.status === "failed" ? "post_failed" : "post_scheduled") as RecentActivity["type"],
         platform: post.platform,
         title: post.caption?.substring(0, 50) || "Post sem legenda",
         timestamp: post.published_at || post.created_at,

@@ -60,8 +60,9 @@ export interface BaseModalProps {
 // COPY AI TYPES
 // ============================================
 
-export type CopyType = "ad" | "description" | "headline" | "cta" | "story" | "whatsapp";
-export type CopyTone = "professional" | "casual" | "urgent" | "friendly" | "luxury" | "emotional";
+// CopyType and CopyTone are defined in @/types/index.ts - importing from there
+import type { CopyType, CopyTone } from "@/types";
+export type { CopyType, CopyTone };
 
 export interface CopyModalProps extends BaseModalProps {
   copyType: CopyType;

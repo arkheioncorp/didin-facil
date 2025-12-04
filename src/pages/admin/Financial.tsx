@@ -43,23 +43,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load recharts for better initial bundle size (-385KB)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LazyBarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart as ComponentType<any> })));
+const LazyBarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart as unknown as ComponentType<any> })));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LazyBar = lazy(() => import('recharts').then(m => ({ default: m.Bar as ComponentType<any> })));
+const LazyBar = lazy(() => import('recharts').then(m => ({ default: m.Bar as unknown as ComponentType<any> })));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LazyLineChart = lazy(() => import('recharts').then(m => ({ default: m.LineChart as ComponentType<any> })));
+const LazyLineChart = lazy(() => import('recharts').then(m => ({ default: m.LineChart as unknown as ComponentType<any> })));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LazyLine = lazy(() => import('recharts').then(m => ({ default: m.Line as ComponentType<any> })));
+const LazyLine = lazy(() => import('recharts').then(m => ({ default: m.Line as unknown as ComponentType<any> })));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LazyXAxis = lazy(() => import('recharts').then(m => ({ default: m.XAxis as ComponentType<any> })));
+const LazyXAxis = lazy(() => import('recharts').then(m => ({ default: m.XAxis as unknown as ComponentType<any> })));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LazyYAxis = lazy(() => import('recharts').then(m => ({ default: m.YAxis as ComponentType<any> })));
+const LazyYAxis = lazy(() => import('recharts').then(m => ({ default: m.YAxis as unknown as ComponentType<any> })));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LazyCartesianGrid = lazy(() => import('recharts').then(m => ({ default: m.CartesianGrid as ComponentType<any> })));
+const LazyCartesianGrid = lazy(() => import('recharts').then(m => ({ default: m.CartesianGrid as unknown as ComponentType<any> })));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LazyTooltip = lazy(() => import('recharts').then(m => ({ default: m.Tooltip as ComponentType<any> })));
+const LazyTooltip = lazy(() => import('recharts').then(m => ({ default: m.Tooltip as unknown as ComponentType<any> })));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LazyResponsiveContainer = lazy(() => import('recharts').then(m => ({ default: m.ResponsiveContainer as ComponentType<any> })));
+const LazyResponsiveContainer = lazy(() => import('recharts').then(m => ({ default: m.ResponsiveContainer as unknown as ComponentType<any> })));
 
 // Chart loading skeleton
 const ChartSkeleton = () => (
