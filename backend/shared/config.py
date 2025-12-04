@@ -175,7 +175,8 @@ class Settings(BaseSettings):
     MP_PUBLIC_KEY: Optional[str] = None
     
     # CORS
-    CORS_ORIGINS: str = "http://localhost:1420,http://localhost:3000,tauri://localhost"
+    CORS_ORIGINS: str = "http://localhost:1420,http://localhost:3000,tauri://localhost,https://didin-facil.vercel.app"
+    CORS_ORIGIN_REGEX: Optional[str] = r"https://.*\.vercel\.app"
     FRONTEND_URL: str = "http://localhost:5173"
 
     model_config = ConfigDict(
