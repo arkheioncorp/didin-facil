@@ -267,8 +267,8 @@ export async function exportFinancialReport(
 
 // Legacy functions for backward compatibility (deprecated)
 export async function getDailyReports(
-  startDate: string,
-  endDate: string
+  _startDate: string,
+  _endDate: string
 ): Promise<DailyReport[]> {
   console.warn("getDailyReports is deprecated, use getDailyRevenue instead");
   // Convert to new API format
@@ -307,14 +307,14 @@ export async function getOperationCosts(): Promise<OperationCost[]> {
   return [];
 }
 
-export async function getMonthlyReports(year: number): Promise<MonthlyMetrics[]> {
+export async function getMonthlyReports(_year: number): Promise<MonthlyMetrics[]> {
   console.warn("getMonthlyReports is deprecated");
   return [];
 }
 
 export async function updateOperationCost(
-  operationType: string,
-  creditCost: number
+  _operationType: string,
+  _creditCost: number
 ): Promise<{ success: boolean }> {
   console.warn("updateOperationCost is deprecated");
   return { success: false };

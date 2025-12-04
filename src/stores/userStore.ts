@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { User, License, Credits, Subscription, PlanInfo, UsageStats, PlanTier } from "@/types";
+import type { User, License, Credits, Subscription, PlanInfo, UsageStats } from "@/types";
 
 // Default values for new users
 const DEFAULT_LICENSE: License = {

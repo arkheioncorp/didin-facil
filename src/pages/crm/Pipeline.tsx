@@ -21,8 +21,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Plus, GripVertical, MoreHorizontal, Edit, Eye, Phone,
-  Mail, Calendar, DollarSign, Clock,
+  Plus, GripVertical, MoreHorizontal, Edit, Eye,
+  Calendar, DollarSign, Clock,
   CheckCircle2, XCircle,
   Filter, Search, RefreshCw, Settings, BarChart3
 } from "lucide-react";
@@ -31,7 +31,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 // Import new API hooks and types  
 import { usePipelines, usePipeline, usePipelineMetrics } from "./hooks/usePipeline";
 import { useDeals, useMoveDeal, useCreateDeal, useUpdateDeal, useDeleteDeal, useWinDeal, useLoseDeal } from "./hooks/useDeals";
-import type { Pipeline as PipelineType, Deal, PipelineStage } from "@/lib/api/crm";
+import type { Pipeline, Deal, PipelineStage } from "@/lib/api/crm";
 import { formatCurrency, getTagColor, calculateDaysInStage } from "@/lib/api/crm";
 
 // ==================== UTILITY FUNCTIONS ====================
@@ -287,14 +287,14 @@ const PipelinePage = () => {
   // React Query hooks (replacing all mock data!)
   const { data: pipelines, isLoading: loadingPipelines } = usePipelines();
   const { data: pipeline, isLoading: loadingPipeline } = usePipeline(selectedPipelineId);
-  const { data: deals = [], isLoading: loadingDeals } = useDeals({ pipeline_id: selectedPipelineId });
-  const { data: metrics } = usePipelineMetrics(selectedPipelineId);
+  const { data: deals = [], isLoading: _loadingDeals } = useDeals({ pipeline_id: selectedPipelineId });
+  const { data: _metrics } = usePipelineMetrics(selectedPipelineId);
 
   // Mutations
   const moveDeal = useMoveDeal();
   const createDeal = useCreateDeal();
   const updateDeal = useUpdateDeal();
-  const deleteDeal = useDeleteDeal();
+  const _deleteDeal = useDeleteDeal();
   const winDeal = useWinDeal();
   const loseDeal = useLoseDeal();
 

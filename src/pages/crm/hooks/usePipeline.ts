@@ -6,7 +6,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { pipelineAPI, type Pipeline, type CreatePipelineData, type UpdatePipelineData } from "@/lib/api/crm";
+import { pipelineAPI, type CreatePipelineData, type UpdatePipelineData } from "@/lib/api/crm";
 import { useToast } from "@/hooks/use-toast";
 
 // Query keys

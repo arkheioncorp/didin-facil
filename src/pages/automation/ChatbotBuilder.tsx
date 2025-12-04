@@ -288,7 +288,7 @@ export const ChatbotBuilder = () => {
   });
 
   // Fetch stats
-  const { data: stats, error: statsError } = useQuery<ChatbotStats>({
+const { data: stats, error: _statsError } = useQuery<ChatbotStats>({
     queryKey: ['chatbot-stats'],
     queryFn: async (): Promise<ChatbotStats> => {
       const response = await api.get('/chatbot/stats');
@@ -297,7 +297,7 @@ export const ChatbotBuilder = () => {
   });
 
   // Fetch templates
-  const { data: templates, error: templatesError } = useQuery<ChatbotTemplate[]>({
+const { data: templates, error: _templatesError } = useQuery<ChatbotTemplate[]>({
     queryKey: ['chatbot-templates'],
     queryFn: async (): Promise<ChatbotTemplate[]> => {
       const response = await api.get('/chatbot/templates');
