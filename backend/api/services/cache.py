@@ -5,13 +5,18 @@ Redis caching layer for products and copies
 Note: Uses connection pool pattern - connections are managed by the pool,
 not created/closed per operation. This avoids connection leaks and improves
 performance.
+
+Gracefully degrades when Redis is unavailable.
 """
 
 import hashlib
 import json
+import logging
 from typing import Any, Optional
 
 from api.services.redis import get_redis_pool
+
+logger = logging.getLogger(__name__)
 
 
 class CacheService:
@@ -21,31 +26,43 @@ class CacheService:
         self.prefix = "tiktrend:"
     
     async def get(self, key: str) -> Optional[Any]:
-        """Get value from cache"""
-        redis_client = await get_redis_pool()
-        full_key = f"{self.prefix}{key}"
-        
-        value = await redis_client.get(full_key)
-        if value:
-            return json.loads(value)
-        return None
+        """Get value from cache. Returns None if Redis unavailable."""
+        try:
+            redis_client = await get_redis_pool()
+            full_key = f"{self.prefix}{key}"
+            
+            value = await redis_client.get(full_key)
+            if value:
+                return json.loads(value)
+            return None
+        except Exception as e:
+            logger.warning(f"Redis get failed for {key}: {e}")
+            return None
     
     async def set(self, key: str, value: Any, ttl: int = 3600) -> bool:
-        """Set value in cache with TTL (default 1 hour)"""
-        redis_client = await get_redis_pool()
-        full_key = f"{self.prefix}{key}"
-        
-        serialized = json.dumps(value, default=str)
-        await redis_client.setex(full_key, ttl, serialized)
-        return True
+        """Set value in cache with TTL. Fails silently if Redis unavailable."""
+        try:
+            redis_client = await get_redis_pool()
+            full_key = f"{self.prefix}{key}"
+            
+            serialized = json.dumps(value, default=str)
+            await redis_client.setex(full_key, ttl, serialized)
+            return True
+        except Exception as e:
+            logger.warning(f"Redis set failed for {key}: {e}")
+            return False
     
     async def delete(self, key: str) -> bool:
-        """Delete key from cache"""
-        redis_client = await get_redis_pool()
-        full_key = f"{self.prefix}{key}"
-        
-        await redis_client.delete(full_key)
-        return True
+        """Delete key from cache. Fails silently if Redis unavailable."""
+        try:
+            redis_client = await get_redis_pool()
+            full_key = f"{self.prefix}{key}"
+            
+            await redis_client.delete(full_key)
+            return True
+        except Exception as e:
+            logger.warning(f"Redis delete failed for {key}: {e}")
+            return False
     
     async def delete_pattern(self, pattern: str) -> int:
         """Delete all keys matching pattern"""

@@ -104,25 +104,32 @@ class ScraperOrchestrator:
         
         order = "DESC" if sort_order.lower() == "desc" else "ASC"
         
-        # Get total count
-        count_result = await self.db.fetch_one(
-            f"SELECT COUNT(*) as total FROM products WHERE {where_clause}",
-            count_params if count_params else None
-        )
-        total = count_result["total"] if count_result else 0
-        
-        # Get products
-        results = await self.db.fetch_all(
-            f"""
-            SELECT * FROM products 
-            WHERE {where_clause}
-            ORDER BY {sort_by} {order}
-            LIMIT :limit OFFSET :offset
-            """,
-            query_params
-        )
-        
-        products = [format_product(r) for r in results]
+        try:
+            # Get total count
+            count_result = await self.db.fetch_one(
+                f"SELECT COUNT(*) as total FROM products WHERE {where_clause}",
+                count_params if count_params else None
+            )
+            total = count_result["total"] if count_result else 0
+            
+            # Get products
+            results = await self.db.fetch_all(
+                f"""
+                SELECT * FROM products
+                WHERE {where_clause}
+                ORDER BY {sort_by} {order}
+                LIMIT :limit OFFSET :offset
+                """,
+                query_params
+            )
+            
+            products = [format_product(r) for r in results]
+        except Exception as e:
+            # Log the error and return empty result
+            import logging
+            logging.error(f"Database error in get_products: {e}")
+            products = []
+            total = 0
         
         return {
             "products": products,
