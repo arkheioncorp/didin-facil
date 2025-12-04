@@ -1,0 +1,17 @@
+# ============================================================================
+# Nixpacks Configuration - TikTrend Frontend
+# ============================================================================
+# Build React/Vite frontend for Railway
+# ============================================================================
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npx serve dist -l $PORT"

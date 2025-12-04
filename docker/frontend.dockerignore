@@ -1,0 +1,45 @@
+# ============================================================================
+# Docker Ignore - TikTrend Frontend
+# ============================================================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Backend (não necessário para frontend)
+backend/
+
+# Tauri (Desktop app)
+src-tauri/
+builds/
+
+# Tests
+tests/
+playwright-report/
+test-results/
+coverage/
+htmlcov/
+*.spec.ts
+*.test.ts
+
+# IDE/Editor
+.vscode/
+.idea/
+
+# Build cache
+node_modules/.cache/
+.npm/
+.pnpm-store/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs
+docs/
+*.md
+!README.md
+
+# Archives
+_archive/

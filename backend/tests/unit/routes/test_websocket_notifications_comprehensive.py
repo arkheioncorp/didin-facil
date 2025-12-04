@@ -3,12 +3,12 @@ Comprehensive tests for websocket_notifications.py
 Tests for WebSocket connection manager and notifications.
 """
 
-import pytest
 import json
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
+import pytest
 
 # ============================================
 # NOTIFICATION TYPE TESTS
@@ -544,7 +544,8 @@ class TestGlobalManager:
         assert manager is not None
 
     def test_global_manager_is_connection_manager(self):
-        from api.routes.websocket_notifications import manager, ConnectionManager
+        from api.routes.websocket_notifications import (ConnectionManager,
+                                                        manager)
 
         assert isinstance(manager, ConnectionManager)
 

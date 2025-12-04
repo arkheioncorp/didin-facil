@@ -3,12 +3,12 @@ Comprehensive tests for whatsapp_v2.py
 Tests for WhatsApp Hub V2 routes.
 """
 
-import pytest
 import uuid
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
-from pydantic import ValidationError
 
+import pytest
+from pydantic import ValidationError
 
 # ============================================
 # SCHEMA TESTS
@@ -355,7 +355,7 @@ class TestCreateInstance:
     @patch("api.routes.whatsapp_v2.get_whatsapp_hub")
     @patch("api.routes.whatsapp_v2.database")
     async def test_create_instance_success(self, mock_db, mock_get_hub):
-        from api.routes.whatsapp_v2 import create_instance, InstanceCreate
+        from api.routes.whatsapp_v2 import InstanceCreate, create_instance
 
         mock_hub = AsyncMock()
         mock_instance = MagicMock()
@@ -378,7 +378,7 @@ class TestCreateInstance:
     @pytest.mark.asyncio
     @patch("api.routes.whatsapp_v2.get_whatsapp_hub")
     async def test_create_instance_error(self, mock_get_hub):
-        from api.routes.whatsapp_v2 import create_instance, InstanceCreate
+        from api.routes.whatsapp_v2 import InstanceCreate, create_instance
         from fastapi import HTTPException
 
         mock_hub = AsyncMock()
@@ -412,7 +412,10 @@ class TestListInstances:
         mock_hub.list_instances = AsyncMock(return_value=[mock_instance])
         mock_get_hub.return_value = mock_hub
 
-        mock_db.fetch_all = AsyncMock(return_value=[MagicMock(name="test")])
+        # Create a mock user instance with name attribute accessible
+        mock_user_instance = MagicMock()
+        mock_user_instance.name = "test"
+        mock_db.fetch_all = AsyncMock(return_value=[mock_user_instance])
 
         current_user = {"id": str(uuid.uuid4())}
 
@@ -488,7 +491,7 @@ class TestSendTextMessage:
     @patch("api.routes.whatsapp_v2.get_whatsapp_hub")
     @patch("api.routes.whatsapp_v2._log_outgoing_message")
     async def test_send_text_success(self, mock_log, mock_get_hub):
-        from api.routes.whatsapp_v2 import send_text_message, SendTextRequest
+        from api.routes.whatsapp_v2 import SendTextRequest, send_text_message
 
         mock_hub = AsyncMock()
         mock_hub.send_text = AsyncMock(return_value={
@@ -507,7 +510,7 @@ class TestSendTextMessage:
     @pytest.mark.asyncio
     @patch("api.routes.whatsapp_v2.get_whatsapp_hub")
     async def test_send_text_error(self, mock_get_hub):
-        from api.routes.whatsapp_v2 import send_text_message, SendTextRequest
+        from api.routes.whatsapp_v2 import SendTextRequest, send_text_message
 
         mock_hub = AsyncMock()
         mock_hub.send_text = AsyncMock(side_effect=Exception("Failed"))
@@ -529,7 +532,7 @@ class TestSendImage:
     @patch("api.routes.whatsapp_v2.get_whatsapp_hub")
     @patch("api.routes.whatsapp_v2._log_outgoing_message")
     async def test_send_image_success(self, mock_log, mock_get_hub):
-        from api.routes.whatsapp_v2 import send_image, SendMediaRequest
+        from api.routes.whatsapp_v2 import SendMediaRequest, send_image
 
         mock_hub = AsyncMock()
         mock_hub.send_image = AsyncMock(return_value={
@@ -550,7 +553,7 @@ class TestSendImage:
     @pytest.mark.asyncio
     @patch("api.routes.whatsapp_v2.get_whatsapp_hub")
     async def test_send_image_error(self, mock_get_hub):
-        from api.routes.whatsapp_v2 import send_image, SendMediaRequest
+        from api.routes.whatsapp_v2 import SendMediaRequest, send_image
 
         mock_hub = AsyncMock()
         mock_hub.send_image = AsyncMock(side_effect=Exception("Failed"))
@@ -574,7 +577,7 @@ class TestSendVideo:
     @patch("api.routes.whatsapp_v2.get_whatsapp_hub")
     @patch("api.routes.whatsapp_v2._log_outgoing_message")
     async def test_send_video_success(self, mock_log, mock_get_hub):
-        from api.routes.whatsapp_v2 import send_video, SendMediaRequest
+        from api.routes.whatsapp_v2 import SendMediaRequest, send_video
 
         mock_hub = AsyncMock()
         mock_hub.send_video = AsyncMock(return_value={
@@ -599,7 +602,7 @@ class TestSendLocation:
     @pytest.mark.asyncio
     @patch("api.routes.whatsapp_v2.get_whatsapp_hub")
     async def test_send_location_success(self, mock_get_hub):
-        from api.routes.whatsapp_v2 import send_location, SendLocationRequest
+        from api.routes.whatsapp_v2 import SendLocationRequest, send_location
 
         mock_hub = AsyncMock()
         mock_hub.send_location = AsyncMock(return_value={
@@ -621,7 +624,7 @@ class TestSendLocation:
     @pytest.mark.asyncio
     @patch("api.routes.whatsapp_v2.get_whatsapp_hub")
     async def test_send_location_error(self, mock_get_hub):
-        from api.routes.whatsapp_v2 import send_location, SendLocationRequest
+        from api.routes.whatsapp_v2 import SendLocationRequest, send_location
 
         mock_hub = AsyncMock()
         mock_hub.send_location = AsyncMock(side_effect=Exception("Failed"))
@@ -743,7 +746,7 @@ class TestSendButtons:
     @pytest.mark.asyncio
     @patch("api.routes.whatsapp_v2.get_whatsapp_hub")
     async def test_send_buttons_success(self, mock_get_hub):
-        from api.routes.whatsapp_v2 import send_buttons, SendButtonsRequest
+        from api.routes.whatsapp_v2 import SendButtonsRequest, send_buttons
 
         mock_hub = AsyncMock()
         mock_hub.send_buttons = AsyncMock(return_value={
@@ -910,7 +913,8 @@ class TestConfigureWebhook:
     @patch("api.routes.whatsapp_v2._verify_instance_access")
     @patch("api.routes.whatsapp_v2.database")
     async def test_configure_webhook_success(self, mock_db, mock_verify, mock_get_hub):
-        from api.routes.whatsapp_v2 import configure_webhook, WebhookConfigRequest
+        from api.routes.whatsapp_v2 import (WebhookConfigRequest,
+                                            configure_webhook)
 
         mock_hub = AsyncMock()
         mock_hub.configure_webhook = AsyncMock(return_value=True)
@@ -928,7 +932,8 @@ class TestConfigureWebhook:
     @patch("api.routes.whatsapp_v2.get_whatsapp_hub")
     @patch("api.routes.whatsapp_v2._verify_instance_access")
     async def test_configure_webhook_error(self, mock_verify, mock_get_hub):
-        from api.routes.whatsapp_v2 import configure_webhook, WebhookConfigRequest
+        from api.routes.whatsapp_v2 import (WebhookConfigRequest,
+                                            configure_webhook)
         from fastapi import HTTPException
 
         mock_hub = AsyncMock()
