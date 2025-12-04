@@ -1,0 +1,63 @@
+# Backend - não necessário para frontend
+backend/
+docker/
+infra/
+docs/
+memory-bank/
+scripts/
+builds/
+_archive/
+
+# Python
+*.py
+*.pyc
+__pycache__/
+venv/
+.venv/
+*.egg-info/
+
+# Tauri/Rust
+src-tauri/
+target/
+
+# Tests
+tests/
+test-results/
+test-reports/
+playwright-report/
+htmlcov/
+coverage/
+*.test.*
+*.spec.*
+
+# Build artifacts
+dist/
+
+# Dependencies (Vercel instala automaticamente)
+node_modules/
+
+# Dev files
+.git/
+.github/
+.vscode/
+*.md
+*.txt
+*.log
+Makefile
+Justfile
+*.toml
+!vite.config.ts
+!tsconfig.json
+!tsconfig.node.json
+!postcss.config.js
+!tailwind.config.js
+!components.json
+
+# Docker
+*.Dockerfile
+docker-compose*.yml
+
+# Misc
+*.sql
+*.sh
+coverage.*
